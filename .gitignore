@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments
+.venv/
+venv/
+.EuroVenv/
+EuroferMicro_venv/
+*.egg-info/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# C++ build artifacts
+*/build/
+*.exe
+*.dll
+*.so
+*.o
+*.a
+
+# Output (large result files — regenerate from notebooks)
+*/output/
+
+# Temporary / OS
+.DS_Store
+Thumbs.db
+~$*
+
+# VSCode (keep settings.json, ignore local)
+.vscode/c_cpp_properties.json
+.vscode/launch.json

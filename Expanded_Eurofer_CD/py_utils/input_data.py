@@ -18,6 +18,19 @@ Physics reference
 Ghoniem, N.M. (2026), "A Cluster Dynamics Model for Radiation Damage
 Evolution in Ferritic-Martensitic Steels" (Rate_Equations.pdf).
 
+Naming convention
+-----------------
+I           — max SIA cluster size
+V           — max vacancy cluster size
+i_mobile    — max mobile SIA cluster size
+v_mobile    — max mobile vacancy cluster size
+i_discrete  — max discrete SIA size (individually tracked; default = i_mobile)
+v_discrete  — max discrete vacancy size (individually tracked; default = v_mobile)
+I_bin       — number of SIA bin-moment equations beyond i_discrete
+V_bin       — number of VAC bin-moment equations beyond v_discrete
+i_cascade   — max SIA cluster size from cascade
+v_cascade   — max vacancy cluster size from cascade
+
 All units: SI (lengths in m, concentrations dimensionless as atom fractions,
 energies in eV, time in s).
 """
@@ -36,6 +49,19 @@ INPUT_FILE = BASE_DIR / 'input' / 'input_parameters.xlsx'
 _SOLVER_MODES   = ('cpp_full', 'cpp_sliding_win', 'sliding_OpenMP')
 _PHYSICS_OPTIONS = ('full_CD_fission', 'full_CD_fusion',
                     'bin_moment_CD_fission', 'bin_moment_CD_fusion')
+_SHAPE_FUNCTIONS = ('constant', 'linear', 'lognormal')
+
+# Backward-compat key aliases (old → new)
+# NOTE: n1_bin is NOT aliased to i_discrete — different semantics.
+# n1_bin was the starting bin edge; i_discrete is the number of discrete sizes.
+_KEY_ALIASES = {
+    'N':       'I',
+    'M':       'V',
+    'n_max_i': 'i_mobile',
+    'm_max_v': 'v_mobile',
+    'm1':      'i_cascade',
+    'n1':      'v_cascade',
+}
 
 
 class InputData:
@@ -48,14 +74,22 @@ class InputData:
     Parameters
     ----------
     excel_file     : path-like, optional
-    N              : int, optional  — override max SIA cluster size
-    M              : int, optional  — override max vacancy cluster size
+    I              : int, optional  — override max SIA cluster size
+    V              : int, optional  — override max vacancy cluster size
     solver_mode    : str, optional  — override solver mode
     physics_option : str, optional  — override physics option
     """
 
-    def __init__(self, excel_file=INPUT_FILE, N=None, M=None,
-                 solver_mode=None, physics_option=None):
+    def __init__(self, excel_file=INPUT_FILE, I=None, V=None,
+                 solver_mode=None, physics_option=None,
+                 # Backward-compat kwargs
+                 N=None, M=None):
+        # Support old N/M kwargs
+        if I is None and N is not None:
+            I = N
+        if V is None and M is not None:
+            V = M
+
         self.excel_file = Path(excel_file)
         if not self.excel_file.is_file():
             raise FileNotFoundError(
@@ -66,10 +100,10 @@ class InputData:
         self._load_data()
 
         # Apply caller overrides
-        if N is not None:
-            self.reactions['N'] = int(N)
-        if M is not None:
-            self.reactions['M'] = int(M)
+        if I is not None:
+            self.reactions['I'] = int(I)
+        if V is not None:
+            self.reactions['V'] = int(V)
         if solver_mode is not None:
             self.reactions['solver_mode'] = str(solver_mode)
         if physics_option is not None:
@@ -120,6 +154,13 @@ class InputData:
                 fus[k] = u_val
         return fis, fus
 
+    @staticmethod
+    def _apply_aliases(d):
+        """Translate old key names to new convention (in-place)."""
+        for old, new in _KEY_ALIASES.items():
+            if old in d and new not in d:
+                d[new] = d.pop(old)
+
     def _load_data(self):
         """Read all five Excel worksheets."""
         try:
@@ -139,11 +180,17 @@ class InputData:
         self.dissociation= self._sheet_to_dict(diss_df)
         self.reactions   = self._sheet_to_dict(reac_df)
 
+        # Apply backward-compat aliases (old Excel → new names)
+        for d in (self.reactions, self.diffusion, self.production_fission,
+                  self.production_fusion):
+            self._apply_aliases(d)
+
         # Cast integer fields
-        _int_keys = ('N', 'M', 'L_He_max', 'n_points', 'log_time',
-                     'n1_bin', 'n_moments', 'n_group', 'window_w0_i',
-                     'window_width', 'window_omp', 'm_max_v', 'n_max_i',
-                     'm1', 'n1')
+        _int_keys = ('I', 'V', 'L_He_max', 'n_points', 'log_time',
+                     'i_discrete', 'v_discrete', 'I_bin', 'V_bin',
+                     'n_moments', 'n_group', 'window_w0_i',
+                     'window_width', 'window_omp', 'v_mobile', 'i_mobile',
+                     'i_cascade', 'v_cascade')
         for k in _int_keys:
             for d in (self.reactions, self.diffusion, self.production_fission,
                       self.production_fusion):
@@ -253,11 +300,21 @@ class InputData:
         Dh_eff = omega_h_eff * a_m**2
 
         # SIA cluster 1D glide (Eq. 33)
-        nu0_1D = float(d.get('nu0_1D', 6.0e12))
-        E_m_1D = float(d.get('E_m_1D', 0.03))
-        s_1D   = float(d.get('s_1D',   0.7))
-        n_max_i = int(float(d.get('n_max_i', 100)))
-        m_max_v = int(float(d.get('m_max_v', 5)))
+        nu0_1D  = float(d.get('nu0_1D', 6.0e12))
+        E_m_1D  = float(d.get('E_m_1D', 0.03))
+        s_1D    = float(d.get('s_1D',   0.7))
+        i_mobile = int(float(d.get('i_mobile', 1)))
+        v_mobile = int(float(d.get('v_mobile', 1)))
+
+        # Boundary flux option for coalescence at upper size limit
+        # 'absorption' (default): product lost at boundary (open boundary)
+        # 'reflection': product folded back into largest tracked size (closed)
+        boundary_flux = str(re.get('boundary_flux',
+                            d.get('boundary_flux', 'absorption'))).lower().strip()
+        if boundary_flux not in ('absorption', 'reflection'):
+            import warnings
+            warnings.warn(f"Unknown boundary_flux='{boundary_flux}', using 'absorption'")
+            boundary_flux = 'absorption'
 
         # D_n^{1D}(n) = (3a²ν_0^{1D}) / (2n^{s_1D}) · exp(−E_m^{1D}/k_BT)  (Eq. 33)
         D1D_base = (3.0 * a_m**2 * nu0_1D / 2.0) * np.exp(-E_m_1D / kBT)
@@ -317,8 +374,8 @@ class InputData:
             'D1D_base':    D1D_base,
             'D1D':         D1D,
             's_1D':        s_1D,
-            'n_max_i':     n_max_i,
-            'm_max_v':     m_max_v,
+            'i_mobile':    i_mobile,
+            'v_mobile':    v_mobile,
             'L_hat':       L_hat,
             'B_rot':       B_rot,
             'Cv_eq':       Cv_eq,
@@ -328,6 +385,7 @@ class InputData:
             'G_He':        G_He,
             'G_He_r':      G_He_r,
             'spectrum':    spectrum,
+            'boundary_flux': boundary_flux,
         }
 
         print(f"Derived: T={T} K  Cv_eq={Cv_eq:.3e}"
@@ -358,15 +416,91 @@ class InputData:
             warnings.warn(f"Unknown physics_option='{po}'. Using 'full_CD_fission'.")
             self.reactions['physics_option'] = 'full_CD_fission'
 
+        sf = self.shape_function
+        if sf not in _SHAPE_FUNCTIONS:
+            warnings.warn(f"Unknown shape_function='{sf}'. Using 'linear'.")
+            self.reactions['shape_function'] = 'linear'
+
     # ── Convenience properties ────────────────────────────────────────────────
 
     @property
+    def I(self):
+        """Max SIA cluster size."""
+        return int(float(self.reactions.get('I', 500)))
+
+    @property
+    def V(self):
+        """Max vacancy cluster size."""
+        return int(float(self.reactions.get('V', 500)))
+
+    # Backward-compat aliases
+    @property
     def N(self):
-        return int(float(self.reactions.get('N', 500)))
+        return self.I
+
+    @N.setter
+    def N(self, val):
+        self.reactions['I'] = int(val)
 
     @property
     def M(self):
-        return int(float(self.reactions.get('M', 500)))
+        return self.V
+
+    @M.setter
+    def M(self, val):
+        self.reactions['V'] = int(val)
+
+    @property
+    def i_mobile(self):
+        """Max mobile SIA cluster size."""
+        return self.derived.get('i_mobile', 1)
+
+    @property
+    def v_mobile(self):
+        """Max mobile vacancy cluster size."""
+        return self.derived.get('v_mobile', 1)
+
+    @property
+    def i_discrete(self):
+        """Max discrete SIA size (individually tracked). Defaults to i_mobile."""
+        val = self.reactions.get('i_discrete', None)
+        if val is not None:
+            return int(float(val))
+        return self.i_mobile
+
+    @property
+    def v_discrete(self):
+        """Max discrete vacancy size (individually tracked). Defaults to v_mobile."""
+        val = self.reactions.get('v_discrete', None)
+        if val is not None:
+            return int(float(val))
+        return self.v_mobile
+
+    @property
+    def I_bin(self):
+        """Number of SIA bin-moment equations beyond i_discrete.
+        Defaults to ceil(log(I/i_discrete)/log(2)) if not specified."""
+        val = self.reactions.get('I_bin', None)
+        if val is not None:
+            return int(float(val))
+        # Default: auto-compute from r=2.0
+        id = self.i_discrete
+        if id >= self.I:
+            return 0
+        return int(np.ceil(np.log(self.I / max(id, 1)) / np.log(2.0)))
+
+    @property
+    def V_bin(self):
+        """Number of VAC bin-moment equations beyond v_discrete.
+        Defaults to ceil(log(V/v_discrete)/log(2)) if not specified."""
+        val = self.reactions.get('V_bin', None)
+        if val is not None:
+            return int(float(val))
+        # Default: auto-compute from r=2.0
+        vd = self.v_discrete
+        if vd >= self.V:
+            return 0
+        return int(np.ceil(np.log(self.V / max(vd, 1)) / np.log(2.0)))
 
     @property
     def L_He_max(self):
@@ -386,6 +520,11 @@ class InputData:
     @property
     def alpha_He(self):
         return float(self.reactions.get('alpha_He', 1.7))
+
+    @property
+    def shape_function(self):
+        """Intra-bin shape function: 'constant', 'linear', or 'lognormal'."""
+        return str(self.reactions.get('shape_function', 'linear')).strip().lower()
 
     # ── Display ───────────────────────────────────────────────────────────────
 

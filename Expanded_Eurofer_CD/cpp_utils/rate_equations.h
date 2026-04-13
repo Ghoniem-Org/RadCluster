@@ -35,7 +35,7 @@ struct UserData {
     // Dynamic window state (used by cpp_sliding_win and sliding_OpenMP)
     int x_lo_i;    // lower active SIA index (0-based)
     int x_hi_i;    // upper active SIA index (inclusive, 0-based)
-    int x_hi_v;    // upper active vacancy index (always = M-1)
+    int x_hi_v;    // upper active vacancy index (always = V-1)
     bool window_active;
 };
 
@@ -51,8 +51,11 @@ struct UserData {
 int rhs_full_CD(sunrealtype t, N_Vector y, N_Vector ydot, void* user_data);
 
 /**
- * Size-bin moment RHS (Chapter 9, Eqs. 193-208).
- * Piecewise-constant closure (Eq. 198-200).
+ * Size-bin moment RHS (Chapter 9, Eqs. 193-216).
+ * Intra-bin closure dispatched by Parameters.shape_function:
+ *   0 = constant (piecewise-constant, 1 moment/bin)
+ *   1 = linear (hat-function / dual-basis, 2 moments/bin)
+ *   2 = lognormal (log-normal shape, 3 moments/bin)
  */
 int rhs_bin_moment(sunrealtype t, N_Vector y, N_Vector ydot, void* user_data);
 

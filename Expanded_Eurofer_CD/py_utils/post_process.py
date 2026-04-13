@@ -41,14 +41,14 @@ def calculate_derived_quantities(t, y, input_data, rate_eq_obj,
     inv_Omega = 1.0 / Omega   # [m^-3] — converts at.frac → m^-3
     r0      = (3.0 * Omega / (4.0 * np.pi)) ** (1.0 / 3.0)
 
-    N   = input_data.N
-    M   = input_data.M
+    I   = input_data.I
+    V   = input_data.V
     G   = d['G']
     G_He = d['G_He']
 
     n_t = len(t)
-    ns  = np.arange(1, N + 1, dtype=float)
-    ms  = np.arange(1, M + 1, dtype=float)
+    ns  = np.arange(1, I + 1, dtype=float)
+    ms  = np.arange(1, V + 1, dtype=float)
 
     # Identify state vector layout from rate_eq_obj
     he_mode = getattr(rate_eq_obj, 'he_mode', 'case2')
@@ -56,13 +56,15 @@ def calculate_derived_quantities(t, y, input_data, rate_eq_obj,
     qss_He  = getattr(rate_eq_obj, 'qss_He', False)
 
     i_SIA  = getattr(rate_eq_obj, 'i_SIA', 0)
-    i_VAC  = getattr(rate_eq_obj, 'i_VAC', N)
+    i_VAC  = getattr(rate_eq_obj, 'i_VAC', I)
     i_He   = getattr(rate_eq_obj, 'i_He',  None)   # None when qss_He=True
     if i_He is None and not qss_He:
         i_He = y.shape[0] - 1
 
-    # For bin-moment: reconstruct c_n from moments
-    K_bins = getattr(rate_eq_obj, 'K', 0)
+    # For bin-moment: reconstruct c_n from SIA moments
+    I_bin    = getattr(rate_eq_obj, 'I_bin', getattr(rate_eq_obj, 'K', 0))
+    # Vacancy bins (V_bin > 0 means vacancies are also binned)
+    V_bin    = getattr(rate_eq_obj, 'V_bin', getattr(rate_eq_obj, 'K_v', 0))
 
     # Allocate output arrays
     C_SIA_tot = np.zeros(n_t)   # total SIA content Σ n·c_n
@@ -80,47 +82,105 @@ def calculate_derived_quantities(t, y, input_data, rate_eq_obj,
     delta_FP  = np.zeros(n_t)   # Frenkel pair conservation (Eq. 164)
     delta_He  = np.zeros(n_t)   # He conservation (Eq. 165)
 
-    # Cascade survival fraction η — used only in δ_FP accounting
+    # (Conservation fluxes are now tracked by CVODE as extra state variables)
+
+    # Rate constants for sink terms
+    rr = getattr(rate_eq_obj, 'rr', None)
+    v_mobile = d.get('v_mobile', d.get('m_max_v', 1))
+
+    # Cascade survival fraction η
     eta = input_data.production_fission.get('eta', 0.30) \
           if 'fiss' in d['spectrum'] \
           else input_data.production_fusion.get('eta', 0.28)
+
+    # Vacancy bin midpoints (for algebraic mu1 when vacancies are binned)
+    vac_mid = getattr(rate_eq_obj, 'vac_mid', None)
 
     for j in range(n_t):
         yj = np.maximum(y[:, j], 0.0)
 
         if is_bin:
-            # Reconstruct c_n from moments
-            mu0_j = yj[0::2][:K_bins]
-            mu1_j = yj[1::2][:K_bins]
-            from .bin_moment_rates import distribution_from_moments_pc
-            c_n = distribution_from_moments_pc(mu0_j, mu1_j, rate_eq_obj.bins, N)
-            c_v = yj[i_VAC:i_VAC + M]
+            from .bin_moment_rates import reconstruct_distribution
+            i_d = getattr(rate_eq_obj, 'i_discrete', 0)
+            v_d = getattr(rate_eq_obj, 'v_discrete', 0)
+            P   = getattr(rate_eq_obj, 'n_mom', 2)
+            sf  = getattr(rate_eq_obj, 'shape_function', 'linear')
+
+            # ── SIA: discrete + binned ───────────────────────────────
+            # Discrete sizes contribute directly to content
+            ns_disc = np.arange(1, i_d + 1, dtype=float)
+            SIA_content_from_mu1 = np.dot(ns_disc, yj[:i_d])
+            # Binned: use tracked first moments μ₁ directly (or approximate)
+            if I_bin > 0:
+                mom = yj[i_d:i_d + P * I_bin]
+                mu0_j = mom[0::P][:I_bin]
+                if P >= 2:
+                    mu1_j = mom[1::P][:I_bin]
+                    SIA_content_from_mu1 += np.sum(mu1_j)
+                else:
+                    mu1_j = None
+                    # Approximate μ₁ as μ₀ × midpoint
+                    for kb, (nlo, nhi) in enumerate(rate_eq_obj.bins):
+                        SIA_content_from_mu1 += mu0_j[kb] * (nlo + nhi - 1) / 2.0
+                mu2_j = mom[2::P][:I_bin] if P >= 3 else None
+                # Reconstruct c_n for mean-size and number-density calcs
+                c_n = reconstruct_distribution(sf, mu0_j, mu1_j, mu2_j,
+                                               rate_eq_obj.bins, I)
+                c_n[:i_d] = yj[:i_d]  # overwrite discrete region
+            else:
+                c_n = np.zeros(I)
+                c_n[:i_d] = yj[:i_d]
+
+            # ── Vacancy: discrete + binned ───────────────────────────
+            ms_disc = np.arange(1, v_d + 1, dtype=float)
+            c_v = np.zeros(V)
+            c_v[:v_d] = yj[i_VAC:i_VAC + v_d]
+            VAC_content_from_mu1 = np.dot(ms_disc, c_v[:v_d])
+            if V_bin > 0:
+                vac_start = i_VAC + v_d
+                vmom = yj[vac_start:vac_start + P * V_bin]
+                vmu0 = vmom[0::P][:V_bin]
+                if P >= 2:
+                    vmu1 = vmom[1::P][:V_bin]
+                    VAC_content_from_mu1 += np.sum(vmu1)
+                else:
+                    vmu1 = None
+                    for kb, (mlo, mhi) in enumerate(rate_eq_obj.vac_bins):
+                        VAC_content_from_mu1 += vmu0[kb] * (mlo + mhi - 1) / 2.0
+                vmu2 = vmom[2::P][:V_bin] if P >= 3 else None
+                c_v_binned = reconstruct_distribution(sf, vmu0, vmu1, vmu2,
+                                                      rate_eq_obj.vac_bins, V)
+                c_v[v_d:] = c_v_binned[v_d:]
         else:
             c_n = yj[i_SIA:i_VAC]     # [N]
-            c_v = yj[i_VAC:i_VAC + M] # [M]
+            c_v = yj[i_VAC:i_VAC + V] # [V]
+            SIA_content_from_mu1 = None
+            VAC_content_from_mu1 = None
 
         # Q (He in voids) — extract based on he_mode
         if he_mode == 'case1':
-            i_Q = getattr(rate_eq_obj, 'i_Q', i_VAC + M)
-            # When qss_He, i_He is None so state ends at i_Q + M
-            Q_end = (i_He if i_He is not None else i_Q + M)
-            Q_m   = yj[i_Q:Q_end]    # [M] per-class He
+            i_Q = getattr(rate_eq_obj, 'i_Q', i_VAC + V)
+            n_Q = V_bin if V_bin > 0 else V
+            Q_m   = yj[i_Q:i_Q + n_Q]
             Q_tot = np.sum(Q_m)
         else:
-            i_Qtot = getattr(rate_eq_obj, 'i_Qtot', i_VAC + M)
+            i_Qtot = getattr(rate_eq_obj, 'i_Qtot', i_VAC + V)
             Q_tot  = yj[i_Qtot]
             Q_m    = None
 
         # Free He: read from state or reconstruct from QSS
         if qss_He:
-            c_v_pp = yj[i_VAC:i_VAC + M]
-            c_h = rate_eq_obj.compute_c_h_qss(c_v_pp, Q_tot=Q_tot, Q_m=Q_m)
+            c_h = rate_eq_obj.compute_c_h_qss(c_v, Q_tot=Q_tot, Q_m=Q_m)
         else:
             c_h = yj[i_He]
 
-        # SIA content
-        C_SIA_tot[j] = np.dot(ns, c_n)
-        C_VAC_tot[j] = np.dot(ms, c_v)
+        # SIA and vacancy total content
+        # Prefer tracked moments (exact) over PC reconstruction (approximate)
+        C_SIA_tot[j] = SIA_content_from_mu1 if SIA_content_from_mu1 is not None \
+                        else np.dot(ns, c_n)
+        # Tracked mu1 gives exact VAC content for both discrete and binned
+        C_VAC_tot[j] = VAC_content_from_mu1 if VAC_content_from_mu1 is not None \
+                        else np.dot(ms, c_v)
         C_He_tot[j]  = c_h + Q_tot
 
         # Mean cluster sizes (weighted average)
@@ -143,24 +203,44 @@ def calculate_derived_quantities(t, y, input_data, rate_eq_obj,
         C_v1[j]      = c_v[0]
         C_He_free[j] = c_h
 
-        # Frenkel pair balance diagnostic (Eq. 164)
-        # δ_FP = |Σn·n·c_n − Σm·m·c_m| / (η·G·t)
-        # Tests imbalance between SIA and vacancy cluster content.
-        # Should be near 0 when equal numbers of SIA and vacancies are in clusters
-        # (unbiased sinks); rises toward 1 only if one species is severely depleted
-        # relative to the other.  This is NOT a sink-fraction — see post_process note.
-        surviving = eta * G * max(t[j], 1e-20)
-        delta_FP[j] = abs(C_SIA_tot[j] - C_VAC_tot[j]) / max(surviving, 1e-300)
-
-        # He conservation diagnostic (Eq. 165)
-        # δ_He = |c_h + Q_tot − G_He·t| / (G_He·t)
-        # Approaches 0 when He is fully retained in voids/free state;
-        # approaches 1 when He is dominated by fixed-sink absorption.
-        denom_he = G_He * max(t[j], 1e-20)
-        delta_He[j] = abs(C_He_tot[j] - G_He * t[j]) / max(denom_he, 1e-300)
 
     # Dose axis [dpa]
     dose = G * t
+
+    # ── Conservation diagnostics — read cumulative sinks from state vector ──
+    # The last 4 entries of y are CVODE-integrated cumulative sink fluxes:
+    #   y[N_eq-5] = J_SIA_fixed:  cumulative SIA content to fixed sinks
+    #   y[N_eq-4] = J_SIA_mutual: cumulative SIA to recombination + cavity
+    #   y[N_eq-3] = J_VAC_fixed:  cumulative VAC content to fixed sinks
+    #   y[N_eq-2] = J_VAC_mutual: cumulative VAC to recombination + cavity
+    #   y[N_eq-1] = J_He_sink:    cumulative He to sinks
+    N_eq = y.shape[0]
+    J_SIA_fixed  = np.maximum(y[N_eq - 5, :], 0.0)
+    J_SIA_mutual = np.maximum(y[N_eq - 4, :], 0.0)
+    J_VAC_fixed  = np.maximum(y[N_eq - 3, :], 0.0)
+    J_VAC_mutual = np.maximum(y[N_eq - 2, :], 0.0)
+    J_He_sink    = np.maximum(y[N_eq - 1, :], 0.0)
+
+    # FP conservation:
+    #   η·G·t = C_SIA + J_SIA_fixed + J_SIA_mutual  (SIA balance)
+    #   η·G·t = C_VAC + J_VAC_fixed + J_VAC_mutual  (VAC balance)
+    # δ_FP = max of relative errors
+    for j in range(n_t):
+        prod = eta * G * t[j]
+        if prod > 1e-300:
+            err_sia = abs(prod - C_SIA_tot[j] - J_SIA_fixed[j] - J_SIA_mutual[j]) / prod
+            err_vac = abs(prod - C_VAC_tot[j] - J_VAC_fixed[j] - J_VAC_mutual[j]) / prod
+            delta_FP[j] = max(err_sia, err_vac)
+        else:
+            delta_FP[j] = 0.0
+
+    # He conservation: G_He·t = C_He_tot + J_He_sink  (exact)
+    for j in range(n_t):
+        he_prod = G_He * t[j]
+        if he_prod > 1e-300:
+            delta_He[j] = abs(he_prod - C_He_tot[j] - J_He_sink[j]) / he_prod
+        else:
+            delta_He[j] = 0.0
 
     # Convert concentrations from atomic fraction to m^-3
     # c [at.frac] / Omega [m^3/atom] = N [m^-3]
@@ -175,8 +255,8 @@ def calculate_derived_quantities(t, y, input_data, rate_eq_obj,
     C_v1       *= inv_Omega
 
     # Concentration names for quality checks
-    conc_names = ([f'Ci_{n}' for n in range(1, N + 1)] +
-                  [f'Cv_{m}' for m in range(1, M + 1)] + ['C_He'])
+    conc_names = ([f'Ci_{n}' for n in range(1, I + 1)] +
+                  [f'Cv_{m}' for m in range(1, V + 1)] + ['C_He'])
 
     results = {
         't':          t,
@@ -194,9 +274,22 @@ def calculate_derived_quantities(t, y, input_data, rate_eq_obj,
         'swelling':   swelling,    # [dimensionless fraction]
         'C_i1':       C_i1,        # [m^-3]
         'C_v1':       C_v1,        # [m^-3]
-        'delta_FP':   delta_FP,    # [dimensionless]
-        'delta_He':   delta_He,    # [dimensionless]
+        'delta_FP':   delta_FP,    # FP conservation: |prod − content − sinks| / prod
+        'delta_He':   delta_He,    # He conservation: |prod − content − sinks| / prod
+        'J_SIA_fixed':  J_SIA_fixed,   # cumulative SIA to fixed sinks [at.frac]
+        'J_SIA_mutual': J_SIA_mutual,  # cumulative SIA to recomb + cavity [at.frac]
+        'J_VAC_fixed':  J_VAC_fixed,   # cumulative VAC to fixed sinks [at.frac]
+        'J_VAC_mutual': J_VAC_mutual,  # cumulative VAC to recomb + cavity [at.frac]
+        'J_He_sink':    J_He_sink,     # cumulative He to sinks [at.frac]
+        'eta_G':        eta * G,       # FP production rate η·G [at.frac/s]
         'conc_names': conc_names,
+        # Layout indices for cross-segment y merging during domain doubling
+        '_y_i_VAC':  i_VAC,
+        '_y_i_He':   i_VAC + (getattr(rate_eq_obj, 'v_discrete', 0)
+                              + getattr(rate_eq_obj, 'n_mom', 2)
+                              * getattr(rate_eq_obj, 'V_bin',
+                                        getattr(rate_eq_obj, 'K_v', 0))
+                              if is_bin else V),
     }
     return results
 

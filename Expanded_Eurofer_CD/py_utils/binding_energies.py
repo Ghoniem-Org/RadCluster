@@ -191,24 +191,57 @@ def E_b_He_second(E_b_hV_2=2.00):
 
 # ── 4.  Interstitial loop binding energies ────────────────────────────────────
 
+def _E_b_loop_i_continuum(n, E_f_i=3.77, G_shear=82e9, b=2.49e-10,
+                           nu=0.29, gamma_sf=0.6, Omega=1.18e-29):
+    """
+    Continuum binding energy of the n-th SIA to an interstitial loop.
+
+    E_b^{i,cont}(n) = E_f^i − μ_loop^{(i)}(n)   [Eqs. i_binding, chem_pot_i_loop]
+
+    where μ = Gb·Ω/(4π(1−ν)R)·[ln(R/r_c)+1] + γ_sf·Ω/b,
+    R = sqrt(n·Ω/(π·b)), r_c = b/3.
+    """
+    n = np.asarray(n, dtype=float)
+    n_safe = np.maximum(n, 2.0)
+    r_c    = b / 3.0
+    R      = np.sqrt(n_safe * Omega / (np.pi * b))
+    ln_fac = np.log(R / r_c) + 1.0
+    mu     = (G_shear * b * Omega / (4.0 * np.pi * (1.0 - nu) * R)) * ln_fac \
+             + gamma_sf * Omega / b
+    mu_eV  = mu * _J_eV
+    Eb     = E_f_i - mu_eV
+    return Eb
+
+
 def E_b_loop_i(n, A_111=0.7501, B_111=0.3873, A_100=0.7160, B_100=0.3581,
-               n_tr=25.0, sigma_tr=5.0):
+               n_tr=25.0, sigma_tr=5.0,
+               E_f_i=3.77, G_shear=82e9, b_111=2.49e-10, nu=0.29,
+               gamma_sf=0.6, Omega=1.18e-29):
     """
     Binding energy of the n-th SIA to an interstitial loop of size n−1.
 
-    Power-law fit blended to continuum limit (Eqs. 106-108):
-      E_b_111(n) = A_111 · n^{−B_111}     [Eq. 106]
-      E_b_100(n) = A_100 · n^{−B_100}     [Eq. 107]
-      blend      = 0.5·(1 + tanh((n − n_tr)/σ_tr))
-      E_b(n)     = (1−blend)·E_b_111 + blend·E_b_100   [Eq. 108]
+    Small-n DFT fit blended to continuum limit (Eqs. Eb_smalln_fit, Eb_blended):
+      E_b^fit(n) = A · n^{+B}                         [Eq. Eb_smalln_fit]
+      E_b^cont(n) = E_f^i − μ_loop(n)                 [continuum elasticity]
+      w(n)   = 0.5·(1 + tanh((n_tr − n)/σ_tr))        [Eq. weight_function]
+      E_b(n) = w·E_b^fit + (1−w)·E_b^cont             [Eq. Eb_blended]
+
+    For small n, w→1 and E_b follows the DFT power-law fit.
+    For large n, w→0 and E_b approaches E_f^i (formation energy).
 
     Parameters
     ----------
-    n        : int or array  (≥ 2)
-    A_111, B_111 : float  — ½⟨111⟩ loop fit parameters (Table 18)
-    A_100, B_100 : float  — ⟨100⟩ loop fit parameters  (Table 18)
-    n_tr     : float      — blend center
-    sigma_tr : float      — blend width
+    n            : int or array  (≥ 2)
+    A_111, B_111 : float  — ½⟨111⟩ loop fit (Table 18)
+    A_100, B_100 : float  — ⟨100⟩ loop fit  (Table 18)
+    n_tr         : float  — blend center (25 SIAs)
+    sigma_tr     : float  — blend width  (5 SIAs)
+    E_f_i        : float  — SIA formation energy [eV]
+    G_shear      : float  — shear modulus [Pa]
+    b_111        : float  — ½⟨111⟩ Burgers vector [m]
+    nu           : float  — Poisson ratio
+    gamma_sf     : float  — stacking fault energy [J/m²]
+    Omega        : float  — atomic volume [m³]
 
     Returns
     -------
@@ -217,10 +250,16 @@ def E_b_loop_i(n, A_111=0.7501, B_111=0.3873, A_100=0.7160, B_100=0.3581,
     n = np.asarray(n, dtype=float)
     n_safe = np.maximum(n, 2.0)
 
-    Eb_111 = A_111 * n_safe**(-B_111)
-    Eb_100 = A_100 * n_safe**(-B_100)
-    blend  = 0.5 * (1.0 + np.tanh((n_safe - n_tr) / sigma_tr))
-    Eb     = (1.0 - blend) * Eb_111 + blend * Eb_100
+    # Small-n DFT power-law fit (exponent is POSITIVE: E_b increases with n)
+    Eb_fit = A_111 * n_safe**(B_111)
+
+    # Large-n continuum elasticity
+    Eb_cont = _E_b_loop_i_continuum(n_safe, E_f_i, G_shear, b_111,
+                                     nu, gamma_sf, Omega)
+
+    # Smooth blend: w→1 for small n (DFT regime), w→0 for large n (continuum)
+    w  = 0.5 * (1.0 + np.tanh((n_tr - n_safe) / sigma_tr))
+    Eb = w * Eb_fit + (1.0 - w) * Eb_cont
 
     return float(Eb) if Eb.ndim == 0 else Eb
 

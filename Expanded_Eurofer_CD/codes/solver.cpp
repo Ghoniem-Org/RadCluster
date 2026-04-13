@@ -14,10 +14,10 @@
  *   4 = sliding_OpenMP  — Phase III + OpenMP intra-RHS parallelism
  *
  * Physics options (physics_option_int):
- *   0 = full_CD_fission      — N+M+2 equations (Case 2, Eq. 175)
- *   1 = full_CD_fusion       — N+2M+1 equations (Case 1, Eq. 174)
- *   2 = bin_moment_CD_fission — 2K+M+2 equations (Chapter 9 + Case 2)
- *   3 = bin_moment_CD_fusion  — 2K+2M+1 equations (Chapter 9 + Case 1)
+ *   0 = full_CD_fission      — I+V+2 equations (Case 2, Eq. 175)
+ *   1 = full_CD_fusion       — I+2V+1 equations (Case 1, Eq. 174)
+ *   2 = bin_moment_CD_fission — 2Ib+V+2 equations (Chapter 9 + Case 2)
+ *   3 = bin_moment_CD_fusion  — 2Ib+2V+1 equations (Chapter 9 + Case 1)
  *
  * Output: n_points rows × (1 + N_eq) columns written as raw float64 binary
  * to a companion .bin file, or space-separated text to stdout (fallback).
@@ -133,8 +133,8 @@ int main(int argc, char* argv[]) {
 
     // Window mode validation
     if ((P.window_mode == 3 || P.window_mode == 4) &&
-        P.N < P.window_N_thresh) {
-        std::cerr << "[Window] N=" << P.N << " < threshold=" << P.window_N_thresh
+        P.I < P.window_N_thresh) {
+        std::cerr << "[Window] I=" << P.I << " < threshold=" << P.window_N_thresh
                   << " — using full solver.\n";
         P.window_mode = 0;
     }
@@ -183,8 +183,8 @@ int main(int argc, char* argv[]) {
     UserData ud;
     ud.P            = &P;
     ud.x_lo_i       = 0;
-    ud.x_hi_i       = P.N - 1;
-    ud.x_hi_v       = P.M - 1;
+    ud.x_hi_i       = P.I - 1;
+    ud.x_hi_v       = P.V - 1;
     ud.window_active = (P.window_mode != 0);
 
     // ── Select RHS ────────────────────────────────────────────────────────────
@@ -201,23 +201,14 @@ int main(int argc, char* argv[]) {
     CHECK_SUNDIALS(CVodeInit(cvode_mem, rhs_fn, P.t_begin, y));
     CHECK_SUNDIALS(CVodeSStolerances(cvode_mem, P.rtol, P.atol));
     CHECK_SUNDIALS(CVodeSetUserData(cvode_mem, &ud));
-    CHECK_SUNDIALS(CVodeSetMaxNumSteps(cvode_mem, 100000));
+    CHECK_SUNDIALS(CVodeSetMaxNumSteps(cvode_mem, 500000));
     if (P.max_order > 0)
         CHECK_SUNDIALS(CVodeSetMaxOrd(cvode_mem, P.max_order));
 
-    // ── Non-negativity constraints ─────────────────────────────────────────────
-    // Enforce c_n, c_m ≥ 0 natively in CVODE's nonlinear solver so it never
-    // proposes negative concentrations. This eliminates the primary trigger for
-    // the step-failure / CVodeReInit spike pattern seen in the solution output.
-    {
-        N_Vector constraints = N_VNew_Serial(N_EQ, sunctx);
-        N_VConst(1.0, constraints);   // 1.0 = non-negative for every component
-        int cret = CVodeSetConstraints(cvode_mem, constraints);
-        N_VDestroy_Serial(constraints);
-        if (cret < 0)
-            std::cerr << "Warning: CVodeSetConstraints failed (retval=" << cret
-                      << ") — continuing without constraint enforcement\n";
-    }
+    // Non-negativity is enforced via C_floor clamping at output time (line 317-318).
+    // CVODE constraint enforcement (CVodeSetConstraints) is intentionally disabled
+    // because it causes Newton corrector failures when near-floor concentrations
+    // interact with the stiff SIA–vacancy coupling at moderate doses.
 
     // ── Linear solver ─────────────────────────────────────────────────────────
     SUNMatrix     sunmat = nullptr;
@@ -250,9 +241,9 @@ int main(int argc, char* argv[]) {
     }
 
     // ── Integration loop ──────────────────────────────────────────────────────
-    // Window state (applies to SIA cluster indices 0..N-1)
+    // Window state (applies to SIA cluster indices 0..I-1)
     int x_lo_i = 0;
-    int x_hi_i = (P.window_mode == 0) ? P.N - 1 : std::min(P.window_w0_i - 1, P.N - 1);
+    int x_hi_i = (P.window_mode == 0) ? P.I - 1 : std::min(P.window_w0_i - 1, P.I - 1);
 
     // Output buffer
     std::vector<double> out_row(N_EQ);
@@ -271,9 +262,9 @@ int main(int argc, char* argv[]) {
         // Update window upper bound (cpp_sliding_win / sliding_OpenMP)
         if (P.window_mode != 0) {
             // Check if leading SIA concentration exceeds expand threshold
-            if ((i - 1) % check_every == 0 && x_hi_i < P.N - 1) {
+            if ((i - 1) % check_every == 0 && x_hi_i < P.I - 1) {
                 if (x_hi_i < N_EQ - 1 && ydata[x_hi_i] > P.window_C_expand) {
-                    x_hi_i = std::min(x_hi_i + P.window_expand_pad, P.N - 1);
+                    x_hi_i = std::min(x_hi_i + P.window_expand_pad, P.I - 1);
                 }
             }
             ud.x_hi_i = x_hi_i;
@@ -284,6 +275,25 @@ int main(int argc, char* argv[]) {
         if (i > 0) CVodeGetCurrentTime(cvode_mem, &t_now);
 
         int retval = CVode(cvode_mem, t_out, y, &t_now, CV_NORMAL);
+
+        // ── Progress diagnostics (always, to stderr) ──────────────────────
+        {
+            long int nst = 0, nfe = 0, nni = 0, ncfn = 0, netf = 0;
+            double hlast = 0.0;
+            CVodeGetNumSteps(cvode_mem, &nst);
+            CVodeGetNumRhsEvals(cvode_mem, &nfe);
+            CVodeGetNumNonlinSolvIters(cvode_mem, &nni);
+            CVodeGetNumNonlinSolvConvFails(cvode_mem, &ncfn);
+            CVodeGetNumErrTestFails(cvode_mem, &netf);
+            CVodeGetLastStep(cvode_mem, &hlast);
+            std::cerr << "[cvode] pt=" << i << "/" << P.n_points
+                      << "  t=" << t_now
+                      << "  steps=" << nst << "  rhs=" << nfe
+                      << "  nlcf=" << ncfn << "  etf=" << netf
+                      << "  h=" << hlast
+                      << "  ret=" << retval << "\n";
+        }
+
         if (retval < 0) {
             std::cerr << "CVode failed at t=" << t_out << "  retval=" << retval
                       << " — reinitialising at t=" << t_now << "\n";
@@ -322,33 +332,90 @@ int main(int argc, char* argv[]) {
             ++n_written;
 
             // ── Progress diagnostics ───────────────────────────────────────
-            // Print key concentrations at every output point so the user can
-            // monitor evolution without waiting for post-processing.
-            //
-            // Layout (Case 2 / fission):
-            //   y[0..N-1]   = c_i (SIA clusters, n=1..N)
-            //   y[N..N+M-1] = c_v (vacancy clusters, m=1..M)
-            //   y[N+M]      = Q_tot (total He in voids)
-            //   y[N+M+1]    = c_h  (free He, dynamic mode only)
-            const int N = P.N;
-            const int M = P.M;
+            // Enabled only when verbose=1 is passed in the parameter file.
+            if (!P.verbose) continue;
 
-            // Point-defect monomers
+            const int I = P.I;
+            const int V = P.V;
+
+            // State vector layout depends on physics_option:
+            //   full_CD:      y[0..I-1] = c_i, y[I..I+V-1] = c_v, ...
+            //   bin_moment:   y[0..i_d-1] = discrete SIA,
+            //                 y[i_d..i_d+PM*Ib-1] = binned SIA moments,
+            //                 y[i_VAC..i_VAC+v_d-1] = discrete VAC,
+            //                 y[i_VAC+v_d..i_VAC+v_d+PM*Kv-1] = binned VAC moments,
+            //                 y[i_Q_base] = Q_tot (case2) or Q_k (case1)
+            const bool is_bin = (P.physics_option >= 2);
+            const int Ib      = is_bin ? P.I_bin : 0;
+            const int Kv      = is_bin ? P.V_bin : 0;
+            const int PM      = is_bin ? P.n_mom : 0;
+            const int i_d     = is_bin ? P.i_discrete : 0;
+            const int v_d     = is_bin ? P.v_discrete : 0;
+            const int i_VAC   = is_bin ? (i_d + PM * Ib) : I;
+            const int i_Q_base = is_bin ? (i_VAC + v_d + PM * Kv)
+                                        : (I + V);
+
+            // Reconstruct c_i1 from bin-moment state (bin 0 = monomer only)
             const double c_i1 = ydata[0];
-            const double c_v1 = ydata[N];
-            // Total SIA content Σ n·c_n  and void content Σ m·c_m
-            double SIA_content = 0.0, VAC_content = 0.0;
-            for (int n = 0; n < N; ++n) SIA_content += (n + 1.0) * ydata[n];
-            for (int m = 0; m < M; ++m) VAC_content += (m + 1.0) * ydata[N + m];
-            // A few representative cluster sizes
-            const double c_i2  = (N > 1) ? ydata[1]   : 0.0;  // n=2 SIA cluster
-            const double c_i5  = (N > 4) ? ydata[4]   : 0.0;  // n=5 SIA cluster
-            const double c_v2  = (M > 1) ? ydata[N+1] : 0.0;  // m=2 void
-            const double c_v5  = (M > 4) ? ydata[N+4] : 0.0;  // m=5 void
+            const double c_v1 = ydata[i_VAC];
+
+            // Total SIA content Sigma n*c_n
+            double SIA_content = 0.0;
+            if (is_bin) {
+                // Discrete SIA sizes: Sigma n*c_n for n=1..i_discrete
+                for (int n = 0; n < i_d; ++n)
+                    SIA_content += (n + 1.0) * ydata[n];
+                // Binned SIA: first moments mu_k^{(1)}
+                for (int k = 0; k < Ib; ++k)
+                    SIA_content += ydata[i_d + PM*k + 1];
+            } else {
+                for (int n = 0; n < I; ++n)
+                    SIA_content += (n + 1.0) * ydata[n];
+            }
+
+            // Total vacancy content Sigma m*c_m
+            double VAC_content = 0.0;
+            if (is_bin) {
+                // Discrete VAC sizes: Sigma m*c_m for m=1..v_discrete
+                for (int m = 0; m < v_d; ++m)
+                    VAC_content += (m + 1.0) * ydata[i_VAC + m];
+                // Binned VAC: first moments (if PM>=2) or midpoint approx
+                if (Kv > 0) {
+                    const int vac_mom = i_VAC + v_d;
+                    if (PM >= 2) {
+                        for (int k = 0; k < Kv; ++k)
+                            VAC_content += ydata[vac_mom + PM*k + 1];
+                    } else {
+                        int edge = v_d + 1;
+                        for (int k = 0; k < Kv; ++k) {
+                            int mlo = edge;
+                            int next = std::max(static_cast<int>(std::floor(edge * P.r_ratio)), edge + 1);
+                            int mhi  = std::min(next, V + 1);
+                            double mid = 0.5 * (mlo + mhi - 1);
+                            VAC_content += ydata[vac_mom + k] * mid;
+                            edge = mhi;
+                        }
+                    }
+                }
+            } else {
+                for (int m = 0; m < V; ++m)
+                    VAC_content += (m + 1.0) * ydata[I + m];
+            }
+
+            // Representative cluster sizes
+            const double c_i2  = is_bin ? ((i_d > 1) ? ydata[1] : 0.0)
+                                        : ((I > 1) ? ydata[1] : 0.0);
+            const double c_i5  = is_bin ? ((i_d > 4) ? ydata[4] : 0.0)
+                                        : ((I > 4) ? ydata[4] : 0.0);
+            const double c_v2  = is_bin ? ((v_d > 1) ? ydata[i_VAC + 1] : 0.0)
+                                        : ((V > 1) ? ydata[I + 1] : 0.0);
+            const double c_v5  = is_bin ? ((v_d > 4) ? ydata[i_VAC + 4] : 0.0)
+                                        : ((V > 4) ? ydata[I + 4] : 0.0);
+
             // He
-            const double Q_tot = ydata[N + M];
-            const double c_h   = (P.he_options == 0 && N_EQ > N+M+1)
-                                 ? ydata[N + M + 1] : -1.0;    // -1 = QSS mode
+            const double Q_tot = ydata[i_Q_base];
+            const double c_h   = (P.he_options == 0 && N_EQ > i_Q_base + 1)
+                                 ? ydata[i_Q_base + 1] : -1.0;
 
             std::cerr << std::scientific << std::setprecision(3)
                       << "  [diag] t=" << t_out
@@ -364,11 +431,101 @@ int main(int argc, char* argv[]) {
             std::cerr << "  SIA_tot=" << SIA_content
                       << "  VAC_tot=" << VAC_content
                       << "\n";
-        }
 
-        if (i % (P.n_points / 10 + 1) == 0)
-            std::cerr << "  t=" << t_out << "  n=" << n_written
-                      << "  x_hi_i=" << x_hi_i << "\n";
+            // ── C_i5 reaction rate breakdown (n=5, index 4) ───────────────
+            // For bin_moment mode, c_i/c_v indices differ from full_CD
+            if (!is_bin && I > 4) {
+                const double ci4 = std::max(ydata[3], 0.0);
+                const double ci5_ = c_i5;
+                const double ci6 = (I > 5) ? std::max(ydata[5], 0.0) : 0.0;
+
+                const double rate_prod       =  P.Pr_SIA[4];
+                const double rate_emit_gain  =  (I > 5) ? P.GII[5] * ci6 : 0.0;
+                const double rate_emit_loss  = -P.GII[4] * ci5_;
+                const double rate_grow_gain  =  P.KII[3] * c_i1 * ci4;
+                const double rate_grow_loss  = -P.KII[4] * c_i1 * ci5_;
+                const double rate_shrink_gain = (I > 5) ? P.KIV[5] * c_v1 * ci6 : 0.0;
+                const double rate_shrink_loss = -P.KIV[4] * c_v1 * ci5_;
+
+                double rate_1D_loss = 0.0;
+                if (4 < P.i_mobile && P.K_1D_pref[4] > 1e-300) {
+                    for (int m = 0; m < V; ++m) {
+                        const double m_f  = static_cast<double>(m + 1);
+                        const double m13  = std::cbrt(m_f);
+                        const double denom = 1.0 + P.B_rot * P.L_hat * P.L_hat / m13;
+                        const double k1d  = P.K_1D_pref[4] * m13 / denom;
+                        rate_1D_loss -= k1d * ci5_ * std::max(ydata[i_VAC + m], 0.0);
+                    }
+                }
+
+                const double rate_sink = -P.k2_SIA[4] * ci5_;
+                const double dc_i5_total = rate_prod + rate_emit_gain + rate_emit_loss
+                                         + rate_grow_gain + rate_grow_loss
+                                         + rate_shrink_gain + rate_shrink_loss
+                                         + rate_1D_loss + rate_sink;
+
+                std::cerr << std::scientific << std::setprecision(3)
+                          << "  [ci5_rates] t=" << t_out
+                          << "  prod=" << rate_prod
+                          << "  emit_in=" << rate_emit_gain
+                          << "  emit_out=" << rate_emit_loss
+                          << "  grow_in=" << rate_grow_gain
+                          << "  grow_out=" << rate_grow_loss
+                          << "  shrink_in=" << rate_shrink_gain
+                          << "  shrink_out=" << rate_shrink_loss
+                          << "  1D_loss=" << rate_1D_loss
+                          << "  sink=" << rate_sink
+                          << "  dc_i5=" << dc_i5_total
+                          << "\n";
+            }
+
+            // ── C_v5 reaction rate breakdown (m=5, index 4) ───────────────
+            if (!is_bin && V > 4) {
+                const double cv4_ = (V > 3) ? std::max(ydata[i_VAC+3], 0.0) : 0.0;
+                const double cv5_ = c_v5;
+                const double cv6_ = (V > 5) ? std::max(ydata[i_VAC+5], 0.0) : 0.0;
+
+                const double rate_prod        =  P.Pr_VAC[4];
+                const double rate_emit_gain   =  (V > 5) ? P.GVV[5] * cv6_ : 0.0;
+                const double rate_emit_loss   = -P.GVV[4] * cv5_;
+                const double rate_grow_gain   =  P.KVV[3] * c_v1 * cv4_;
+                const double rate_grow_loss   = -P.KVV[4] * c_v1 * cv5_;
+                const double rate_shrink_gain =  (V > 5) ? P.KVI[5] * c_i1 * cv6_ : 0.0;
+                const double rate_shrink_loss = -P.KVI[4] * c_i1 * cv5_;
+
+                double rate_1D_loss = 0.0;
+                if (!is_bin) {
+                    const double m5f  = 5.0;
+                    const double m513 = std::cbrt(m5f);
+                    for (int n = 4; n < std::min(I, P.i_mobile); ++n) {
+                        if (P.K_1D_pref[n] < 1e-300) continue;
+                        const double denom = 1.0 + P.B_rot * P.L_hat * P.L_hat / m513;
+                        const double k1d   = P.K_1D_pref[n] * m513 / denom;
+                        rate_1D_loss -= k1d * std::max(ydata[n], 0.0) * cv5_;
+                    }
+                }
+
+                const double rate_sink    = -P.k2_disl_v * cv5_;
+                const double dc_v5_total  = rate_prod + rate_emit_gain + rate_emit_loss
+                                          + rate_grow_gain + rate_grow_loss
+                                          + rate_shrink_gain + rate_shrink_loss
+                                          + rate_1D_loss + rate_sink;
+
+                std::cerr << std::scientific << std::setprecision(3)
+                          << "  [cv5_rates] t=" << t_out
+                          << "  prod=" << rate_prod
+                          << "  emit_in=" << rate_emit_gain
+                          << "  emit_out=" << rate_emit_loss
+                          << "  grow_in=" << rate_grow_gain
+                          << "  grow_out=" << rate_grow_loss
+                          << "  shrink_in=" << rate_shrink_gain
+                          << "  shrink_out=" << rate_shrink_loss
+                          << "  1D_loss=" << rate_1D_loss
+                          << "  sink=" << rate_sink
+                          << "  dc_v5=" << dc_v5_total
+                          << "\n";
+            }
+        }
     }
 
     std::cerr << "Done: " << n_written << " time points written.\n";

@@ -23,8 +23,8 @@ Spherical 3D capture (Eq. 109, 131):
 Loop capture of SIA by dislocation loops (Eq. 113, 132):
   K_loop(i, n) = A_loop · n^{1/2} · Z_i^loop · ω_i^eff
 
-V–SIA recombination (Eq. 130):
-  K_iv = 4√3·π · ω_v^eff  [m^3/s per unit Ω]  (= A_iv · ω_v^eff)
+V–SIA recombination (Eq. P1, monodef_iv):
+  K_iv = 4√3·π · (ω_i^eff + ω_v^eff)  [s^-1 per (at.frac)^2]
 
 Mixed 1D/3D effective rate for glissile SIA clusters (Eq. 121, 141):
   K_n,m^eff = A_sph · m^{1/3} · ω_n^{1D} / (1 + B_rot · L̂² · m^{-1/3})
@@ -93,8 +93,9 @@ class ReactionRates:
         Dh_eff  = d['Dh_eff']
         D1D     = d['D1D']            # callable D1D(n)
         s_1D    = d['s_1D']
-        n_max_i = d['n_max_i']
-        m_max_v = d['m_max_v']
+        s_3D    = float(diff.get('s_3D', 0.0))  # 3D cluster mobility exponent
+        i_mobile = d['i_mobile']
+        v_mobile = d['v_mobile']
         L_hat   = d['L_hat']
         B_rot   = d['B_rot']
 
@@ -102,8 +103,8 @@ class ReactionRates:
         gamma_s = d['gamma_s']
         E_s_He  = d['E_s_He']
 
-        N = inp.N
-        M = inp.M
+        I = inp.I
+        V = inp.V
 
         # Geometric prefactors (Eq. 128)
         A_sph  = d['A_sph']    # (48π²)^{1/3} ≈ 7.818
@@ -158,8 +159,9 @@ class ReactionRates:
         def K_loop(n):
             return A_loop * float(n)**(1.0/2.0) * Z_i_loop * Di_eff * inv_Omega23
 
-        # K_iv recombination = A_iv · D_v / Ω^{2/3}  (Eq. 130)
-        K_iv_scalar = A_iv * Dv_eff * inv_Omega23
+        # K_iv recombination = A_iv · (D_i + D_v) / Ω^{2/3}  (Eq. P1, monodef_iv)
+        # Uses mutual diffusivity: both species mobile in 3D
+        K_iv_scalar = A_iv * (Di_eff + Dv_eff) * inv_Omega23
 
         # Mixed 1D/3D effective rate for SIA cluster(n) + vacancy cluster(m)
         # Eq. 141:  K_{n,m}^eff = A_sph·m^{1/3}·D_n^{1D} / (Ω^{2/3}·(1+B_rot·L̂²·m^{-1/3}))
@@ -198,39 +200,57 @@ class ReactionRates:
             Eb = max(Eb, 0.01)
             return A_sph * max(m - 1.0, 0.0)**(1.0/3.0) * Dh_eff * np.exp(-Eb / kBT) * inv_Omega23
 
-        # ── Build arrays for SIA clusters n=1..N ────────────────────────────
-        ns = np.arange(1, N + 1, dtype=float)
+        # ── Build arrays for SIA clusters n=1..I ────────────────────────────
+        ns = np.arange(1, I + 1, dtype=float)
+
+        # 3D cluster diffusivity: D_n^{3D} = Di_eff / n^{s_3D}
+        # s_3D = 0 → all small clusters (n<4) diffuse at Di_eff (original)
+        # s_3D > 0 → di- and tri-SIA diffuse slower than monomers
+        def Di_cluster_3D(n):
+            return Di_eff / float(n)**s_3D
 
         # Rotational-correlation factor for 1D/3D mixed transport (Eq. 121)
         # Used in K_SIA_grow, K_SIA_loop, K_SIA_shrink, and k2_SIA below.
         rot_factor = 1.0 + B_rot * L_hat**2    # ≈ 6568 for B_rot=2.627, L_hat=50
 
-        # SIA growth (absorbs mono-SIA): K_sph(D_eff, n)  (Eq. 131, 141)
-        # For n < 4 (3D mobile): monomer diffusivity Di_eff is the relevant speed.
-        # For 4 <= n <= n_max_i (1D gliders): the cluster sweeps space with its
-        #   own effective 3D diffusivity D_n_3D = D1D(n) / rot_factor, which
-        #   already includes loop-solute trapping (Eq. 52) and the 1D/3D rotation
-        #   correction (Eq. 121). This is the appropriate rate for the cluster
-        #   sweeping through the mono-SIA background.
-        # For n > n_max_i (immobile large loops): only the monomer can diffuse
-        #   to the fixed loop, so Di_eff is used.
-        K_SIA_grow_arr = np.zeros(N)
-        for ni in range(1, N + 1):
+        # SIA growth (absorbs mono-SIA): K_sph(D_rel, n)  (Eq. 131, 141)
+        # The relative diffusivity governing the encounter rate between a cluster
+        # of size n and a diffusing monomer is D_cluster_3D + D_monomer.
+        #
+        # For n < 4 (3D mobile): both cluster and monomer diffuse in 3D;
+        #   relative D = Di_eff + Di_eff ≈ 2·Di_eff, but conventionally the
+        #   cluster size n is large enough that Di_eff dominates, so D = Di_eff.
+        # For 4 <= n <= i_mobile (1D gliders): the cluster's effective 3D
+        #   diffusivity is D_n_3D = D1D(n)/rot_factor (small); the monomer
+        #   approaches via full 3D diffusion at Di_eff.  Relative D = Di_eff + D_n_3D.
+        #   Since D_n_3D << Di_eff for all 1D gliders, this is dominated by Di_eff
+        #   (monomer diffuses to the nearly-stationary cluster), consistent with
+        #   K_SIA_shrink which already uses Dv_eff + D_n_3D (Eq. 141).
+        # For n > i_mobile (immobile large loops): only the monomer can diffuse,
+        #   so D = Di_eff.
+        # For monomer-target encounters, the relative diffusivity includes
+        # both the monomer (always Di_eff) and the target cluster's own mobility.
+        # For n < 4: D_rel = Di_eff + Di_cluster_3D(n)  [≈ 2·Di_eff when s_3D=0]
+        #   but conventionally only the monomer term is used (Di_eff dominates).
+        # For 4 ≤ n ≤ i_mobile: D_rel = Di_eff + D1D(n)/rot  (D1D << Di_eff).
+        # For n > i_mobile: D_rel = Di_eff (cluster immobile).
+        K_SIA_grow_arr = np.zeros(I)
+        for ni in range(1, I + 1):
             if ni < 4:
                 K_SIA_grow_arr[ni - 1] = K_sph(Di_eff, ni)
-            elif ni <= n_max_i:
+            elif ni <= i_mobile:
                 D_n_3D = D1D(ni) / rot_factor   # effective 3D via rotation correction
-                K_SIA_grow_arr[ni - 1] = K_sph(D_n_3D, ni)
+                K_SIA_grow_arr[ni - 1] = K_sph(Di_eff + D_n_3D, ni)
             else:
                 K_SIA_grow_arr[ni - 1] = K_sph(Di_eff, ni)
         self.K_SIA_grow = K_SIA_grow_arr
 
         # SIA loop-capture rate  K_loop(n)  (Eq. 132) — same mobility logic
-        K_SIA_loop_arr = np.zeros(N)
-        for ni in range(1, N + 1):
+        K_SIA_loop_arr = np.zeros(I)
+        for ni in range(1, I + 1):
             if ni < 4:
                 K_SIA_loop_arr[ni - 1] = K_loop(ni)
-            elif ni <= n_max_i:
+            elif ni <= i_mobile:
                 D_n_3D = D1D(ni) / rot_factor
                 K_SIA_loop_arr[ni - 1] = (A_loop * float(ni)**0.5
                                            * Z_i_loop * D_n_3D * inv_Omega23)
@@ -241,11 +261,11 @@ class ReactionRates:
         # SIA cluster shrinks by absorbing a vacancy  (Eq. 131)
         # For 1D gliders the cluster also sweeps through the vacancy background,
         # so the effective relative diffusivity is Dv_eff + D_n_3D.
-        K_SIA_shrink_arr = np.zeros(N)
-        for ni in range(1, N + 1):
+        K_SIA_shrink_arr = np.zeros(I)
+        for ni in range(1, I + 1):
             if ni < 4:
                 K_SIA_shrink_arr[ni - 1] = K_sph(Dv_eff, ni)
-            elif ni <= n_max_i:
+            elif ni <= i_mobile:
                 D_n_3D = D1D(ni) / rot_factor
                 K_SIA_shrink_arr[ni - 1] = K_sph(Dv_eff + D_n_3D, ni)
             else:
@@ -258,15 +278,15 @@ class ReactionRates:
         # Dislocation sink for SIA clusters (Eq. 134)
         # For 3D-mobile n < 4: use ω_i^eff; for 1D n ≥ 4: use D1D(n)/a²
         # Effective 3D diffusivity for fixed-sink capture (Eq. 134-137).
-        # For 1D-gliding clusters (n >= 4, n <= n_max_i): D1D is a 1D transport
+        # For 1D-gliding clusters (n >= 4, n <= i_mobile): D1D is a 1D transport
         # coefficient; plugging it directly into a 3D spherical-capture formula
         # overestimates dislocation/GB absorption by the rotational-correlation
         # factor (1 + B_rot * L_hat^2).  rot_factor is defined above.
-        k2_SIA = np.zeros(N)
-        for n in range(1, N + 1):
+        k2_SIA = np.zeros(I)
+        for n in range(1, I + 1):
             if n < 4:
-                om = omega_i                    # 3D mobile: use ω_i^eff directly
-            elif n <= n_max_i:
+                om = omega_i / float(n)**s_3D   # 3D mobile: ω_i^eff / n^{s_3D}
+            elif n <= i_mobile:
                 # 1D glider: effective 3D diffusivity reduced by rotational factor
                 om = D1D(n) / (a_m**2 * rot_factor)
             else:
@@ -280,14 +300,14 @@ class ReactionRates:
         # Mixed 1D/3D cross-term coefficients for SIA cluster(n) + void(m)
         # Stored as K_1D_eff_n[n-1] — called at runtime with m argument
         # For efficiency: precompute K_1D_pref[n-1] = A_sph · D_n^{1D} / Ω^{2/3}
-        K_1D_pref = np.zeros(N)
-        for n in range(1, N + 1):
-            if n <= n_max_i and n >= 4:
+        K_1D_pref = np.zeros(I)
+        for n in range(1, I + 1):
+            if n <= i_mobile and n >= 4:
                 K_1D_pref[n - 1] = A_sph * D1D(n) * inv_Omega23
         self.K_1D_pref = K_1D_pref   # multiply by m^{1/3}/(1+B_rot·L̂²·m^{-1/3})
 
-        # ── Build arrays for vacancy clusters m=1..M ─────────────────────────
-        ms = np.arange(1, M + 1, dtype=float)
+        # ── Build arrays for vacancy clusters m=1..V ─────────────────────────
+        ms = np.arange(1, V + 1, dtype=float)
 
         # Vacancy captured by void  K_sph(D_v, m)  (Eq. 131)
         self.K_VAC_grow = np.array([K_sph(Dv_eff, m) for m in ms])
@@ -328,15 +348,80 @@ class ReactionRates:
         self.Gamma_TM_fn      = lambda m, ell: Gamma_TM(m, ell, T, nu0_TM)
         self.Gamma_res_fn     = lambda ell: Gamma_res(ell, G, b0_res)
 
+        # 3D cavity absorption prefactor: A_sph · Di_eff / Ω^{2/3}
+        # Used for mobile SIA clusters n=1..3 hitting cavities (Eq. K_cav, 3D branch)
+        self.K_3D_cav_pref = A_sph * Di_eff * inv_Omega23
+
+        # ── Effective 3D diffusivities for mobile clusters (for coalescence) ──
+        # D_SIA_eff[n-1] = effective 3D diffusivity of SIA cluster of size n.
+        # Used by the general i–i coalescence and mobile-SIA–cavity terms.
+        # ONLY mobile clusters (n ≤ i_mobile) have non-zero diffusivity.
+        # For n < 4 AND n ≤ i_mobile (3D mobile): D_n = Di_eff / n^{s_3D}
+        # For 4 ≤ n ≤ i_mobile (1D gliders): D_n = D1D(n) / rot_factor
+        # For n > i_mobile: D_n = 0 (sessile — no coalescence as projectile)
+        D_SIA_eff = np.zeros(I)
+        for n in range(1, I + 1):
+            if n > i_mobile:
+                pass  # sessile: D = 0
+            elif n < 4:
+                D_SIA_eff[n - 1] = Di_cluster_3D(n)
+            else:
+                D_SIA_eff[n - 1] = D1D(n) / rot_factor
+        self.D_SIA_eff = D_SIA_eff
+
+        # D_VAC_eff[m-1] = effective 3D diffusivity of vacancy cluster of size m.
+        # D_m = D_v / m^{s_vc} for m ≤ v_mobile; 0 for immobile clusters.
+        s_vc = float(diff.get('s_vc', 1.0))
+        D_VAC_eff = np.zeros(V)
+        for m in range(1, V + 1):
+            if m <= v_mobile:
+                D_VAC_eff[m - 1] = Dv_eff / float(m) ** s_vc
+            # else: 0 (sessile)
+        self.D_VAC_eff = D_VAC_eff
+
+        # Geometric prefactor for coalescence: A_sph / Ω^{2/3}
+        self.A_sph_inv_O23 = A_sph * inv_Omega23
+
         # Scalar physics
         self.B_rot  = B_rot
         self.L_hat  = L_hat
         self.alpha_He = alpha_He
 
-        print(f"ReactionRates: K_SIA_grow[0]={self.K_SIA_grow[0]:.3e}"
-              f"  K_VAC_grow[0]={self.K_VAC_grow[0]:.3e}"
-              f"  G_VAC[0]={self.G_VAC[0]:.3e}"
-              f"  K_iv={self.K_iv:.3e}")
-        print(f"  k2_SIA[0]={self.k2_SIA[0]:.3e}"
-              f"  k2_vac={self.k2_vac_scalar:.3e}"
-              f"  k2_He={self.k2_He_scalar:.3e}")
+    def format_diagnostic(self, mean_n_i=None):
+        """Return key rate constants as a formatted string.
+
+        Parameters
+        ----------
+        mean_n_i : float, optional
+            Mean SIA cluster size <n> at the current output step.
+        """
+        mean_str = f"  mean_n_i={mean_n_i:.2f}" if mean_n_i is not None else ""
+        lines = []
+        lines.append(
+            f"ReactionRates: K_SIA_grow[0]={self.K_SIA_grow[0]:.3e}"
+            f"  K_VAC_grow[0]={self.K_VAC_grow[0]:.3e}"
+            f"  G_VAC[0]={self.G_VAC[0]:.3e}"
+            f"  K_iv={self.K_iv:.3e}"
+            f"  K_3D_cav={self.K_3D_cav_pref:.3e}"
+            f"{mean_str}")
+        lines.append(
+            f"  k2_SIA[0]={self.k2_SIA[0]:.3e}"
+            f"  k2_vac={self.k2_vac_scalar:.3e}"
+            f"  k2_He={self.k2_He_scalar:.3e}")
+        lines.append(
+            f"  D_SIA_eff: n=1: {self.D_SIA_eff[0]:.3e}"
+            f"  n=2: {self.D_SIA_eff[1]:.3e}"
+            f"  n=3: {self.D_SIA_eff[2]:.3e}"
+            + (f"  n=4: {self.D_SIA_eff[3]:.3e}" if len(self.D_SIA_eff) > 3 else ""))
+        if len(self.K_SIA_grow) >= 5:
+            lines.append(
+                f"  C_i5: K_grow={self.K_SIA_grow[4]:.3e}"
+                f"  K_shrink={self.K_SIA_shrink[4]:.3e}"
+                f"  K_loop={self.K_SIA_loop[4]:.3e}"
+                f"  k2={self.k2_SIA[4]:.3e}"
+                f"  G_emit={self.G_SIA[4]:.3e}")
+        return '\n'.join(lines)
+
+    def print_diagnostic(self, mean_n_i=None):
+        """Print key rate constants — called at output time steps."""
+        print(self.format_diagnostic(mean_n_i))

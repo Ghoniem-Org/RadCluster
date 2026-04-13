@@ -11,25 +11,25 @@
  * State vector y[N_eq]
  * --------------------
  * full_CD_fission  (Case 2, he_mode=0):
- *   y[0..N-1]       — SIA clusters c_n, n=1..N
- *   y[N..N+M-1]     — vacancy/bubble c_m (marginal), m=1..M
- *   y[N+M]          — Q_tot (total He in voids)
- *   y[N+M+1]        — c_h (free He)  [omitted when he_options=1 (QSS)]
- *   N_eq = N + M + 2  (dynamic)  or  N + M + 1  (quasi_steady_state)
+ *   y[0..I-1]       — SIA clusters c_n, n=1..I
+ *   y[I..I+V-1]     — vacancy/bubble c_m (marginal), m=1..V
+ *   y[I+V]          — Q_tot (total He in voids)
+ *   y[I+V+1]        — c_h (free He)  [omitted when he_options=1 (QSS)]
+ *   N_eq = I + V + 2  (dynamic)  or  I + V + 1  (quasi_steady_state)
  *
  * full_CD_fusion  (Case 1, he_mode=1):
- *   y[0..N-1]       — SIA clusters c_n
- *   y[N..N+M-1]     — c_m^tot
- *   y[N+M..N+2M-1]  — Q_m (He per class)
- *   y[N+2M]         — c_h  [omitted when he_options=1 (QSS)]
- *   N_eq = N + 2M + 1  (dynamic)  or  N + 2M  (quasi_steady_state)
+ *   y[0..I-1]       — SIA clusters c_n
+ *   y[I..I+V-1]     — c_m^tot
+ *   y[I+V..I+2V-1]  — Q_m (He per class)
+ *   y[I+2V]         — c_h  [omitted when he_options=1 (QSS)]
+ *   N_eq = I + 2V + 1  (dynamic)  or  I + 2V  (quasi_steady_state)
  *
  * bin_moment_CD_fission/fusion (physics_option 2/3):
- *   y[0..2K-1]      — SIA bin moments [μ_0^(0), μ_0^(1), ..., μ_{K-1}^(1)]
- *   y[2K..2K+M-1]   — c_m
- *   y[2K+M..]       — He variables (same as Case 2 or Case 1)
- *   N_eq = 2K + M + 2  or  2K + 2M + 1  (dynamic)
- *   N_eq = 2K + M + 1  or  2K + 2M      (quasi_steady_state)
+ *   y[0..2Ib-1]     — SIA bin moments [μ_0^(0), μ_0^(1), ..., μ_{Ib-1}^(1)]
+ *   y[2Ib..2Ib+V-1] — c_m
+ *   y[2Ib+V..]      — He variables (same as Case 2 or Case 1)
+ *   N_eq = 2Ib + V + 2  or  2Ib + 2V + 1  (dynamic)
+ *   N_eq = 2Ib + V + 1  or  2Ib + 2V      (quasi_steady_state)
  *
  * he_options:  0 = dynamic (c_h is an ODE state, Eq. 157)
  *              1 = quasi_steady_state (c_h computed algebraically from
@@ -51,8 +51,8 @@
 
 struct Parameters {
     // ── Cluster size limits ─────────────────────────────────────────────────
-    int N, M, N_eq;
-    int Ni_max;   // = N (kept for legacy compatibility)
+    int I, V, N_eq;
+    int Ni_max;   // = I (kept for legacy compatibility)
 
     // ── Physics and solver mode ─────────────────────────────────────────────
     // physics_option: 0=full_CD_fission, 1=full_CD_fusion,
@@ -75,31 +75,42 @@ struct Parameters {
     double trap_loop;  // Σ z_s·c_s·exp(E_b^{s,loop}/kBT)
 
     // ── Mobility cutoffs ──────────────────────────────────────────────────────
-    int n_max_i;   // max mobile SIA cluster size (1D glide cutoff)
-    int m_max_v;   // max mobile vacancy cluster size
+    int i_mobile;   // max mobile SIA cluster size (1D glide cutoff)
+    int v_mobile;   // max mobile vacancy cluster size
 
-    // ── Vacancy cluster arrays [M] ────────────────────────────────────────────
+    // ── Boundary flux option ─────────────────────────────────────────────────
+    // 0 = absorption (open boundary): product at I+1 or V+1 is lost
+    // 1 = reflection (closed boundary): product folded back into I or V
+    int boundary_flux;
+
+    // ── Vacancy cluster arrays [V] ────────────────────────────────────────────
     std::vector<double> KVV;      // Cv capture by void m  (K_VAC_grow)
     std::vector<double> KVI;      // Ci annihilation at void m  (K_VAC_shrink)
     std::vector<double> GVV;      // thermal vacancy emission from void m
     std::vector<double> KHeV;     // He capture by void m
-    std::vector<double> Pr_VAC;   // cascade vacancy production rate [M]
-    std::vector<double> m13;      // m^{1/3} factors [M]
+    std::vector<double> Pr_VAC;   // cascade vacancy production rate [V]
+    std::vector<double> m13;      // m^{1/3} factors [V]
 
-    // ── SIA cluster arrays [N] ────────────────────────────────────────────────
+    // ── SIA cluster arrays [I] ────────────────────────────────────────────────
     std::vector<double> KII;      // Ci capture by SIA loop n  (K_SIA_grow)
     std::vector<double> KIV;      // Cv capture by SIA loop n  (K_SIA_shrink)
     std::vector<double> GII;      // thermal SIA emission from loop n
     std::vector<double> k2_SIA;   // total sink rate for SIA cluster n
-    std::vector<double> Pr_SIA;   // cascade SIA production rate [N]
+    std::vector<double> Pr_SIA;   // cascade SIA production rate [I]
 
     // ── 1D glide prefactors (Eq. 141) ─────────────────────────────────────────
     // K_1D_eff(n, m) = K_1D_pref[n-1] · m^{1/3} / (1 + B_rot·L̂²·m^{-1/3})
-    std::vector<double> K_1D_pref;   // [N]: A_sph · ω_n^{1D} / Ω
+    std::vector<double> K_1D_pref;   // [I]: A_sph · ω_n^{1D} / Ω
 
     // Legacy separable cross-term (for backward compatibility with solver.cpp)
-    std::vector<double> K_IclV_ns;   // [N]: 4π·r0·Di·n^{-2/3} / Ω
-    std::vector<double> K_IclV_ni;   // [N]: 4π·r0·Di / (n·Ω)
+    std::vector<double> K_IclV_ns;   // [I]: 4π·r0·Di·n^{-2/3} / Ω
+    std::vector<double> K_IclV_ni;   // [I]: 4π·r0·Di / (n·Ω)
+
+    // ── Mobile cluster effective 3D diffusivities (for coalescence) ─────────
+    std::vector<double> D_SIA_eff;   // [I]: effective 3D D for SIA cluster n
+    std::vector<double> D_VAC_eff;   // [V]: effective 3D D for vac cluster m
+    double A_sph_inv_O23;            // A_sph / Ω^{2/3}  [m^-2]
+    double Z_ii;                     // SIA-SIA coalescence bias factor (elastic interaction)
 
     // ── Scalar physics ────────────────────────────────────────────────────────
     double G_He;          // He transmutation rate [at.frac/s]
@@ -107,7 +118,8 @@ struct Parameters {
     double k2_disl_i;     // SIA fixed sink [s^-1]
     double k2_disl_He;    // He fixed sink [s^-1]
     double Cv_eq;         // thermal vacancy equilibrium concentration
-    double K_iv;          // V–SIA recombination prefactor
+    double K_iv;          // V–SIA recombination prefactor (P1, mutual diffusivity)
+    double K_3D_cav_pref; // 3D cavity absorption prefactor: A_sph · Di_eff / Ω^{2/3}
 
     // ── He parameters ─────────────────────────────────────────────────────────
     double beta_He;       // He emission: ν_h·exp(−(E_b_hV+E_m_h)/kBT) [s^-1]
@@ -117,9 +129,13 @@ struct Parameters {
     double L_He_max;      // max He loading per vacancy cluster
 
     // ── Bin-moment parameters (Chapter 9) ────────────────────────────────────
-    int    K_bins;        // number of logarithmic bins
+    int    I_bin;         // number of SIA logarithmic bins
+    int    V_bin;         // number of vacancy logarithmic bins
     double r_ratio;       // bin ratio r > 1 (Eq. 188)
-    int    n1_bin;        // minimum cluster size in binned region
+    int    i_discrete;    // max discrete SIA size (minimum cluster size in binned region)
+    int    v_discrete;    // max discrete vacancy size (default = v_mobile)
+    int    shape_function; // intra-bin closure: 0=constant, 1=linear, 2=lognormal
+    int    n_mom;          // moments per bin: 1 (constant), 2 (linear), 3 (lognormal)
 
     // ── Initial conditions ─────────────────────────────────────────────────────
     std::vector<double> y0;   // [N_eq]
@@ -166,6 +182,9 @@ struct Parameters {
 
     // ── Jacobi preconditioner storage ─────────────────────────────────────────
     std::vector<double> prec_diag;
+
+    // ── Diagnostics ────────────────────────────────────────────────────────────
+    bool verbose;   // if false, suppress per-timestep [diag] / [ci5_rates] output
 };
 
 // ── CLI / file parsing helpers ───────────────────────────────────────────────
@@ -223,13 +242,17 @@ inline std::map<std::string, double> parse_param_file(const std::string& path) {
 inline Parameters build_parameters(const std::map<std::string, double>& p) {
     Parameters P{};
 
-    // Cluster sizes — support both old (Ni/Nv) and new (N/M) key names
-    if (p.count("N"))  P.N = static_cast<int>(require_param(p, "N"));
-    else               P.N = static_cast<int>(require_param(p, "Ni"));
-    if (p.count("M"))  P.M = static_cast<int>(require_param(p, "M"));
-    else               P.M = static_cast<int>(require_param(p, "Nv"));
+    // Cluster sizes — support old (Ni/Nv, N/M) and new (I/V) key names
+    P.I = static_cast<int>(optional_param(p, "I",
+               optional_param(p, "N",
+                   optional_param(p, "Ni", -1))));
+    if (P.I < 0) { std::cerr << "Missing required parameter: I (or N or Ni)\n"; exit(1); }
+    P.V = static_cast<int>(optional_param(p, "V",
+               optional_param(p, "M",
+                   optional_param(p, "Nv", -1))));
+    if (P.V < 0) { std::cerr << "Missing required parameter: V (or M or Nv)\n"; exit(1); }
 
-    P.Ni_max = static_cast<int>(optional_param(p, "Ni_max", static_cast<double>(P.N)));
+    P.Ni_max = static_cast<int>(optional_param(p, "Ni_max", static_cast<double>(P.I)));
 
     // Physics mode
     P.physics_option = static_cast<int>(optional_param(p, "physics_option_int", 0));
@@ -238,17 +261,17 @@ inline Parameters build_parameters(const std::map<std::string, double>& p) {
     // he_options: 0=dynamic (c_h is ODE state), 1=quasi_steady_state (c_h algebraic)
 
     // State vector size depends on he_mode and he_options:
-    //   Case 2 dynamic:           N + M + 2
-    //   Case 2 quasi_steady_state: N + M + 1  (c_h removed from state)
-    //   Case 1 dynamic:           N + 2M + 1
-    //   Case 1 quasi_steady_state: N + 2M     (c_h removed from state)
+    //   Case 2 dynamic:           I + V + 2
+    //   Case 2 quasi_steady_state: I + V + 1  (c_h removed from state)
+    //   Case 1 dynamic:           I + 2V + 1
+    //   Case 1 quasi_steady_state: I + 2V     (c_h removed from state)
     const bool qss = (P.he_options == 1);
     int n_he_extra;
     if (P.he_mode == 1)
-        n_he_extra = qss ? P.M     : P.M + 1;
+        n_he_extra = qss ? P.V     : P.V + 1;
     else
         n_he_extra = qss ? 1       : 2;
-    P.N_eq = P.N + P.M + n_he_extra;
+    P.N_eq = P.I + P.V + n_he_extra + 5;  // +5 for conservation accounting ODEs
 
     // Geometric prefactors
     P.A_sph  = optional_param(p, "A_sph",  7.818);
@@ -261,21 +284,27 @@ inline Parameters build_parameters(const std::map<std::string, double>& p) {
     P.trap_VAC  = optional_param(p, "trap_VAC",  0.0);
     P.trap_loop = optional_param(p, "trap_loop", 0.0);
 
-    // Mobility cutoffs
-    P.n_max_i = static_cast<int>(optional_param(p, "n_max_i", 100.0));
-    P.m_max_v = static_cast<int>(optional_param(p, "m_max_v", 5.0));
+    // Mobility cutoffs — support both old and new key names
+    P.i_mobile = static_cast<int>(optional_param(p, "i_mobile",
+                     optional_param(p, "n_max_i", 100.0)));
+    P.v_mobile = static_cast<int>(optional_param(p, "v_mobile",
+                     optional_param(p, "m_max_v", 5.0)));
+
+    // Boundary flux: 0=absorption (default), 1=reflection
+    P.boundary_flux = static_cast<int>(optional_param(p, "boundary_flux", 0.0));
 
     // Resize arrays
-    P.KVV.resize(P.M);   P.KVI.resize(P.M);   P.GVV.resize(P.M);
-    P.KHeV.resize(P.M);  P.Pr_VAC.resize(P.M); P.m13.resize(P.M);
-    P.KII.resize(P.N);   P.KIV.resize(P.N);    P.GII.resize(P.N);
-    P.k2_SIA.resize(P.N); P.Pr_SIA.resize(P.N);
-    P.K_1D_pref.resize(P.N);
-    P.K_IclV_ns.resize(P.N); P.K_IclV_ni.resize(P.N);
+    P.KVV.resize(P.V);   P.KVI.resize(P.V);   P.GVV.resize(P.V);
+    P.KHeV.resize(P.V);  P.Pr_VAC.resize(P.V); P.m13.resize(P.V);
+    P.KII.resize(P.I);   P.KIV.resize(P.I);    P.GII.resize(P.I);
+    P.k2_SIA.resize(P.I); P.Pr_SIA.resize(P.I);
+    P.K_1D_pref.resize(P.I);
+    P.K_IclV_ns.resize(P.I); P.K_IclV_ni.resize(P.I);
+    P.D_SIA_eff.resize(P.I); P.D_VAC_eff.resize(P.V);
     P.y0.resize(P.N_eq);
 
     // Vacancy arrays
-    for (int k = 0; k < P.M; ++k) {
+    for (int k = 0; k < P.V; ++k) {
         P.KVV[k]    = require_param(p, "KVV_"    + std::to_string(k));
         P.KVI[k]    = require_param(p, "KVI_"    + std::to_string(k));
         P.GVV[k]    = require_param(p, "GVV_"    + std::to_string(k));
@@ -285,7 +314,7 @@ inline Parameters build_parameters(const std::map<std::string, double>& p) {
     }
 
     // SIA arrays
-    for (int k = 0; k < P.N; ++k) {
+    for (int k = 0; k < P.I; ++k) {
         P.KII[k]         = require_param(p, "KII_"        + std::to_string(k));
         P.KIV[k]         = require_param(p, "KIV_"        + std::to_string(k));
         P.GII[k]         = require_param(p, "GII_"        + std::to_string(k));
@@ -296,32 +325,55 @@ inline Parameters build_parameters(const std::map<std::string, double>& p) {
         P.K_IclV_ni[k]   = optional_param(p, "K_IclV_ni_" + std::to_string(k), 0.0);
     }
 
+    // Mobile cluster diffusivities (for coalescence)
+    for (int k = 0; k < P.I; ++k)
+        P.D_SIA_eff[k] = optional_param(p, "D_SIA_eff_" + std::to_string(k), 0.0);
+    for (int k = 0; k < P.V; ++k)
+        P.D_VAC_eff[k] = optional_param(p, "D_VAC_eff_" + std::to_string(k), 0.0);
+    P.A_sph_inv_O23 = optional_param(p, "A_sph_inv_O23", 0.0);
+    P.Z_ii          = optional_param(p, "Z_ii", 1.0);
+
     // Scalar physics
     P.G_He       = require_param(p, "G_He");
     P.k2_disl_v  = require_param(p, "k2_disl_v");
     P.k2_disl_i  = require_param(p, "k2_disl_i");
     P.k2_disl_He = require_param(p, "k2_disl_He");
     P.Cv_eq      = require_param(p, "Cv_eq");
-    P.K_iv       = optional_param(p, "K_iv", 0.0);
+    P.K_iv           = optional_param(p, "K_iv", 0.0);
+    P.K_3D_cav_pref  = optional_param(p, "K_3D_cav_pref", 0.0);
     P.beta_He    = require_param(p, "beta_He");
     P.delta_He   = require_param(p, "delta_He");
     P.beta_He_exp= require_param(p, "beta_He_exp");
     P.kBT        = require_param(p, "kBT");
     P.L_He_max   = require_param(p, "L_He_max");
 
-    // Bin-moment parameters
-    P.K_bins  = static_cast<int>(optional_param(p, "K_bins", 0.0));
-    P.r_ratio = optional_param(p, "r_ratio", 2.0);
-    P.n1_bin  = static_cast<int>(optional_param(p, "n1_bin", 1.0));
+    // Bin-moment parameters — support both old and new key names
+    P.I_bin    = static_cast<int>(optional_param(p, "I_bin",
+                     optional_param(p, "K_bins", 0.0)));
+    P.V_bin    = static_cast<int>(optional_param(p, "V_bin",
+                     optional_param(p, "K_v_bins", 0.0)));
+    P.r_ratio  = optional_param(p, "r_ratio", 2.0);
+    P.i_discrete = static_cast<int>(optional_param(p, "i_discrete",
+                       static_cast<double>(P.i_mobile)));
+    P.v_discrete = static_cast<int>(optional_param(p, "v_discrete",
+                       static_cast<double>(P.v_mobile)));
+    P.shape_function = static_cast<int>(optional_param(p, "shape_function", 1.0));
+    P.n_mom = static_cast<int>(optional_param(p, "n_mom", 2.0));
 
-    // If bin_moment mode, override N_eq
-    if (P.K_bins > 0) {
-        int n_he_extra2;
+    // If bin_moment mode (physics_option 2 or 3), override N_eq
+    // Layout: [discrete SIA | binned SIA moments | discrete VAC |
+    //          binned VAC moments | He state]
+    // Always override when physics_option >= 2, even if I_bin=V_bin=0
+    // (pure-discrete subset of the full domain).
+    if (P.physics_option >= 2) {
+        int n_sia = P.i_discrete + P.n_mom * P.I_bin;
+        int n_vac = P.v_discrete + P.n_mom * P.V_bin;
+        int n_he;
         if (P.he_mode == 1)
-            n_he_extra2 = qss ? P.M     : P.M + 1;
+            n_he = qss ? P.V_bin : P.V_bin + 1;  // Q_k per vac bin
         else
-            n_he_extra2 = qss ? 1       : 2;
-        P.N_eq = 2 * P.K_bins + P.M + n_he_extra2;
+            n_he = qss ? 1       : 2;             // Q_tot scalar
+        P.N_eq = n_sia + n_vac + n_he + 5;  // +5 for conservation accounting
         P.y0.resize(P.N_eq);
     }
 
@@ -353,9 +405,9 @@ inline Parameters build_parameters(const std::map<std::string, double>& p) {
     // Window parameters
     P.window_mode          = static_cast<int>(optional_param(p, "window_mode",       0.0));
     P.window_w0_v          = static_cast<int>(optional_param(p, "window_w0_v",
-                                 static_cast<double>(P.M)));
+                                 static_cast<double>(P.V)));
     P.window_w0_i          = static_cast<int>(optional_param(p, "window_w0_i",
-                                 static_cast<double>(P.N)));
+                                 static_cast<double>(P.I)));
     P.window_C_expand      = optional_param(p, "window_C_expand",      1e-18);
     P.window_expand_pad    = static_cast<int>(optional_param(p, "window_expand_pad", 10.0));
     P.window_expand_factor = optional_param(p, "window_expand_factor", 0.0);
@@ -371,6 +423,8 @@ inline Parameters build_parameters(const std::map<std::string, double>& p) {
     P.window_gmres_maxl    = static_cast<int>(optional_param(p, "window_gmres_maxl",  20.0));
     P.Ni_extend_tol        = optional_param(p, "Ni_extend_tol",    0.0);
     P.Ni_extend_margin     = static_cast<int>(optional_param(p, "Ni_extend_margin", 0.0));
+
+    P.verbose = (optional_param(p, "verbose", 0.0) > 0.5);
 
     return P;
 }

@@ -549,15 +549,18 @@ class ExpandedEuroferCDSimulation:
             checkpoints = np.linspace(t_begin, t_end, n_segments + 1)
 
         accumulated  = None
+        self._accumulated_results = None   # expose for graceful interrupt
         current_t    = t_begin
         y0_override  = None
         n_doublings_I = 0     # independent doubling counters
         n_doublings_V = 0
         seg_count    = 0
+        interrupted  = False
         # Allow extra iterations for expansion restarts within segments
         max_iters    = n_segments + 2 * max_doublings + 1
 
-        while current_t < t_end * (1 - 1e-10) and seg_count < max_iters:
+        try:
+          while current_t < t_end * (1 - 1e-10) and seg_count < max_iters:
             seg_count += 1
             I_cur = self.input_data.I
             V_cur = self.input_data.V
@@ -609,6 +612,7 @@ class ExpandedEuroferCDSimulation:
                 # Keep results up to and including exceedance
                 partial = self._slice_results(results, 0, exceed_idx + 1)
                 accumulated = self._merge_results(accumulated, partial)
+                self._accumulated_results = accumulated
 
                 # Double each dimension independently if it exceeds AND
                 # still has budget remaining
@@ -645,22 +649,39 @@ class ExpandedEuroferCDSimulation:
                     print(f"  Tail OK: SIA={frac_I:.3f}  VAC={frac_V:.3f}")
 
                 accumulated = self._merge_results(accumulated, results)
+                self._accumulated_results = accumulated
                 current_t   = results['t'][-1]
                 y0_override = results['y'][:, -1]
 
-        # ── Finished — save and return ────────────────────────────────────
+        except KeyboardInterrupt:
+            interrupted = True
+            print("\n\n*** KeyboardInterrupt — stopping gracefully. ***")
+            # Merge the last completed segment if it wasn't merged yet
+            if results is not None and results is not accumulated:
+                try:
+                    accumulated = self._merge_results(accumulated, results)
+                    self._accumulated_results = accumulated
+                except Exception:
+                    pass   # keep whatever was accumulated before
+
+        # ── Finished (or interrupted) — save and return ───────────────────
         if accumulated is not None:
             I_final = self.input_data.I
             V_final = self.input_data.V
             tot = n_doublings_I + n_doublings_V
-            print(f"\nAdaptive run complete: {seg_count} segments, "
+            status = "INTERRUPTED" if interrupted else "complete"
+            n_pts  = len(accumulated['t'])
+            print(f"\nAdaptive run {status}: {seg_count} segments, "
                   f"{tot} doublings (I×{n_doublings_I}, V×{n_doublings_V}), "
-                  f"final domain I={I_final} V={V_final}")
+                  f"final domain I={I_final} V={V_final}, "
+                  f"{n_pts} time points saved")
             if save_output:
                 self._diag_text = self.reaction_rates.format_diagnostic(
                     mean_n_i=accumulated['mean_n_i'][-1]
                     if 'mean_n_i' in accumulated else None)
                 self._save_output(accumulated, solver_config)
+        elif interrupted:
+            print("\nNo completed segments to save.")
 
         return accumulated
 

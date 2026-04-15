@@ -142,8 +142,13 @@ static inline double K_vi_coal(const Parameters& P, int n, int mp) {
 //   • KHeV term removed from dcv: He capture preserves marginal Σ_ℓ c_{m,ℓ}.
 //   • Fixed-sink loss limited to mobile voids (m+1 ≤ m_max_v).
 
+// x_hi_i_win / x_hi_v_win: inclusive upper bounds for active SIA / VAC state
+// indices (0-based).  Full solver passes I-1 / V-1.  Sliding-window modes pass
+// the current window frontier.
+// use_omp: true only for sliding_OpenMP (window_mode==4) with CD_HAVE_OPENMP.
 static int rhs_case2(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
-                      const Parameters& P) {
+                      const Parameters& P,
+                      int x_hi_i_win, int x_hi_v_win, bool use_omp) {
     const double* y    = N_VGetArrayPointer_Serial(yv);
     double*       dydt = N_VGetArrayPointer_Serial(ydotv);
     const int  I   = P.I;
@@ -184,8 +189,18 @@ static int rhs_case2(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
         return P.GVV[m_idx] * std::exp(std::min(-ell_m * dE / P.kBT, 0.0));
     };
 
+    // OpenMP thread count for sliding_OpenMP (mode 4)
+    const int omp_threads = (use_omp && P.window_omp_threads > 0)
+                            ? P.window_omp_threads : 1;
+
     // ── SIA cluster equations (Eq. ME_SIA) ─────────────────────────────────
-    for (int n = 0; n < I; ++n) {
+    // Loop is restricted to [0, x_hi_i_win] — clusters beyond the window
+    // keep dydt[n]=0 (initialised above), preventing CVODE from evolving them.
+    // Each iteration writes only to dci[n], so the loop is race-free under OMP.
+#ifdef CD_HAVE_OPENMP
+#pragma omp parallel for if(use_omp) schedule(dynamic) num_threads(omp_threads)
+#endif
+    for (int n = 0; n <= x_hi_i_win; ++n) {
         const int    sn = n + 1;   // 1-indexed size
         const double cn = std::max(c_i[n], 0.0);
 
@@ -289,15 +304,20 @@ static int rhs_case2(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
 
     // ── Vacancy cluster equations (Eq. ME_vac, Case 2) ──────────────────────
     // He capture does NOT change void size class m — handled by Q_tot below.
-    // Pre-accumulate emitted monomers from thermal vacancy emission:
-    // V_m → V_{m-1} + V_1 — the emitted V_1 monomer must be added to dcv[0].
+    // Pre-accumulate emitted monomers from thermal vacancy emission within
+    // the active VAC window [1, x_hi_v_win].  Out-of-window clusters have
+    // near-zero concentration so their contribution is negligible.
     {
         double emit_mono = 0.0;
-        for (int m = 1; m < V; ++m)
+        for (int m = 1; m <= x_hi_v_win; ++m)
             emit_mono += GVV_eff(m) * std::max(c_v[m], 0.0);
         dcv[0] += emit_mono;
     }
-    for (int m = 0; m < V; ++m) {
+    // Loop restricted to [0, x_hi_v_win]; each iteration writes only to dcv[m].
+#ifdef CD_HAVE_OPENMP
+#pragma omp parallel for if(use_omp) schedule(dynamic) num_threads(omp_threads)
+#endif
+    for (int m = 0; m <= x_hi_v_win; ++m) {
         const double cm    = std::max(c_v[m], 0.0);
         const double gvv_m = GVV_eff(m);
 
@@ -483,7 +503,8 @@ static int rhs_case2(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
 // State (quasi_steady_state): [c_i(I) | c_v(V) | Q_m(V)]        N_eq = I+2V
 
 static int rhs_case1(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
-                      const Parameters& P) {
+                      const Parameters& P,
+                      int x_hi_i_win, int x_hi_v_win, bool use_omp) {
     const double* y    = N_VGetArrayPointer_Serial(yv);
     double*       dydt = N_VGetArrayPointer_Serial(ydotv);
     const int  I   = P.I;
@@ -523,8 +544,15 @@ static int rhs_case1(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
         return P.GVV[m_idx] * std::exp(std::min(-ell * dE / P.kBT, 0.0));
     };
 
+    const int omp_threads = (use_omp && P.window_omp_threads > 0)
+                            ? P.window_omp_threads : 1;
+
     // ── SIA clusters (general coalescence, same structure as Case 2) ─────────
-    for (int n = 0; n < I; ++n) {
+    // Loop restricted to [0, x_hi_i_win]; each iteration writes only to dci[n].
+#ifdef CD_HAVE_OPENMP
+#pragma omp parallel for if(use_omp) schedule(dynamic) num_threads(omp_threads)
+#endif
+    for (int n = 0; n <= x_hi_i_win; ++n) {
         const int    sn = n + 1;
         const double cn = std::max(c_i[n], 0.0);
         dci[n] += P.Pr_SIA[n];
@@ -606,15 +634,18 @@ static int rhs_case1(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
     }
 
     // ── Vacancy clusters (general coalescence) ───────────────────────────────
-    // Pre-accumulate emitted monomers from thermal vacancy emission:
-    // V_m → V_{m-1} + V_1 — the emitted V_1 monomer must be added to dcv[0].
+    // Pre-accumulate emitted monomers within active VAC window.
     {
         double emit_mono = 0.0;
-        for (int m = 1; m < V; ++m)
+        for (int m = 1; m <= x_hi_v_win; ++m)
             emit_mono += GVV_eff_m(m) * std::max(c_v[m], 0.0);
         dcv[0] += emit_mono;
     }
-    for (int m = 0; m < V; ++m) {
+    // Loop restricted to [0, x_hi_v_win]; each iteration writes only to dcv[m].
+#ifdef CD_HAVE_OPENMP
+#pragma omp parallel for if(use_omp) schedule(dynamic) num_threads(omp_threads)
+#endif
+    for (int m = 0; m <= x_hi_v_win; ++m) {
         const int    sm  = m + 1;
         const double cm  = std::max(c_v[m], 0.0);
         const double gvv = GVV_eff_m(m);
@@ -690,9 +721,10 @@ static int rhs_case1(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
     }
 
     // ── Q_m equations (He content per void class, Eq. 174) ───────────────────
+    // Also restricted to the VAC window; Q_m for out-of-window voids stays zero.
     double He_cap_total  = 0.0;
     double He_emit_total = 0.0;
-    for (int m = 0; m < V; ++m) {
+    for (int m = 0; m <= x_hi_v_win; ++m) {
         const double cm       = std::max(c_v[m], 0.0);
         const double qm       = std::max(Q_m[m], 0.0);
         const double he_cap_m = P.KHeV[m] * c_h * cm;
@@ -789,10 +821,19 @@ static int rhs_case1(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
 int rhs_full_CD(sunrealtype t, N_Vector y, N_Vector ydot, void* user_data) {
     const UserData*   ud = static_cast<const UserData*>(user_data);
     const Parameters& P  = *ud->P;
+
+    // Resolve window bounds:
+    //   window_mode == 0 (full): entire SIA / VAC domains are active.
+    //   window_mode == 3 (cpp_sliding_win): two independent windows, serial.
+    //   window_mode == 4 (sliding_OpenMP): two independent windows + OMP.
+    const int  x_hi_i = ud->window_active ? ud->x_hi_i : P.I - 1;
+    const int  x_hi_v = ud->window_active ? ud->x_hi_v : P.V - 1;
+    const bool use_omp = (P.window_mode == 4);
+
     if (P.he_mode == 1)
-        return rhs_case1(t, y, ydot, P);
+        return rhs_case1(t, y, ydot, P, x_hi_i, x_hi_v, use_omp);
     else
-        return rhs_case2(t, y, ydot, P);
+        return rhs_case2(t, y, ydot, P, x_hi_i, x_hi_v, use_omp);
 }
 
 // ── Size-bin moment RHS (Chapter 9, Eqs. 193-208) ────────────────────────────
@@ -1511,6 +1552,25 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
             }
         }
         dydt[P.N_eq - 1] = he_sink;
+    }
+
+    // ── Sliding-window masking for bin_moment mode ───────────────────────────
+    // For the bin_moment RHS the outer cluster loops are not restructured here
+    // (they are governed by discrete index + bin index, not a simple 0..N range).
+    // Instead, any derivative for a state index beyond the current window
+    // frontier is zeroed post-hoc.  Out-of-window concentrations are near zero
+    // so their contributions to in-window derivatives are negligible.
+    if (ud->window_active) {
+        const int n_sia = i_d + PM * Ib;
+        const int n_vac = v_d + PM * P.V_bin;
+
+        // Zero SIA state derivatives beyond the SIA window
+        const int hi_i = std::min(ud->x_hi_i, n_sia - 1);
+        for (int k = hi_i + 1; k < n_sia; ++k) dydt[k] = 0.0;
+
+        // Zero VAC state derivatives beyond the VAC window
+        const int hi_v = std::min(ud->x_hi_v, n_vac - 1);
+        for (int k = hi_v + 1; k < n_vac; ++k) dydt[i_VAC + k] = 0.0;
     }
 
     return 0;

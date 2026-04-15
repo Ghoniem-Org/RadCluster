@@ -160,12 +160,15 @@ struct Parameters {
     int ark_table;  // ARKODE_DIRKTableID (default 111)
 
     // ── Dynamic window (cpp_sliding_win / sliding_OpenMP) ─────────────────────
-    // window_mode: 0=full, 3=Phase III (constant width), 4=Phase IV (OpenMP)
+    // window_mode: 0=full, 3=Phase III (two independent windows), 4=Phase IV (OpenMP)
+    // Two independent windows: one for SIA cluster indices, one for VAC cluster indices.
     int    window_mode;
     int    window_w0_v;
     int    window_w0_i;
-    double window_C_expand;
-    int    window_expand_pad;
+    double window_C_expand;      // SIA window expansion threshold
+    int    window_expand_pad;    // SIA window expansion pad
+    double window_C_expand_v;    // VAC window expansion threshold (default = window_C_expand)
+    int    window_expand_pad_v;  // VAC window expansion pad (default = window_expand_pad)
     double window_expand_factor;
     int    window_check_every;
     double window_C_contract;
@@ -410,6 +413,10 @@ inline Parameters build_parameters(const std::map<std::string, double>& p) {
                                  static_cast<double>(P.I)));
     P.window_C_expand      = optional_param(p, "window_C_expand",      1e-18);
     P.window_expand_pad    = static_cast<int>(optional_param(p, "window_expand_pad", 10.0));
+    // VAC window parameters default to the SIA values if not supplied
+    P.window_C_expand_v    = optional_param(p, "window_C_expand_v",    P.window_C_expand);
+    P.window_expand_pad_v  = static_cast<int>(optional_param(p, "window_expand_pad_v",
+                                 static_cast<double>(P.window_expand_pad)));
     P.window_expand_factor = optional_param(p, "window_expand_factor", 0.0);
     P.window_check_every   = static_cast<int>(optional_param(p, "window_check_every", 1.0));
     P.window_C_contract    = optional_param(p, "window_C_contract",    0.0);

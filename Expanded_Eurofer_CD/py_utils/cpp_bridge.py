@@ -259,6 +259,9 @@ def write_param_file(sim, solver_config, path, y0_override=None):
     lines.append(f"window_w0_i={int(method.get('window_w0_i', I))}")
     lines.append(f"window_C_expand={float(method.get('window_C_expand', 1e-18)):.17e}")
     lines.append(f"window_expand_pad={int(method.get('window_expand_pad', 10))}")
+    # VAC window parameters — default to the SIA values if not explicitly set
+    lines.append(f"window_C_expand_v={float(method.get('window_C_expand_v', method.get('window_C_expand', 1e-18))):.17e}")
+    lines.append(f"window_expand_pad_v={int(method.get('window_expand_pad_v', method.get('window_expand_pad', 10)))}")
     lines.append(f"window_expand_factor={float(method.get('window_expand_factor', 0.0)):.17e}")
     lines.append(f"window_check_every={int(method.get('window_check_every', 1))}")
     lines.append(f"window_C_contract={float(method.get('window_C_contract', 0.0)):.17e}")

@@ -133,8 +133,9 @@ int main(int argc, char* argv[]) {
 
     // Window mode validation
     if ((P.window_mode == 3 || P.window_mode == 4) &&
-        P.I < P.window_N_thresh) {
-        std::cerr << "[Window] I=" << P.I << " < threshold=" << P.window_N_thresh
+        P.I < P.window_N_thresh && P.V < P.window_N_thresh) {
+        std::cerr << "[Window] I=" << P.I << " and V=" << P.V
+                  << " both < threshold=" << P.window_N_thresh
                   << " — using full solver.\n";
         P.window_mode = 0;
     }
@@ -151,7 +152,12 @@ int main(int argc, char* argv[]) {
               << "  he_mode=" << P.he_mode
               << "  he_options=" << he_opts_str
               << "  C_floor=" << P.C_floor
-              << "  window_mode=" << P.window_mode << "\n";
+              << "  window_mode=" << P.window_mode;
+    if (P.window_mode != 0) {
+        std::cerr << "  win_SIA=[0," << std::min(P.window_w0_i - 1, P.I - 1) << "->" << (P.I - 1) << "]"
+                  << "  win_VAC=[0," << std::min(P.window_w0_v - 1, P.V - 1) << "->" << (P.V - 1) << "]";
+    }
+    std::cerr << "\n";
 
     // ── Time grid ─────────────────────────────────────────────────────────────
     std::vector<double> t_eval(P.n_points);
@@ -179,12 +185,24 @@ int main(int argc, char* argv[]) {
     for (int k = 0; k < N_EQ; ++k)
         ydata[k] = std::max(P.y0[k], P.C_floor);
 
+    // ── Offset of the first VAC state in the full state vector ───────────────
+    // full_CD:      P.I
+    // bin_moment:   P.i_discrete + P.n_mom * P.I_bin
+    const int i_VAC_off = (P.physics_option >= 2)
+                          ? (P.i_discrete + P.n_mom * P.I_bin)
+                          : P.I;
+    // Number of VAC state-vector entries per window domain
+    const int V_states = (P.physics_option >= 2)
+                         ? (P.v_discrete + P.n_mom * P.V_bin)
+                         : P.V;
+
     // ── User data ─────────────────────────────────────────────────────────────
     UserData ud;
-    ud.P            = &P;
-    ud.x_lo_i       = 0;
-    ud.x_hi_i       = P.I - 1;
-    ud.x_hi_v       = P.V - 1;
+    ud.P             = &P;
+    ud.x_lo_i        = 0;
+    ud.x_hi_i        = P.I - 1;
+    ud.x_lo_v        = 0;
+    ud.x_hi_v        = V_states - 1;
     ud.window_active = (P.window_mode != 0);
 
     // ── Select RHS ────────────────────────────────────────────────────────────
@@ -241,9 +259,19 @@ int main(int argc, char* argv[]) {
     }
 
     // ── Integration loop ──────────────────────────────────────────────────────
-    // Window state (applies to SIA cluster indices 0..I-1)
+    // Two independent sliding windows:
+    //   SIA window: active SIA state indices  x_lo_i .. x_hi_i  (0-based, ≤ I-1)
+    //   VAC window: active VAC state indices  x_lo_v .. x_hi_v  (0-based, ≤ V_states-1)
+    // window_mode==0: windows span the full domain (no truncation).
+    // window_mode==3/4: start from a user-specified initial width and expand
+    //   independently as the leading concentration exceeds window_C_expand /
+    //   window_C_expand_v respectively.
     int x_lo_i = 0;
-    int x_hi_i = (P.window_mode == 0) ? P.I - 1 : std::min(P.window_w0_i - 1, P.I - 1);
+    int x_hi_i = (P.window_mode == 0) ? P.I - 1
+                                       : std::min(P.window_w0_i - 1, P.I - 1);
+    int x_lo_v = 0;
+    int x_hi_v = (P.window_mode == 0) ? V_states - 1
+                                       : std::min(P.window_w0_v - 1, V_states - 1);
 
     // Output buffer
     std::vector<double> out_row(N_EQ);
@@ -259,16 +287,30 @@ int main(int argc, char* argv[]) {
     for (int i = 1; i < P.n_points; ++i) {
         double t_out = t_eval[i];
 
-        // Update window upper bound (cpp_sliding_win / sliding_OpenMP)
+        // Update both window upper bounds (cpp_sliding_win / sliding_OpenMP)
         if (P.window_mode != 0) {
-            // Check if leading SIA concentration exceeds expand threshold
-            if ((i - 1) % check_every == 0 && x_hi_i < P.I - 1) {
-                if (x_hi_i < N_EQ - 1 && ydata[x_hi_i] > P.window_C_expand) {
+            if ((i - 1) % check_every == 0) {
+                // ── SIA window expansion ───────────────────────────────────
+                // Expand when the leading SIA cluster concentration exceeds
+                // window_C_expand (absolute index x_hi_i in state vector).
+                if (x_hi_i < P.I - 1 && x_hi_i < N_EQ - 1 &&
+                    ydata[x_hi_i] > P.window_C_expand) {
                     x_hi_i = std::min(x_hi_i + P.window_expand_pad, P.I - 1);
+                }
+                // ── VAC window expansion ───────────────────────────────────
+                // ydata[i_VAC_off + x_hi_v] is the leading VAC concentration
+                // in the state vector (absolute index i_VAC_off + x_hi_v).
+                if (x_hi_v < V_states - 1) {
+                    const int vac_abs = i_VAC_off + x_hi_v;
+                    if (vac_abs < N_EQ && ydata[vac_abs] > P.window_C_expand_v) {
+                        x_hi_v = std::min(x_hi_v + P.window_expand_pad_v, V_states - 1);
+                    }
                 }
             }
             ud.x_hi_i = x_hi_i;
             ud.x_lo_i = x_lo_i;
+            ud.x_hi_v = x_hi_v;
+            ud.x_lo_v = x_lo_v;
         }
 
         double t_now = P.t_begin;

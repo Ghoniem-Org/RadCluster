@@ -35,7 +35,8 @@ struct UserData {
     // Dynamic window state (used by cpp_sliding_win and sliding_OpenMP)
     int x_lo_i;    // lower active SIA index (0-based)
     int x_hi_i;    // upper active SIA index (inclusive, 0-based)
-    int x_hi_v;    // upper active vacancy index (always = V-1)
+    int x_lo_v;    // lower active VAC index (0-based)
+    int x_hi_v;    // upper active VAC index (inclusive, 0-based)
     bool window_active;
 };
 

@@ -165,6 +165,9 @@ def write_param_file(sim, solver_config, path, y0_override=None):
     for k, v in enumerate(rr.D_VAC_eff):
         lines.append(f"D_VAC_eff_{k}={v:.17e}")
     lines.append(f"A_sph_inv_O23={rr.A_sph_inv_O23:.17e}")
+    lines.append(f"A_loop_inv_O23={rr.A_loop_inv_O23:.17e}")
+    Z_i_loop = float(inp.reactions.get('Z_i', 1.05))  # loop bias = dislocation bias Z_i
+    lines.append(f"Z_i_loop={Z_i_loop:.17e}")
     Z_ii = float(inp.reactions.get('Z_ii', 1.0))
     lines.append(f"Z_ii={Z_ii:.17e}")
 
@@ -275,6 +278,21 @@ def write_param_file(sim, solver_config, path, y0_override=None):
     lines.append(f"window_gmres_maxl={int(method.get('window_gmres_maxl', 20))}")
     lines.append(f"Ni_extend_tol=0.00000000000000000e+00")
     lines.append(f"Ni_extend_margin=0")
+
+    # ── Woodbury preconditioner parameters ─────────────────────────────────────
+    # prec_type: 0=Jacobi (legacy), 1=Woodbury (bordered-banded, default for GMRES)
+    linsol_int = _linsol_map.get(str(method.get('linsol','dense')).lower(), 0)
+    window_mode_int = int(method.get('window_mode', 0))
+    # Woodbury only for full solver (window_mode==0) with GMRES — the sliding
+    # window already keeps the active system small enough for Jacobi+GMRES.
+    prec_type_default = 1 if (linsol_int == 2 and window_mode_int == 0) else 0
+    lines.append(f"prec_type={int(method.get('prec_type', prec_type_default))}")
+    # prec_bw: half-bandwidth (auto from mobility cutoffs)
+    prec_bw_default = max(2 * d['i_mobile'], 2 * d['v_mobile']) + 1
+    lines.append(f"prec_bw={int(method.get('prec_bw', prec_bw_default))}")
+    # prec_rank: number of mobile species forming the dense border
+    prec_rank_default = d['i_mobile'] + d['v_mobile']
+    lines.append(f"prec_rank={int(method.get('prec_rank', prec_rank_default))}")
 
     verbose = 1 if solver_config.get('_verbose', False) else 0
     lines.append(f"verbose={verbose}")
@@ -434,6 +452,7 @@ def run_cpp_solver(sim, solver_config, base_dir=None, progress_callback=None,
     re_obj   = sim.rate_equations
     N_tot    = re_obj.N_eq
 
+    proc = None
     try:
         write_param_file(sim, solver_config, param_path, y0_override=y0_override)
         print(f"C++ solver: {exe_path.name}  N_eq={N_tot}"
@@ -466,6 +485,16 @@ def run_cpp_solver(sim, solver_config, base_dir=None, progress_callback=None,
                 pass
             return None
         t_fwd.join()
+    except KeyboardInterrupt:
+        print("\n*** Ctrl+C — terminating C++ solver subprocess ***")
+        if proc is not None:
+            try:
+                proc.terminate()
+                proc.wait(timeout=5)
+            except (subprocess.TimeoutExpired, Exception):
+                proc.kill()
+                proc.wait()
+        raise   # re-raise so run_adaptive() catches it and saves results
     finally:
         try:
             os.unlink(param_path)

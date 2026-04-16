@@ -196,21 +196,22 @@ int main(int argc, char* argv[]) {
                          ? (P.v_discrete + P.n_mom * P.V_bin)
                          : P.V;
 
-    // ── User data ─────────────────────────────────────────────────────────────
-    UserData ud;
-    ud.P             = &P;
-    ud.x_lo_i        = 0;
-    ud.x_hi_i        = P.I - 1;
-    ud.x_lo_v        = 0;
-    ud.x_hi_v        = V_states - 1;
-    ud.window_active = (P.window_mode != 0);
-
     // ── Select RHS ────────────────────────────────────────────────────────────
     CVRhsFn rhs_fn;
     if (P.physics_option >= 2)
         rhs_fn = rhs_bin_moment;
     else
         rhs_fn = rhs_full_CD;
+
+    // ── User data ─────────────────────────────────────────────────────────────
+    UserData ud;
+    ud.P             = &P;
+    ud.rhs_fn        = rhs_fn;
+    ud.x_lo_i        = 0;
+    ud.x_hi_i        = P.I - 1;
+    ud.x_lo_v        = 0;
+    ud.x_hi_v        = V_states - 1;
+    ud.window_active = (P.window_mode != 0);
 
     // ── Create CVODE ──────────────────────────────────────────────────────────
     void* cvode_mem = CVodeCreate(CV_BDF, sunctx);

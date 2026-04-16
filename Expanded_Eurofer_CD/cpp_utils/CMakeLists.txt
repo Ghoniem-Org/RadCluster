@@ -68,11 +68,30 @@ else()
         "  Windows: OpenMP is bundled with MSVC.")
 endif()
 
-# ── Link SUNDIALS ─────────────────────────────────────────────────────────────
+# ── LAPACK (Woodbury preconditioner: dgbtrf/dgbtrs, dgetrf/dgetrs) ───────────
+if(APPLE)
+    # macOS Accelerate framework includes LAPACK
+    find_library(ACCELERATE_FRAMEWORK Accelerate)
+    if(ACCELERATE_FRAMEWORK)
+        message(STATUS "Using macOS Accelerate framework for LAPACK")
+    endif()
+else()
+    find_package(LAPACK)
+endif()
+
+# ── Link SUNDIALS + LAPACK ───────────────────────────────────────────────────
 target_link_libraries(solver
     SUNDIALS::cvode
     SUNDIALS::arkode
     SUNDIALS::nvecserial
     SUNDIALS::sunlinsolband
     SUNDIALS::sunlinsolspgmr
+    SUNDIALS::sunlinsoldense
 )
+if(APPLE AND ACCELERATE_FRAMEWORK)
+    target_link_libraries(solver ${ACCELERATE_FRAMEWORK})
+elseif(LAPACK_FOUND)
+    target_link_libraries(solver ${LAPACK_LIBRARIES})
+else()
+    message(WARNING "LAPACK not found — Woodbury preconditioner will fail at link time.")
+endif()

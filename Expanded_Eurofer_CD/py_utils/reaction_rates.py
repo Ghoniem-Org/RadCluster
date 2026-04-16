@@ -213,36 +213,28 @@ class ReactionRates:
         # Used in K_SIA_grow, K_SIA_loop, K_SIA_shrink, and k2_SIA below.
         rot_factor = 1.0 + B_rot * L_hat**2    # ≈ 6568 for B_rot=2.627, L_hat=50
 
-        # SIA growth (absorbs mono-SIA): K_sph(D_rel, n)  (Eq. 131, 141)
-        # The relative diffusivity governing the encounter rate between a cluster
-        # of size n and a diffusing monomer is D_cluster_3D + D_monomer.
+        # SIA growth (absorbs mono-SIA): LOOP geometry for n ≥ 4 (Eq. P3_i)
+        # SIA clusters of size n ≥ 4 form prismatic dislocation loops whose
+        # capture cross-section scales as the circumference (∝ n^{1/2}), not
+        # the surface area of an equivalent sphere (∝ n^{1/3}).
         #
-        # For n < 4 (3D mobile): both cluster and monomer diffuse in 3D;
-        #   relative D = Di_eff + Di_eff ≈ 2·Di_eff, but conventionally the
-        #   cluster size n is large enough that Di_eff dominates, so D = Di_eff.
-        # For 4 <= n <= i_mobile (1D gliders): the cluster's effective 3D
-        #   diffusivity is D_n_3D = D1D(n)/rot_factor (small); the monomer
-        #   approaches via full 3D diffusion at Di_eff.  Relative D = Di_eff + D_n_3D.
-        #   Since D_n_3D << Di_eff for all 1D gliders, this is dominated by Di_eff
-        #   (monomer diffuses to the nearly-stationary cluster), consistent with
-        #   K_SIA_shrink which already uses Dv_eff + D_n_3D (Eq. 141).
-        # For n > i_mobile (immobile large loops): only the monomer can diffuse,
-        #   so D = Di_eff.
-        # For monomer-target encounters, the relative diffusivity includes
-        # both the monomer (always Di_eff) and the target cluster's own mobility.
-        # For n < 4: D_rel = Di_eff + Di_cluster_3D(n)  [≈ 2·Di_eff when s_3D=0]
-        #   but conventionally only the monomer term is used (Di_eff dominates).
-        # For 4 ≤ n ≤ i_mobile: D_rel = Di_eff + D1D(n)/rot  (D1D << Di_eff).
-        # For n > i_mobile: D_rel = Di_eff (cluster immobile).
+        # For n < 4 (3D mobile point-defect clusters / dumbbells):
+        #   Spherical geometry: K = A_sph · n^{1/3} · D_i / Ω^{2/3}
+        # For n ≥ 4 (dislocation loops — both mobile and sessile):
+        #   Loop geometry:  K = A_loop · n^{1/2} · Z_i^loop · D_i / Ω^{2/3}
+        #   The Z_i^loop bias factor reflects preferential SIA capture by the
+        #   stress field of the prismatic loop (Eq. P3_i, Table 26).
         K_SIA_grow_arr = np.zeros(I)
         for ni in range(1, I + 1):
             if ni < 4:
                 K_SIA_grow_arr[ni - 1] = K_sph(Di_eff, ni)
             elif ni <= i_mobile:
                 D_n_3D = D1D(ni) / rot_factor   # effective 3D via rotation correction
-                K_SIA_grow_arr[ni - 1] = K_sph(Di_eff + D_n_3D, ni)
+                K_SIA_grow_arr[ni - 1] = (A_loop * float(ni)**0.5
+                                           * Z_i_loop * (Di_eff + D_n_3D) * inv_Omega23)
             else:
-                K_SIA_grow_arr[ni - 1] = K_sph(Di_eff, ni)
+                K_SIA_grow_arr[ni - 1] = (A_loop * float(ni)**0.5
+                                           * Z_i_loop * Di_eff * inv_Omega23)
         self.K_SIA_grow = K_SIA_grow_arr
 
         # SIA loop-capture rate  K_loop(n)  (Eq. 132) — same mobility logic
@@ -258,18 +250,20 @@ class ReactionRates:
                 K_SIA_loop_arr[ni - 1] = K_loop(ni)
         self.K_SIA_loop = K_SIA_loop_arr
 
-        # SIA cluster shrinks by absorbing a vacancy  (Eq. 131)
-        # For 1D gliders the cluster also sweeps through the vacancy background,
-        # so the effective relative diffusivity is Dv_eff + D_n_3D.
+        # SIA cluster shrinks by absorbing a vacancy  (Eq. P3_v)
+        # Same loop geometry for n ≥ 4 but NO bias factor (Z_v^loop = 1.0):
+        # vacancy capture by the loop is purely geometric (no elastic preference).
         K_SIA_shrink_arr = np.zeros(I)
         for ni in range(1, I + 1):
             if ni < 4:
                 K_SIA_shrink_arr[ni - 1] = K_sph(Dv_eff, ni)
             elif ni <= i_mobile:
                 D_n_3D = D1D(ni) / rot_factor
-                K_SIA_shrink_arr[ni - 1] = K_sph(Dv_eff + D_n_3D, ni)
+                K_SIA_shrink_arr[ni - 1] = (A_loop * float(ni)**0.5
+                                              * (Dv_eff + D_n_3D) * inv_Omega23)
             else:
-                K_SIA_shrink_arr[ni - 1] = K_sph(Dv_eff, ni)
+                K_SIA_shrink_arr[ni - 1] = (A_loop * float(ni)**0.5
+                                              * Dv_eff * inv_Omega23)
         self.K_SIA_shrink = K_SIA_shrink_arr
 
         # Thermal SIA emission from loop (Eq. 138)
@@ -381,6 +375,7 @@ class ReactionRates:
 
         # Geometric prefactor for coalescence: A_sph / Ω^{2/3}
         self.A_sph_inv_O23 = A_sph * inv_Omega23
+        self.A_loop_inv_O23 = A_loop * inv_Omega23
 
         # Scalar physics
         self.B_rot  = B_rot

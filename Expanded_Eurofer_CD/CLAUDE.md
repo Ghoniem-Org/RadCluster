@@ -450,6 +450,29 @@ Physics options (4 per solver mode):
 - `bin_moment_CD_fission`: Chapter 9 bin-moment, fission cascade
 - `bin_moment_CD_fusion`:  Chapter 9 bin-moment, fusion cascade
 
+### Preconditioner options (for GMRES linear solver, `linsol=2`)
+
+| `prec_type` | Name | Description |
+|---|---|---|
+| 0 | Jacobi | Diagonal scaling $P = \text{diag}(I - \gamma J)$ (legacy) |
+| 1 | **Woodbury** | Bordered-banded SMW preconditioner (default for GMRES) |
+
+The Woodbury preconditioner exploits the Jacobian structure
+$J = T + U V^T$ where $T$ is banded (half-bandwidth
+$b = \max(2 i_{\rm mobile}, 2 v_{\rm mobile}) + 1$) and $U V^T$ is a
+rank-$r$ correction ($r = i_{\rm mobile} + v_{\rm mobile}$) from
+mobile species coupling. Uses LAPACK `dgbtrf`/`dgbtrs` for the band
+and `dgetrf`/`dgetrs` for the $r \times r$ Schur complement.
+
+**Default selection:** Woodbury is used only for `cpp_full` mode
+(`window_mode=0`) with GMRES. For sliding-window modes (3, 4), the
+active system is kept small (50--200 unknowns) so Jacobi+GMRES
+converges efficiently; Woodbury's 58-RHS setup cost is
+counterproductive at that scale.
+
+Parameters: `prec_type` (0/1), `prec_bw` (auto), `prec_rank` (auto).
+See `Docs/Formulation/Jacobian_Preconditioner.tex` for derivation.
+
 ---
 
 ## 10. Binding Energies  (Eqs. v\_binding–Eb\_blended, Tables 18–19)

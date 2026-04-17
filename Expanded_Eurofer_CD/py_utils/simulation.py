@@ -217,8 +217,15 @@ class ExpandedEuroferCDSimulation:
         tail_sia  = np.dot(ns[-tail_n:], np.maximum(c_n[-tail_n:], 0.0))
         tail_vac  = np.dot(ms[-tail_m:], np.maximum(c_v[-tail_m:], 0.0))
 
-        frac_I = tail_sia / max(total_sia, 1e-300)
-        frac_V = tail_vac / max(total_vac, 1e-300)
+        # Guard: if total content is at floor level (all concentrations ≈ C_floor),
+        # the tail fraction is a floor artifact, not real boundary pileup.
+        # Require total content to be above I * C_floor * I (roughly I^2 * C_floor)
+        # to distinguish real content from uniform-floor noise.
+        C_floor = getattr(self.input_data, 'C_floor', 1e-20)
+        sia_threshold = I * I * C_floor * 10.0
+        vac_threshold = V * V * C_floor * 10.0
+        frac_I = tail_sia / max(total_sia, 1e-300) if total_sia > sia_threshold else 0.0
+        frac_V = tail_vac / max(total_vac, 1e-300) if total_vac > vac_threshold else 0.0
         return frac_I, frac_V
 
     def _boundary_fraction(self, results):

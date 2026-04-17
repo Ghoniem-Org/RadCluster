@@ -124,6 +124,7 @@ int main(int argc, char* argv[]) {
         if (fp_bin) {
             std::fwrite(&t,   sizeof(double), 1, fp_bin);
             std::fwrite(data, sizeof(double), n, fp_bin);
+            std::fflush(fp_bin);  // flush so partial output survives kill/interrupt
         } else {
             std::cout << t;
             for (int k = 0; k < n; ++k) std::cout << ' ' << data[k];
@@ -223,6 +224,8 @@ int main(int argc, char* argv[]) {
     CHECK_SUNDIALS(CVodeSetMaxNumSteps(cvode_mem, 500000));
     if (P.max_order > 0)
         CHECK_SUNDIALS(CVodeSetMaxOrd(cvode_mem, P.max_order));
+    if (P.hmin > 0.0)
+        CHECK_SUNDIALS(CVodeSetMinStep(cvode_mem, P.hmin));
 
     // Non-negativity is enforced via C_floor clamping at output time (line 317-318).
     // CVODE constraint enforcement (CVodeSetConstraints) is intentionally disabled
@@ -339,25 +342,12 @@ int main(int argc, char* argv[]) {
 
         if (retval < 0) {
             std::cerr << "CVode failed at t=" << t_out << "  retval=" << retval
-                      << " — reinitialising at t=" << t_now << "\n";
-            // Clamp negatives before reinit so the RHS starts from a valid state
-            for (int k = 0; k < N_EQ; ++k)
-                ydata[k] = std::max(ydata[k], P.C_floor);
-            // CVodeReInit resets BDF order to 1 and clears step history,
-            // allowing the solver to bootstrap through a sharp transient.
-            int ri = CVodeReInit(cvode_mem, t_now, y);
-            if (ri < 0) {
-                std::cerr << "CVodeReInit failed (retval=" << ri << ") — skipping point\n";
-            } else {
-                // Reset initial step size: heuristic h0 = (t_out - t_now) / 1000
-                // so BDF restarts at order 1 with a small but not hmin step.
-                double h0 = std::max((t_out - t_now) * 1e-3, P.rtol * t_now * 1e-3);
-                CVodeSetInitStep(cvode_mem, h0);
-                retval = CVode(cvode_mem, t_out, y, &t_now, CV_NORMAL);
-                if (retval < 0)
-                    std::cerr << "CVode still failed after reinit at t=" << t_out
-                              << "  retval=" << retval << "\n";
-            }
+                      << " — stopping integration (no reinit to preserve conservation)\n";
+            // Do NOT reinit: CVodeReInit resets BDF history, which corrupts the
+            // cumulative conservation-accounting ODEs and produces the "Sum > 1"
+            // artifacts and solution branch jumps visible in post-processed plots.
+            // Instead, stop cleanly so the partial output up to t_now is valid.
+            break;
         }
 
         // Only write output for time points where the solver succeeded.

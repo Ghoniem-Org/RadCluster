@@ -159,6 +159,7 @@ struct Parameters {
     int linsol;     // 0=dense, 1=band, 2=gmres
     int mu, ml;     // band solver bandwidths
     int max_order;  // 0 = solver default
+    double hmin;    // minimum step size (0 = no limit)
     int ark_table;  // ARKODE_DIRKTableID (default 111)
 
     // ── Dynamic window (cpp_sliding_win / sliding_OpenMP) ─────────────────────
@@ -446,6 +447,7 @@ inline Parameters build_parameters(const std::map<std::string, double>& p) {
     P.ml        = static_cast<int>(optional_param(p, "ml",
                                    static_cast<double>(P.N_eq - 1)));
     P.max_order = static_cast<int>(optional_param(p, "max_order", 4.0));
+    P.hmin      = optional_param(p, "hmin", 0.0);
     P.ark_table = static_cast<int>(optional_param(p, "ark_table", 111.0));
 
     // Window parameters

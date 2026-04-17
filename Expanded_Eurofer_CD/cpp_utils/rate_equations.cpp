@@ -171,7 +171,7 @@ static inline double K_vi_coal(const Parameters& P, int n, int mp) {
 // x_hi_i_win / x_hi_v_win: inclusive upper bounds for active SIA / VAC state
 // indices (0-based).  Full solver passes I-1 / V-1.  Sliding-window modes pass
 // the current window frontier.
-// use_omp: true only for sliding_OpenMP (window_mode==4) with CD_HAVE_OPENMP.
+// use_omp: true when window_omp_threads > 0 (all solver modes, not just sliding_OpenMP).
 static int rhs_case2(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
                       const Parameters& P,
                       int x_hi_i_win, int x_hi_v_win, bool use_omp) {
@@ -982,9 +982,11 @@ int rhs_full_CD(sunrealtype t, N_Vector y, N_Vector ydot, void* user_data) {
     //   window_mode == 0 (full): entire SIA / VAC domains are active.
     //   window_mode == 3 (cpp_sliding_win): two independent windows, serial.
     //   window_mode == 4 (sliding_OpenMP): two independent windows + OMP.
+    // OpenMP is safe for all modes: each loop iteration writes only to its
+    // own dci[n] or dcv[m], so there are no data races.
     const int  x_hi_i = ud->window_active ? ud->x_hi_i : P.I - 1;
     const int  x_hi_v = ud->window_active ? ud->x_hi_v : P.V - 1;
-    const bool use_omp = (P.window_mode == 4);
+    const bool use_omp = (P.window_omp_threads > 0);
 
     if (P.he_mode == 1)
         return rhs_case1(t, y, ydot, P, x_hi_i, x_hi_v, use_omp);
@@ -1028,6 +1030,16 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
         }
     }
 
+    // Smooth positive-projection for reconstructed concentrations.
+    // Hard max(x, 0) creates a Jacobian kink at x=0 that stalls BDF.
+    // softplus(x) = x  for x >> eps,  ≈ eps·exp(x/eps)  for x << -eps.
+    auto softplus = [](double x) -> double {
+        constexpr double eps = 1e-30;  // transition width
+        if (x > 20.0 * eps) return x;           // fast path: x is safely positive
+        if (x < -20.0 * eps) return eps * std::exp(x / eps);  // exponentially small
+        return eps * std::log1p(std::exp(x / eps));            // smooth transition
+    };
+
     // Reconstruct full c_n[0..I-1] from discrete + binned
     std::vector<double> c_n(I, 0.0);
     // Discrete sizes: y[0..i_d-1] = c_1..c_{i_discrete}
@@ -1036,14 +1048,35 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
     // Binned sizes: closure from moments (shape_function selects method)
     for (int k = 0; k < Ib; ++k) {
         const double mu0_k = std::max(y[i_d + PM*k], 0.0);
-        const double mu1_k = (PM >= 2) ? y[i_d + PM*k + 1] : 0.0;
-        const double mu2_k = (PM >= 3) ? y[i_d + PM*k + 2] : 0.0;
+        double mu1_k = (PM >= 2) ? y[i_d + PM*k + 1] : 0.0;
+        double mu2_k = (PM >= 3) ? y[i_d + PM*k + 2] : 0.0;
         const double bw    = static_cast<double>(n_hi[k] - n_lo[k]);
         if (bw <= 0 || mu0_k <= 0.0) continue;
         if (bw == 1.0) {
             int ni = n_lo[k] - 1;
             if (ni >= 0 && ni < I) c_n[ni] = mu0_k;
             continue;
+        }
+
+        // ── Moment consistency guard ────────────────────────────────────
+        // Ensure n_bar = mu1/mu0 lies within [n_lo, n_hi).  When the
+        // distribution front enters a bin, mu0 grows from the floor while
+        // mu1 hasn't caught up, giving n_bar outside the bin range.
+        // The linear reconstruction then goes negative, creating a
+        // Jacobian kink that stalls BDF.  Clamping n_bar to the bin
+        // range prevents this while preserving smoothness.
+        {
+            const double n_lo_f = static_cast<double>(n_lo[k]);
+            const double n_hi_f = static_cast<double>(n_hi[k] - 1);
+            const double n_mid  = 0.5 * (n_lo_f + n_hi_f);
+            double n_bar = mu1_k / std::max(mu0_k, 1e-300);
+            if (n_bar < n_lo_f) mu1_k = mu0_k * n_lo_f;
+            else if (n_bar > n_hi_f) mu1_k = mu0_k * n_hi_f;
+            // Also guard mu2 for lognormal: ensure ratio > 1
+            if (PM >= 3) {
+                double n2_min = mu1_k * mu1_k / std::max(mu0_k, 1e-300) * 1.01;
+                if (mu2_k < n2_min) mu2_k = n2_min;
+            }
         }
 
         // Select reconstruction method
@@ -1106,7 +1139,7 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
                         double nf = static_cast<double>(n);
                         double phi0 = (S2 - S1 * nf) / det;
                         double phi1 = (bw * nf - S1) / det;
-                        c_n[n - 1] = std::max(phi0 * mu0_k + phi1 * mu1_k, 0.0);
+                        c_n[n - 1] = softplus(phi0 * mu0_k + phi1 * mu1_k);
                     }
                 }
             }
@@ -1138,14 +1171,27 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
         const int vac_mom_start = i_VAC + v_d;
         for (int k = 0; k < Kv; ++k) {
             const double mu0_k = std::max(y[vac_mom_start + PM*k], 0.0);
-            const double mu1_k = (PM >= 2) ? y[vac_mom_start + PM*k + 1] : 0.0;
-            const double mu2_k = (PM >= 3) ? y[vac_mom_start + PM*k + 2] : 0.0;
+            double mu1_k = (PM >= 2) ? y[vac_mom_start + PM*k + 1] : 0.0;
+            double mu2_k = (PM >= 3) ? y[vac_mom_start + PM*k + 2] : 0.0;
             const double bw    = static_cast<double>(m_hi[k] - m_lo[k]);
             if (bw <= 0 || mu0_k <= 0.0) continue;
             if (bw == 1.0) {
                 int mi = m_lo[k] - 1;
                 if (mi >= 0 && mi < V) c_v_vec[mi] = mu0_k;
                 continue;
+            }
+
+            // ── Moment consistency guard (same as SIA) ──────────────────
+            {
+                const double m_lo_f = static_cast<double>(m_lo[k]);
+                const double m_hi_f = static_cast<double>(m_hi[k] - 1);
+                double n_bar = mu1_k / std::max(mu0_k, 1e-300);
+                if (n_bar < m_lo_f) mu1_k = mu0_k * m_lo_f;
+                else if (n_bar > m_hi_f) mu1_k = mu0_k * m_hi_f;
+                if (PM >= 3) {
+                    double n2_min = mu1_k * mu1_k / std::max(mu0_k, 1e-300) * 1.01;
+                    if (mu2_k < n2_min) mu2_k = n2_min;
+                }
             }
 
             // Select reconstruction method
@@ -1208,7 +1254,7 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
                             double mf = static_cast<double>(m);
                             double phi0 = (S2 - S1 * mf) / det;
                             double phi1 = (bw * mf - S1) / det;
-                            c_v_vec[m - 1] = std::max(phi0 * mu0_k + phi1 * mu1_k, 0.0);
+                            c_v_vec[m - 1] = softplus(phi0 * mu0_k + phi1 * mu1_k);
                         }
                     }
                 }

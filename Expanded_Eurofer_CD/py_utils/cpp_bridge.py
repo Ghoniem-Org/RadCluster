@@ -255,6 +255,7 @@ def write_param_file(sim, solver_config, path, y0_override=None):
     lines.append(f"mu={int(method.get('mu', N_tot - 1))}")
     lines.append(f"ml={int(method.get('ml', N_tot - 1))}")
     lines.append(f"max_order={int(method.get('max_order', 0))}")
+    lines.append(f"hmin={float(method.get('hmin', 0.0)):.17e}")
     lines.append(f"ark_table={int(method.get('ark_table', 111))}")
 
     # ── Dynamic window parameters ──────────────────────────────────────────────
@@ -468,25 +469,20 @@ def run_cpp_solver(sim, solver_config, base_dir=None, progress_callback=None,
         stderr_fn = _make_stderr_handler(progress_callback)
         t_fwd = threading.Thread(target=stderr_fn, args=(proc.stderr,), daemon=True)
         t_fwd.start()
-        stdout_data = proc.stdout.read()
+        partial = False
+        stdout_data = b''
         try:
+            stdout_data = proc.stdout.read()
             proc.wait(timeout=timeout_s)
         except subprocess.TimeoutExpired:
             proc.kill()
             proc.wait()
-            print(f"C++ solver killed after {timeout_s}s timeout")
-            try:
-                os.unlink(param_path)
-            except OSError:
-                pass
-            try:
-                os.unlink(bin_path)
-            except OSError:
-                pass
-            return None
-        t_fwd.join()
+            print(f"C++ solver killed after {timeout_s}s timeout — parsing partial output")
+            partial = True
+        t_fwd.join(timeout=2)
     except KeyboardInterrupt:
-        print("\n*** Ctrl+C — terminating C++ solver subprocess ***")
+        print("\n*** Ctrl+C — terminating C++ solver, parsing partial output ***")
+        partial = True
         if proc is not None:
             try:
                 proc.terminate()
@@ -494,22 +490,17 @@ def run_cpp_solver(sim, solver_config, base_dir=None, progress_callback=None,
             except (subprocess.TimeoutExpired, Exception):
                 proc.kill()
                 proc.wait()
-        raise   # re-raise so run_adaptive() catches it and saves results
     finally:
         try:
             os.unlink(param_path)
         except OSError:
             pass
 
-    if proc.returncode != 0:
+    if not partial and proc.returncode != 0:
         print(f"C++ solver failed (exit code {proc.returncode})")
-        try:
-            os.unlink(bin_path)
-        except OSError:
-            pass
-        return None
 
-    # Parse binary output
+    # Parse binary output (works for both complete and partial/interrupted runs —
+    # the C++ solver flushes each row to the .bin file as it's computed)
     sol_arr = None
     try:
         raw    = np.fromfile(bin_path, dtype=np.float64)
@@ -526,15 +517,17 @@ def run_cpp_solver(sim, solver_config, base_dir=None, progress_callback=None,
             pass
 
     if sol_arr is None or sol_arr.shape[0] == 0:
-        text    = stdout_data.decode('utf-8', errors='replace')
-        sol_arr = _parse_stdout(text, N_tot)
+        if stdout_data:
+            text    = stdout_data.decode('utf-8', errors='replace')
+            sol_arr = _parse_stdout(text, N_tot)
 
-    if sol_arr.shape[0] == 0:
+    if sol_arr is None or sol_arr.shape[0] == 0:
         print("C++ solver produced no parseable output")
         return None
 
+    status = "partial" if partial else "completed"
     n_pts = sol_arr.shape[0]
-    print(f"C++ solver completed — {n_pts} time points")
+    print(f"C++ solver {status} — {n_pts} time points")
 
     t = sol_arr[:, 0]
     y = sol_arr[:, 1:].T   # (N_tot, n_pts)

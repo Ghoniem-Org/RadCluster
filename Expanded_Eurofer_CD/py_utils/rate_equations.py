@@ -406,30 +406,13 @@ class RateEquations:
         dydt[self.i_J_VAC_fixed] = rr.k2_vac_scalar * np.dot(ms_mob, c_v[:vm])
 
         # (3b) VAC content to mutual annihilation:
-        # Same as J_SIA_mutual for channel (a), but channel (b) removes m'
-        # per vacancy cluster consumed (not min(m',n) as for SIA side).
-        vac_mutual = mutual  # start with SIA mutual (channels a all equal)
-        # Correction for channel (b): when m' > n, SIA counted n but VAC
-        # should count m' (the entire vacancy cluster is consumed).
-        for mp in range(2, vm + 1):
-            c_mp = c_v[mp - 1]
-            if c_mp < 1e-300:
-                continue
-            for n in range(1, min(mp, I + 1)):
-                cn = c_i[n - 1]
-                if cn < 1e-300:
-                    continue
-                # Rate constant for I_n + V_mp reaction
-                if n <= 3:
-                    K_s = rr.K_3D_cav_pref * float(mp) ** (1.0 / 3.0)
-                else:
-                    k_pref = rr.K_1D_pref[n - 1]
-                    if k_pref < 1e-300:
-                        continue
-                    K_s = k_pref * float(mp) ** (1.0 / 3.0) / (
-                        1.0 + rr.B_rot * rr.L_hat**2 / float(mp) ** (1.0 / 3.0))
-                vac_mutual += (mp - n) * K_s * c_mp * cn
-        dydt[self.i_J_VAC_mutual] = vac_mutual
+        # When I_n + V_{m'} react, the reaction is:
+        #   m' > n: V_{m'} → V_{m'-n}  (only n vacancies removed)
+        #   m' = n: complete annihilation (n vacancies removed)
+        #   m' < n: I_{n-m'} produced   (m' vacancies removed)
+        # In all cases, vacancies destroyed = min(m', n) = SIA destroyed.
+        # Therefore J_VAC_mutual = J_SIA_mutual (matches C++ implementation).
+        dydt[self.i_J_VAC_mutual] = mutual  # J_VAC_mutual = J_SIA_mutual (physically correct)
 
         # (4) He to sinks: k2_He · c_h + k2_vac · Σ_{m≤v_mobile} ℓ_m · c_m
         he_sink_acc = rr.k2_He_scalar * c_h

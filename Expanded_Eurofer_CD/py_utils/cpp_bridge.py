@@ -165,6 +165,9 @@ def write_param_file(sim, solver_config, path, y0_override=None):
     for k, v in enumerate(rr.D_VAC_eff):
         lines.append(f"D_VAC_eff_{k}={v:.17e}")
     lines.append(f"A_sph_inv_O23={rr.A_sph_inv_O23:.17e}")
+    lines.append(f"A_loop_inv_O23={rr.A_loop_inv_O23:.17e}")
+    Z_i_loop = float(inp.reactions.get('Z_i', 1.05))  # loop bias = dislocation bias Z_i
+    lines.append(f"Z_i_loop={Z_i_loop:.17e}")
     Z_ii = float(inp.reactions.get('Z_ii', 1.0))
     lines.append(f"Z_ii={Z_ii:.17e}")
 
@@ -252,6 +255,7 @@ def write_param_file(sim, solver_config, path, y0_override=None):
     lines.append(f"mu={int(method.get('mu', N_tot - 1))}")
     lines.append(f"ml={int(method.get('ml', N_tot - 1))}")
     lines.append(f"max_order={int(method.get('max_order', 0))}")
+    lines.append(f"hmin={float(method.get('hmin', 0.0)):.17e}")
     lines.append(f"ark_table={int(method.get('ark_table', 111))}")
 
     # ── Dynamic window parameters ──────────────────────────────────────────────
@@ -259,6 +263,9 @@ def write_param_file(sim, solver_config, path, y0_override=None):
     lines.append(f"window_w0_i={int(method.get('window_w0_i', I))}")
     lines.append(f"window_C_expand={float(method.get('window_C_expand', 1e-18)):.17e}")
     lines.append(f"window_expand_pad={int(method.get('window_expand_pad', 10))}")
+    # VAC window parameters — default to the SIA values if not explicitly set
+    lines.append(f"window_C_expand_v={float(method.get('window_C_expand_v', method.get('window_C_expand', 1e-18))):.17e}")
+    lines.append(f"window_expand_pad_v={int(method.get('window_expand_pad_v', method.get('window_expand_pad', 10)))}")
     lines.append(f"window_expand_factor={float(method.get('window_expand_factor', 0.0)):.17e}")
     lines.append(f"window_check_every={int(method.get('window_check_every', 1))}")
     lines.append(f"window_C_contract={float(method.get('window_C_contract', 0.0)):.17e}")
@@ -272,6 +279,21 @@ def write_param_file(sim, solver_config, path, y0_override=None):
     lines.append(f"window_gmres_maxl={int(method.get('window_gmres_maxl', 20))}")
     lines.append(f"Ni_extend_tol=0.00000000000000000e+00")
     lines.append(f"Ni_extend_margin=0")
+
+    # ── Woodbury preconditioner parameters ─────────────────────────────────────
+    # prec_type: 0=Jacobi (legacy), 1=Woodbury (bordered-banded, default for GMRES)
+    linsol_int = _linsol_map.get(str(method.get('linsol','dense')).lower(), 0)
+    window_mode_int = int(method.get('window_mode', 0))
+    # Woodbury only for full solver (window_mode==0) with GMRES — the sliding
+    # window already keeps the active system small enough for Jacobi+GMRES.
+    prec_type_default = 1 if (linsol_int == 2 and window_mode_int == 0) else 0
+    lines.append(f"prec_type={int(method.get('prec_type', prec_type_default))}")
+    # prec_bw: half-bandwidth (auto from mobility cutoffs)
+    prec_bw_default = max(2 * d['i_mobile'], 2 * d['v_mobile']) + 1
+    lines.append(f"prec_bw={int(method.get('prec_bw', prec_bw_default))}")
+    # prec_rank: number of mobile species forming the dense border
+    prec_rank_default = d['i_mobile'] + d['v_mobile']
+    lines.append(f"prec_rank={int(method.get('prec_rank', prec_rank_default))}")
 
     verbose = 1 if solver_config.get('_verbose', False) else 0
     lines.append(f"verbose={verbose}")
@@ -431,6 +453,7 @@ def run_cpp_solver(sim, solver_config, base_dir=None, progress_callback=None,
     re_obj   = sim.rate_equations
     N_tot    = re_obj.N_eq
 
+    proc = None
     try:
         write_param_file(sim, solver_config, param_path, y0_override=y0_override)
         print(f"C++ solver: {exe_path.name}  N_eq={N_tot}"
@@ -446,38 +469,38 @@ def run_cpp_solver(sim, solver_config, base_dir=None, progress_callback=None,
         stderr_fn = _make_stderr_handler(progress_callback)
         t_fwd = threading.Thread(target=stderr_fn, args=(proc.stderr,), daemon=True)
         t_fwd.start()
-        stdout_data = proc.stdout.read()
+        partial = False
+        stdout_data = b''
         try:
+            stdout_data = proc.stdout.read()
             proc.wait(timeout=timeout_s)
         except subprocess.TimeoutExpired:
             proc.kill()
             proc.wait()
-            print(f"C++ solver killed after {timeout_s}s timeout")
+            print(f"C++ solver killed after {timeout_s}s timeout — parsing partial output")
+            partial = True
+        t_fwd.join(timeout=2)
+    except KeyboardInterrupt:
+        print("\n*** Ctrl+C — terminating C++ solver, parsing partial output ***")
+        partial = True
+        if proc is not None:
             try:
-                os.unlink(param_path)
-            except OSError:
-                pass
-            try:
-                os.unlink(bin_path)
-            except OSError:
-                pass
-            return None
-        t_fwd.join()
+                proc.terminate()
+                proc.wait(timeout=5)
+            except (subprocess.TimeoutExpired, Exception):
+                proc.kill()
+                proc.wait()
     finally:
         try:
             os.unlink(param_path)
         except OSError:
             pass
 
-    if proc.returncode != 0:
+    if not partial and proc.returncode != 0:
         print(f"C++ solver failed (exit code {proc.returncode})")
-        try:
-            os.unlink(bin_path)
-        except OSError:
-            pass
-        return None
 
-    # Parse binary output
+    # Parse binary output (works for both complete and partial/interrupted runs —
+    # the C++ solver flushes each row to the .bin file as it's computed)
     sol_arr = None
     try:
         raw    = np.fromfile(bin_path, dtype=np.float64)
@@ -494,15 +517,17 @@ def run_cpp_solver(sim, solver_config, base_dir=None, progress_callback=None,
             pass
 
     if sol_arr is None or sol_arr.shape[0] == 0:
-        text    = stdout_data.decode('utf-8', errors='replace')
-        sol_arr = _parse_stdout(text, N_tot)
+        if stdout_data:
+            text    = stdout_data.decode('utf-8', errors='replace')
+            sol_arr = _parse_stdout(text, N_tot)
 
-    if sol_arr.shape[0] == 0:
+    if sol_arr is None or sol_arr.shape[0] == 0:
         print("C++ solver produced no parseable output")
         return None
 
+    status = "partial" if partial else "completed"
     n_pts = sol_arr.shape[0]
-    print(f"C++ solver completed — {n_pts} time points")
+    print(f"C++ solver {status} — {n_pts} time points")
 
     t = sol_arr[:, 0]
     y = sol_arr[:, 1:].T   # (N_tot, n_pts)

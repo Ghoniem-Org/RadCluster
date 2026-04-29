@@ -110,6 +110,8 @@ struct Parameters {
     std::vector<double> D_SIA_eff;   // [I]: effective 3D D for SIA cluster n
     std::vector<double> D_VAC_eff;   // [V]: effective 3D D for vac cluster m
     double A_sph_inv_O23;            // A_sph / Ω^{2/3}  [m^-2]
+    double A_loop_inv_O23;           // A_loop / Ω^{2/3} [m^-2]  (loop geometry for n≥4)
+    double Z_i_loop;                 // SIA dislocation bias at loops (Table 26, Eq. P3_i)
     double Z_ii;                     // SIA-SIA coalescence bias factor (elastic interaction)
 
     // ── Scalar physics ────────────────────────────────────────────────────────
@@ -157,15 +159,19 @@ struct Parameters {
     int linsol;     // 0=dense, 1=band, 2=gmres
     int mu, ml;     // band solver bandwidths
     int max_order;  // 0 = solver default
+    double hmin;    // minimum step size (0 = no limit)
     int ark_table;  // ARKODE_DIRKTableID (default 111)
 
     // ── Dynamic window (cpp_sliding_win / sliding_OpenMP) ─────────────────────
-    // window_mode: 0=full, 3=Phase III (constant width), 4=Phase IV (OpenMP)
+    // window_mode: 0=full, 3=Phase III (two independent windows), 4=Phase IV (OpenMP)
+    // Two independent windows: one for SIA cluster indices, one for VAC cluster indices.
     int    window_mode;
     int    window_w0_v;
     int    window_w0_i;
-    double window_C_expand;
-    int    window_expand_pad;
+    double window_C_expand;      // SIA window expansion threshold
+    int    window_expand_pad;    // SIA window expansion pad
+    double window_C_expand_v;    // VAC window expansion threshold (default = window_C_expand)
+    int    window_expand_pad_v;  // VAC window expansion pad (default = window_expand_pad)
     double window_expand_factor;
     int    window_check_every;
     double window_C_contract;
@@ -180,8 +186,47 @@ struct Parameters {
     double Ni_extend_tol;
     int    Ni_extend_margin;
 
-    // ── Jacobi preconditioner storage ─────────────────────────────────────────
+    // ── Preconditioner storage ───────────────────────────────────────────────
+    // Legacy Jacobi diagonal (used when window_prec==1 and prec_type==0)
     std::vector<double> prec_diag;
+
+    // Woodbury bordered-banded preconditioner (used when prec_type==1)
+    //
+    // The Jacobian has the structure  J = T + U·V^T  where:
+    //   T is banded (half-bandwidth prec_bw)
+    //   U is N_eq × prec_rank  (dense columns from mobile species)
+    //   V = [e_{j1}, ..., e_{jr}]  (selector for mobile indices)
+    //
+    // The preconditioner solves  (I - γJ)x = r  via SMW:
+    //   M = T̂ - γ U V^T,  T̂ = I - γT  (banded)
+    //   M^{-1} = T̂^{-1} + T̂^{-1} U S^{-1} V^T T̂^{-1}
+    //   S = -I/γ_scale + V^T T̂^{-1} U   (r × r Schur complement)
+    int prec_type;       // 0=Jacobi (legacy), 1=Woodbury (default when coalescence)
+    int prec_bw;         // half-bandwidth of T  (auto: max(2*i_mobile, 2*v_mobile) + 1)
+    int prec_rank;       // rank of dense border  (auto: i_mobile + v_mobile)
+
+    // Storage (allocated in prec_setup):
+    //   prec_band:      banded LU of T̂ in LAPACK dgbtrf layout
+    //                   rows: 2*prec_bw + prec_bw + 1 = 3*prec_bw + 1
+    //                   cols: N_eq
+    //   prec_Tinv_U:    T̂^{-1} U  [N_eq × prec_rank]
+    //   prec_schur:     S factored  [prec_rank × prec_rank]
+    //   prec_ipiv_band: pivot array for dgbtrf [N_eq]
+    //   prec_ipiv_schur:pivot array for dgetrf [prec_rank]
+    //   prec_mobile_idx:indices of mobile species in state vector [prec_rank]
+    //   prec_f0:        base RHS evaluation [N_eq]
+    std::vector<double> prec_band;
+    std::vector<double> prec_Tinv_U;
+    std::vector<double> prec_schur;
+    std::vector<int>    prec_ipiv_band;
+    std::vector<int>    prec_ipiv_schur;
+    std::vector<int>    prec_mobile_idx;
+    std::vector<double> prec_f0;
+    std::vector<double> prec_work;     // scratch [N_eq]
+    std::vector<double> prec_y_save;   // saved y during FD probing [N_eq]
+    std::vector<double> prec_deltas;   // FD perturbation sizes [N_eq]
+    std::vector<double> prec_f_pert;   // perturbed RHS [N_eq]
+    double              prec_gamma;    // cached γ from last setup
 
     // ── Diagnostics ────────────────────────────────────────────────────────────
     bool verbose;   // if false, suppress per-timestep [diag] / [ci5_rates] output
@@ -330,8 +375,10 @@ inline Parameters build_parameters(const std::map<std::string, double>& p) {
         P.D_SIA_eff[k] = optional_param(p, "D_SIA_eff_" + std::to_string(k), 0.0);
     for (int k = 0; k < P.V; ++k)
         P.D_VAC_eff[k] = optional_param(p, "D_VAC_eff_" + std::to_string(k), 0.0);
-    P.A_sph_inv_O23 = optional_param(p, "A_sph_inv_O23", 0.0);
-    P.Z_ii          = optional_param(p, "Z_ii", 1.0);
+    P.A_sph_inv_O23  = optional_param(p, "A_sph_inv_O23", 0.0);
+    P.A_loop_inv_O23 = optional_param(p, "A_loop_inv_O23", 0.0);
+    P.Z_i_loop       = optional_param(p, "Z_i_loop", 1.05);
+    P.Z_ii           = optional_param(p, "Z_ii", 1.0);
 
     // Scalar physics
     P.G_He       = require_param(p, "G_He");
@@ -400,6 +447,7 @@ inline Parameters build_parameters(const std::map<std::string, double>& p) {
     P.ml        = static_cast<int>(optional_param(p, "ml",
                                    static_cast<double>(P.N_eq - 1)));
     P.max_order = static_cast<int>(optional_param(p, "max_order", 4.0));
+    P.hmin      = optional_param(p, "hmin", 0.0);
     P.ark_table = static_cast<int>(optional_param(p, "ark_table", 111.0));
 
     // Window parameters
@@ -410,6 +458,10 @@ inline Parameters build_parameters(const std::map<std::string, double>& p) {
                                  static_cast<double>(P.I)));
     P.window_C_expand      = optional_param(p, "window_C_expand",      1e-18);
     P.window_expand_pad    = static_cast<int>(optional_param(p, "window_expand_pad", 10.0));
+    // VAC window parameters default to the SIA values if not supplied
+    P.window_C_expand_v    = optional_param(p, "window_C_expand_v",    P.window_C_expand);
+    P.window_expand_pad_v  = static_cast<int>(optional_param(p, "window_expand_pad_v",
+                                 static_cast<double>(P.window_expand_pad)));
     P.window_expand_factor = optional_param(p, "window_expand_factor", 0.0);
     P.window_check_every   = static_cast<int>(optional_param(p, "window_check_every", 1.0));
     P.window_C_contract    = optional_param(p, "window_C_contract",    0.0);
@@ -423,6 +475,39 @@ inline Parameters build_parameters(const std::map<std::string, double>& p) {
     P.window_gmres_maxl    = static_cast<int>(optional_param(p, "window_gmres_maxl",  20.0));
     P.Ni_extend_tol        = optional_param(p, "Ni_extend_tol",    0.0);
     P.Ni_extend_margin     = static_cast<int>(optional_param(p, "Ni_extend_margin", 0.0));
+
+    // Preconditioner type: 0=Jacobi (legacy), 1=Woodbury (bordered-banded)
+    // Default: Woodbury only for full solver (window_mode==0) with GMRES,
+    // because the sliding window already keeps the active system small enough
+    // for Jacobi+GMRES to converge efficiently.  Woodbury's 58-RHS setup cost
+    // is counterproductive when the active window is only 50-200 unknowns.
+    {
+        bool use_woodbury = (P.linsol == 2) && (P.window_mode == 0);
+        P.prec_type = static_cast<int>(optional_param(p, "prec_type",
+                          use_woodbury ? 1.0 : 0.0));
+    }
+    // Bandwidth auto-computed from mobility cutoffs
+    P.prec_bw   = static_cast<int>(optional_param(p, "prec_bw",
+                      static_cast<double>(std::max(2 * P.i_mobile, 2 * P.v_mobile) + 1)));
+    // Rank = number of mobile species (dense columns in Jacobian)
+    P.prec_rank = static_cast<int>(optional_param(p, "prec_rank",
+                      static_cast<double>(P.i_mobile + P.v_mobile)));
+    P.prec_gamma = 0.0;
+
+    // Build mobile species index list for Woodbury preconditioner
+    if (P.prec_type == 1) {
+        P.prec_mobile_idx.resize(P.prec_rank);
+        // First i_mobile entries: SIA mobile indices 0..i_mobile-1
+        for (int k = 0; k < P.i_mobile; ++k)
+            P.prec_mobile_idx[k] = k;
+        // Next v_mobile entries: VAC mobile indices I..I+v_mobile-1
+        // (or i_discrete offset for bin_moment modes)
+        const int vac_off = (P.physics_option >= 2)
+                            ? (P.i_discrete + P.n_mom * P.I_bin)
+                            : P.I;
+        for (int k = 0; k < P.v_mobile; ++k)
+            P.prec_mobile_idx[P.i_mobile + k] = vac_off + k;
+    }
 
     P.verbose = (optional_param(p, "verbose", 0.0) > 0.5);
 

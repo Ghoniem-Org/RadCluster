@@ -949,7 +949,8 @@ class BinMomentRateEquations:
         # Channel (a): mobile SIA clusters absorbed by cavities
         # Channel (b): mobile vacancies shrinking SIA clusters
         mutual = rr.K_iv * ci1 * cv1                            # V_1+I_1 recomb (1 SIA)
-        mutual += ci1 * np.dot(rr.K_VAC_shrink[1:], c_v[1:])    # I_1 → cavities m≥2 (1 SIA)
+        sum_K3D_cv_m2 = rr.K_3D_cav_pref * np.dot(m13[1:], c_v[1:])
+        mutual += ci1 * sum_K3D_cv_m2                           # I_1 → cavities m≥2 (1 SIA)
         mutual += cv1 * np.sum(rr.K_SIA_shrink[1:] * c_n[1:])   # V_1+I_n→I_{n-1} (1 SIA each)
         for n in range(2, min(4, i_mobile + 1)):
             mutual += n * c_n[n-1] * rr.K_3D_cav_pref * np.dot(m13, c_v)
@@ -966,30 +967,9 @@ class BinMomentRateEquations:
         dydt[self.i_J_VAC_fixed] = rr.k2_vac_scalar * np.dot(ms_v, c_v[:vm])
 
         # (3b) VAC content to mutual annihilation:
-        # Same as J_SIA_mutual for channels (a), but channel (b) removes m'
-        # per vacancy cluster consumed (not min(m',n) as for SIA side).
-        vac_mutual = mutual  # start with SIA mutual (channels a all equal)
-        # Correction for channel (b): SIA mutual counted min(m',n)*K*c_mp*cn
-        # VAC mutual should count m'*K*c_mp*cn (vacancy cluster consumed)
-        # Difference: Σ (m' - min(m',n)) * K * c_mp * cn for m' > n
-        for mp in range(1, vm + 1):
-            c_mp = c_v[mp - 1]
-            if c_mp < 1e-300:
-                continue
-            for n in range(I):
-                sn = n + 1
-                cn = c_n[n]
-                if cn < 1e-300 or mp <= sn:
-                    continue  # min(mp, sn) = mp, so no correction needed
-                # mp > sn: SIA counted sn, VAC should count mp
-                if mp == 1 and n > 0:
-                    K_s = rr.K_VAC_shrink[n]
-                elif mp == 1 and n == 0:
-                    K_s = rr.K_iv
-                else:
-                    K_s = rr.K_3D_cav_pref * float(sn)**(1.0/3.0)
-                vac_mutual += (mp - sn) * K_s * c_mp * cn
-        dydt[self.i_J_VAC_mutual] = vac_mutual
+        # When I_n + V_{m'} react, vacancies destroyed = min(m', n) = SIA destroyed.
+        # Therefore J_VAC_mutual = J_SIA_mutual (matches C++ implementation).
+        dydt[self.i_J_VAC_mutual] = mutual  # J_VAC_mutual = J_SIA_mutual (physically correct)
 
         # (4) He to sinks: k2_He · c_h + k2_vac · Σ_{m≤v_mobile} ℓ_m · c_m
         sum_cv = np.sum(c_v)

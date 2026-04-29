@@ -79,7 +79,9 @@ def calculate_derived_quantities(t, y, input_data, rate_eq_obj,
     C_v1      = np.zeros(n_t)   # free vacancy monomer
     C_He_free = np.zeros(n_t)   # free He
 
-    delta_FP  = np.zeros(n_t)   # Frenkel pair conservation (Eq. 164)
+    delta_FP     = np.zeros(n_t)   # Frenkel pair conservation (Eq. 164) — max(sia, vac)
+    delta_FP_sia = np.zeros(n_t)   # SIA arm of FP conservation
+    delta_FP_vac = np.zeros(n_t)   # VAC arm of FP conservation
     delta_He  = np.zeros(n_t)   # He conservation (Eq. 165)
 
     # (Conservation fluxes are now tracked by CVODE as extra state variables)
@@ -230,14 +232,22 @@ def calculate_derived_quantities(t, y, input_data, rate_eq_obj,
         if prod > 1e-300:
             err_sia = abs(prod - C_SIA_tot[j] - J_SIA_fixed[j] - J_SIA_mutual[j]) / prod
             err_vac = abs(prod - C_VAC_tot[j] - J_VAC_fixed[j] - J_VAC_mutual[j]) / prod
-            delta_FP[j] = max(err_sia, err_vac)
+            delta_FP[j]     = max(err_sia, err_vac)
+            delta_FP_sia[j] = err_sia
+            delta_FP_vac[j] = err_vac
         else:
-            delta_FP[j] = 0.0
+            delta_FP[j] = delta_FP_sia[j] = delta_FP_vac[j] = 0.0
 
-    # He conservation: G_He·t = C_He_tot + J_He_sink  (exact)
+    # He conservation: G_He·t = C_He_tot + J_He_sink
+    # NOTE: This identity is exact only in dynamic (non-QSS) He mode.
+    # In quasi_steady_state mode, the algebraic c_h eliminates the transient
+    # storage term (dc_h/dt), so the identity does not hold exactly.
+    # When qss_He=True, delta_He is set to NaN to indicate it is not applicable.
     for j in range(n_t):
         he_prod = G_He * t[j]
-        if he_prod > 1e-300:
+        if qss_He:
+            delta_He[j] = float('nan')
+        elif he_prod > 1e-300:
             delta_He[j] = abs(he_prod - C_He_tot[j] - J_He_sink[j]) / he_prod
         else:
             delta_He[j] = 0.0
@@ -274,8 +284,10 @@ def calculate_derived_quantities(t, y, input_data, rate_eq_obj,
         'swelling':   swelling,    # [dimensionless fraction]
         'C_i1':       C_i1,        # [m^-3]
         'C_v1':       C_v1,        # [m^-3]
-        'delta_FP':   delta_FP,    # FP conservation: |prod − content − sinks| / prod
-        'delta_He':   delta_He,    # He conservation: |prod − content − sinks| / prod
+        'delta_FP':     delta_FP,     # FP conservation: max(sia, vac) relative error
+        'delta_FP_sia': delta_FP_sia, # SIA arm of FP conservation
+        'delta_FP_vac': delta_FP_vac, # VAC arm of FP conservation
+        'delta_He':   delta_He,    # He conservation (NaN when qss_He=True)
         'J_SIA_fixed':  J_SIA_fixed,   # cumulative SIA to fixed sinks [at.frac]
         'J_SIA_mutual': J_SIA_mutual,  # cumulative SIA to recomb + cavity [at.frac]
         'J_VAC_fixed':  J_VAC_fixed,   # cumulative VAC to fixed sinks [at.frac]

@@ -122,6 +122,11 @@ class ExpandedEuroferCDSimulation:
                 self.input_data, self.reaction_rates
             )
 
+        # Always defined so notebook fallbacks like
+        # `sim._accumulated_results` don't AttributeError when run_adaptive
+        # is interrupted before it can initialize this attribute itself.
+        self._accumulated_results = None
+
         print(f"Simulation initialized: solver_mode='{self.input_data.solver_mode}'"
               f"  physics_option='{po}'")
 

@@ -17,6 +17,7 @@ EuroferMicro_venv/
 
 # C++ build artifacts
 */build/
+archive/*/build/
 *.exe
 *.dll
 *.so
@@ -25,6 +26,7 @@ EuroferMicro_venv/
 
 # Output (large result files — regenerate from notebooks)
 */output/
+archive/*/output/
 
 # Temporary / OS
 .DS_Store

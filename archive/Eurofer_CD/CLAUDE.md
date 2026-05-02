@@ -1,3 +1,14 @@
+# [ARCHIVED 2026-05-02] Eurofer_CD — Cluster Dynamics for bcc Fe / EUROFER97
+
+> **This module is archived.** It has been superseded by `Expanded_Eurofer_CD/`,
+> which generalizes the master equations (Ghoniem 2026 formulation), adds
+> bin-moment reduction, the Woodbury preconditioner, adaptive domain doubling,
+> and full conservation diagnostics. This directory is preserved for
+> reproducibility of prior results only — no further development. The last
+> active commit is reachable via the `eurofer_cd-final` git tag.
+
+---
+
 # Eurofer_CD — Cluster Dynamics for bcc Fe / EUROFER97
 
 Mean-field cluster-size–resolved rate equations for radiation-induced defect

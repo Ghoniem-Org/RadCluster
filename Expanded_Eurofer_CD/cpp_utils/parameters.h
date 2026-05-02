@@ -476,13 +476,27 @@ inline Parameters build_parameters(const std::map<std::string, double>& p) {
     P.Ni_extend_tol        = optional_param(p, "Ni_extend_tol",    0.0);
     P.Ni_extend_margin     = static_cast<int>(optional_param(p, "Ni_extend_margin", 0.0));
 
-    // Preconditioner type: 0=Jacobi (legacy), 1=Woodbury (bordered-banded)
-    // Default: Woodbury only for full solver (window_mode==0) with GMRES,
-    // because the sliding window already keeps the active system small enough
-    // for Jacobi+GMRES to converge efficiently.  Woodbury's 58-RHS setup cost
-    // is counterproductive when the active window is only 50-200 unknowns.
+    // Preconditioner auto-selection: Jacobi by default, Woodbury when the
+    // Jacobian has a true bordered-arrow structure from coalescence reactions.
+    //
+    //   Bordered-arrow ⇔ multiple mobile cluster sizes coalesce
+    //   (i_mobile ≥ 2 or v_mobile ≥ 2).  With only monomer mobility
+    //   (i_mobile=1, v_mobile=1) the dense border collapses to two columns
+    //   and Jacobi+GMRES converges adequately on its own.
+    //
+    // Additional gating:
+    //   - linsol == 2 (GMRES) — preconditioners are only consulted by the
+    //     iterative linear solver.
+    //   - window_mode == 0 (full domain) — sliding-window modes keep the
+    //     active system at 50–200 unknowns, where Woodbury's ~58-RHS setup
+    //     cost outweighs its convergence advantage.
+    //
+    // The user can always override via the "prec_type" key in the param file.
     {
-        bool use_woodbury = (P.linsol == 2) && (P.window_mode == 0);
+        const bool gmres          = (P.linsol == 2);
+        const bool full_domain    = (P.window_mode == 0);
+        const bool has_coalescence = (P.i_mobile >= 2) || (P.v_mobile >= 2);
+        const bool use_woodbury   = gmres && full_domain && has_coalescence;
         P.prec_type = static_cast<int>(optional_param(p, "prec_type",
                           use_woodbury ? 1.0 : 0.0));
     }

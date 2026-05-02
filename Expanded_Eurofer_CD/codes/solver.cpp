@@ -245,6 +245,12 @@ int main(int argc, char* argv[]) {
         CHECK_SUNDIALS(CVodeSetLinearSolver(cvode_mem, sunls, nullptr));
         if (P.window_prec) {
             CHECK_SUNDIALS(CVodeSetPreconditioner(cvode_mem, prec_setup, prec_solve));
+            std::cout << "[solver] preconditioner: "
+                      << (P.prec_type == 1 ? "Woodbury (bordered-arrow, rank "
+                                             + std::to_string(P.prec_rank)
+                                             + ", bw " + std::to_string(P.prec_bw) + ")"
+                                           : "Jacobi (diagonal)")
+                      << "\n";
         }
     } else if (P.linsol == 1) {
         // Band

@@ -1822,7 +1822,11 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
 //   Total rows = 2*kl + ku + 1 = 3*bw + 1  (kl = ku = bw)
 // ══════════════════════════════════════════════════════════════════════════════
 
-// Forward declarations for LAPACK band and dense solvers
+// Forward declarations for LAPACK band and dense solvers.
+// The Woodbury preconditioner needs LAPACK (dgbtrf/dgbtrs/dgetrf/dgetrs).
+// When LAPACK is unavailable (CD_HAVE_LAPACK undefined), the entire Woodbury
+// section is excluded and the dispatcher falls back to Jacobi.
+#ifdef CD_HAVE_LAPACK
 extern "C" {
     void dgbtrf_(const int* m, const int* n, const int* kl, const int* ku,
                  double* ab, const int* ldab, int* ipiv, int* info);
@@ -1835,6 +1839,7 @@ extern "C" {
                  const double* a, const int* lda, const int* ipiv,
                  double* b, const int* ldb, int* info);
 }
+#endif
 
 // ── Jacobi preconditioner (legacy, prec_type==0) ─────────────────────────────
 
@@ -1865,6 +1870,7 @@ static int prec_solve_jacobi(sunrealtype /*t*/, N_Vector /*y*/, N_Vector /*fy*/,
 }
 
 // ── Woodbury preconditioner (prec_type==1) ───────────────────────────────────
+#ifdef CD_HAVE_LAPACK
 
 // Finite-difference perturbation size (same as CVODE internal formula)
 static inline double fd_delta(double yj, double atol) {
@@ -2126,16 +2132,28 @@ static int prec_solve_woodbury(sunrealtype t, N_Vector y, N_Vector fy,
     return 0;
 }
 
+#endif  // CD_HAVE_LAPACK
+
 // ── Dispatch wrappers ────────────────────────────────────────────────────────
 
 int prec_setup(sunrealtype t, N_Vector y, N_Vector fy,
                sunbooleantype jok, sunbooleantype* jcurPtr,
                sunrealtype gamma, void* user_data) {
     const UserData* ud = static_cast<const UserData*>(user_data);
+#ifdef CD_HAVE_LAPACK
     if (ud->P->prec_type == 1)
         return prec_setup_woodbury(t, y, fy, jok, jcurPtr, gamma, user_data);
-    else
-        return prec_setup_jacobi(t, y, fy, jok, jcurPtr, gamma, user_data);
+#else
+    if (ud->P->prec_type == 1) {
+        static bool warned = false;
+        if (!warned) {
+            std::cerr << "[prec_setup] Woodbury requested but binary was built "
+                         "without LAPACK -- falling back to Jacobi.\n";
+            warned = true;
+        }
+    }
+#endif
+    return prec_setup_jacobi(t, y, fy, jok, jcurPtr, gamma, user_data);
 }
 
 int prec_solve(sunrealtype t, N_Vector y, N_Vector fy,
@@ -2143,8 +2161,9 @@ int prec_solve(sunrealtype t, N_Vector y, N_Vector fy,
                sunrealtype gamma, sunrealtype delta,
                int lr, void* user_data) {
     const UserData* ud = static_cast<const UserData*>(user_data);
+#ifdef CD_HAVE_LAPACK
     if (ud->P->prec_type == 1)
         return prec_solve_woodbury(t, y, fy, r, z, gamma, delta, lr, user_data);
-    else
-        return prec_solve_jacobi(t, y, fy, r, z, gamma, delta, lr, user_data);
+#endif
+    return prec_solve_jacobi(t, y, fy, r, z, gamma, delta, lr, user_data);
 }

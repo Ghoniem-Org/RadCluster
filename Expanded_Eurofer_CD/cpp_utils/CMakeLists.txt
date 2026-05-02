@@ -90,8 +90,17 @@ target_link_libraries(solver
 )
 if(APPLE AND ACCELERATE_FRAMEWORK)
     target_link_libraries(solver ${ACCELERATE_FRAMEWORK})
+    target_compile_definitions(solver PRIVATE CD_HAVE_LAPACK=1)
 elseif(LAPACK_FOUND)
     target_link_libraries(solver ${LAPACK_LIBRARIES})
+    target_compile_definitions(solver PRIVATE CD_HAVE_LAPACK=1)
 else()
-    message(WARNING "LAPACK not found — Woodbury preconditioner will fail at link time.")
+    message(WARNING
+        "LAPACK not found — Woodbury preconditioner will be COMPILED OUT.\n"
+        "  Solver will fall back to Jacobi preconditioner at runtime if\n"
+        "  prec_type=1 is requested.\n"
+        "  Windows: install LAPACK via vcpkg ('vcpkg install lapack-reference'\n"
+        "    or 'vcpkg install openblas[lapack]') and pass\n"
+        "    -DCMAKE_TOOLCHAIN_FILE=<vcpkg>/scripts/buildsystems/vcpkg.cmake\n"
+        "    to cmake, or install Intel MKL.")
 endif()

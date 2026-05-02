@@ -1,8 +1,8 @@
 """
-create_excel.py  –  Generate Full_CD/input/input_parameters.xlsx.
+create_excel.py  –  Generate Monomer_CD/input/input_parameters.xlsx.
 
-Run once from the repo root or from Full_CD/:
-    python Full_CD/create_excel.py
+Run once from the repo root or from Monomer_CD/:
+    python Monomer_CD/create_excel.py
 """
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side

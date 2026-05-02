@@ -3,7 +3,7 @@
 input_data.py – ClusterDynamics material and irradiation parameters.
 
 Reads material, physical, and model parameters from a 3-sheet Excel workbook
-(Full_CD/input/input_parameters.xlsx) and computes all derived quantities
+(Monomer_CD/input/input_parameters.xlsx) and computes all derived quantities
 needed by the ODE system and the C++ solver.
 
 Sheet layout
@@ -43,7 +43,7 @@ class InputData:
     ----------
     excel_file : path-like, optional
         Path to ``input_parameters.xlsx``.  Defaults to
-        ``Full_CD/input/input_parameters.xlsx``.
+        ``Monomer_CD/input/input_parameters.xlsx``.
     Nv : int, optional
         Override ``Model_Parameters.Nv`` (max vacancy cluster size).
     Ni : int, optional
@@ -56,7 +56,7 @@ class InputData:
             raise FileNotFoundError(
                 f"Excel file not found: {self.excel_file}\n"
                 f"Working directory: {Path.cwd()}\n"
-                f"Run Full_CD/create_excel.py to regenerate it."
+                f"Run Monomer_CD/create_excel.py to regenerate it."
             )
         print(f"Loading parameters from: {self.excel_file.resolve()}")
         self._load_data()

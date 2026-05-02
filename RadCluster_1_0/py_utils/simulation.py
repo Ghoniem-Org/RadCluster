@@ -22,7 +22,8 @@ bin_moment_CD_fusion  → BinMomentRateEquations he_mode='case1'
 """
 
 import time as _time
-import subprocess
+import os
+import platform
 import sys
 from pathlib import Path
 from datetime import datetime
@@ -730,6 +731,7 @@ class RadClusterSimulation:
         sm = self.input_data.solver_mode
         print(f"\nLaunching solver_mode='{sm}' …")
 
+        _t0 = _time.perf_counter()
         if sm in ('cpp_full', 'cpp_sliding_win', 'sliding_OpenMP'):
             results = self._run_cpp(solver_config, progress_callback,
                                     timeout_s=timeout_s,
@@ -737,6 +739,7 @@ class RadClusterSimulation:
         else:
             raise ValueError(f"Unknown solver_mode='{sm}'. "
                              "Use cpp_full, cpp_sliding_win, or sliding_OpenMP.")
+        self._wall_clock_s = _time.perf_counter() - _t0
 
         if results is not None:
             # Store diagnostic text for file output (no inline printing)
@@ -812,53 +815,144 @@ class RadClusterSimulation:
 
     # ── Output writing ────────────────────────────────────────────────────────
 
+    @staticmethod
+    def _fmt_value(v):
+        """Format a scalar for the provenance file."""
+        if callable(v):
+            return '<callable>'
+        if isinstance(v, float):
+            return f"{v:.6g}"
+        if isinstance(v, (tuple, list)):
+            return '[' + ', '.join(RadClusterSimulation._fmt_value(x) for x in v) + ']'
+        return str(v)
+
+    @classmethod
+    def _write_dict_block(cls, f, title, d):
+        f.write(f"### {title}\n\n")
+        if not d:
+            f.write("_(empty)_\n\n")
+            return
+        for k in sorted(d.keys(), key=str):
+            f.write(f"- {k}: {cls._fmt_value(d[k])}\n")
+        f.write("\n")
+
+    def _machine_info(self):
+        info = {
+            'hostname':       platform.node(),
+            'platform':       platform.platform(),
+            'processor':      platform.processor() or platform.machine(),
+            'python':         sys.version.split()[0],
+            'cpu_count':      os.cpu_count(),
+            'omp_num_threads': os.environ.get('OMP_NUM_THREADS', '<unset>'),
+        }
+        try:
+            import psutil
+            vm = psutil.virtual_memory()
+            info['ram_total_GB'] = round(vm.total / 1024**3, 2)
+            info['ram_available_GB'] = round(vm.available / 1024**3, 2)
+            proc = psutil.Process(os.getpid())
+            info['process_rss_GB'] = round(proc.memory_info().rss / 1024**3, 3)
+        except Exception:
+            info['ram_total_GB'] = '<psutil unavailable>'
+        return info
+
     def _save_output(self, results, solver_config):
         """Write timestamped output directory."""
-        try:
-            git_hash = subprocess.check_output(
-                ['git', 'rev-parse', '--short', 'HEAD'],
-                cwd=str(BASE_DIR), stderr=subprocess.DEVNULL
-            ).decode().strip()
-        except Exception:
-            git_hash = 'unknown'
-
         sm = self.input_data.solver_mode
         po = self.input_data.physics_option
+        I  = self.input_data.I
+        V  = self.input_data.V
+        im = self.input_data.i_mobile
+        vm = self.input_data.v_mobile
         ts = datetime.now().strftime('%Y%m%d_%H%M%S')
-        label = f"{ts}_{sm}_{po}_{git_hash}"
+        domain   = f"I{I}V{V}"
+        mobility = f"im{im}vm{vm}"
+        label = f"{ts}_{sm}_{po}_{domain}_{mobility}"
 
         out_dir  = BASE_DIR / 'output' / label
         plot_dir = out_dir / 'plots'
         plot_dir.mkdir(parents=True, exist_ok=True)
 
-        # Provenance
-        d = self.input_data.derived
-        with open(out_dir / 'provenance.md', 'w') as f:
-            f.write(f"# RadCluster_1_0 run\n\n")
-            f.write(f"- timestamp:      {ts}\n")
-            f.write(f"- git_hash:       {git_hash}\n")
-            f.write(f"- solver_mode:    {sm}\n")
-            f.write(f"- physics_option: {po}\n")
-            f.write(f"- T:              {d['T']} K\n")
-            f.write(f"- G:              {d['G']} dpa/s\n")
-            f.write(f"- I:              {self.input_data.I}\n")
-            f.write(f"- V:              {self.input_data.V}\n")
-            f.write(f"- spectrum:       {d['spectrum']}\n")
-            f.write(f"- t_span:         {solver_config['t_span']}\n")
-            f.write(f"- rtol/atol:      {solver_config['rtol']} / {solver_config['atol']}\n")
+        # ── Provenance (4-section layout) ─────────────────────────────────
+        idata   = self.input_data
+        derived = {k: v for k, v in idata.derived.items() if not callable(v)}
+
+        # User selections — what the caller chose (post-override)
+        user_selections = {
+            'solver_mode':    sm,
+            'physics_option': po,
+            'I':              I,
+            'V':              V,
+            'i_mobile':       im,
+            'v_mobile':       vm,
+            'i_discrete':     idata.i_discrete,
+            'v_discrete':     idata.v_discrete,
+            'I_bin':          idata.I_bin,
+            'V_bin':          idata.V_bin,
+            'shape_function': idata.shape_function,
+            'L_He_max':       idata.L_He_max,
+            'alpha_He':       idata.alpha_He,
+            'he_options':     idata.reactions.get('he_options', 'dynamic'),
+            'C_floor':        idata.reactions.get('C_floor', 1e-15),
+            'boundary_flux':  derived.get('boundary_flux'),
+            'spectrum':       derived.get('spectrum'),
+            'T':              derived.get('T'),
+            'G':              derived.get('G'),
+            'excel_file':     str(idata.excel_file.resolve()),
+        }
+
+        # Solver configuration — flatten nested solver_method
+        sc_flat = {k: v for k, v in solver_config.items() if k != 'solver_method'}
+        for k, v in solver_config.get('solver_method', {}).items():
+            sc_flat[f"solver_method.{k}"] = v
+
+        # Run statistics
+        n_pts = results.get('metadata', {}).get('solver_stats', {}).get(
+            'n_time_points', len(results.get('t', [])))
+        run_stats = {
+            'wall_clock_s':   getattr(self, '_wall_clock_s', None),
+            'n_time_points':  n_pts,
+            'n_omp_threads':  solver_config.get('solver_method', {}).get(
+                                  'window_omp_threads', 0),
+            'timestamp':      ts,
+        }
+        run_stats.update(self._machine_info())
+
+        with open(out_dir / 'provenance.md', 'w', encoding='utf-8') as f:
+            f.write(f"# RadCluster_1_0 run — {label}\n\n")
+
+            f.write("## (1) Material Data\n\n")
+            f.write("_All input tables from the Excel workbook with parameter "
+                    "overrides applied._\n\n")
+            self._write_dict_block(f, 'Production (Fission)',  idata.production_fission)
+            self._write_dict_block(f, 'Production (Fusion)',   idata.production_fusion)
+            self._write_dict_block(f, 'Energetics',            idata.energetics)
+            self._write_dict_block(f, 'Diffusion',             idata.diffusion)
+            self._write_dict_block(f, 'Dissociation',          idata.dissociation)
+            self._write_dict_block(f, 'Reactions',             idata.reactions)
+            self._write_dict_block(f, 'Derived (computed)',    derived)
+
+            f.write("## (2) User Selections\n\n")
+            self._write_dict_block(f, 'Run configuration', user_selections)
+
+            f.write("## (3) Solver Configuration\n\n")
+            self._write_dict_block(f, 'Solver settings', sc_flat)
+
+            f.write("## (4) Run Statistics\n\n")
+            self._write_dict_block(f, 'Runtime and machine', run_stats)
 
         # Summary CSV
         import csv
         row = post_process.summary_csv_row(results, self.input_data,
                                            solver_label=f"{sm}/{po}")
-        with open(out_dir / 'summary.csv', 'w', newline='') as f:
+        with open(out_dir / 'summary.csv', 'w', newline='', encoding='utf-8') as f:
             writer = csv.DictWriter(f, fieldnames=list(row.keys()))
             writer.writeheader()
             writer.writerow(row)
 
         # Diagnostics file
         diag_path = out_dir / 'diagnostics.txt'
-        with open(diag_path, 'w') as f:
+        with open(diag_path, 'w', encoding='utf-8') as f:
             f.write(f"# Diagnostics for {label}\n\n")
             f.write(f"## Rate constants\n")
             f.write(getattr(self, '_diag_text', '') + '\n\n')

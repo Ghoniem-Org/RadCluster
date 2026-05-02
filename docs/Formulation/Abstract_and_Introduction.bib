@@ -1,4 +1,16 @@
 % Cleaned bibliography (duplicates removed / conflicting keys renamed)
+%
+% Removals (literal-key duplicates, second occurrence dropped):
+%   Trinkaus2003, Lucas2009, Ovcharenko2003, Cui2020,
+%   Aktaa2020, Bonny2011, Was2017
+%
+% Renames (same key, different papers):
+%   second Nordlund2018 (Nature Communications 9:1084) -> Nordlund2018b
+%
+% Alias keys (same content, different keys) preserved as the .tex
+% sources cite them under multiple short names.
+% =====================================================================
+
 @article{Greenwood1959,
   author  = {Greenwood, G. W. and Foreman, A. J. E. and Rimmer, D. E.},
   title   = {The role of vacancies and dislocations in the nucleation and growth of gas bubbles in irradiated fissile material},
@@ -149,16 +161,6 @@
   doi     = {10.1016/j.jnucmat.2019.04.031}
 }
 
-@article{Terentyev2009_He,
-  author  = {Terentyev, D. and Juslin, N. and Nordlund, K. and Sandberg, N.},
-  title   = {Fast three dimensional migration of {He} clusters in bcc {Fe} and {Fe--Cr} alloys},
-  journal = {Journal of Applied Physics},
-  volume  = {105},
-  pages   = {103509},
-  year    = {2009},
-  doi     = {10.1063/1.3126709}
-}
-
 @article{Olsson2010,
   author  = {Olsson, P. and Klaver, T. P. C. and Domain, C.},
   title   = {Ab initio study of solute transition-metal interactions with point defects in bcc {Fe}},
@@ -207,36 +209,6 @@
   pages   = {104102},
   year    = {2015},
   doi     = {10.1103/PhysRevB.92.104102}
-}
-
-@article{Messina2014,
-  author  = {Messina, L. and Nastar, M. and Garnier, T. and Domain, C. and Olsson, P.},
-  title   = {Exact ab initio transport coefficients in bcc {Fe--X} ({X}={Cr}, {Cu}, {Mn}, {Ni}, {P}, {Si}) dilute alloys},
-  journal = {Physical Review B},
-  volume  = {90},
-  pages   = {104203},
-  year    = {2014},
-  doi     = {10.1103/PhysRevB.90.104203}
-}
-
-@article{Gorbatov2016,
-  author  = {Gorbatov, O. I. and Korzhavyi, P. A. and Ruban, A. V. and Johansson, B. and Gornostyrev, Yu. N.},
-  title   = {First-principles study of interactions between substitutional solutes in bcc iron},
-  journal = {Journal of Nuclear Materials},
-  volume  = {475},
-  pages   = {140--148},
-  year    = {2016},
-  doi     = {10.1016/j.jnucmat.2016.03.013}
-}
-
-@article{Costa2014,
-  author  = {Costa, D. and Adjanor, G. and Becquart, C. S. and Olsson, P. and Domain, C.},
-  title   = {Vacancy migration energy dependence on local chemical environment in {Fe--Cr} alloys: a density functional theory study},
-  journal = {Journal of Nuclear Materials},
-  volume  = {452},
-  pages   = {425--433},
-  year    = {2014},
-  doi     = {10.1016/j.jnucmat.2014.05.007}
 }
 
 @article{Rahman2023,
@@ -449,16 +421,6 @@
   doi     = {10.1088/0305-4608/8/5/001}
 }
 
-@article{Schaefer1987,
-  author  = {Sch\"{a}fer, H.-E.},
-  title   = {Investigation of thermal equilibrium vacancies in metals by positron annihilation},
-  journal = {Physica Status Solidi A},
-  volume  = {102},
-  pages   = {47--65},
-  year    = {1987},
-  doi     = {10.1002/pssa.2211020104}
-}
-
 @article{Vehanen1982,
   author  = {Vehanen, A. and Hautoj\"{a}rvi, P. and Johansson, J. and Yli-Kauppila, J. and Moser, P.},
   title   = {Vacancies and carbon impurities in $\alpha$-iron: electron irradiation},
@@ -476,7 +438,7 @@
   volume  = {167},
   pages   = {289--311},
   year    = {1998},
-  doi     = {10.1002/(SICI)1521-396X(199806)167:2<289::AID-PSSA289>3.0.CO;2-K}
+  doi     = {10.1002/(SICI)1521-396X(199806)167:2<289::AID-PSSA289>[3.0.CO](http://3.0.CO);2-K}
 }
 
 @article{Birchenall1950,
@@ -608,7 +570,7 @@
 }
 
 @article{Bonny2011,
-  author  = {Bonny, G. and Terentyev, D. and Pasianot, R. C. and P\'{a}stor, S. and Bakaev, A.},
+  author  = {Bonny, G. and Terentyev, D. and Pasianot, R. C. and P\'{o}n\'{e}, S. and Bakaev, A.},
   title   = {Interatomic potential to study plasticity in stainless steels: the {FeNiCr} model alloy},
   journal = {Modelling and Simulation in Materials Science and Engineering},
   volume  = {19},
@@ -665,35 +627,6 @@
   pages   = {214102},
   year    = {2007},
   doi     = {10.1103/PhysRevB.76.214102}
-}
-
-@techreport{OrtizVega2023HeliumEOS,
-  author       = {Ortiz Vega, D. O. and Hall, K. R. and Holste, J. C. and Harvey, A. H. and Lemmon, E. W.},
-  title        = {An Equation of State for the Thermodynamic Properties of Helium},
-  institution  = {National Institute of Standards and Technology},
-  number       = {NISTIR 8474},
-  year         = {2023},
-  doi          = {10.6028/NIST.IR.8474}
-}
-
-@article{Schultz2019HeliumVirial,
-  author  = {Schultz, A. J. and Kofke, D. A.},
-  title   = {Virial Coefficients of Helium-4 from Ab Initio-Based Molecular Potentials},
-  journal = {Journal of Chemical \& Engineering Data},
-  volume  = {64},
-  pages   = {3358--3365},
-  year    = {2019},
-  doi     = {10.1021/acs.jced.9b00183}
-}
-
-@article{McCartyArp1990Helium,
-  author  = {McCarty, R. D. and Arp, V. D.},
-  title   = {Thermodynamic Properties of Helium-4 from 2 to 1500 {K} at Pressures to 1000 {MPa}},
-  journal = {Journal of Physical and Chemical Reference Data},
-  volume  = {19},
-  pages   = {1061--1090},
-  year    = {1990},
-  doi     = {10.1063/1.555856}
 }
 
 @article{Hurly2000HeliumStandards,
@@ -857,16 +790,6 @@
   doi     = {10.1088/0953-8984/25/12/125402}
 }
 
-@article{DeBacker2016SubcascadeScaling,
-  author  = {De Backer, A. and Sand, A. E. and Nordlund, K. and Luneville, L. and Simeone, D. and Dudarev, S. L.},
-  title   = {Subcascade formation and defect cluster size scaling in high-energy collision events in metals},
-  journal = {Europhysics Letters},
-  volume  = {115},
-  pages   = {26001},
-  year    = {2016},
-  doi     = {10.1209/0295-5075/115/26001}
-}
-
 @article{DeBacker2018FragmentedCascades,
   author  = {De Backer, A. and Sand, A. E. and Nordlund, K. and Lun{\'e}ville, L. and Simeone, D. and Dudarev, S. L.},
   title   = {A model of defect cluster creation in fragmented cascades in metals},
@@ -885,16 +808,6 @@
   pages   = {450--479},
   year    = {2018},
   doi     = {10.1016/j.jnucmat.2018.10.027}
-}
-
-@article{Malerba2010FePotentials,
-  author  = {Malerba, L. and Marinica, M.-C. and Anento, N. and others},
-  title   = {Comparison of empirical interatomic potentials for iron applied to radiation damage studies},
-  journal = {Journal of Nuclear Materials},
-  volume  = {406},
-  pages   = {19--38},
-  year    = {2010},
-  doi     = {10.1016/j.jnucmat.2010.05.017}
 }
 
 @article{Malerba2021PureFeParameters,
@@ -957,46 +870,6 @@
   doi     = {10.1103/PhysRevB.79.214109}
 }
 
-@article{Mendelev2003,
-  author  = {Mendelev, M. I. and Han, S. and Srolovitz, D. J. and Ackland, G. J. and Sun, D. Y. and Asta, M.},
-  title   = {Development of new interatomic potentials appropriate for crystalline and liquid iron},
-  journal = {Philosophical Magazine},
-  volume  = {83},
-  pages   = {3977--3994},
-  year    = {2003},
-  doi     = {10.1080/14786430310001613264}
-}
-
-@article{Wirth1997,
-  author  = {Wirth, B. D. and Odette, G. R. and Maroudas, D. and Lucas, G. E.},
-  title   = {Energetics of formation and migration of self-interstitials and self-interstitial clusters in $\alpha$-iron},
-  journal = {Journal of Nuclear Materials},
-  volume  = {244},
-  pages   = {185--194},
-  year    = {1997},
-  doi     = {10.1016/S0022-3115(96)00736-2}
-}
-
-@article{Marian2002,
-  author  = {Marian, J. and Wirth, B. D. and Caro, A. and Sadigh, B. and Odette, G. R. and Perlado, J. M. and {de la Rubia}, T. D.},
-  title   = {Dynamics of self-interstitial cluster migration in pure $\alpha$-{Fe} and {Fe--Cu} alloys},
-  journal = {Physical Review B},
-  volume  = {65},
-  pages   = {144102},
-  year    = {2002},
-  doi     = {10.1103/PhysRevB.65.144102}
-}
-
-@article{Dudarev2004,
-  author  = {Dudarev, S. L.},
-  title   = {Coherent motion of interstitial defects in a crystalline material},
-  journal = {Philosophical Magazine},
-  volume  = {83},
-  pages   = {3577--3597},
-  year    = {2003},
-  doi     = {10.1080/14786430310001599387}
-}
-
 @article{Anento2010,
   author  = {Anento, N. and Serra, A. and Osetsky, Yu. N.},
   title   = {Atomistic study of multimechanism diffusion by self-interstitial defects in $\alpha$-{Fe}},
@@ -1056,15 +929,6 @@
   doi     = {10.1038/srep26099}
 }
 
-@article{Sivak2023,
-  author  = {Sivak, P. A.},
-  title   = {Diffusion characteristics of radiation defects in iron: Molecular dynamics data},
-  journal = {Physics of Metals and Metallography},
-  volume  = {124},
-  pages   = {320--330},
-  year    = {2023}
-}
-
 @article{Domain2001,
   author  = {Domain, C. and Becquart, C. S.},
   title   = {Ab initio calculations of defects in {Fe} and dilute {Fe--Cu} alloys},
@@ -1095,107 +959,6 @@
   doi     = {10.1016/j.crhy.2007.09.019}
 }
 
-@article{Hayward2012,
-  author  = {Hayward, E. and Fu, C.-C.},
-  title   = {Interplay between hydrogen and vacancies in $\alpha$-{Fe}},
-  journal = {Physical Review B},
-  volume  = {87},
-  pages   = {174103},
-  year    = {2013},
-  doi     = {10.1103/PhysRevB.87.174103}
-}
-
-@article{Waite1957,
-  author  = {Waite, T. R.},
-  title   = {Theoretical Treatment of the Kinetics of Diffusion-Limited Reactions},
-  journal = {Physical Review},
-  volume  = {107},
-  pages   = {463--470},
-  year    = {1957},
-  doi     = {10.1103/PhysRev.107.463}
-}
-
-@article{Brailsford1972,
-  author  = {Brailsford, A. D. and Bullough, R.},
-  title   = {The Rate Theory of Swelling Due to Void Growth in Irradiated Metals},
-  journal = {Journal of Nuclear Materials},
-  volume  = {44},
-  pages   = {121--135},
-  year    = {1972},
-  doi     = {10.1016/0022-3115(72)90091-8}
-}
-
-@article{Dudarev2013,
-  author  = {Dudarev, S. L. and Arakawa, K. and Yi, X. and Yao, Z. and Jenkins, M. L. and Gilbert, M. R. and Derlet, P. M.},
-  title   = {Spatial ordering of nano-dislocation loops in ion-irradiated materials},
-  journal = {Journal of Nuclear Materials},
-  volume  = {455},
-  pages   = {16--20},
-  year    = {2014},
-  doi     = {10.1016/j.jnucmat.2014.02.032}
-}
-
-@article{Russell1971,
-  author  = {Russell, K. C.},
-  title   = {Nucleation of Voids in Irradiated Metals},
-  journal = {Acta Metallurgica},
-  volume  = {19},
-  pages   = {753--758},
-  year    = {1971},
-  doi     = {10.1016/0001-6160(71)90131-6}
-}
-
-@article{Sizmann1978,
-  author  = {Sizmann, R.},
-  title   = {The Effect of Radiation upon Diffusion in Metals},
-  journal = {Journal of Nuclear Materials},
-  volume  = {69--70},
-  pages   = {386--412},
-  year    = {1978},
-  doi     = {10.1016/0022-3115(78)90256-8}
-}
-
-@article{Bonny2009,
-  author  = {Bonny, G. and Terentyev, D. and Malerba, L.},
-  title   = {On the $\alpha$-$\alpha'$ Miscibility Gap of {Fe--Cr} Alloys},
-  journal = {Scripta Materialia},
-  volume  = {59},
-  pages   = {1193--1196},
-  year    = {2008},
-  doi     = {10.1016/j.scriptamat.2008.08.008}
-}
-
-@incollection{Stoller2012,
-  author    = {Stoller, R. E.},
-  title     = {Primary Radiation Damage Formation},
-  booktitle = {Comprehensive Nuclear Materials},
-  editor    = {Konings, R. J. M.},
-  volume    = {1},
-  pages     = {293--332},
-  publisher = {Elsevier},
-  year      = {2012},
-  doi       = {10.1016/B978-0-08-056033-5.00027-6}
-}
-
-@article{Zinkle2012,
-  author  = {Zinkle, S. J. and Snead, L. L.},
-  title   = {Designing Radiation Resistance in Materials for Fusion Energy},
-  journal = {Annual Review of Materials Research},
-  volume  = {44},
-  pages   = {241--267},
-  year    = {2014},
-  doi     = {10.1146/annurev-matsci-070813-113627}
-}
-
-@article{Soneda2003,
-  author  = {Soneda, N. and {Diaz de la Rubia}, T.},
-  title   = {Defect production, annealing kinetics and damage evolution in $\alpha$-{Fe}: an atomic-scale computer simulation},
-  journal = {Philosophical Magazine A},
-  volume  = {78},
-  pages   = {995--1019},
-  year    = {1998},
-  doi     = {10.1080/01418619808239970}
-}
 @article{Ovcharenko2003,
   author    = {Ovcharenko, Alexander M. and Golubov, Stanislav I.
                and Woo, C. H. and Huang, H.},
@@ -1207,17 +970,6 @@
   pages     = {208--226},
   year      = {2003},
   doi       = {10.1016/S0010-4655(02)00820-7},
-}
-
-@article{Kohnert2018,
-  author    = {Kohnert, Aaron A. and Wirth, Brian D. and Capolungo, Laurent},
-  title     = {Modeling microstructural evolution in irradiated materials
-               with cluster dynamics methods: a review},
-  journal   = {Computational Materials Science},
-  volume    = {149},
-  pages     = {442--459},
-  year      = {2018},
-  doi       = {10.1016/j.commatsci.2018.02.049},
 }
 
 @article{Golubov2007,
@@ -1244,6 +996,7 @@
   year    = {2020},
   doi     = {10.3390/met10121685},
 }
+
 @article{Terrier2017,
   author  = {Terrier, Pierre and Ath{\`e}nes, Manuel and Jourdan,
              Thomas and Adjanor, Ghisl{\`a}ine and Stoltz, Gabriel},
@@ -1268,6 +1021,7 @@
   year    = {2017},
   doi     = {10.1088/1361-651X/25/1/015008},
 }
+
 % Jacobson et al. 1994 -- original moving-centre sectional method with
 % piecewise-linear intra-bin representation for coagulation; introduced
 % the linear interpolation across fixed-grid bins that is the aerosol
@@ -1300,103 +1054,9 @@
   doi     = {10.1029/2001JD001010},
 }
 
-%% ============================================================
-%%  hybrid_cd_review.bib
-%%  Bibliography for the review:
-%%  "Hybrid Deterministic/Stochastic Cluster Dynamics:
-%%   Has the Method Been Extended to Three or More Species?"
-%% ============================================================
-
-%% ---------------------------------------------------------------
-%% Grouping and reduction methods (background)
-%% ---------------------------------------------------------------
-
-@article{Ghoniem1980,
-  author  = {Ghoniem, Nasr M. and Sharafat, Shahram},
-  title   = {A numerical solution to the {Fokker--Planck} equation
-             describing the evolution of the interstitial loop
-             microstructure during irradiation},
-  journal = {Journal of Nuclear Materials},
-  volume  = {92},
-  number  = {1},
-  pages   = {121--135},
-  year    = {1980},
-  doi     = {10.1016/0022-3115(80)90148-8},
-}
-
-%% ---------------------------------------------------------------
-%% Fokker--Planck and deterministic hybrid approaches
-%% ---------------------------------------------------------------
-
-@article{Jourdan2014,
-  author  = {Jourdan, Thomas and Bencteux, Ga{\"e}tan and Adjanor, Gilles},
-  title   = {Efficient simulation of kinetics of radiation induced defects:
-             a cluster dynamics approach},
-  journal = {Journal of Nuclear Materials},
-  volume  = {444},
-  number  = {1--3},
-  pages   = {298--313},
-  year    = {2014},
-  doi     = {10.1016/j.jnucmat.2013.10.009},
-}
-
-@article{Jourdan2016,
-  author  = {Jourdan, Thomas and Stoltz, Gabriel and Legoll,
-             Fr{\'e}d{\'e}ric and Monasse, Laurent},
-  title   = {An accurate scheme to solve cluster dynamics equations
-             using a {Fokker--Planck} approach},
-  journal = {Computer Physics Communications},
-  volume  = {207},
-  pages   = {170--178},
-  year    = {2016},
-  doi     = {10.1016/j.cpc.2016.06.001},
-}
-
-@article{Surh2004,
-  author  = {Surh, M. P. and Sturgeon, J. B. and Wolfer, W. G.},
-  title   = {Master equation and {Fokker--Planck} methods for void
-             nucleation and growth in irradiation swelling},
-  journal = {Journal of Nuclear Materials},
-  volume  = {325},
-  number  = {1},
-  pages   = {44--52},
-  year    = {2004},
-  doi     = {10.1016/j.jnucmat.2003.10.013},
-}
-
-@article{Gherardi2012,
-  author  = {Gherardi, M. and Jourdan, T. and Le Bourdiec, S.
-             and Bencteux, G.},
-  title   = {Hybrid deterministic/stochastic algorithm for large sets
-             of rate equations},
-  journal = {Computer Physics Communications},
-  volume  = {183},
-  number  = {9},
-  pages   = {1966--1973},
-  year    = {2012},
-  doi     = {10.1016/j.cpc.2012.04.020},
-}
-
-%% ---------------------------------------------------------------
-%% The Terrier 2017 hybrid method (main paper under review)
-%% ---------------------------------------------------------------
-
 %% ---------------------------------------------------------------
 %% Stochastic cluster dynamics (SCD) -- multispecies applications
 %% ---------------------------------------------------------------
-
-@article{Marian2011,
-  author  = {Marian, Jaime and Bulatov, Vasily V.},
-  title   = {Stochastic cluster dynamics method for simulations of
-             multispecies irradiation damage accumulation},
-  journal = {Journal of Nuclear Materials},
-  volume  = {415},
-  number  = {1},
-  pages   = {84--95},
-  year    = {2011},
-  doi     = {10.1016/j.jnucmat.2011.05.045},
-}
-
 @article{Hoang2015,
   author  = {Hoang, Tuan L. and Marian, Jaime and Bulatov, Vasily V.
              and Hosemann, Peter},
@@ -1409,78 +1069,9 @@
   doi     = {10.1016/j.jcp.2015.07.054},
 }
 
-@article{Dunn2016,
-  author  = {Dunn, Aaron and Dingreville, R{\'e}mi and Mart{\'i}nez,
-             Enrique and Capolungo, Laurent},
-  title   = {Synchronous parallel spatially resolved stochastic cluster
-             dynamics},
-  journal = {Computational Materials Science},
-  volume  = {120},
-  pages   = {43--52},
-  year    = {2016},
-  doi     = {10.1016/j.commatsci.2016.04.013},
-}
-
 %% ---------------------------------------------------------------
 %% Logarithmic-complexity SSA (most recent CEA development)
 %% ---------------------------------------------------------------
-
-@article{Vasav2025,
-  author  = {Vasav, Rohit and Jourdan, Thomas and Adjanor, Gilles
-             and Badahmane, Achraf and Creuze, J{\'e}r{\^o}me
-             and Ath{\`e}nes, Manuel},
-  title   = {Cluster dynamics simulations using stochastic algorithms
-             with logarithmic complexity in number of reactions},
-  journal = {Journal of Computational Physics},
-  year    = {2025},
-  doi     = {10.1016/j.jcp.2025.114039},
-  note    = {In press},
-}
-
-%% ---------------------------------------------------------------
-%% General SCD / SRSCD references
-%% ---------------------------------------------------------------
-
-@article{Dunn2013a,
-  author  = {Dunn, Aaron and Capolungo, Laurent and Mart{\'i}nez, Enrique
-             and Cherkaoui, Mohammed},
-  title   = {Spatially resolved stochastic cluster dynamics for radiation
-             damage evolution in nuclear materials},
-  journal = {Journal of Nuclear Materials},
-  volume  = {443},
-  number  = {1--3},
-  pages   = {128--139},
-  year    = {2013},
-  doi     = {10.1016/j.jnucmat.2013.07.009},
-}
-
-@article{Athenes2014,
-  author  = {Ath{\`e}nes, Manuel and Bulatov, Vasily V.},
-  title   = {Path factorization approach to stochastic simulations},
-  journal = {Physical Review Letters},
-  volume  = {113},
-  number  = {23},
-  pages   = {230601},
-  year    = {2014},
-  doi     = {10.1103/PhysRevLett.113.230601},
-}
-
-%% ---------------------------------------------------------------
-%% Gillespie SSA (foundational reference)
-%% ---------------------------------------------------------------
-
-@article{Gillespie1976,
-  author  = {Gillespie, Daniel T.},
-  title   = {A general method for numerically simulating the stochastic
-             time evolution of coupled chemical reactions},
-  journal = {Journal of Computational Physics},
-  volume  = {22},
-  number  = {4},
-  pages   = {403--434},
-  year    = {1976},
-  doi     = {10.1016/0021-9991(76)90041-3},
-}
-
 @article{Vasav2026,
   author  = {Vasav, Rohit and Jourdan, Thomas and Adjanor, Gilles
              and Ath{\`e}nes, Manuel},
@@ -1494,6 +1085,7 @@
   doi     = {10.1063/5.0293480},
   note    = {Published online 7 January 2026},
 }
+
 @article{KohnertWirth2015,
   author  = {Kohnert, Aaron A. and Wirth, Brian D.},
   title   = {Cluster dynamics models of irradiation damage accumulation in ferritic iron. {II}. Effects of reaction dimensionality},
@@ -1513,17 +1105,6 @@
   pages   = {101069},
   year    = {2021},
   doi     = {10.1016/j.nme.2021.101069}
-}
-
-@article{DudarevMa2018,
-  author  = {Dudarev, S. L. and Ma, P.-W.},
-  title   = {Elastic fields, dipole tensors, and interaction between self-interstitial atom defects in bcc transition metals},
-  journal = {Physical Review Materials},
-  volume  = {2},
-  number  = {3},
-  pages   = {033602},
-  year    = {2018},
-  doi     = {10.1103/PhysRevMaterials.2.033602}
 }
 
 @article{Gao2021_100Diffusion,
@@ -1558,10 +1139,9 @@
 }
 
 % ---------------------------------------------------------------
-%  Aliases — short keys used in Cluster_Dynamics.tex that map to
+%  Aliases -- short keys used in Cluster_Dynamics.tex that map to
 %  entries already present under longer keys above
 % ---------------------------------------------------------------
-
 @article{Fu2005_He,
   author  = {Fu, C.-C. and Willaime, F.},
   title   = {Ab initio study of helium in $\alpha$-{Fe}: Dissolution, migration, and clustering with vacancies},
@@ -1633,9 +1213,8 @@
 }
 
 % ---------------------------------------------------------------
-%  New entries — missing from prior bib
+%  New entries -- missing from prior bib
 % ---------------------------------------------------------------
-
 @article{Beeler1966VacancyInterstitialClusters,
   author  = {Beeler, Jr., J. R. and Johnson, R. A.},
   title   = {Vacancy Clusters in $\alpha$-Iron},
@@ -1677,3 +1256,689 @@
   year    = {2018},
   doi     = {10.1007/s40195-017-0590-7}
 }
+
+% ===== Added entries for companion tex files =====
+@article{barashev_theoretical_2015,
+  author = {Barashev, A. V. and Golubov, S. I. and Stoller, R. E.},
+  title = {Theoretical investigation of microstructure evolution and deformation of zirconium under neutron irradiation},
+  journal = {Journal of Nuclear Materials},
+  volume = {461},
+  pages = {85--94},
+  year = {2015},
+  doi = {10.1016/j.jnucmat.2015.03.006}
+}
+
+@article{christensen_vacancy_2020,
+  author = {Christensen, M. and Wolf, W. and Freeman, C. and Wimmer, E. and Adamson, R. and Griffiths, M. and Mader, E.},
+  title = {Vacancy loops in breakaway irradiation growth of zirconium: Insight from atomistic simulations},
+  journal = {Journal of Nuclear Materials},
+  volume = {541},
+  pages = {152656},
+  year = {2020},
+  doi = {10.1016/j.jnucmat.2020.152656}
+}
+
+@article{christien_cluster_2009,
+  author = {Christien, F. and Barbu, A.},
+  title = {Cluster dynamics modelling of irradiation growth of zirconium single crystals},
+  journal = {Journal of Nuclear Materials},
+  volume = {393},
+  number = {1},
+  pages = {153--161},
+  year = {2009},
+  doi = {10.1016/j.jnucmat.2009.06.004}
+}
+
+@article{de_diego_mobility_2002,
+  author = {de Diego, N. and Osetsky, Yu. N. and Bacon, D. J.},
+  title = {Mobility of interstitial clusters in alpha-zirconium},
+  journal = {Metallurgical and Materials Transactions A},
+  volume = {33},
+  pages = {783--789},
+  year = {2002},
+  doi = {10.1007/s11661-002-0145-y}
+}
+
+@incollection{golubov2012mean,
+  author = {Golubov, S. I. and Barashev, A. V. and Stoller, R. E.},
+  title = {Radiation Damage Theory},
+  booktitle = {Comprehensive Nuclear Materials},
+  volume = {1},
+  pages = {357--391},
+  publisher = {Elsevier},
+  year = {2012},
+  doi = {10.1016/B978-0-08-056033-5.00029-X}
+}
+
+@inproceedings{golubov_breakthrough_2015,
+  author = {Golubov, S. I. and Barashev, A. V. and Stoller, R. E. and Singh, B. N.},
+  title = {Breakthrough in Understanding Radiation Growth of Zirconium},
+  booktitle = {Zirconium in the Nuclear Industry: 17th Volume},
+  series = {ASTM STP},
+  volume = {1543},
+  pages = {43--62},
+  publisher = {ASTM International},
+  year = {2015}
+}
+
+@article{rogerson_irradiation_1988,
+  author = {Rogerson, A.},
+  title = {Irradiation growth in zirconium and its alloys},
+  journal = {Journal of Nuclear Materials},
+  volume = {159},
+  pages = {43--61},
+  year = {1988},
+  doi = {10.1016/0022-3115(88)90840-0}
+}
+
+@article{woo_theory_1988,
+  author = {Woo, C. H.},
+  title = {Theory of irradiation deformation in non-cubic metals: Effects of anisotropic diffusion},
+  journal = {Journal of Nuclear Materials},
+  volume = {159},
+  pages = {237--256},
+  year = {1988},
+  doi = {10.1016/0022-3115(88)90096-7}
+}
+
+% ===== Placeholder entries (need verification) =====
+@article{choi_modeling_2016,
+  author = {Choi, S. I. and Kim, J. H.},
+  title = {Modeling of radiation-induced microstructure evolution in zirconium alloys},
+  journal = {Journal of Nuclear Materials},
+  year = {2016},
+  note = {TODO: verify full citation details}
+}
+
+@article{christiaen_new_2019,
+  author = {Christiaen, B. and Domain, C. and Thuinet, L. and Ambard, A. and Barbu, A.},
+  title = {A new interatomic potential for modelling radiation defects in zirconium},
+  journal = {Journal of Nuclear Materials},
+  year = {2019},
+  note = {TODO: verify full citation details}
+}
+
+@article{christien_effect_2005,
+  author = {Christien, F. and Barbu, A.},
+  title = {Effect of self-interstitial diffusion anisotropy in electron-irradiated zirconium: A cluster dynamics modeling},
+  journal = {Journal of Nuclear Materials},
+  volume = {346},
+  pages = {272--281},
+  year = {2005},
+  doi = {10.1016/j.jnucmat.2005.06.024}
+}
+
+@article{dollins1976pile,
+  author = {Dollins, C. C.},
+  title = {Irradiation creep associated with the nucleation and growth of point-defect clusters},
+  journal = {Journal of Nuclear Materials},
+  year = {1976},
+  note = {TODO: verify full citation details}
+}
+
+@article{macewen1984point,
+  author = {MacEwen, S. R. and Fidleris, V.},
+  title = {Point defect sinks and irradiation growth of zirconium},
+  journal = {Journal of Nuclear Materials},
+  year = {1984},
+  note = {TODO: verify full citation details}
+}
+
+@article{mikhin_anisotropic_1994,
+  author = {Mikhin, A. G. and Soln, V. Ya.},
+  title = {Anisotropic diffusion of self-interstitial atoms in hcp metals},
+  journal = {Radiation Effects and Defects in Solids},
+  year = {1994},
+  note = {TODO: verify full citation details}
+}
+
+@book{GolubVanLoan2013,
+  author    = {Golub, Gene H. and Van Loan, Charles F.},
+  title     = {Matrix Computations},
+  edition   = {4},
+  publisher = {Johns Hopkins University Press},
+  address   = {Baltimore, MD},
+  year      = {2013}
+}
+
+@article{SaadSchultz1986,
+  author  = {Saad, Youcef and Schultz, Martin H.},
+  title   = {GMRES: A generalized minimal residual algorithm for solving nonsymmetric linear systems},
+  journal = {SIAM Journal on Scientific and Statistical Computing},
+  volume  = {7},
+  number  = {3},
+  pages   = {856--869},
+  year    = {1986},
+  doi     = {10.1137/0907058}
+}
+
+@book{Saad2003,
+  author    = {Saad, Yousef},
+  title     = {Iterative Methods for Sparse Linear Systems},
+  edition   = {2},
+  publisher = {Society for Industrial and Applied Mathematics},
+  address   = {Philadelphia, PA},
+  year      = {2003},
+  doi       = {10.1137/1.9780898718003}
+}
+
+@techreport{Woodbury1950,
+  author      = {Woodbury, Max A.},
+  title       = {Inverting Modified Matrices},
+  institution = {Statistical Research Group, Princeton University},
+  number      = {Memorandum Report 42},
+  address     = {Princeton, NJ},
+  year        = {1950}
+}
+
+@article{Hager1989,
+  author  = {Hager, William W.},
+  title   = {Updating the Inverse of a Matrix},
+  journal = {SIAM Review},
+  volume  = {31},
+  number  = {2},
+  pages   = {221--239},
+  year    = {1989},
+  doi     = {10.1137/1031049}
+}
+
+@misc{Xolotl_repo,
+  author       = {{ORNL-Fusion}},
+  title        = {Xolotl: Spatially Dependent Cluster Dynamics Simulator},
+  howpublished = {\url{https://github.com/ORNL-Fusion/xolotl}},
+  year         = {2026},
+  note         = {GitHub repository, release v3.3.0, accessed 2026-05-01}
+}
+
+% Renamed: was a second Nordlund2018 with different content
+% (Nature Communications paper, distinct from the JNM review above).
+@article{Nordlund2018b,
+  author  = {Nordlund, Kai and Zinkle, Steven J. and Sand, Andrea E. and
+             Granberg, Fredric and Averback, Robert S. and Stoller, Roger and
+             Suzudo, Tomoaki and Malerba, Lorenzo and Banhart, Florian and
+             Weber, William J. and Willaime, Francois and Dudarev, Sergei L. and
+             Simeone, David},
+  title   = {Improving atomic displacement and replacement calculations with
+             physically realistic damage models},
+  journal = {Nature Communications},
+  volume  = {9},
+  pages   = {1084},
+  year    = {2018},
+  doi     = {10.1038/s41467-018-03415-5}
+}
+
+% =====================================================================
+%   Abstract_and_Introduction.bib content
+%   Bibliography for the Introduction of
+%   "Cluster Dynamics Modeling of Radiation-Induced Defect Evolution
+%    in Materials" -- Defect_Cluster_Dynamics.pdf
+% =====================================================================
+
+%---- Foundational rate-theory and cluster-dynamics formulations -----
+
+@article{BrailsfordBullough1972,
+  author  = {Brailsford, A. D. and Bullough, R.},
+  title   = {The rate theory of swelling due to void growth in irradiated metals},
+  journal = {Journal of Nuclear Materials},
+  volume  = {44},
+  number  = {2},
+  pages   = {121--135},
+  year    = {1972},
+  doi     = {10.1016/0022-3115(72)90091-8}
+}
+
+@article{Wiedersich1972,
+  author  = {Wiedersich, H.},
+  title   = {On the theory of void formation during irradiation},
+  journal = {Radiation Effects},
+  volume  = {12},
+  pages   = {111--125},
+  year    = {1972},
+  doi     = {10.1080/00337577208231128}
+}
+
+@article{Mansur1978,
+  author  = {Mansur, L. K.},
+  title   = {Void swelling in metals and alloys under irradiation: an assessment of the theory},
+  journal = {Nuclear Technology},
+  volume  = {40},
+  number  = {1},
+  pages   = {5--34},
+  year    = {1978},
+  doi     = {10.13182/NT78-2}
+}
+
+@article{Mansur1994,
+  author  = {Mansur, L. K.},
+  title   = {Theory and experimental background on dimensional changes in irradiated alloys},
+  journal = {Journal of Nuclear Materials},
+  volume  = {216},
+  pages   = {97--123},
+  year    = {1994},
+  doi     = {10.1016/0022-3115(94)90009-4}
+}
+
+@phdthesis{Ghoniem1977,
+  author  = {Ghoniem, N. M.},
+  title   = {A Dynamic Rate Theory for the Response of Metals during Steady State and Pulsed Irradiation},
+  school  = {University of Wisconsin--Madison},
+  year    = {1977},
+  type    = {Ph.D. Thesis (Nuclear Engineering)}
+}
+
+@article{Ghoniem1979a,
+  author  = {Ghoniem, N. M. and Cho, D. D.},
+  title   = {The simultaneous clustering of point defects during irradiation},
+  journal = {Physica Status Solidi (a)},
+  volume  = {54},
+  pages   = {171--178},
+  year    = {1979},
+  doi     = {10.1002/pssa.2210540121}
+}
+
+@article{Ghoniem1980,
+  author  = {Ghoniem, N. M. and Sharafat, S.},
+  title   = {A numerical solution to the {Fokker--Planck} equation describing the evolution of the interstitial loop microstructure during irradiation},
+  journal = {Journal of Nuclear Materials},
+  volume  = {92},
+  pages   = {121--135},
+  year    = {1980},
+  doi     = {10.1016/0022-3115(80)90148-8}
+}
+
+@article{Ghoniem1989,
+  author  = {Ghoniem, N. M.},
+  title   = {Stochastic theory of diffusional planar-atomic clustering and its application to dislocation loops},
+  journal = {Physical Review B},
+  volume  = {39},
+  pages   = {11810--11819},
+  year    = {1989},
+  doi     = {10.1103/PhysRevB.39.11810}
+}
+
+@article{GhoniemAlhajji1985,
+  author  = {Ghoniem, N. M. and Alhajji, J. N. and Kaletta, D.},
+  title   = {The effect of helium clustering on its transport to grain boundaries},
+  journal = {Journal of Nuclear Materials},
+  volume  = {136},
+  pages   = {192--206},
+  year    = {1985},
+  doi     = {10.1016/0022-3115(85)90109-7}
+}
+
+@article{Hayns1976,
+  author  = {Hayns, M. R.},
+  title   = {The transient stages of damage accumulation in irradiated materials with point defect clusters},
+  journal = {Journal of Nuclear Materials},
+  volume  = {59},
+  pages   = {175--187},
+  year    = {1976},
+  doi     = {10.1016/0022-3115(76)90163-5}
+}
+
+@article{Kiritani1973,
+  author  = {Kiritani, M.},
+  title   = {Analysis of the clustering process of supersaturated lattice vacancies},
+  journal = {Journal of the Physical Society of Japan},
+  volume  = {35},
+  pages   = {95--107},
+  year    = {1973},
+  doi     = {10.1143/JPSJ.35.95}
+}
+
+@article{Russell1984,
+  author  = {Russell, K. C.},
+  title   = {Phase stability under irradiation},
+  journal = {Progress in Materials Science},
+  volume  = {28},
+  pages   = {229--434},
+  year    = {1984},
+  doi     = {10.1016/0079-6425(84)90001-X}
+}
+
+@article{Wagner1981,
+  author  = {Wagner, R. and Kampmann, R.},
+  title   = {Homogeneous second-phase precipitation},
+  journal = {Materials Science and Technology},
+  volume  = {5},
+  pages   = {213--303},
+  year    = {1981}
+}
+
+%---- Modern reviews of cluster dynamics -----------------------------
+
+@article{Xiong2024,
+  author  = {Xiong, Y. and Huang, S. and Zhang, J. and Ma, S. and Xu, B. and Fu, H. and Xiang, X. and Lu, W. and Zhao, S.},
+  title   = {A review of cluster dynamics in studying radiation damage: dominant factors and practical implications},
+  journal = {JOM},
+  volume  = {76},
+  number  = {10},
+  pages   = {5786--5803},
+  year    = {2024},
+  doi     = {10.1007/s11837-024-06717-w}
+}
+
+@article{KohnertWirth2017,
+  author  = {Kohnert, A. A. and Wirth, B. D. and Capolungo, L.},
+  title   = {Modeling microstructural evolution in irradiated materials with cluster dynamics methods: a review},
+  journal = {Computational Materials Science},
+  volume  = {149},
+  pages   = {442--459},
+  year    = {2018},
+  doi     = {10.1016/j.commatsci.2018.02.049}
+}
+
+@article{Chen2022,
+  author  = {Chen, Y. and Caro, A. and Capolungo, L. and Hyde, J. M. and Marian, J.},
+  title   = {Algorithmic and computational implementations of cluster dynamics for irradiation-driven microstructure evolution},
+  journal = {Computational Materials Science},
+  volume  = {209},
+  pages   = {111431},
+  year    = {2022},
+  doi     = {10.1016/j.commatsci.2022.111431}
+}
+
+@article{Zheng2023,
+  author  = {Zheng, C. and Maurer, R. J. and Niu, R. and Chookajorn, T.},
+  title   = {Cluster dynamics modeling of microstructure evolution in nuclear materials: a review},
+  journal = {Progress in Nuclear Energy},
+  volume  = {158},
+  pages   = {104615},
+  year    = {2023},
+  doi     = {10.1016/j.pnucene.2023.104615}
+}
+
+@article{Ke2023,
+  author  = {Ke, J. H. and Wirth, B. D. and Devanathan, R.},
+  title   = {Modeling tools for radiation effects in nuclear materials: from electronic structure to engineering scale},
+  journal = {Annual Review of Materials Research},
+  volume  = {53},
+  pages   = {59--90},
+  year    = {2023},
+  doi     = {10.1146/annurev-matsci-080921-072619}
+}
+
+@article{Marian2017,
+  author  = {Marian, J. and Becquart, C. S. and Domain, C. and Dudarev, S. L. and Gilbert, M. R. and Kurtz, R. J. and Mason, D. R. and Nordlund, K. and Sand, A. E. and Snead, L. L. and Suzudo, T. and Wirth, B. D.},
+  title   = {Recent advances in modeling and simulation of the exposure and response of tungsten to fusion energy conditions},
+  journal = {Nuclear Fusion},
+  volume  = {57},
+  pages   = {092008},
+  year    = {2017},
+  doi     = {10.1088/1741-4326/aa5e8d}
+}
+
+@article{Marian2011,
+  author  = {Marian, J. and Bulatov, V. V.},
+  title   = {Stochastic cluster dynamics method for simulations of multispecies irradiation damage accumulation},
+  journal = {Journal of Nuclear Materials},
+  volume  = {415},
+  pages   = {84--95},
+  year    = {2011},
+  doi     = {10.1016/j.jnucmat.2011.05.045}
+}
+
+@article{MarianBulatov2011,
+  author  = {Marian, J. and Bulatov, V. V.},
+  title   = {Stochastic cluster dynamics method for simulations of multispecies irradiation damage accumulation},
+  journal = {Journal of Nuclear Materials},
+  volume  = {415},
+  pages   = {84--95},
+  year    = {2011},
+  doi     = {10.1016/j.jnucmat.2011.05.045}
+}
+
+%---- Stochastic and grouping CD methods (additional) ---------------
+
+@article{GolubovSingh2001,
+  author  = {Golubov, S. I. and Ovcharenko, A. M. and Barashev, A. V. and Singh, B. N.},
+  title   = {Grouping method for the approximate solution of a kinetic equation describing the evolution of point-defect clusters},
+  journal = {Philosophical Magazine A},
+  volume  = {81},
+  pages   = {643--658},
+  year    = {2001},
+  doi     = {10.1080/01418610108212164}
+}
+
+@article{Surh2004,
+  author  = {Surh, M. P. and Sturgeon, J. B. and Wolfer, W. G.},
+  title   = {Master equation and {F}okker--{P}lanck methods for void nucleation and growth in irradiation swelling},
+  journal = {Journal of Nuclear Materials},
+  volume  = {325},
+  pages   = {44--52},
+  year    = {2004},
+  doi     = {10.1016/j.jnucmat.2003.10.013}
+}
+
+@article{Stewart2010,
+  author  = {Stewart, D. and Osetsky, Yu. N. and Stoller, R. E.},
+  title   = {Atomistic studies of helium defect properties in bcc iron: comparison of {He--V} cluster models},
+  journal = {Journal of Nuclear Materials},
+  volume  = {417},
+  pages   = {1110--1114},
+  year    = {2011},
+  doi     = {10.1016/j.jnucmat.2010.12.217}
+}
+
+@article{Wirth2002,
+  author  = {Wirth, B. D. and Caturla, M. J. and {D{\'i}az de la Rubia}, T. and Khraishi, T. and Zbib, H.},
+  title   = {Mechanical property degradation in irradiated materials: a multiscale modeling approach},
+  journal = {Nuclear Instruments and Methods in Physics Research B},
+  volume  = {180},
+  pages   = {23--31},
+  year    = {2001},
+  doi     = {10.1016/S0168-583X(01)00393-5}
+}
+
+%---- Primary damage / cascade spectra -------------------------------
+
+@article{StollerCalder2000,
+  author  = {Stoller, R. E.},
+  title   = {The role of cascade energy and temperature in primary defect formation in iron},
+  journal = {Journal of Nuclear Materials},
+  volume  = {276},
+  pages   = {22--32},
+  year    = {2000},
+  doi     = {10.1016/S0022-3115(99)00204-4}
+}
+
+@article{Stoller2008,
+  author  = {Stoller, R. E. and Golubov, S. I. and Domain, C. and Becquart, C. S.},
+  title   = {Mean-field rate theory and object kinetic {M}onte {C}arlo: a comparison of kinetic models},
+  journal = {Journal of Nuclear Materials},
+  volume  = {382},
+  pages   = {77--90},
+  year    = {2008},
+  doi     = {10.1016/j.jnucmat.2008.08.047}
+}
+
+@article{Bacon2009,
+  author  = {Bacon, D. J. and Gao, F. and Osetsky, Yu. N.},
+  title   = {The primary damage state in fcc, bcc and hcp metals as seen in molecular dynamics simulations},
+  journal = {Journal of Nuclear Materials},
+  volume  = {276},
+  pages   = {1--12},
+  year    = {2000},
+  doi     = {10.1016/S0022-3115(99)00165-8}
+}
+
+%---- Helium and helium--vacancy clusters (additional) --------------
+
+@article{Schaublin2007,
+  author  = {Sch{\"a}ublin, R. and Chiu, Y. L.},
+  title   = {Effect of helium on irradiation-induced hardening of iron: a simulation point of view},
+  journal = {Journal of Nuclear Materials},
+  volume  = {362},
+  pages   = {152--160},
+  year    = {2007},
+  doi     = {10.1016/j.jnucmat.2007.01.187}
+}
+
+@article{Caturla2008,
+  author  = {Caturla, M. J. and Ortiz, C. J. and Fu, C.-C.},
+  title   = {Helium and point defect accumulation: (ii) kinetic modelling},
+  journal = {Comptes Rendus Physique},
+  volume  = {9},
+  pages   = {401--408},
+  year    = {2008},
+  doi     = {10.1016/j.crhy.2007.09.004}
+}
+
+@article{Ortiz2007,
+  author  = {Ortiz, C. J. and Caturla, M. J.},
+  title   = {Simulation of defect evolution in irradiated materials: role of intracascade clustering and correlated recombination},
+  journal = {Physical Review B},
+  volume  = {75},
+  pages   = {184101},
+  year    = {2007},
+  doi     = {10.1103/PhysRevB.75.184101}
+}
+
+%---- Tungsten / plasma-facing materials -----------------------------
+
+@article{Faney2014,
+  author  = {Faney, T. and Wirth, B. D.},
+  title   = {Spatially dependent cluster dynamics modeling of microstructure evolution in low energy helium irradiated tungsten},
+  journal = {Modelling and Simulation in Materials Science and Engineering},
+  volume  = {22},
+  pages   = {065010},
+  year    = {2014},
+  doi     = {10.1088/0965-0393/22/6/065010}
+}
+
+@misc{Xolotl2026,
+  author       = {{ORNL Fusion Energy Division}},
+  title        = {{Xolotl}: spatially dependent cluster dynamics simulator},
+  howpublished = {GitHub repository, release v3.3.0},
+  url          = {https://github.com/ORNL-Fusion/xolotl},
+  year         = {2026},
+  note         = {Accessed 2026-05-01}
+}
+
+@article{Becquart2014,
+  author  = {Becquart, C. S. and Domain, C.},
+  title   = {Modelling self trapping and trap mutation in tungsten using {DFT} and molecular dynamics with an empirical potential based on {DFT}},
+  journal = {Journal of Nuclear Materials},
+  volume  = {455},
+  pages   = {311--315},
+  year    = {2014},
+  doi     = {10.1016/j.jnucmat.2014.06.003}
+}
+
+@article{Hayward2013,
+  author  = {Hayward, E. and Fu, C.-C.},
+  title   = {Interplay between hydrogen and vacancies in $\alpha$-Fe},
+  journal = {Physical Review B},
+  volume  = {87},
+  pages   = {174103},
+  year    = {2013},
+  doi     = {10.1103/PhysRevB.87.174103}
+}
+
+@article{Ferreira2024,
+  author  = {Ferreira, F. and Wirth, B. D.},
+  title   = {Multispecies cluster dynamics of hydrogen, helium, vacancies and self-interstitials in tungsten under fusion-relevant irradiation},
+  journal = {Nuclear Materials and Energy},
+  volume  = {39},
+  pages   = {101631},
+  year    = {2024},
+  doi     = {10.1016/j.nme.2024.101631}
+}
+
+%---- BCC iron / ferritic-martensitic steels (additional) -----------
+
+@article{Malerba2021a,
+  author  = {Malerba, L. and Anento, N. and Balbuena, J. P. and Becquart, C. S. and Castin, N. and Caturla, M. J. and Domain, C. and Guerrero, C. and Marinica, M.-C. and Mart{\'i}nez, E. and Messina, L. and Olsson, P. and Pasianot, R. and Soisson, F. and Terentyev, D.},
+  title   = {Physical mechanisms and parameters for models of microstructure evolution under irradiation in {Fe} alloys -- {Part I}: pure {Fe}},
+  journal = {Nuclear Materials and Energy},
+  volume  = {29},
+  pages   = {101069},
+  year    = {2021},
+  doi     = {10.1016/j.nme.2021.101069}
+}
+
+@article{Klimenkov2012,
+  author  = {Klimenkov, M. and Lindau, R. and M{\"o}slang, A.},
+  title   = {{TEM} characterization of precipitates in {EUROFER 97}},
+  journal = {Progress in Nuclear Energy},
+  volume  = {57},
+  pages   = {8--13},
+  year    = {2012},
+  doi     = {10.1016/j.pnucene.2011.10.006}
+}
+
+%---- Property degradation / experimental and design context --------
+
+@article{Zinkle2013,
+  author  = {Zinkle, S. J. and Was, G. S.},
+  title   = {Materials challenges in nuclear energy},
+  journal = {Acta Materialia},
+  volume  = {61},
+  pages   = {735--758},
+  year    = {2013},
+  doi     = {10.1016/j.actamat.2012.11.004}
+}
+
+@article{Stork2014,
+  author  = {Stork, D. and Agostini, P. and Boutard, J.-L. and Buckthorpe, D. and Diegele, E. and Dudarev, S. L. and English, C. and Federici, G. and Gilbert, M. R. and Gonzalez, S. and others},
+  title   = {Materials {R\&D} for a timely {DEMO}: key findings and recommendations of the {EU} roadmap materials assessment group},
+  journal = {Fusion Engineering and Design},
+  volume  = {89},
+  pages   = {1586--1594},
+  year    = {2014},
+  doi     = {10.1016/j.fusengdes.2013.11.007}
+}
+
+@article{Odette2008,
+  author  = {Odette, G. R. and Alinger, M. J. and Wirth, B. D.},
+  title   = {Recent developments in irradiation-resistant steels},
+  journal = {Annual Review of Materials Research},
+  volume  = {38},
+  pages   = {471--503},
+  year    = {2008},
+  doi     = {10.1146/annurev.matsci.38.060407.130315}
+}
+
+@article{Yamamoto2020,
+  author  = {Yamamoto, T. and Odette, G. R. and Kishimoto, H.},
+  title   = {Helium--dpa coupled hardening of fusion structural steels: a re-analysis},
+  journal = {Journal of Nuclear Materials},
+  volume  = {535},
+  pages   = {152181},
+  year    = {2020},
+  doi     = {10.1016/j.jnucmat.2020.152181}
+}
+
+%---- Fuel behaviour and Zr alloys (additional) ---------------------
+
+@article{Veshchunov2007,
+  author  = {Veshchunov, M. S.},
+  title   = {Modelling of grain face bubbles coalescence in irradiated {UO$_2$} fuel},
+  journal = {Journal of Nuclear Materials},
+  volume  = {374},
+  pages   = {44--53},
+  year    = {2008},
+  doi     = {10.1016/j.jnucmat.2007.07.001}
+}
+
+@article{Christien2010,
+  author  = {Christien, F. and Barbu, A.},
+  title   = {Modelling of copper precipitation in iron during thermal aging and irradiation},
+  journal = {Journal of Nuclear Materials},
+  volume  = {324},
+  pages   = {90--96},
+  year    = {2004},
+  doi     = {10.1016/j.jnucmat.2003.09.012}
+}
+
+@article{Maron2024,
+  author  = {Maron, M. and Li, Y. and Lalani, I. and Baker, K. and Ramirez Flores, B. and Black, T. and Hollenbeck, J. and Ghoniem, N. M. and Po, G.},
+  title   = {Spatially-resolved cluster dynamics modeling of irradiation growth},
+  journal = {International Journal of Plasticity},
+  volume  = {177},
+  pages   = {103989},
+  year    = {2024},
+  doi     = {10.1016/j.ijplas.2024.103989}
+}
+
+%---- End of cleaned bibliography -----------------------------------

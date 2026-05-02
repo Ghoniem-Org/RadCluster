@@ -1,6 +1,8 @@
 # [ARCHIVED 2026-05-02] Eurofer_CD — Cluster Dynamics for bcc Fe / EUROFER97
 
-> **This module is archived.** It has been superseded by `Expanded_Eurofer_CD/`,
+> **This module is archived.** It has been superseded by `RadCluster_1_0/`
+> (originally archived as superseded by `Expanded_Eurofer_CD/`, which was
+> renamed 2026-05-02),
 > which generalizes the master equations (Ghoniem 2026 formulation), adds
 > bin-moment reduction, the Woodbury preconditioner, adaptive domain doubling,
 > and full conservation diagnostics. This directory is preserved for

@@ -7,13 +7,13 @@ Physics-based simulation suite for **EUROFER97 / ferritic-martensitic steel** be
 ```
 EuroferMicrostructure/
 ├── EuroferExperiments/     # Radiation microstructure evolution (active)
-├── Expanded_Eurofer_CD/    # Cluster dynamics — current research code (active)
+├── RadCluster_1_0/    # Cluster dynamics — current research code (active)
 ├── Monomer_CD/                # Cluster dynamics scaling reference (active)
 ├── ClusterDynamics/    # Cluster-size resolved rate equations (placeholder)
 ├── Creep/              # Thermal + irradiation creep (placeholder)
 ├── EuroferProps/       # Material property fitting utilities (placeholder)
 ├── archive/            # Archived modules (read-only, kept for reproducibility)
-│   └── Eurofer_CD/         # Archived 2026-05-02 — superseded by Expanded_Eurofer_CD
+│   └── Eurofer_CD/         # Archived 2026-05-02 — superseded by RadCluster_1_0
 └── Docs/               # Shared documentation, literature, databases
     ├── Database/       # Experimental microstructure databases (xlsx)
     ├── Formulation/    # Rate-equation derivations and code notes (PDF)
@@ -25,12 +25,12 @@ EuroferMicrostructure/
 | Module | Status | Description |
 |---|---|---|
 | `EuroferExperiments/` | **Active** | Mean-field rate equations for loop + void evolution in EUROFER97 |
-| `Expanded_Eurofer_CD/` | **Active** | Generalized cluster dynamics (Ghoniem 2026) — current research code |
+| `RadCluster_1_0/` | **Active** | Generalized cluster dynamics (Ghoniem 2026) — current research code |
 | `Monomer_CD/` | **Active** | Monomer-mobility cluster dynamics scaling reference (Ghoniem & Cho 1979, no He) |
 | `ClusterDynamics/` | Placeholder | Cluster-size-resolved model (adapt from Fluor_Zr/ClusterDynamics) |
 | `Creep/` | Placeholder | Dislocation-mechanics creep model (adapt from Fluor_Zr/Creep) |
 | `EuroferProps/` | Placeholder | Property fitting utilities (adapt from Fluor_Zr/ZrProps) |
-| `archive/Eurofer_CD/` | Archived 2026-05-02 | Superseded by `Expanded_Eurofer_CD/`. Last active state at git tag `eurofer_cd-final`. |
+| `archive/Eurofer_CD/` | Archived 2026-05-02 | Superseded by `RadCluster_1_0/`. Last active state at git tag `eurofer_cd-final`. |
 
 ## Conventions (mirror Fluor_Zr)
 

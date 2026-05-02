@@ -2,7 +2,7 @@
 import sys, os, io
 from pathlib import Path
 
-MODULE_ROOT = Path(__file__).resolve().parent.parent
+MODULE_ROOT = Path(__file__).resolve().parent.parent.parent
 REPO_ROOT   = MODULE_ROOT.parent
 sys.path.insert(0, str(REPO_ROOT))
 sys.path.insert(0, str(MODULE_ROOT))

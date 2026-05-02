@@ -10,7 +10,7 @@ in under a minute each.
 import sys, os, io, time, importlib, subprocess, json
 from pathlib import Path
 
-MODULE_ROOT = Path(__file__).resolve().parent.parent
+MODULE_ROOT = Path(__file__).resolve().parent.parent.parent
 REPO_ROOT   = MODULE_ROOT.parent
 for p in [str(REPO_ROOT), str(MODULE_ROOT)]:
     if p not in sys.path:

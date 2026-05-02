@@ -31,7 +31,7 @@ import importlib
 from pathlib import Path
 
 # ── path setup ────────────────────────────────────────────────────────────────
-CODES_DIR   = Path(__file__).resolve().parent
+CODES_DIR   = Path(__file__).resolve().parent.parent
 MODULE_ROOT = CODES_DIR.parent
 REPO_ROOT   = MODULE_ROOT.parent
 for p in [str(REPO_ROOT), str(MODULE_ROOT)]:

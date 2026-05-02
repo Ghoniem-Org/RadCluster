@@ -18,7 +18,7 @@ from pathlib import Path
 import numpy as np
 
 # ── Path setup ──────────────────────────────────────────────────────────────
-MODULE_ROOT = Path(__file__).resolve().parent.parent
+MODULE_ROOT = Path(__file__).resolve().parent.parent.parent
 REPO_ROOT   = MODULE_ROOT.parent
 for p in [str(REPO_ROOT), str(MODULE_ROOT)]:
     if p not in sys.path:

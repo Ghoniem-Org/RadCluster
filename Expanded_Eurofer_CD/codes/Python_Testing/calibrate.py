@@ -23,7 +23,7 @@ import numpy as np
 
 # ── Setup path ────────────────────────────────────────────────────────────────
 SCRIPT_DIR = Path(__file__).resolve().parent
-BASE_DIR   = SCRIPT_DIR.parent
+BASE_DIR   = SCRIPT_DIR.parent.parent
 sys.path.insert(0, str(BASE_DIR.parent))   # repo root
 
 from Expanded_Eurofer_CD.py_utils.simulation import ExpandedEuroferCDSimulation

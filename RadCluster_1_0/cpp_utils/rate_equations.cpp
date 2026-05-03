@@ -171,10 +171,12 @@ static inline double K_vi_coal(const Parameters& P, int n, int mp) {
 // x_hi_i_win / x_hi_v_win: inclusive upper bounds for active SIA / VAC state
 // indices (0-based).  Full solver passes I-1 / V-1.  Sliding-window modes pass
 // the current window frontier.
-// use_omp: true when window_omp_threads > 0 (all solver modes, not just sliding_OpenMP).
+// OpenMP is enabled at compile time via CD_HAVE_OPENMP; thread count is taken
+// from the OpenMP runtime (OMP_NUM_THREADS env var if set, otherwise the
+// machine maximum).  Falls back to serial when CD_HAVE_OPENMP is not defined.
 static int rhs_case2(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
                       const Parameters& P,
-                      int x_hi_i_win, int x_hi_v_win, bool use_omp) {
+                      int x_hi_i_win, int x_hi_v_win) {
     const double* y    = N_VGetArrayPointer_Serial(yv);
     double*       dydt = N_VGetArrayPointer_Serial(ydotv);
     const int  I   = P.I;
@@ -215,16 +217,12 @@ static int rhs_case2(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
         return P.GVV[m_idx] * std::exp(std::min(-ell_m * dE / P.kBT, 0.0));
     };
 
-    // OpenMP thread count for sliding_OpenMP (mode 4)
-    const int omp_threads = (use_omp && P.window_omp_threads > 0)
-                            ? P.window_omp_threads : 1;
-
     // ── SIA cluster equations (Eq. ME_SIA) ─────────────────────────────────
     // Loop is restricted to [0, x_hi_i_win] — clusters beyond the window
     // keep dydt[n]=0 (initialised above), preventing CVODE from evolving them.
     // Each iteration writes only to dci[n], so the loop is race-free under OMP.
 #ifdef CD_HAVE_OPENMP
-#pragma omp parallel for if(use_omp) schedule(dynamic) num_threads(omp_threads)
+#pragma omp parallel for schedule(static, 64) if(x_hi_i_win + x_hi_v_win > 500)
 #endif
     for (int n = 0; n <= x_hi_i_win; ++n) {
         const int    sn = n + 1;   // 1-indexed size
@@ -376,7 +374,7 @@ static int rhs_case2(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
     }
     // Loop restricted to [0, x_hi_v_win]; each iteration writes only to dcv[m].
 #ifdef CD_HAVE_OPENMP
-#pragma omp parallel for if(use_omp) schedule(dynamic) num_threads(omp_threads)
+#pragma omp parallel for schedule(static, 64) if(x_hi_i_win + x_hi_v_win > 500)
 #endif
     for (int m = 0; m <= x_hi_v_win; ++m) {
         const double cm    = std::max(c_v[m], 0.0);
@@ -601,7 +599,7 @@ static int rhs_case2(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
 
 static int rhs_case1(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
                       const Parameters& P,
-                      int x_hi_i_win, int x_hi_v_win, bool use_omp) {
+                      int x_hi_i_win, int x_hi_v_win) {
     const double* y    = N_VGetArrayPointer_Serial(yv);
     double*       dydt = N_VGetArrayPointer_Serial(ydotv);
     const int  I   = P.I;
@@ -641,13 +639,10 @@ static int rhs_case1(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
         return P.GVV[m_idx] * std::exp(std::min(-ell * dE / P.kBT, 0.0));
     };
 
-    const int omp_threads = (use_omp && P.window_omp_threads > 0)
-                            ? P.window_omp_threads : 1;
-
     // ── SIA clusters (general coalescence, same structure as Case 2) ─────────
     // Loop restricted to [0, x_hi_i_win]; each iteration writes only to dci[n].
 #ifdef CD_HAVE_OPENMP
-#pragma omp parallel for if(use_omp) schedule(dynamic) num_threads(omp_threads)
+#pragma omp parallel for schedule(static, 64) if(x_hi_i_win + x_hi_v_win > 500)
 #endif
     for (int n = 0; n <= x_hi_i_win; ++n) {
         const int    sn = n + 1;
@@ -766,7 +761,7 @@ static int rhs_case1(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
     }
     // Loop restricted to [0, x_hi_v_win]; each iteration writes only to dcv[m].
 #ifdef CD_HAVE_OPENMP
-#pragma omp parallel for if(use_omp) schedule(dynamic) num_threads(omp_threads)
+#pragma omp parallel for schedule(static, 64) if(x_hi_i_win + x_hi_v_win > 500)
 #endif
     for (int m = 0; m <= x_hi_v_win; ++m) {
         const int    sm  = m + 1;
@@ -980,18 +975,19 @@ int rhs_full_CD(sunrealtype t, N_Vector y, N_Vector ydot, void* user_data) {
 
     // Resolve window bounds:
     //   window_mode == 0 (full): entire SIA / VAC domains are active.
-    //   window_mode == 3 (cpp_sliding_win): two independent windows, serial.
-    //   window_mode == 4 (sliding_OpenMP): two independent windows + OMP.
+    //   window_mode == 3 (cpp_sliding_win): two independent windows.
+    //   window_mode == 4 (sliding_OpenMP): same windows, kept as a separate
+    //     mode for compatibility — OpenMP is now active for all modes when
+    //     CD_HAVE_OPENMP is defined.
     // OpenMP is safe for all modes: each loop iteration writes only to its
     // own dci[n] or dcv[m], so there are no data races.
-    const int  x_hi_i = ud->window_active ? ud->x_hi_i : P.I - 1;
-    const int  x_hi_v = ud->window_active ? ud->x_hi_v : P.V - 1;
-    const bool use_omp = (P.window_omp_threads > 0);
+    const int x_hi_i = ud->window_active ? ud->x_hi_i : P.I - 1;
+    const int x_hi_v = ud->window_active ? ud->x_hi_v : P.V - 1;
 
     if (P.he_mode == 1)
-        return rhs_case1(t, y, ydot, P, x_hi_i, x_hi_v, use_omp);
+        return rhs_case1(t, y, ydot, P, x_hi_i, x_hi_v);
     else
-        return rhs_case2(t, y, ydot, P, x_hi_i, x_hi_v, use_omp);
+        return rhs_case2(t, y, ydot, P, x_hi_i, x_hi_v);
 }
 
 // ── Size-bin moment RHS (Chapter 9, Eqs. 193-208) ────────────────────────────

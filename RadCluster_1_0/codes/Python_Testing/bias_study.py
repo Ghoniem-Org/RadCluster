@@ -54,7 +54,7 @@ SOLVER_CONFIG = {
         'backend': 'cvode', 'lmm': 'bdf', 'linsol': 'gmres',
         'window_w0_i': 50, 'window_width': 150,
         'window_C_expand': 1e-18, 'window_expand_pad': 10,
-        'window_omp_threads': 8, 'window_prec': 1,
+        'window_prec': 1,
         'window_gmres_maxl': 20, 'window_N_thresh': 500,
     }
 }

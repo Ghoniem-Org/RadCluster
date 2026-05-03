@@ -125,7 +125,7 @@ WINDOW_METHOD = {
 }
 
 MODE3_CFG = {**BASE_SOLVER_CFG, 'solver_method': WINDOW_METHOD}
-MODE4_CFG = {**BASE_SOLVER_CFG, 'solver_method': {**WINDOW_METHOD, 'window_omp_threads': 4}}
+MODE4_CFG = {**BASE_SOLVER_CFG, 'solver_method': WINDOW_METHOD}
 MODE0_CFG = {**BASE_SOLVER_CFG, 'solver_method': {
     'backend': 'cvode', 'lmm': 'bdf', 'linsol': 'gmres',
     'window_gmres_maxl': 40, 'window_prec': 1,
@@ -486,7 +486,7 @@ def make_comparison_plots(res_dict, wall_dict, out_path):
             f'pad={WINDOW_METHOD["window_expand_pad_v"]}',
         f'  C_expand = {WINDOW_METHOD["window_C_expand"]:.0e}',
         f'  linsol = gmres  maxl={WINDOW_METHOD["window_gmres_maxl"]}',
-        f'  OMP threads (IV) = {MODE4_CFG["solver_method"].get("window_omp_threads",0)}',
+        f'  OMP threads (IV) = auto (OMP_NUM_THREADS or machine max)',
         '',
         'From I=V=1000 reference:',
         '  SIA 99.9% content: n≤24',
@@ -591,7 +591,7 @@ def write_report(res_dict, wall_dict, report_path):
               f'  VAC:  w0={WINDOW_METHOD["window_w0_v"]}  '
                   f'C_expand_v={WINDOW_METHOD["window_C_expand_v"]:.0e}  '
                   f'pad_v={WINDOW_METHOD["window_expand_pad_v"]}',
-              f'  OMP threads (mode IV):  {MODE4_CFG["solver_method"].get("window_omp_threads",0)}',
+              f'  OMP threads (mode IV):  auto (OMP_NUM_THREADS or machine max)',
               '']
 
     # ── Timing table ─────────────────────────────────────────────────────────

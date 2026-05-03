@@ -275,7 +275,6 @@ def write_param_file(sim, solver_config, path, y0_override=None):
     lines.append(f"window_width={int(method.get('window_width', 500))}")
     lines.append(f"window_t_start={float(method.get('window_t_start', 10.0)):.17e}")
     lines.append(f"window_N_thresh={int(method.get('window_N_thresh', 1000))}")
-    lines.append(f"window_omp_threads={int(method.get('window_omp_threads', 0))}")
     lines.append(f"window_gmres_maxl={int(method.get('window_gmres_maxl', 20))}")
     lines.append(f"Ni_extend_tol=0.00000000000000000e+00")
     lines.append(f"Ni_extend_margin=0")
@@ -287,7 +286,23 @@ def write_param_file(sim, solver_config, path, y0_override=None):
     # Woodbury only for full solver (window_mode==0) with GMRES — the sliding
     # window already keeps the active system small enough for Jacobi+GMRES.
     prec_type_default = 1 if (linsol_int == 2 and window_mode_int == 0) else 0
-    lines.append(f"prec_type={int(method.get('prec_type', prec_type_default))}")
+    # User-facing name takes priority over the legacy integer.  Accept a few
+    # case/spelling variants so the notebook config stays forgiving.
+    _prec_name_map = {
+        'jacobi':    0,
+        'woodbury':  1,
+        'woodburry': 1,   # common typo
+    }
+    if 'preconditioner' in method:
+        key = str(method['preconditioner']).strip().lower()
+        if key not in _prec_name_map:
+            raise ValueError(
+                f"Unknown preconditioner='{method['preconditioner']}'. "
+                f"Use 'Jacobi' or 'Woodbury'.")
+        prec_type_value = _prec_name_map[key]
+    else:
+        prec_type_value = int(method.get('prec_type', prec_type_default))
+    lines.append(f"prec_type={prec_type_value}")
     # prec_bw: half-bandwidth (auto from mobility cutoffs)
     prec_bw_default = max(2 * d['i_mobile'], 2 * d['v_mobile']) + 1
     lines.append(f"prec_bw={int(method.get('prec_bw', prec_bw_default))}")
@@ -332,7 +347,7 @@ def _parse_kv_line(line):
     return out
 
 
-def _make_stderr_handler(progress_callback):
+def _make_stderr_handler(progress_callback, info_out=None):
     """
     Return a callable suitable for use as a daemon-thread target that reads
     proc.stderr line by line.
@@ -341,6 +356,9 @@ def _make_stderr_handler(progress_callback):
     When progress_callback is given → also parse [diag] / [ci5_rates] /
     [cv5_rates] lines and call progress_callback(row_dict) once all three
     lines for a given time step have been received.
+
+    When info_out is a dict, the handler stores any solver-emitted metadata
+    lines (currently `[OpenMP_threads] N`) into it under a stable key.
 
     The row_dict passed to the callback contains atom-fraction concentrations
     and atom-fraction/s rates exactly as the C++ solver computed them:
@@ -367,6 +385,22 @@ def _make_stderr_handler(progress_callback):
         for raw in proc_stderr:
             line = raw.decode('utf-8', errors='replace')
             stripped = line.strip()
+
+            if info_out is not None and stripped.startswith('[OpenMP_threads]'):
+                try:
+                    info_out['omp_threads_used'] = int(stripped.split()[-1])
+                except (ValueError, IndexError):
+                    pass
+
+            if info_out is not None and stripped.startswith('[stats]'):
+                try:
+                    kv = _parse_kv_line(stripped[len('[stats]'):])
+                    info_out['solver_stats_final'] = {
+                        k: (int(v) if isinstance(v, float) and v.is_integer() else v)
+                        for k, v in kv.items()
+                    }
+                except Exception:
+                    pass
 
             # Only echo non-diagnostic lines to stderr; diagnostic lines
             # are consumed silently by the progress_callback parser below.
@@ -466,7 +500,8 @@ def run_cpp_solver(sim, solver_config, base_dir=None, progress_callback=None,
             stderr=subprocess.PIPE,
         )
 
-        stderr_fn = _make_stderr_handler(progress_callback)
+        solver_info = {}
+        stderr_fn = _make_stderr_handler(progress_callback, info_out=solver_info)
         t_fwd = threading.Thread(target=stderr_fn, args=(proc.stderr,), daemon=True)
         t_fwd.start()
         partial = False
@@ -544,6 +579,8 @@ def run_cpp_solver(sim, solver_config, base_dir=None, progress_callback=None,
             'message':       f'C++ CVODE BDF {sm}/{po} / {linsol}',
             'n_time_points': n_pts,
         },
+        'omp_threads_used':   solver_info.get('omp_threads_used'),
+        'solver_stats_final': solver_info.get('solver_stats_final'),
     }
     print("Results processing complete.")
     return results

@@ -260,7 +260,6 @@ REACTIONS = [
     ('Window initial Ni','window_w0_i',   100,                 '−', 'sliding window initial size'),
     ('Window width',     'window_width',  500,                 '−', 'Phase III constant width'),
     ('Window expand thr','window_C_exp',  1.0e-18,             '−', 'expand when C > this'),
-    ('Window OMP threads','window_omp',   0,                   '−', '0=OMP_NUM_THREADS'),
     ('Concentration floor','C_floor',     1.0e-100,            '−', None),
 
     ('Irradiation Conditions', None, None, None, None),

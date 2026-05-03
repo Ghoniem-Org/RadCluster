@@ -11,7 +11,9 @@
  * Solver modes (window_mode parameter):
  *   0 = cpp_full        — full system, CVODE BDF
  *   3 = cpp_sliding_win — Phase III: constant-width sliding window on SIA
- *   4 = sliding_OpenMP  — Phase III + OpenMP intra-RHS parallelism
+ *   4 = sliding_OpenMP  — alias for cpp_sliding_win (OpenMP is on for ALL
+ *                          modes when CD_HAVE_OPENMP is defined; thread count
+ *                          comes from OMP_NUM_THREADS or the machine max).
  *
  * Physics options (physics_option_int):
  *   0 = full_CD_fission      — I+V+2 equations (Case 2, Eq. 175)
@@ -142,9 +144,59 @@ int main(int argc, char* argv[]) {
     }
 #ifndef CD_HAVE_OPENMP
     if (P.window_mode == 4) {
-        std::cerr << "[sliding_OpenMP] OpenMP unavailable — using cpp_sliding_win.\n";
+        std::cerr << "[sliding_OpenMP] OpenMP unavailable — running serial (single thread).\n";
         P.window_mode = 3;
     }
+#endif
+
+    // Auto-select OMP thread count from problem size.  Per-row work in the
+    // hot RHS loops scales like O(i_mobile + v_mobile) × O(N), and the loop
+    // length is ~N_eq.  Below ~500 unknowns the parallel overhead dominates;
+    // above that, useful threads ≈ N_eq / 1000 (one thread per ~1k rows of
+    // work), capped at the runtime maximum.  User can still override via
+    // OMP_NUM_THREADS — if it is set in the environment, we honor it as-is.
+#ifdef CD_HAVE_OPENMP
+    int omp_threads = 1;
+#ifdef _MSC_VER
+    char* omp_env = nullptr;
+    size_t omp_env_len = 0;
+    _dupenv_s(&omp_env, &omp_env_len, "OMP_NUM_THREADS");
+#else
+    const char* omp_env = std::getenv("OMP_NUM_THREADS");
+#endif
+    if (omp_env && *omp_env) {
+        omp_threads = omp_get_max_threads();   // already honored by runtime
+        std::cerr << "[OpenMP] OMP_NUM_THREADS=" << omp_env
+                  << " honored — using " << omp_threads << " thread"
+                  << (omp_threads == 1 ? "" : "s") << "\n";
+    } else {
+        const int hw_max = omp_get_max_threads();
+        int picked;
+        if      (N_EQ <   500) picked = 1;
+        else if (N_EQ <  2000) picked = 2;
+        else if (N_EQ <  5000) picked = 4;
+        else if (N_EQ < 10000) picked = 8;
+        else if (N_EQ < 20000) picked = 12;
+        else if (N_EQ < 40000) picked = 16;
+        else if (N_EQ < 80000) picked = 20;
+        else                   picked = hw_max;   // largest problems get all cores
+        if (picked > hw_max) picked = hw_max;     // cap at machine maximum
+        omp_set_num_threads(picked);
+        omp_threads = picked;
+        std::cerr << "[OpenMP] auto-selected " << omp_threads
+                  << " thread" << (omp_threads == 1 ? "" : "s")
+                  << " for N_eq=" << N_EQ
+                  << " (hw_max=" << hw_max << ")\n";
+    }
+    // Emit a machine-readable line so the Python provenance can capture
+    // the actual thread count chosen by the solver.
+    std::cerr << "[OpenMP_threads] " << omp_threads << "\n";
+#ifdef _MSC_VER
+    if (omp_env) std::free(omp_env);
+#endif
+#else
+    std::cerr << "[OpenMP] not available — running serial (1 thread)\n";
+    std::cerr << "[OpenMP_threads] 1\n";
 #endif
 
     const char* he_opts_str = (P.he_options == 1) ? "quasi_steady_state" : "dynamic";
@@ -565,6 +617,37 @@ int main(int argc, char* argv[]) {
                           << "\n";
             }
         }
+    }
+
+    // ── Final integrator/linsol statistics ───────────────────────────────────
+    // Emit a single machine-readable line so the Python bridge can capture
+    // GMRES iteration count + preconditioner activity into provenance.
+    {
+        long nst = 0, nfe = 0, nni = 0, ncfn = 0, netf = 0;
+        long nli = 0, npe = 0, nps = 0, nlsetup = 0;
+        CVodeGetNumSteps              (cvode_mem, &nst);
+        CVodeGetNumRhsEvals           (cvode_mem, &nfe);
+        CVodeGetNumNonlinSolvIters    (cvode_mem, &nni);
+        CVodeGetNumNonlinSolvConvFails(cvode_mem, &ncfn);
+        CVodeGetNumErrTestFails       (cvode_mem, &netf);
+        CVodeGetNumLinSolvSetups      (cvode_mem, &nlsetup);
+        // GMRES-only stats — return 0 / no-op for dense/band linsols
+        CVodeGetNumLinIters (cvode_mem, &nli);
+        CVodeGetNumPrecEvals(cvode_mem, &npe);
+        CVodeGetNumPrecSolves(cvode_mem, &nps);
+        const double nli_per_nni = (nni > 0) ? double(nli) / double(nni) : 0.0;
+        std::cerr << "[stats] steps=" << nst
+                  << " nfe="  << nfe
+                  << " nni="  << nni
+                  << " nli="  << nli
+                  << " nli_per_nni=" << std::fixed << std::setprecision(2)
+                  << nli_per_nni
+                  << " npe="  << npe
+                  << " nps="  << nps
+                  << " ncfn=" << ncfn
+                  << " netf=" << netf
+                  << " nlsetup=" << nlsetup
+                  << "\n";
     }
 
     std::cerr << "Done: " << n_written << " time points written.\n";

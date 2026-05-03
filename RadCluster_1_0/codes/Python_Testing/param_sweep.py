@@ -73,7 +73,6 @@ SOLVER_CONFIG = {
         'window_width':      150,
         'window_C_expand':   1e-18,
         'window_expand_pad': 10,
-        'window_omp_threads': 8,
         'window_prec':       1,
         'window_gmres_maxl': 20,
         'window_N_thresh':   500,

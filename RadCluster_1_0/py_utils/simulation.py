@@ -777,7 +777,6 @@ class RadClusterSimulation:
         w0_i   = int(float(re.get('window_w0_i',  100)))
         w_w    = int(float(re.get('window_width', 500)))
         C_exp  = float(re.get('window_C_exp',  1e-18))
-        n_thr  = int(float(re.get('window_omp', 0)))
 
         # Map solver mode to window_mode integer
         window_mode_map = {
@@ -807,7 +806,6 @@ class RadClusterSimulation:
                 'window_width':         w_w,
                 'window_C_expand':      C_exp,
                 'window_expand_pad':    10,
-                'window_omp_threads':   n_thr,
                 'window_gmres_maxl':    20,
                 'window_prec':          1,
             },
@@ -912,11 +910,18 @@ class RadClusterSimulation:
         run_stats = {
             'wall_clock_s':   getattr(self, '_wall_clock_s', None),
             'n_time_points':  n_pts,
-            'n_omp_threads':  solver_config.get('solver_method', {}).get(
-                                  'window_omp_threads', 0),
             'timestamp':      ts,
         }
         run_stats.update(self._machine_info())
+        omp_used = results.get('metadata', {}).get('omp_threads_used')
+        if omp_used is not None:
+            run_stats['omp_threads_used'] = omp_used
+        ssf = results.get('metadata', {}).get('solver_stats_final')
+        if isinstance(ssf, dict):
+            for k in ('steps', 'nfe', 'nni', 'nli', 'nli_per_nni',
+                      'npe', 'nps', 'ncfn', 'netf', 'nlsetup'):
+                if k in ssf:
+                    run_stats[f'solver.{k}'] = ssf[k]
 
         with open(out_dir / 'provenance.md', 'w', encoding='utf-8') as f:
             f.write(f"# RadCluster_1_0 run — {label}\n\n")

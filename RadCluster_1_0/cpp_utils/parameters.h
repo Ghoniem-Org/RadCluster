@@ -181,7 +181,6 @@ struct Parameters {
     int    window_width;
     double window_t_start;
     int    window_N_thresh;
-    int    window_omp_threads;
     int    window_gmres_maxl;
     double Ni_extend_tol;
     int    Ni_extend_margin;
@@ -471,7 +470,6 @@ inline Parameters build_parameters(const std::map<std::string, double>& p) {
     P.window_width         = static_cast<int>(optional_param(p, "window_width",   500.0));
     P.window_t_start       = optional_param(p, "window_t_start",  10.0);
     P.window_N_thresh      = static_cast<int>(optional_param(p, "window_N_thresh",1000.0));
-    P.window_omp_threads   = static_cast<int>(optional_param(p, "window_omp_threads", 0.0));
     P.window_gmres_maxl    = static_cast<int>(optional_param(p, "window_gmres_maxl",  20.0));
     P.Ni_extend_tol        = optional_param(p, "Ni_extend_tol",    0.0);
     P.Ni_extend_margin     = static_cast<int>(optional_param(p, "Ni_extend_margin", 0.0));

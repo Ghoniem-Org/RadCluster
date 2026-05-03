@@ -9,11 +9,12 @@
  *   Chapter 9 (bin moments), Section 8 (He-reduction).
  *
  * Solver modes (window_mode parameter):
- *   0 = cpp_full        — full system, CVODE BDF
- *   3 = cpp_sliding_win — Phase III: constant-width sliding window on SIA
- *   4 = sliding_OpenMP  — alias for cpp_sliding_win (OpenMP is on for ALL
- *                          modes when CD_HAVE_OPENMP is defined; thread count
- *                          comes from OMP_NUM_THREADS or the machine max).
+ *   0 = full_system     — full system, CVODE BDF.
+ *   4 = active_window   — two independent sliding windows (SIA + VAC) with
+ *                          OpenMP-parallel RHS. Thread count is auto-selected
+ *                          from N_eq (overridable via OMP_NUM_THREADS); when
+ *                          OpenMP is unavailable or the auto-pick lands on 1,
+ *                          the same code path simply runs serial.
  *
  * Physics options (physics_option_int):
  *   0 = full_CD_fission      — I+V+2 equations (Case 2, Eq. 175)
@@ -34,7 +35,6 @@
 #include "rate_equations.h"
 
 #include <cvode/cvode.h>
-#include <arkode/arkode_arkstep.h>
 #include <nvector/nvector_serial.h>
 #include <sunlinsol/sunlinsol_dense.h>
 #include <sunlinsol/sunlinsol_band.h>
@@ -43,7 +43,9 @@
 #include <sunmatrix/sunmatrix_band.h>
 #include <sundials/sundials_types.h>
 
+#include <atomic>
 #include <cmath>
+#include <csignal>
 #include <cstdio>
 #include <iomanip>
 #include <iostream>
@@ -54,6 +56,52 @@
 #ifdef CD_HAVE_OPENMP
 #  include <omp.h>
 #endif
+
+#ifdef _WIN32
+#  define WIN32_LEAN_AND_MEAN
+#  ifndef NOMINMAX
+#    define NOMINMAX     // prevent windows.h from defining min/max macros
+#  endif                 // that collide with std::min / std::max
+#  include <windows.h>
+#endif
+
+// ── Graceful interrupt handling ──────────────────────────────────────────────
+// A SIGINT / SIGTERM (POSIX) or CTRL_C_EVENT / CTRL_BREAK_EVENT (Windows)
+// flips this flag.  The integration loop checks it at the top of every
+// output-step iteration and breaks cleanly so the post-loop block (final
+// CVODE stats, file close) still runs and the partial .bin output is a
+// valid prefix of a normal completed run.
+namespace {
+std::atomic<bool> g_interrupt_requested{false};
+}
+
+#ifdef _WIN32
+static BOOL WINAPI win_console_handler(DWORD ctrl_type) {
+    switch (ctrl_type) {
+        case CTRL_C_EVENT:
+        case CTRL_BREAK_EVENT:
+        case CTRL_CLOSE_EVENT:
+        case CTRL_LOGOFF_EVENT:
+        case CTRL_SHUTDOWN_EVENT:
+            g_interrupt_requested.store(true);
+            return TRUE;   // signal handled — don't terminate immediately
+    }
+    return FALSE;
+}
+#else
+extern "C" void posix_interrupt_handler(int /*sig*/) {
+    g_interrupt_requested.store(true);
+}
+#endif
+
+static void install_interrupt_handlers() {
+#ifdef _WIN32
+    SetConsoleCtrlHandler(win_console_handler, TRUE);
+#else
+    std::signal(SIGINT,  posix_interrupt_handler);
+    std::signal(SIGTERM, posix_interrupt_handler);
+#endif
+}
 
 // ── CLI argument parser ────────────────────────────────────────────────────────
 
@@ -85,6 +133,8 @@ static std::map<std::string, double> parse_cli_args(int argc, char* argv[]) {
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 int main(int argc, char* argv[]) {
+
+    install_interrupt_handlers();
 
     std::map<std::string, double> args;
     std::string param_path;
@@ -135,7 +185,7 @@ int main(int argc, char* argv[]) {
     };
 
     // Window mode validation
-    if ((P.window_mode == 3 || P.window_mode == 4) &&
+    if (P.window_mode == 4 &&
         P.I < P.window_N_thresh && P.V < P.window_N_thresh) {
         std::cerr << "[Window] I=" << P.I << " and V=" << P.V
                   << " both < threshold=" << P.window_N_thresh
@@ -144,8 +194,7 @@ int main(int argc, char* argv[]) {
     }
 #ifndef CD_HAVE_OPENMP
     if (P.window_mode == 4) {
-        std::cerr << "[sliding_OpenMP] OpenMP unavailable — running serial (single thread).\n";
-        P.window_mode = 3;
+        std::cerr << "[active_window] OpenMP unavailable — running serial (single thread).\n";
     }
 #endif
 
@@ -199,11 +248,11 @@ int main(int argc, char* argv[]) {
     std::cerr << "[OpenMP_threads] 1\n";
 #endif
 
-    const char* he_opts_str = (P.he_options == 1) ? "quasi_steady_state" : "dynamic";
+    const char* he_kin_str = (P.he_kinetics == 1) ? "quasi_steady_state" : "dynamic";
     std::cerr << "RadCluster_1_0 solver: N_eq=" << N_EQ
               << "  physics_option=" << P.physics_option
               << "  he_mode=" << P.he_mode
-              << "  he_options=" << he_opts_str
+              << "  he_kinetics=" << he_kin_str
               << "  C_floor=" << P.C_floor
               << "  window_mode=" << P.window_mode;
     if (P.window_mode != 0) {
@@ -325,7 +374,7 @@ int main(int argc, char* argv[]) {
     //   SIA window: active SIA state indices  x_lo_i .. x_hi_i  (0-based, ≤ I-1)
     //   VAC window: active VAC state indices  x_lo_v .. x_hi_v  (0-based, ≤ V_states-1)
     // window_mode==0: windows span the full domain (no truncation).
-    // window_mode==3/4: start from a user-specified initial width and expand
+    // window_mode==4: start from a user-specified initial width and expand
     //   independently as the leading concentration exceeds window_C_expand /
     //   window_C_expand_v respectively.
     int x_lo_i = 0;
@@ -345,11 +394,19 @@ int main(int argc, char* argv[]) {
 
     int n_written = 1;
     int check_every = std::max(P.window_check_every, 1);
+    bool was_interrupted = false;
 
     for (int i = 1; i < P.n_points; ++i) {
+        if (g_interrupt_requested.load()) {
+            std::cerr << "[interrupt] received at pt=" << i << "/" << P.n_points
+                      << " — finalising " << n_written
+                      << " saved time points and exiting cleanly.\n";
+            was_interrupted = true;
+            break;
+        }
         double t_out = t_eval[i];
 
-        // Update both window upper bounds (cpp_sliding_win / sliding_OpenMP)
+        // Update both window upper bounds (active_window)
         if (P.window_mode != 0) {
             if ((i - 1) % check_every == 0) {
                 // ── SIA window expansion ───────────────────────────────────
@@ -505,7 +562,7 @@ int main(int argc, char* argv[]) {
 
             // He
             const double Q_tot = ydata[i_Q_base];
-            const double c_h   = (P.he_options == 0 && N_EQ > i_Q_base + 1)
+            const double c_h   = (P.he_kinetics == 0 && N_EQ > i_Q_base + 1)
                                  ? ydata[i_Q_base + 1] : -1.0;
 
             std::cerr << std::scientific << std::setprecision(3)
@@ -647,10 +704,12 @@ int main(int argc, char* argv[]) {
                   << " ncfn=" << ncfn
                   << " netf=" << netf
                   << " nlsetup=" << nlsetup
+                  << " interrupted=" << (was_interrupted ? 1 : 0)
                   << "\n";
     }
 
-    std::cerr << "Done: " << n_written << " time points written.\n";
+    std::cerr << "Done: " << n_written << " time points written"
+              << (was_interrupted ? " (interrupted)" : "") << ".\n";
 
     // ── Cleanup ───────────────────────────────────────────────────────────────
     if (fp_bin) std::fclose(fp_bin);

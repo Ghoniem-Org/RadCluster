@@ -246,7 +246,7 @@ REACTIONS = [
     ('Grouping transition',     'n_group',     50,     '−',      'Eq. 190'),
 
     ('Solver Settings (Table 29)', None, None, None, None),
-    ('Solver mode',      'solver_mode',   'cpp_full',          '−', 'cpp_full | cpp_sliding_win | sliding_OpenMP'),
+    ('Solver mode',      'solver_mode',   'full_system',       '−', 'full_system | active_window'),
     ('Physics option',   'physics_option','full_CD_fission',   '−', 'full_CD_fission | full_CD_fusion | bin_moment_CD_fission | bin_moment_CD_fusion'),
     ('Start time',       't_begin',       1.0e-8,              's', None),
     ('End time',         't_end',         1.0e7,               's', None),

@@ -25,9 +25,9 @@ saved = sys.stdout, sys.stderr
 sys.stdout = sys.stderr = io.StringIO()
 try:
     sim = RadClusterSimulation(
-        I=I, V=V, solver_mode='cpp_full',
+        I=I, V=V, solver_mode='full_system',
         physics_option='bin_moment_CD_fission',
-        C_floor=1e-20, he_options='quasi_steady_state',
+        C_floor=1e-20, he_kinetics='quasi_steady_state',
         i_mobile=i_mobile, v_mobile=v_mobile,
     )
     overrides = {
@@ -69,7 +69,7 @@ config = {
     'log_time': True,
     'rtol': 1e-5,
     'atol': 1e-20,
-    'solver_method': {'backend': 'cvode', 'lmm': 'bdf', 'linsol': 'dense'},
+    'solver_method': {'linsol': 'dense'},
 }
 
 print("Running to t=8000...", flush=True)

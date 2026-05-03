@@ -246,9 +246,9 @@ def run_single(params, timeout_s=180, run_id=0):
     try:
         sim = RadClusterSimulation(
             I=5000, V=5000,
-            solver_mode='cpp_full',
+            solver_mode='full_system',
             physics_option='bin_moment_CD_fission',
-            he_options='quasi_steady_state',
+            he_kinetics='quasi_steady_state',
         )
 
         # ── Apply parameter overrides ────────────────────────────────────────

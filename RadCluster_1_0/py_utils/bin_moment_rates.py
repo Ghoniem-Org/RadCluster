@@ -576,9 +576,9 @@ class BinMomentRateEquations:
                                   for mlo, mhi in self.vac_bins])
 
         # Free He mode: 'dynamic' or 'quasi_steady_state' (mirrors RateEquations)
-        raw = str(input_data.reactions.get('he_options', 'dynamic')).lower()
-        self.he_options = raw
-        self.qss_He    = (raw == 'quasi_steady_state')
+        raw = str(input_data.reactions.get('he_kinetics', 'dynamic')).lower()
+        self.he_kinetics = raw
+        self.qss_He      = (raw == 'quasi_steady_state')
 
         # Pre-compute beta_He for QSS (same as RateEquations)
         kBT_val  = input_data.derived['kBT']

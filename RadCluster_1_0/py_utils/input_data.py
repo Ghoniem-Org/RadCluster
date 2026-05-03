@@ -46,9 +46,58 @@ BASE_DIR   = Path(__file__).parent.parent
 INPUT_FILE = BASE_DIR / 'input' / 'input_parameters.xlsx'
 
 # Valid options
-_SOLVER_MODES   = ('cpp_full', 'cpp_sliding_win', 'sliding_OpenMP')
+_SOLVER_MODES   = ('full_system', 'active_window')
+
+# Backward-compat aliases for the previous solver-mode names.  Old configs,
+# Excel files, and saved output dirs still reference the legacy strings; this
+# map silently translates them to the new names with no warning, since the
+# physics is identical.
+_SOLVER_MODE_ALIASES = {
+    'cpp_full':       'full_system',
+    'sliding_OpenMP': 'active_window',
+}
 _PHYSICS_OPTIONS = ('full_CD_fission', 'full_CD_fusion',
                     'bin_moment_CD_fission', 'bin_moment_CD_fusion')
+
+# Two-axis decomposition of physics_option.
+_EQUATIONS = ('discrete', 'bin_moment')
+_CASCADES  = ('fission', 'fusion')
+
+# Legacy equations-axis aliases (silently accepted).  The internal
+# physics_option strings still use the historical "full_CD" token; only the
+# user-facing equations selector has been renamed.
+_EQUATIONS_ALIASES = {
+    'full_CD': 'discrete',
+}
+
+
+def make_physics_option(equations, cascade):
+    """Combine an (equations, cascade) pair into the canonical physics_option string.
+
+    equations : 'discrete' | 'bin_moment'   (legacy 'full_CD' also accepted)
+    cascade   : 'fission'  | 'fusion'
+    """
+    equations = _EQUATIONS_ALIASES.get(equations, equations)
+    if equations not in _EQUATIONS:
+        raise ValueError(f"equations must be one of {_EQUATIONS}, got '{equations}'")
+    if cascade not in _CASCADES:
+        raise ValueError(f"cascade must be one of {_CASCADES}, got '{cascade}'")
+    if equations == 'bin_moment':
+        return f'bin_moment_CD_{cascade}'
+    return f'full_CD_{cascade}'
+
+
+def split_physics_option(po):
+    """Reverse of make_physics_option: return (equations, cascade).
+
+    The 'full_CD_*' physics_option prefix maps back to the user-facing
+    equations name 'discrete'.
+    """
+    if po.startswith('bin_moment_CD_'):
+        return ('bin_moment', po[len('bin_moment_CD_'):])
+    if po.startswith('full_CD_'):
+        return ('discrete', po[len('full_CD_'):])
+    raise ValueError(f"Cannot split physics_option='{po}'")
 _SHAPE_FUNCTIONS = ('constant', 'linear', 'lognormal')
 
 # Backward-compat key aliases (old → new)
@@ -407,9 +456,12 @@ class InputData:
             warnings.warn(f"Dislocation density {rho} m^-2 outside typical range")
 
         sm = self.solver_mode
+        if sm in _SOLVER_MODE_ALIASES:
+            self.reactions['solver_mode'] = _SOLVER_MODE_ALIASES[sm]
+            sm = self.reactions['solver_mode']
         if sm not in _SOLVER_MODES:
-            warnings.warn(f"Unknown solver_mode='{sm}'. Using 'cpp_full'.")
-            self.reactions['solver_mode'] = 'cpp_full'
+            warnings.warn(f"Unknown solver_mode='{sm}'. Using 'full_system'.")
+            self.reactions['solver_mode'] = 'full_system'
 
         po = self.physics_option
         if po not in _PHYSICS_OPTIONS:
@@ -511,11 +563,22 @@ class InputData:
 
     @property
     def solver_mode(self):
-        return str(self.reactions.get('solver_mode', 'cpp_full')).strip()
+        sm = str(self.reactions.get('solver_mode', 'full_system')).strip()
+        return _SOLVER_MODE_ALIASES.get(sm, sm)
 
     @property
     def physics_option(self):
         return str(self.reactions.get('physics_option', 'full_CD_fission')).strip()
+
+    @property
+    def equations(self):
+        """Equation system: 'full_CD' or 'bin_moment' (derived from physics_option)."""
+        return split_physics_option(self.physics_option)[0]
+
+    @property
+    def cascade(self):
+        """Cascade type: 'fission' or 'fusion' (derived from physics_option)."""
+        return split_physics_option(self.physics_option)[1]
 
     @property
     def alpha_He(self):

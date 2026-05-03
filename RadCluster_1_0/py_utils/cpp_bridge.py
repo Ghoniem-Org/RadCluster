@@ -15,7 +15,7 @@ One "key=value" entry per line.  Arrays use indexed entries:
 
 New fields vs. Eurofer_CD
 --------------------------
-- solver_mode:     integer (0=cpp_full, 3=cpp_sliding_win, 4=sliding_OpenMP)
+- solver_mode:     integer (0=full_system, 4=active_window)
 - physics_option:  integer (0=full_CD_fission, 1=full_CD_fusion,
                              2=bin_moment_fission, 3=bin_moment_fusion)
 - A_sph, A_loop, A_1D, B_rot: geometric prefactors
@@ -27,6 +27,7 @@ New fields vs. Eurofer_CD
 
 import logging
 import os
+import signal as _signal
 import subprocess
 import sys
 import tempfile
@@ -37,10 +38,37 @@ import numpy as np
 
 log = logging.getLogger(__name__)
 
+# How long to wait for the C++ solver to finish its current step and emit
+# its final [stats] line after we ask it to stop.  The solver checks the
+# interrupt flag once per output time-point, so the upper bound is roughly
+# one CVode(t_out) call — typically seconds, but can be tens of seconds
+# when a single step has been struggling to converge.
+GRACEFUL_SHUTDOWN_TIMEOUT_S = 60.0
+
+
+def _send_graceful_interrupt(proc):
+    """Ask the C++ subprocess to finish its current integration step and
+    exit cleanly via its own signal handler.  On Windows this requires the
+    process to have been launched with CREATE_NEW_PROCESS_GROUP."""
+    if proc is None or proc.poll() is not None:
+        return
+    try:
+        if sys.platform == 'win32':
+            proc.send_signal(_signal.CTRL_BREAK_EVENT)
+        else:
+            proc.send_signal(_signal.SIGTERM)
+    except Exception:
+        try:
+            proc.terminate()
+        except Exception:
+            pass
+
 _SOLVER_MODE_MAP = {
-    'cpp_full':        0,
-    'cpp_sliding_win': 3,
-    'sliding_OpenMP':  4,
+    'full_system':   0,
+    'active_window': 4,
+    # Backward-compat aliases (legacy names)
+    'cpp_full':       0,
+    'sliding_OpenMP': 4,
 }
 _PHYSICS_OPTION_MAP = {
     'full_CD_fission':       0,
@@ -230,8 +258,8 @@ def write_param_file(sim, solver_config, path, y0_override=None):
     lines.append(f"C_floor={C_floor:.17e}")
 
     # Free He mode: 'dynamic'=0 integrates Eq.157; 'quasi_steady_state'=1 uses QSS
-    he_options_str = str(inp.reactions.get('he_options', 'dynamic')).lower()
-    qss_He_int = 1 if he_options_str == 'quasi_steady_state' else 0
+    he_kinetics_str = str(inp.reactions.get('he_kinetics', 'dynamic')).lower()
+    qss_He_int = 1 if he_kinetics_str == 'quasi_steady_state' else 0
     lines.append(f"qss_He={qss_He_int}")
 
     # ── Solver settings ────────────────────────────────────────────────────────
@@ -244,19 +272,15 @@ def write_param_file(sim, solver_config, path, y0_override=None):
     lines.append(f"atol={solver_config.get('atol', 1e-50):.17e}")
 
     # ── Integration method ────────────────────────────────────────────────────
-    _backend_map = {'cvode': 0, 'arkode': 1}
-    _lmm_map     = {'bdf': 2, 'adams': 1}
+    # Backend is fixed (CVODE BDF); only the linear solver is selectable.
     _linsol_map  = {'dense': 0, 'band': 1, 'banded': 1, 'gmres': 2}
 
     N_tot = I + V + 1
-    lines.append(f"backend={_backend_map.get(str(method.get('backend','cvode')).lower(), 0)}")
-    lines.append(f"lmm={_lmm_map.get(str(method.get('lmm','bdf')).lower(), 2)}")
     lines.append(f"linsol={_linsol_map.get(str(method.get('linsol','dense')).lower(), 0)}")
     lines.append(f"mu={int(method.get('mu', N_tot - 1))}")
     lines.append(f"ml={int(method.get('ml', N_tot - 1))}")
     lines.append(f"max_order={int(method.get('max_order', 0))}")
     lines.append(f"hmin={float(method.get('hmin', 0.0)):.17e}")
-    lines.append(f"ark_table={int(method.get('ark_table', 111))}")
 
     # ── Dynamic window parameters ──────────────────────────────────────────────
     lines.append(f"window_w0_v={V}")
@@ -494,10 +518,18 @@ def run_cpp_solver(sim, solver_config, base_dir=None, progress_callback=None,
               f"  solver_mode='{sim.input_data.solver_mode}'"
               f"  physics='{sim.input_data.physics_option}'")
 
-        proc = subprocess.Popen(
-            [str(exe_path), f'--param_file={param_path}'],
+        popen_kwargs = dict(
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
+        )
+        # On Windows, give the child its own process group so we can deliver
+        # CTRL_BREAK_EVENT to it without also signaling our own console.
+        if sys.platform == 'win32':
+            popen_kwargs['creationflags'] = subprocess.CREATE_NEW_PROCESS_GROUP
+
+        proc = subprocess.Popen(
+            [str(exe_path), f'--param_file={param_path}'],
+            **popen_kwargs,
         )
 
         solver_info = {}
@@ -510,77 +542,132 @@ def run_cpp_solver(sim, solver_config, base_dir=None, progress_callback=None,
             stdout_data = proc.stdout.read()
             proc.wait(timeout=timeout_s)
         except subprocess.TimeoutExpired:
-            proc.kill()
-            proc.wait()
-            print(f"C++ solver killed after {timeout_s}s timeout — parsing partial output")
+            print(f"C++ solver hit {timeout_s}s timeout — asking it to finalize gracefully…")
             partial = True
-        t_fwd.join(timeout=2)
-    except KeyboardInterrupt:
-        print("\n*** Ctrl+C — terminating C++ solver, parsing partial output ***")
-        partial = True
-        if proc is not None:
+            _send_graceful_interrupt(proc)
             try:
-                proc.terminate()
-                proc.wait(timeout=5)
-            except (subprocess.TimeoutExpired, Exception):
+                proc.wait(timeout=GRACEFUL_SHUTDOWN_TIMEOUT_S)
+            except subprocess.TimeoutExpired:
+                print(f"    Solver did not finalize within "
+                      f"{GRACEFUL_SHUTDOWN_TIMEOUT_S:.0f}s — forcing kill.")
                 proc.kill()
                 proc.wait()
+        t_fwd.join(timeout=5)
+    except KeyboardInterrupt:
+        print("\n*** Ctrl+C — asking C++ solver to flush and exit gracefully ***")
+        partial = True
+        _send_graceful_interrupt(proc)
+        if proc is not None:
+            try:
+                # Drain remaining stdout while the child finishes its current
+                # output step and emits the final [stats] line.  A second
+                # Ctrl+C here escalates to a hard kill.
+                stdout_data = proc.stdout.read()
+                proc.wait(timeout=GRACEFUL_SHUTDOWN_TIMEOUT_S)
+            except (subprocess.TimeoutExpired, KeyboardInterrupt):
+                print(f"    Solver did not exit within "
+                      f"{GRACEFUL_SHUTDOWN_TIMEOUT_S:.0f}s — forcing kill.")
+                try:
+                    proc.kill()
+                    proc.wait(timeout=5)
+                except Exception:
+                    pass
+            try:
+                t_fwd.join(timeout=5)
+            except Exception:
+                pass
     finally:
         try:
             os.unlink(param_path)
         except OSError:
             pass
 
-    if not partial and proc.returncode != 0:
+    if proc is not None and not partial and proc.returncode != 0:
         print(f"C++ solver failed (exit code {proc.returncode})")
 
-    # Parse binary output (works for both complete and partial/interrupted runs —
-    # the C++ solver flushes each row to the .bin file as it's computed)
-    sol_arr = None
+    # ── Parse + post-process under a KeyboardInterrupt shield ────────────────
+    # The C++ child flushes each row to the .bin file as it's computed, so
+    # there is real data to rescue even after Ctrl+C.  We must NOT lose it to
+    # a second interrupt during numpy parsing or post-processing — stash
+    # partial results onto `sim` as soon as they exist so the orchestrator
+    # (and the notebook fallback) can recover them.
+    sim._partial_results = None
     try:
-        raw    = np.fromfile(bin_path, dtype=np.float64)
-        n_cols = 1 + N_tot
-        n_rows = raw.size // n_cols
-        if n_rows > 0:
-            sol_arr = raw[:n_rows * n_cols].reshape(n_rows, n_cols)
-    except Exception:
-        pass
-    finally:
+        # Parse binary output (works for both complete and partial runs)
+        sol_arr = None
         try:
-            os.unlink(bin_path)
-        except OSError:
-            pass
+            try:
+                bin_size = os.path.getsize(bin_path)
+            except OSError:
+                bin_size = -1
+            print(f"Reading bin file: {bin_path} ({bin_size} bytes)")
+            raw    = np.fromfile(bin_path, dtype=np.float64)
+            n_cols = 1 + N_tot
+            n_rows = raw.size // n_cols
+            print(f"  parsed {raw.size} doubles → {n_rows} rows × {n_cols} cols")
+            if n_rows > 0:
+                sol_arr = raw[:n_rows * n_cols].reshape(n_rows, n_cols)
+        except Exception as exc:
+            print(f"  bin parse failed: {type(exc).__name__}: {exc}")
+        finally:
+            try:
+                os.unlink(bin_path)
+            except OSError:
+                pass
 
-    if sol_arr is None or sol_arr.shape[0] == 0:
-        if stdout_data:
-            text    = stdout_data.decode('utf-8', errors='replace')
-            sol_arr = _parse_stdout(text, N_tot)
+        if sol_arr is None or sol_arr.shape[0] == 0:
+            if stdout_data:
+                text    = stdout_data.decode('utf-8', errors='replace')
+                sol_arr = _parse_stdout(text, N_tot)
 
-    if sol_arr is None or sol_arr.shape[0] == 0:
-        print("C++ solver produced no parseable output")
-        return None
+        if sol_arr is None or sol_arr.shape[0] == 0:
+            print("C++ solver produced no parseable output")
+            return None
 
-    status = "partial" if partial else "completed"
-    n_pts = sol_arr.shape[0]
-    print(f"C++ solver {status} — {n_pts} time points")
+        # The C++ solver also stamps interrupted=1 in its [stats] line when its
+        # own signal handler tripped — pick that up too so we don't miss the
+        # case where the timeout/Ctrl+C path wasn't exercised but the OS killed
+        # the child via console close.
+        final_stats = solver_info.get('solver_stats_final') or {}
+        if final_stats.get('interrupted'):
+            partial = True
 
-    t = sol_arr[:, 0]
-    y = sol_arr[:, 1:].T   # (N_tot, n_pts)
+        status = "partial" if partial else "completed"
+        n_pts = sol_arr.shape[0]
+        print(f"C++ solver {status} — {n_pts} time points")
 
-    results = calculate_derived_quantities(t, y, sim.input_data, re_obj)
-    results['y'] = y   # raw ODE state [N_eq, n_pts] in atom fraction
+        t = sol_arr[:, 0]
+        y = sol_arr[:, 1:].T   # (N_tot, n_pts)
 
-    sm     = sim.input_data.solver_mode
-    po     = sim.input_data.physics_option
-    linsol = str(solver_config.get('solver_method', {}).get('linsol', 'dense')).upper()
-    results['metadata'] = {
-        'solver_stats': {
-            'success':       True,
-            'message':       f'C++ CVODE BDF {sm}/{po} / {linsol}',
-            'n_time_points': n_pts,
-        },
-        'omp_threads_used':   solver_info.get('omp_threads_used'),
-        'solver_stats_final': solver_info.get('solver_stats_final'),
-    }
-    print("Results processing complete.")
+        results = calculate_derived_quantities(t, y, sim.input_data, re_obj)
+        results['y'] = y   # raw ODE state [N_eq, n_pts] in atom fraction
+        # Stash immediately so a Ctrl+C during the metadata stamping below
+        # still leaves something for the orchestrator/notebook to save.
+        sim._partial_results = results
+    except KeyboardInterrupt:
+        print("\n*** Ctrl+C during result post-processing — "
+              "returning whatever was rescued. ***")
+        return sim._partial_results
+
+    try:
+        sm     = sim.input_data.solver_mode
+        po     = sim.input_data.physics_option
+        linsol = str(solver_config.get('solver_method', {}).get('linsol', 'dense')).upper()
+        msg = f'C++ CVODE BDF {sm}/{po} / {linsol}'
+        if partial:
+            msg += ' (partial — interrupted)'
+        results['metadata'] = {
+            'solver_stats': {
+                'success':       True,
+                'message':       msg,
+                'n_time_points': n_pts,
+                'partial':       bool(partial),
+            },
+            'omp_threads_used':   solver_info.get('omp_threads_used'),
+            'solver_stats_final': final_stats or None,
+        }
+        print("Results processing complete.")
+    except KeyboardInterrupt:
+        print("\n*** Ctrl+C during metadata stamping — "
+              "returning rescued results without metadata. ***")
     return results

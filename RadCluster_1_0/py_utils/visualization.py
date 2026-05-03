@@ -15,6 +15,107 @@ except ImportError:
 
 _CONC_LABEL = r'Concentration (m$^{-3}$)'
 
+_PLOT_FONTSIZE = 16
+if _HAS_MPL:
+    plt.rcParams.update({
+        'axes.titlesize':  _PLOT_FONTSIZE,
+        'axes.labelsize':  _PLOT_FONTSIZE,
+        'xtick.labelsize': _PLOT_FONTSIZE,
+        'ytick.labelsize': _PLOT_FONTSIZE,
+    })
+
+
+# ── User-configurable axis controls ──────────────────────────────────────────
+# Plots are split into three groups so a small set of knobs covers the whole
+# suite.  Each group entry accepts:
+#   xlim / ylim : (min, max) tuple — None for auto on either bound.
+#   xscale / yscale : 'log' | 'linear' | None (None = keep the plot's default).
+# A global `legend_fontsize` controls the size of the figure-level legends
+# placed underneath cluster-concentration plots.
+#
+# Override from the notebook with:
+#     viz.set_plot_config({'concentration': {'ylim': (1e16, 1e22)},
+#                          'legend_fontsize': 5})
+_PLOT_CONFIG = {
+    # Concentration vs dose: point defects, totals, He content, number
+    # densities (incl. TEM), SIA/cavity cluster concentrations.
+    'concentration': {'xlim': (None, None), 'ylim': (None, None),
+                      'xscale': None,       'yscale': None},
+    # Scalar metrics vs dose: swelling, mean sizes, fraction balances,
+    # conservation diagnostics.
+    'scalar':        {'xlim': (None, None), 'ylim': (None, None),
+                      'xscale': None,       'yscale': None},
+    # Size-distribution snapshots: concentration vs cluster size n/m or
+    # vs loop/void diameter (nm).
+    'size_dist':     {'xlim': (None, None), 'ylim': (None, None),
+                      'xscale': None,       'yscale': None},
+    'legend_fontsize': 5,
+}
+
+
+def set_plot_config(cfg):
+    """Update the module-level plot config; partial overrides are merged."""
+    for k, v in cfg.items():
+        cur = _PLOT_CONFIG.get(k)
+        if isinstance(cur, dict) and isinstance(v, dict):
+            cur.update(v)
+        else:
+            _PLOT_CONFIG[k] = v
+
+
+def _apply_axis_config(ax, group):
+    """Apply the named group's scale and limits to a single axis."""
+    cfg = _PLOT_CONFIG.get(group)
+    if not cfg:
+        return
+    xs, ys = cfg.get('xscale'), cfg.get('yscale')
+    if xs:
+        ax.set_xscale(xs)
+    if ys:
+        ax.set_yscale(ys)
+    xlim = cfg.get('xlim') or (None, None)
+    ylim = cfg.get('ylim') or (None, None)
+    if xlim[0] is not None or xlim[1] is not None:
+        ax.set_xlim(left=xlim[0], right=xlim[1])
+    if ylim[0] is not None or ylim[1] is not None:
+        ax.set_ylim(bottom=ylim[0], top=ylim[1])
+
+
+def _apply_axis_config_to_fig(fig, group):
+    for ax in fig.axes:
+        _apply_axis_config(ax, group)
+
+
+def _legend_fs():
+    return _PLOT_CONFIG.get('legend_fontsize', 5)
+
+
+def _legend_below(fig, axes, ncol=8, fontsize=None, bottom=0.28):
+    """
+    Place a single shared legend underneath the plot area.
+
+    Removes any existing per-axes legends, then adds a figure-level legend
+    using the handles from the first axis (cluster-concentration plots
+    duplicate the same labels across panels).
+    """
+    if not _HAS_MPL:
+        return
+    if fontsize is None:
+        fontsize = _legend_fs()
+    if not isinstance(axes, (list, tuple, np.ndarray)):
+        axes = [axes]
+    for ax in axes:
+        leg = ax.get_legend()
+        if leg is not None:
+            leg.remove()
+    handles, labels = axes[0].get_legend_handles_labels()
+    if not handles:
+        return
+    fig.legend(handles, labels, loc='lower center',
+               bbox_to_anchor=(0.5, 0.0),
+               ncol=ncol, fontsize=fontsize, frameon=True)
+    fig.subplots_adjust(bottom=bottom)
+
 
 def _check_mpl():
     if not _HAS_MPL:
@@ -63,6 +164,7 @@ def plot_point_defects(results, out_path=None, title=''):
     ax.grid(True, which='both', alpha=0.3)
     ax.set_xlim(left=_dose_xlim(dose))
     ax.set_ylim(bottom=1e14)
+    _apply_axis_config(ax, 'concentration')
     fig.tight_layout()
     if out_path:
         fig.savefig(out_path, dpi=150)
@@ -84,6 +186,7 @@ def plot_totals(results, out_path=None, title=''):
     ax.set_title(f'Defect Contents {title}')
     ax.legend()
     ax.grid(True, which='both', alpha=0.3)
+    _apply_axis_config(ax, 'concentration')
     fig.tight_layout()
     if out_path:
         fig.savefig(out_path, dpi=150)
@@ -100,6 +203,7 @@ def plot_swelling(results, out_path=None, title=''):
     ax.set_ylabel('Swelling S(t) (%)')
     ax.set_title(f'Void Swelling (Eq. 161) {title}')
     ax.grid(True, alpha=0.3)
+    _apply_axis_config(ax, 'scalar')
     fig.tight_layout()
     if out_path:
         fig.savefig(out_path, dpi=150)
@@ -120,6 +224,7 @@ def plot_mean_sizes(results, out_path=None, title=''):
     ax.grid(True, alpha=0.3)
     ax.set_xlim(left=_dose_xlim(dose))
     ax.set_ylim(bottom=0)
+    _apply_axis_config(ax, 'scalar')
     fig.tight_layout()
     if out_path:
         fig.savefig(out_path, dpi=150)
@@ -139,6 +244,7 @@ def plot_he_content(results, out_path=None, title=''):
     ax.legend()
     ax.grid(True, which='both', alpha=0.3)
     ax.set_xlim(left=_dose_xlim(dose))
+    _apply_axis_config(ax, 'concentration')
     fig.tight_layout()
     if out_path:
         fig.savefig(out_path, dpi=150)
@@ -166,6 +272,7 @@ def plot_conservation(results, out_path=None, title=''):
     ax.grid(True, alpha=0.3)
     ax.set_xlim(left=_dose_xlim(dose))
     ax.set_ylim(bottom=1e-5, top=10)
+    _apply_axis_config(ax, 'scalar')
     fig.tight_layout()
     if out_path:
         fig.savefig(out_path, dpi=150)
@@ -237,6 +344,7 @@ def plot_size_distribution(results, input_data, t_idx=-1, out_path=None, title='
     ax4.set_title(f'Void Size  {time_label} {title}')
     ax4.grid(True, alpha=0.3)
 
+    _apply_axis_config_to_fig(fig, 'size_dist')
     fig.tight_layout()
     if out_path:
         fig.savefig(out_path, dpi=150)
@@ -284,7 +392,7 @@ def plot_sia_clusters(results, input_data, out_path=None, title=''):
         idx = [n - 1 for n in rng if n - 1 < N]
         if not idx:
             continue
-        fig, ax = plt.subplots(figsize=(7, 4))
+        fig, ax = plt.subplots(figsize=(7, 5))
         cmap = plt.cm.viridis(np.linspace(0, 1, len(idx)))
         for k, color in zip(idx, cmap):
             ax.loglog(dose, np.maximum(c_n[k, :], 1e-10),
@@ -295,14 +403,16 @@ def plot_sia_clusters(results, input_data, out_path=None, title=''):
         ax.set_title(f'{gtitle} {title}')
         ax.grid(True, which='both', alpha=0.3)
         ax.set_xlim(left=_dose_xlim(full_dose), right=full_dose[-1])
-        if len(idx) <= 10:
-            ax.legend(fontsize=7, ncol=2)
+        _apply_axis_config(ax, 'concentration')
         fig.tight_layout()
+        ncol = min(8, max(2, len(idx)))
+        _legend_below(fig, ax, ncol=ncol, bottom=0.25)
         if out_path:
             # Replace file stem with group-specific name
             from pathlib import Path as _P
             p = _P(out_path)
-            fig.savefig(str(p.parent / f'{fname}.png'), dpi=150)
+            fig.savefig(str(p.parent / f'{fname}.png'), dpi=150,
+                        bbox_inches='tight')
         figs.append(fig)
     return figs
 
@@ -326,7 +436,7 @@ def plot_vac_clusters(results, input_data, out_path=None, title=''):
         idx = [m - 1 for m in rng if m - 1 < M]
         if not idx:
             continue
-        fig, ax = plt.subplots(figsize=(7, 4))
+        fig, ax = plt.subplots(figsize=(7, 5))
         cmap = plt.cm.plasma(np.linspace(0, 1, len(idx)))
         for k, color in zip(idx, cmap):
             ax.loglog(dose, np.maximum(c_v[k, :], 1e-10),
@@ -337,13 +447,15 @@ def plot_vac_clusters(results, input_data, out_path=None, title=''):
         ax.set_title(f'{gtitle} {title}')
         ax.grid(True, which='both', alpha=0.3)
         ax.set_xlim(left=_dose_xlim(full_dose), right=full_dose[-1])
-        if len(idx) <= 10:
-            ax.legend(fontsize=7, ncol=2)
+        _apply_axis_config(ax, 'concentration')
         fig.tight_layout()
+        ncol = min(8, max(2, len(idx)))
+        _legend_below(fig, ax, ncol=ncol, bottom=0.25)
         if out_path:
             from pathlib import Path as _P
             p = _P(out_path)
-            fig.savefig(str(p.parent / f'{fname}.png'), dpi=150)
+            fig.savefig(str(p.parent / f'{fname}.png'), dpi=150,
+                        bbox_inches='tight')
         figs.append(fig)
     return figs
 
@@ -405,6 +517,7 @@ def plot_sia_distribution_evolution(results, input_data, n_times=10,
     ax2.legend(fontsize=7, ncol=2, title='Dose')
     ax2.grid(True, alpha=0.3)
 
+    _apply_axis_config_to_fig(fig, 'size_dist')
     fig.tight_layout()
     if out_path:
         fig.savefig(out_path, dpi=150)
@@ -457,6 +570,7 @@ def plot_void_distribution_evolution(results, input_data, n_times=10,
     ax2.legend(fontsize=7, ncol=2, title='Dose')
     ax2.grid(True, alpha=0.3)
 
+    _apply_axis_config_to_fig(fig, 'size_dist')
     fig.tight_layout()
     if out_path:
         fig.savefig(out_path, dpi=150)
@@ -478,6 +592,7 @@ def plot_number_densities(results, out_path=None, title=''):
     ax.legend()
     ax.grid(True, which='both', alpha=0.3)
     ax.set_xlim(left=_dose_xlim(dose))
+    _apply_axis_config(ax, 'concentration')
     fig.tight_layout()
     if out_path:
         fig.savefig(out_path, dpi=150)
@@ -538,6 +653,7 @@ def plot_number_densities_tem(results, input_data, rate_eq_obj,
     ax.legend(fontsize=8)
     ax.grid(True, which='both', alpha=0.3)
     ax.set_xlim(left=_dose_xlim(full_dose), right=full_dose[-1])
+    _apply_axis_config(ax, 'concentration')
     fig.tight_layout()
     if out_path:
         fig.savefig(out_path, dpi=150)
@@ -607,6 +723,7 @@ def plot_mean_sizes_tem(results, input_data, rate_eq_obj,
     ax2.set_xlim(left=_dose_xlim(full_dose), right=full_dose[-1])
     ax2.set_ylim(bottom=0)
 
+    _apply_axis_config_to_fig(fig, 'scalar')
     fig.tight_layout()
     if out_path:
         fig.savefig(out_path, dpi=150)
@@ -658,6 +775,7 @@ def plot_sia_distribution_tem(results, input_data, rate_eq_obj,
     ax2.legend(fontsize=7, ncol=2, title='Dose')
     ax2.grid(True, which='both', alpha=0.3)
 
+    _apply_axis_config_to_fig(fig, 'size_dist')
     fig.tight_layout()
     if out_path:
         fig.savefig(out_path, dpi=150)
@@ -811,7 +929,7 @@ def plot_sia_conc_vs_dose(results, input_data, rate_eq_obj,
     inv_O  = 1.0 / Omega
     y, dose = _align_dose_to_y(results)
 
-    fig, ax = plt.subplots(figsize=(8, 5))
+    fig, ax = plt.subplots(figsize=(8, 6))
     n_curves = i_d + I_bin if is_bin else min(input_data.I, 20)
     cmap = plt.cm.viridis(np.linspace(0.1, 0.9, max(n_curves, 1)))
 
@@ -844,13 +962,16 @@ def plot_sia_conc_vs_dose(results, input_data, rate_eq_obj,
     ax.set_xlabel('Dose (dpa)')
     ax.set_ylabel(_CONC_LABEL)
     ax.set_title(f'SIA Cluster Concentrations {title}')
-    ax.legend(fontsize=7, ncol=2)
     ax.grid(True, which='both', alpha=0.3)
     full_dose = results['dose']
     ax.set_xlim(left=_dose_xlim(full_dose), right=full_dose[-1])
+    _apply_axis_config(ax, 'concentration')
     fig.tight_layout()
+    n_entries = len(ax.get_lines())
+    ncol = min(8, max(2, (n_entries + 5) // 6))
+    _legend_below(fig, ax, ncol=ncol, bottom=0.30)
     if out_path:
-        fig.savefig(out_path, dpi=150)
+        fig.savefig(out_path, dpi=150, bbox_inches='tight')
     return fig
 
 
@@ -871,7 +992,7 @@ def plot_vac_conc_vs_dose(results, input_data, rate_eq_obj,
     inv_O  = 1.0 / Omega
     y, dose = _align_dose_to_y(results)
 
-    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+    fig, axes = plt.subplots(1, 2, figsize=(14, 7))
     n_curves = v_d + V_bin if is_bin else min(input_data.V, 20)
     cmap = plt.cm.plasma(np.linspace(0.1, 0.85, max(n_curves, 1)))
 
@@ -912,20 +1033,22 @@ def plot_vac_conc_vs_dose(results, input_data, rate_eq_obj,
     axes[0].set_xlabel('Dose (dpa)')
     axes[0].set_ylabel(_CONC_LABEL)
     axes[0].set_title(r'Cavity $\mu_k^{(0)}$ (number density) ' + title)
-    axes[0].legend(fontsize=7, ncol=2)
     axes[0].grid(True, which='both', alpha=0.3)
     axes[0].set_xlim(left=_dose_xlim(full_dose), right=full_dose[-1])
 
     axes[1].set_xlabel('Dose (dpa)')
     axes[1].set_ylabel(r'Content $\mu_k^{(0)} \times \bar{m}_k$ (m$^{-3}$)')
     axes[1].set_title(r'Cavity content per bin ' + title)
-    axes[1].legend(fontsize=7, ncol=2)
     axes[1].grid(True, which='both', alpha=0.3)
     axes[1].set_xlim(left=_dose_xlim(full_dose), right=full_dose[-1])
 
+    _apply_axis_config_to_fig(fig, 'concentration')
     fig.tight_layout()
+    n_entries = len(axes[0].get_lines())
+    ncol = min(10, max(2, (n_entries + 5) // 6))
+    _legend_below(fig, axes, ncol=ncol, bottom=0.30)
     if out_path:
-        fig.savefig(out_path, dpi=150)
+        fig.savefig(out_path, dpi=150, bbox_inches='tight')
     return fig
 
 
@@ -1001,6 +1124,7 @@ def plot_sia_size_dist_quarters(results, input_data, rate_eq_obj,
     ax2.legend(title='Dose', fontsize=7)
     ax2.grid(True, alpha=0.3)
 
+    _apply_axis_config_to_fig(fig, 'size_dist')
     fig.tight_layout()
     if out_path:
         fig.savefig(out_path, dpi=150)
@@ -1060,6 +1184,7 @@ def plot_vac_size_dist_quarters(results, input_data, rate_eq_obj,
     ax2.legend(title='Dose', fontsize=7)
     ax2.grid(True, alpha=0.3)
 
+    _apply_axis_config_to_fig(fig, 'size_dist')
     fig.tight_layout()
     if out_path:
         fig.savefig(out_path, dpi=150)
@@ -1110,6 +1235,7 @@ def plot_sia_fraction_breakdown(results, out_path=None, title=''):
     ax.grid(True, alpha=0.3)
     ax.set_ylim(-0.05, 1.15)
     ax.set_xlim(left=_dose_xlim(dose))
+    _apply_axis_config(ax, 'scalar')
     fig.tight_layout()
     if out_path:
         fig.savefig(out_path, dpi=150)
@@ -1159,6 +1285,7 @@ def plot_vac_fraction_breakdown(results, out_path=None, title=''):
     ax.grid(True, alpha=0.3)
     ax.set_ylim(-0.05, 1.15)
     ax.set_xlim(left=_dose_xlim(dose))
+    _apply_axis_config(ax, 'scalar')
     fig.tight_layout()
     if out_path:
         fig.savefig(out_path, dpi=150)

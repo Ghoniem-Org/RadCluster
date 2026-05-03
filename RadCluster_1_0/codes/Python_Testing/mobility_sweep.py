@@ -62,7 +62,7 @@ from RadCluster_1_0.py_utils.simulation import RadClusterSimulation
 
 
 # ── Solver / domain configuration ──────────────────────────────────────────
-# I,V = 1000 each → N_eq = I + V + 6 ≈ 2006 (cpp_full + Woodbury).
+# I,V = 1000 each → N_eq = I + V + 6 ≈ 2006 (full_system + Woodbury).
 # This matches the original reference run.  Vacancy clusters in case A may
 # bump the V=1000 boundary at 0.01 dpa; delta_FP will quantify any leakage.
 I_SIM, V_SIM = 1000, 1000
@@ -79,10 +79,8 @@ SOLVER_CONFIG = {
     'rtol':     1e-6,
     'atol':     1e-22,
     'solver_method': {
-        'backend':            'cvode',
-        'lmm':                'bdf',
         'linsol':             'gmres',  # required for Woodbury auto-engage
-        # window_mode=0 (cpp_full) so Woodbury preconditioner kicks in
+        # window_mode=0 (full_system) so Woodbury preconditioner kicks in
         # whenever i_mobile>=2 or v_mobile>=2  (parameters.h:494-501)
         'window_gmres_maxl':  30,
     },
@@ -99,7 +97,7 @@ CASES = [
 
 
 def run_case(name, overrides, quiet=True, heartbeat_every=1.5):
-    """Run one case via sliding_OpenMP and return time-resolved results.
+    """Run one case via active_window and return time-resolved results.
 
     Per-row progress is forwarded to the *real* terminal even while the
     inner solver's stdout is captured.  A line is printed at most once
@@ -141,10 +139,10 @@ def run_case(name, overrides, quiet=True, heartbeat_every=1.5):
     try:
         sim = RadClusterSimulation(
             I=I_SIM, V=V_SIM,
-            solver_mode='cpp_full',
+            solver_mode='full_system',
             physics_option='full_CD_fission',
             C_floor=1e-25,
-            he_options='quasi_steady_state',
+            he_kinetics='quasi_steady_state',
             i_mobile=i_mob,
             v_mobile=v_mob,
         )

@@ -11,8 +11,8 @@ Ghoniem, N.M. (2026), Sections 5-8 (Rate_Equations.pdf):
   Eq. 174 (He Case 1 — fusion/fast_eq)
   Eq. 175 (He Case 2 — fission/decoupled)
 
-He options (he_options)
-------------------------
+He kinetics (he_kinetics)
+-------------------------
 'dynamic'            — free He c_h integrated as a full ODE variable (Eq. 157)
 'quasi_steady_state' — c_h eliminated; computed algebraically from dc_h/dt = 0
                        at each RHS call (valid because E_m_h = 0.06 eV is small)
@@ -54,7 +54,7 @@ from .binding_energies  import ell_max
 
 _kB = 8.617333262e-5
 
-_VALID_HE_OPTIONS = ('dynamic', 'quasi_steady_state')
+_VALID_HE_KINETICS = ('dynamic', 'quasi_steady_state')
 
 
 class RateEquations:
@@ -89,13 +89,13 @@ class RateEquations:
         self.C_floor = float(input_data.reactions.get('C_floor', 1e-15))
 
         # Free He mode: 'dynamic' or 'quasi_steady_state'
-        raw = str(input_data.reactions.get('he_options', 'dynamic')).lower()
-        if raw not in _VALID_HE_OPTIONS:
+        raw = str(input_data.reactions.get('he_kinetics', 'dynamic')).lower()
+        if raw not in _VALID_HE_KINETICS:
             import warnings
-            warnings.warn(f"Unknown he_options='{raw}'. Using 'dynamic'.")
+            warnings.warn(f"Unknown he_kinetics='{raw}'. Using 'dynamic'.")
             raw = 'dynamic'
-        self.he_options = raw
-        self.qss_He     = (raw == 'quasi_steady_state')
+        self.he_kinetics = raw
+        self.qss_He      = (raw == 'quasi_steady_state')
 
         # Pre-compute beta_He (He de-trapping attempt rate) for QSS and Q_tot RHS
         kBT_val  = input_data.derived['kBT']
@@ -152,7 +152,7 @@ class RateEquations:
         self._m13     = self._m_arr ** (1.0 / 3.0)
         self._denom_m = 1.0 + reaction_rates.B_rot * reaction_rates.L_hat**2 / self._m13
 
-        print(f"RateEquations: he_mode='{self.he_mode}'  he_options='{self.he_options}'"
+        print(f"RateEquations: he_mode='{self.he_mode}'  he_kinetics='{self.he_kinetics}'"
               f"  N_eq={self.N_eq}  I={I}  V={V}"
               f"  G_He={G_He:.3e} at.frac/s"
               f"  C_floor={self.C_floor:.1e}  beta_He={self.beta_He:.3e}")
@@ -205,9 +205,9 @@ class RateEquations:
         """
         Decoupled He-reduction (Case 2, fission, Eq. 175).
 
-        he_options='dynamic':
+        he_kinetics='dynamic':
           State: [c_1..c_I | c_{-1}..c_{-V} | Q_tot | c_h]
-        he_options='quasi_steady_state':
+        he_kinetics='quasi_steady_state':
           State: [c_1..c_I | c_{-1}..c_{-V} | Q_tot]
           c_h = (G_He + β·Q_tot) / (Σ K_HeV·c_v + k2_He)
         """
@@ -429,9 +429,9 @@ class RateEquations:
         """
         Mean-field He-reduction (Case 1, fusion, Eq. 174).
 
-        he_options='dynamic':
+        he_kinetics='dynamic':
           State: [c_1..c_I | c_{-1}..c_{-V} | Q_1..Q_V | c_h]
-        he_options='quasi_steady_state':
+        he_kinetics='quasi_steady_state':
           State: [c_1..c_I | c_{-1}..c_{-V} | Q_1..Q_V]
           c_h = (G_He + β·Σ Q_m) / (Σ K_HeV·c_v + k2_He)
         """

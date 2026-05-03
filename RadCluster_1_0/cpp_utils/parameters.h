@@ -14,14 +14,14 @@
  *   y[0..I-1]       — SIA clusters c_n, n=1..I
  *   y[I..I+V-1]     — vacancy/bubble c_m (marginal), m=1..V
  *   y[I+V]          — Q_tot (total He in voids)
- *   y[I+V+1]        — c_h (free He)  [omitted when he_options=1 (QSS)]
+ *   y[I+V+1]        — c_h (free He)  [omitted when he_kinetics=1 (QSS)]
  *   N_eq = I + V + 2  (dynamic)  or  I + V + 1  (quasi_steady_state)
  *
  * full_CD_fusion  (Case 1, he_mode=1):
  *   y[0..I-1]       — SIA clusters c_n
  *   y[I..I+V-1]     — c_m^tot
  *   y[I+V..I+2V-1]  — Q_m (He per class)
- *   y[I+2V]         — c_h  [omitted when he_options=1 (QSS)]
+ *   y[I+2V]         — c_h  [omitted when he_kinetics=1 (QSS)]
  *   N_eq = I + 2V + 1  (dynamic)  or  I + 2V  (quasi_steady_state)
  *
  * bin_moment_CD_fission/fusion (physics_option 2/3):
@@ -31,7 +31,7 @@
  *   N_eq = 2Ib + V + 2  or  2Ib + 2V + 1  (dynamic)
  *   N_eq = 2Ib + V + 1  or  2Ib + 2V      (quasi_steady_state)
  *
- * he_options:  0 = dynamic (c_h is an ODE state, Eq. 157)
+ * he_kinetics: 0 = dynamic (c_h is an ODE state, Eq. 157)
  *              1 = quasi_steady_state (c_h computed algebraically from
  *                  dc_h/dt = 0;  valid because E_m_h = 0.06 eV is small)
  *
@@ -58,10 +58,10 @@ struct Parameters {
     // physics_option: 0=full_CD_fission, 1=full_CD_fusion,
     //                  2=bin_moment_CD_fission, 3=bin_moment_CD_fusion
     // he_mode:         0=Case 2 (decoupled/fission), 1=Case 1 (mean-field/fusion)
-    // he_options:      0=dynamic (ODE), 1=quasi_steady_state (algebraic c_h)
+    // he_kinetics:     0=dynamic (ODE), 1=quasi_steady_state (algebraic c_h)
     int physics_option;
     int he_mode;
-    int he_options;   // 0=dynamic, 1=quasi_steady_state
+    int he_kinetics;  // 0=dynamic, 1=quasi_steady_state
 
     // ── Geometric rate constant prefactors (Eq. 128) ─────────────────────────
     double A_sph;   // (48π²)^{1/3} ≈ 7.818
@@ -154,16 +154,14 @@ struct Parameters {
     double atol;
 
     // ── Integration method ─────────────────────────────────────────────────────
-    int backend;    // 0=CVODE, 1=ARKODE ARKStep DIRK
-    int lmm;        // CVODE: 2=CV_BDF (default), 1=CV_ADAMS
+    // CVODE BDF is the only integrator wired up; the linear solver is selectable.
     int linsol;     // 0=dense, 1=band, 2=gmres
     int mu, ml;     // band solver bandwidths
     int max_order;  // 0 = solver default
     double hmin;    // minimum step size (0 = no limit)
-    int ark_table;  // ARKODE_DIRKTableID (default 111)
 
-    // ── Dynamic window (cpp_sliding_win / sliding_OpenMP) ─────────────────────
-    // window_mode: 0=full, 3=Phase III (two independent windows), 4=Phase IV (OpenMP)
+    // ── Dynamic window (active_window) ────────────────────────────────────────
+    // window_mode: 0=full_system, 4=active_window (two independent sliding windows + OpenMP-parallel RHS)
     // Two independent windows: one for SIA cluster indices, one for VAC cluster indices.
     int    window_mode;
     int    window_w0_v;
@@ -301,15 +299,15 @@ inline Parameters build_parameters(const std::map<std::string, double>& p) {
     // Physics mode
     P.physics_option = static_cast<int>(optional_param(p, "physics_option_int", 0));
     P.he_mode        = static_cast<int>(optional_param(p, "he_mode",             0));
-    P.he_options     = static_cast<int>(optional_param(p, "qss_He",              0));
-    // he_options: 0=dynamic (c_h is ODE state), 1=quasi_steady_state (c_h algebraic)
+    P.he_kinetics    = static_cast<int>(optional_param(p, "qss_He",              0));
+    // he_kinetics: 0=dynamic (c_h is ODE state), 1=quasi_steady_state (c_h algebraic)
 
-    // State vector size depends on he_mode and he_options:
+    // State vector size depends on he_mode and he_kinetics:
     //   Case 2 dynamic:           I + V + 2
     //   Case 2 quasi_steady_state: I + V + 1  (c_h removed from state)
     //   Case 1 dynamic:           I + 2V + 1
     //   Case 1 quasi_steady_state: I + 2V     (c_h removed from state)
-    const bool qss = (P.he_options == 1);
+    const bool qss = (P.he_kinetics == 1);
     int n_he_extra;
     if (P.he_mode == 1)
         n_he_extra = qss ? P.V     : P.V + 1;
@@ -438,8 +436,6 @@ inline Parameters build_parameters(const std::map<std::string, double>& p) {
     P.atol     = optional_param(p, "atol",  1e-20);
 
     // Integration method
-    P.backend   = static_cast<int>(optional_param(p, "backend",   0.0));
-    P.lmm       = static_cast<int>(optional_param(p, "lmm",       2.0));
     P.linsol    = static_cast<int>(optional_param(p, "linsol",    0.0));
     P.mu        = static_cast<int>(optional_param(p, "mu",
                                    static_cast<double>(P.N_eq - 1)));
@@ -447,7 +443,6 @@ inline Parameters build_parameters(const std::map<std::string, double>& p) {
                                    static_cast<double>(P.N_eq - 1)));
     P.max_order = static_cast<int>(optional_param(p, "max_order", 4.0));
     P.hmin      = optional_param(p, "hmin", 0.0);
-    P.ark_table = static_cast<int>(optional_param(p, "ark_table", 111.0));
 
     // Window parameters
     P.window_mode          = static_cast<int>(optional_param(p, "window_mode",       0.0));

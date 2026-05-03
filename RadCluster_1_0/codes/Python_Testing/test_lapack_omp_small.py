@@ -55,9 +55,9 @@ def make_sim():
     sys.stdout = sys.stderr = io.StringIO()
     try:
         sim = RadClusterSimulation(
-            I=I, V=V, solver_mode='cpp_full',
+            I=I, V=V, solver_mode='full_system',
             physics_option='full_CD_fission',
-            C_floor=1e-25, he_options='quasi_steady_state',
+            C_floor=1e-25, he_kinetics='quasi_steady_state',
             i_mobile=1, v_mobile=1,
         )
         inp = sim.input_data
@@ -86,7 +86,7 @@ def run_case(prec_type):
         'rtol': 1e-6,
         'atol': 1e-25,
         'solver_method': {
-            'backend': 'cvode', 'lmm': 'bdf', 'linsol': 'gmres',
+            'linsol': 'gmres',
             'window_w0_i': 50, 'window_width': 200,
             'window_C_expand': 1e-20, 'window_expand_pad': 100,
             'window_prec': 1, 'window_gmres_maxl': 30,

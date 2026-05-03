@@ -9,10 +9,10 @@
  *   he_mode == 0  — Case 2, fission/decoupled (Eq. 175)
  *   he_mode == 1  — Case 1, fusion/mean-field  (Eq. 174)
  *
- * Free He treatment (he_options):
- *   he_options == 0  — dynamic: c_h integrated as a full ODE (Eq. 157)
- *   he_options == 1  — quasi_steady_state: c_h computed algebraically from
- *                      dc_h/dt = 0 at each RHS call (E_m_h = 0.06 eV → fast)
+ * Free He treatment (he_kinetics):
+ *   he_kinetics == 0  — dynamic: c_h integrated as a full ODE (Eq. 157)
+ *   he_kinetics == 1  — quasi_steady_state: c_h computed algebraically from
+ *                       dc_h/dt = 0 at each RHS call (E_m_h = 0.06 eV → fast)
  *
  * Concentration floor (C_floor):
  *   Enforced post-step in solver.cpp (after each successful CVode() call),
@@ -181,7 +181,7 @@ static int rhs_case2(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
     double*       dydt = N_VGetArrayPointer_Serial(ydotv);
     const int  I   = P.I;
     const int  V   = P.V;
-    const bool qss = (P.he_options == 1);
+    const bool qss = (P.he_kinetics == 1);
 
     // Unpack and clamp to 0 (CVODE can probe transiently negative values)
     const double* c_i = y;        // [I] — use max(y[n], 0) at access time
@@ -604,7 +604,7 @@ static int rhs_case1(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
     double*       dydt = N_VGetArrayPointer_Serial(ydotv);
     const int  I   = P.I;
     const int  V   = P.V;
-    const bool qss = (P.he_options == 1);
+    const bool qss = (P.he_kinetics == 1);
 
     const double* c_i = y;
     const double* c_v = y + I;
@@ -974,11 +974,11 @@ int rhs_full_CD(sunrealtype t, N_Vector y, N_Vector ydot, void* user_data) {
     const Parameters& P  = *ud->P;
 
     // Resolve window bounds:
-    //   window_mode == 0 (full): entire SIA / VAC domains are active.
-    //   window_mode == 3 (cpp_sliding_win): two independent windows.
-    //   window_mode == 4 (sliding_OpenMP): same windows, kept as a separate
-    //     mode for compatibility — OpenMP is now active for all modes when
-    //     CD_HAVE_OPENMP is defined.
+    //   window_mode == 0 (full_system): entire SIA / VAC domains are active.
+    //   window_mode == 4 (active_window): two independent windows + OpenMP.
+    //     Thread count is auto-picked by N_eq in solver.cpp; if OpenMP is
+    //     unavailable or only 1 thread is selected, the same code path runs
+    //     serial transparently.
     // OpenMP is safe for all modes: each loop iteration writes only to its
     // own dci[n] or dcv[m], so there are no data races.
     const int x_hi_i = ud->window_active ? ud->x_hi_i : P.I - 1;
@@ -1002,7 +1002,7 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
     const int  Ib  = P.I_bin;
     const int  V   = P.V;
     const int  I   = P.I;
-    const bool qss = (P.he_options == 1);
+    const bool qss = (P.he_kinetics == 1);
 
     for (int k = 0; k < P.N_eq; ++k) dydt[k] = 0.0;
 

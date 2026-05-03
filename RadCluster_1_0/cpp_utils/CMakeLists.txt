@@ -40,7 +40,7 @@ else()
     target_compile_options(solver PRIVATE -O3 -march=native)
 endif()
 
-# ── OpenMP (sliding_OpenMP solver mode) ───────────────────────────────────────
+# ── OpenMP (active_window solver mode) ────────────────────────────────────────
 if(APPLE AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     execute_process(
         COMMAND brew --prefix libomp
@@ -59,11 +59,11 @@ find_package(OpenMP)
 if(OpenMP_CXX_FOUND)
     target_link_libraries(solver OpenMP::OpenMP_CXX)
     target_compile_definitions(solver PRIVATE CD_HAVE_OPENMP=1)
-    message(STATUS "OpenMP found — sliding_OpenMP mode ENABLED")
+    message(STATUS "OpenMP found — active_window mode ENABLED")
 else()
     message(WARNING
-        "OpenMP not found — sliding_OpenMP (window_mode=4) will fall back to"
-        " cpp_sliding_win.\n"
+        "OpenMP not found — active_window (window_mode=4) will run serial"
+        " (single-threaded sliding window).\n"
         "  macOS:   brew install libomp  then re-run cmake.\n"
         "  Windows: OpenMP is bundled with MSVC.")
 endif()
@@ -82,7 +82,6 @@ endif()
 # ── Link SUNDIALS + LAPACK ───────────────────────────────────────────────────
 target_link_libraries(solver
     SUNDIALS::cvode
-    SUNDIALS::arkode
     SUNDIALS::nvecserial
     SUNDIALS::sunlinsolband
     SUNDIALS::sunlinsolspgmr

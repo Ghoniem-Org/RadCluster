@@ -1,16 +1,16 @@
 """
 compare_window_modes.py
 =======================
-Run and compare the three solver modes for the I=V=10000 full_CD system:
+Run and compare the two solver modes for the I=V=10000 full_CD system:
 
-  Mode 0 — cpp_full        : reference (20 006 ODEs, no window)
-  Mode 3 — cpp_sliding_win : two independent sliding windows, serial
-  Mode 4 — sliding_OpenMP  : same windows + OpenMP intra-RHS parallelism
+  Mode 0 — full_system     : reference (20 006 ODEs, no window)
+  Mode 4 — active_window   : two independent sliding windows + OpenMP-parallel
+                              RHS (auto-serial when threads=1)
 
 Physical parameters are taken verbatim from the notebook cell:
   T=573 K, G=1e-6 dpa/s, I=V=10000, i_mobile=v_mobile=1,
   i_discrete=I, v_discrete=V, I_bin=V_bin=0 (full per-size),
-  he_options=quasi_steady_state, fission cascade.
+  he_kinetics=quasi_steady_state, fission cascade.
 
 Window design (derived from I=V=1000 reference run):
   SIA front saturates at n≈62 at t=1e4 s  →  window_w0_i = 100
@@ -72,7 +72,7 @@ v_discrete = V
 I_bin      = 0
 V_bin      = 0
 C_FLOOR    = 1e-25
-HE_OPTIONS = 'quasi_steady_state'
+HE_KINETICS = 'quasi_steady_state'
 
 PARAM_OVERRIDES = {
     'eta':       0.3,
@@ -106,8 +106,6 @@ BASE_SOLVER_CFG = {
 #   SIA: 99.9% content at n≤24; physical front at n≈62 at t=1e4 s.
 #   VAC: void front grows ~linearly; extrapolates to m≈1000 at t=1e4 s for V=10000.
 WINDOW_METHOD = {
-    'backend':           'cvode',
-    'lmm':               'bdf',
     'linsol':            'gmres',
     'window_gmres_maxl': 40,
     'window_prec':       1,
@@ -124,10 +122,9 @@ WINDOW_METHOD = {
     'window_N_thresh':    500,
 }
 
-MODE3_CFG = {**BASE_SOLVER_CFG, 'solver_method': WINDOW_METHOD}
 MODE4_CFG = {**BASE_SOLVER_CFG, 'solver_method': WINDOW_METHOD}
 MODE0_CFG = {**BASE_SOLVER_CFG, 'solver_method': {
-    'backend': 'cvode', 'lmm': 'bdf', 'linsol': 'gmres',
+    'linsol': 'gmres',
     'window_gmres_maxl': 40, 'window_prec': 1,
 }}
 
@@ -151,7 +148,7 @@ def build_sim(solver_mode, physics_option=None):
             solver_mode=solver_mode,
             physics_option=physics_option,
             C_floor=C_FLOOR,
-            he_options=HE_OPTIONS,
+            he_kinetics=HE_KINETICS,
             i_mobile=i_mobile,
             v_mobile=v_mobile,
         )
@@ -257,16 +254,21 @@ def _load_run_from_dir(d, solver_mode, label):
 def find_reference_run(ref_dir=None):
     """
     Return the results dict for mode-0.  If ref_dir is given, load from there.
-    Otherwise scan the output directory for the most recent cpp_full run with
-    N_eq == 20006 (I=V=10000, QSS He) matching PHYSICS_OPTION (or
+    Otherwise scan the output directory for the most recent full_system run
+    with N_eq == 20006 (I=V=10000, QSS He) matching PHYSICS_OPTION (or
     bin_moment fallback since they are mathematically identical with I_bin=0).
+    Legacy `cpp_full` directory names are also matched.
     """
     out_root = MODULE_ROOT / 'output'
 
-    # Prefer exact physics match, then accept bin_moment (mathematically identical)
+    # Prefer exact physics match, then accept bin_moment (mathematically identical).
+    # Both new (`full_system`) and legacy (`cpp_full`) directory prefixes are scanned.
     glob_patterns = [
+        f'*_full_system_{PHYSICS_OPTION}_*',
         f'*_cpp_full_{PHYSICS_OPTION}_*',
+        '*_full_system_bin_moment_CD_fission_*',
         '*_cpp_full_bin_moment_CD_fission_*',
+        '*_full_system_full_CD_fission_*',
         '*_cpp_full_full_CD_fission_*',
     ]
     candidates = []
@@ -285,28 +287,31 @@ def find_reference_run(ref_dir=None):
             continue
         y = np.load(y_path, mmap_mode='r')
         if y.shape[0] == 20006:      # I=V=10000, QSS-He
-            return _load_run_from_dir(d, 'cpp_full', 'mode-0 reference')
+            return _load_run_from_dir(d, 'full_system', 'mode-0 reference')
     return None, None
 
 
-def find_window_run(solver_mode, load_dir=None):
+def find_window_run(load_dir=None):
     """
-    Return the results dict for a sliding-window mode (mode3 or mode4).
-    If load_dir is given, load from there; otherwise find the most recent
-    matching output directory for PHYSICS_OPTION.
+    Return the results dict for active_window.  If load_dir is given, load
+    from there; otherwise find the most recent matching output directory for
+    PHYSICS_OPTION.  Legacy `sliding_OpenMP` directory names are also matched.
     """
     out_root = MODULE_ROOT / 'output'
-    label = {'cpp_sliding_win': 'Mode III', 'sliding_OpenMP': 'Mode IV'}.get(solver_mode, solver_mode)
+    label = 'Mode IV'
 
     if load_dir:
-        return _load_run_from_dir(Path(load_dir), solver_mode, label)
+        return _load_run_from_dir(Path(load_dir), 'active_window', label)
 
-    candidates = sorted(
-        out_root.glob(f'*_{solver_mode}_{PHYSICS_OPTION}_*'),
-        key=lambda p: p.name, reverse=True
-    )
+    glob_patterns = [
+        f'*_active_window_{PHYSICS_OPTION}_*',
+        f'*_sliding_OpenMP_{PHYSICS_OPTION}_*',
+    ]
+    candidates = []
+    for pat in glob_patterns:
+        candidates += sorted(out_root.glob(pat), key=lambda p: p.name, reverse=True)
     for d in candidates:
-        res, src = _load_run_from_dir(d, solver_mode, label)
+        res, src = _load_run_from_dir(d, 'active_window', label)
         if res is not None:
             return res, src
     return None, None
@@ -316,11 +321,10 @@ def find_window_run(solver_mode, load_dir=None):
 # 5.  Comparison plots
 # ══════════════════════════════════════════════════════════════════════════════
 
-COLORS  = {'mode0': '#1f77b4', 'mode3': '#d62728', 'mode4': '#2ca02c'}
-LABELS  = {'mode0': 'Mode 0 — cpp_full (ref)',
-           'mode3': 'Mode III — cpp_sliding_win',
-           'mode4': 'Mode IV  — sliding_OpenMP'}
-LS      = {'mode0': '-', 'mode3': '--', 'mode4': ':'}
+COLORS  = {'mode0': '#1f77b4', 'mode4': '#2ca02c'}
+LABELS  = {'mode0': 'Mode 0 — full_system (ref)',
+           'mode4': 'Mode IV — active_window'}
+LS      = {'mode0': '-', 'mode4': '--'}
 
 def _relerr(ref, new):
     """Element-wise relative error |new - ref| / (|ref| + 1e-30)."""
@@ -329,12 +333,11 @@ def _relerr(ref, new):
 
 def make_comparison_plots(res_dict, wall_dict, out_path):
     """
-    res_dict : {'mode0': results, 'mode3': results, 'mode4': results}
-               (any key may be absent)
-    wall_dict: {'mode0': float, 'mode3': float, 'mode4': float}
+    res_dict : {'mode0': results, 'mode4': results}  (any key may be absent)
+    wall_dict: {'mode0': float,   'mode4': float}
     out_path : Path to save the figure
     """
-    modes = [k for k in ['mode0', 'mode3', 'mode4'] if k in res_dict and res_dict[k] is not None]
+    modes = [k for k in ['mode0', 'mode4'] if k in res_dict and res_dict[k] is not None]
 
     fig = plt.figure(figsize=(18, 22))
     gs  = gridspec.GridSpec(4, 3, figure=fig, hspace=0.42, wspace=0.35)
@@ -401,36 +404,33 @@ def make_comparison_plots(res_dict, wall_dict, out_path):
     ax.set_xlabel('Dose (dpa)');  ax.set_ylabel(r'$\delta_{FP}$ (relative)')
     ax.set_title('Frenkel-pair conservation');  ax.legend(fontsize=6)
 
-    # ── (2,0-2) Relative errors vs mode0 ────────────────────────────────────
+    # ── (2,0) Relative errors vs mode 0 ─────────────────────────────────────
     ref = res_dict.get('mode0')
-    if ref is not None:
-        window_modes = [m for m in modes if m != 'mode0']
+    if ref is not None and 'mode4' in res_dict and res_dict['mode4'] is not None:
         quantities = ['swelling', 'N_loops', 'N_voids', 'mean_n_i', 'mean_n_v', 'delta_FP']
         q_labels   = ['Swelling', 'N_loops', 'N_voids', r'$\bar{n}_i$', r'$\bar{n}_v$', r'$\delta_{FP}$']
         q_colors   = ['C0','C1','C2','C3','C4','C5']
 
-        for col, wm in enumerate(window_modes[:2]):
-            ax = fig.add_subplot(gs[2, col])
-            wr = res_dict[wm]
-            # Interpolate to ref time grid
-            t_ref = ref['dose']
-            t_win = wr['dose']
-            for qi, (qn, ql, qc) in enumerate(zip(quantities, q_labels, q_colors)):
-                try:
-                    ref_q = np.interp(t_win, t_ref, ref[qn])
-                    win_q = wr[qn]
-                    err   = _relerr(ref_q, win_q)
-                    ax.loglog(t_win, np.maximum(err, 1e-16),
-                              color=qc, lw=1.4, label=ql)
-                except Exception:
-                    pass
-            ax.axhline(1e-3, color='gray', ls='--', lw=0.8, label='0.1% error')
-            ax.set_xlabel('Dose (dpa)')
-            ax.set_ylabel('|ε| relative error')
-            ax.set_title(f'Relative error: {LABELS[wm]}\nvs Mode 0 reference')
-            ax.legend(fontsize=6, ncol=2)
+        ax = fig.add_subplot(gs[2, 0])
+        wr    = res_dict['mode4']
+        t_ref = ref['dose']
+        t_win = wr['dose']
+        for qn, ql, qc in zip(quantities, q_labels, q_colors):
+            try:
+                ref_q = np.interp(t_win, t_ref, ref[qn])
+                win_q = wr[qn]
+                err   = _relerr(ref_q, win_q)
+                ax.loglog(t_win, np.maximum(err, 1e-16),
+                          color=qc, lw=1.4, label=ql)
+            except Exception:
+                pass
+        ax.axhline(1e-3, color='gray', ls='--', lw=0.8, label='0.1% error')
+        ax.set_xlabel('Dose (dpa)')
+        ax.set_ylabel('|ε| relative error')
+        ax.set_title(f'Relative error: {LABELS["mode4"]}\nvs Mode 0 reference')
+        ax.legend(fontsize=6, ncol=2)
 
-    # ── (3,0-2) Wall-clock time bar chart & window evolution proxy ───────────
+    # ── (3,0) Wall-clock time bar chart ─────────────────────────────────────
     ax = fig.add_subplot(gs[3, 0])
     labels_bar = [LABELS[m] for m in modes if m in wall_dict]
     times_bar  = [wall_dict[m]  for m in modes if m in wall_dict]
@@ -447,21 +447,19 @@ def make_comparison_plots(res_dict, wall_dict, out_path):
     if times_bar:
         ax.set_ylim(0, max(times_bar)*1.25)
 
-    # ── (3,1) Speedup ratios ─────────────────────────────────────────────────
+    # ── (3,1) Speedup ratio ──────────────────────────────────────────────────
     ax = fig.add_subplot(gs[3, 1])
-    if 'mode0' in wall_dict and wall_dict['mode0'] > 0:
-        wm_list = [m for m in ['mode3','mode4'] if m in wall_dict]
-        speedups = [wall_dict['mode0'] / wall_dict[m] for m in wm_list]
-        ax.bar(range(len(wm_list)), speedups,
-               color=[COLORS[m] for m in wm_list], width=0.4)
-        ax.set_xticks(range(len(wm_list)))
-        ax.set_xticklabels([LABELS[m].split('—')[0].strip() for m in wm_list],
+    if 'mode0' in wall_dict and wall_dict['mode0'] > 0 and 'mode4' in wall_dict:
+        speedup = wall_dict['mode0'] / wall_dict['mode4']
+        ax.bar([0], [speedup], color=COLORS['mode4'], width=0.4)
+        ax.set_xticks([0])
+        ax.set_xticklabels([LABELS['mode4'].split('—')[0].strip()],
                            rotation=15, ha='right', fontsize=8)
         ax.set_ylabel('Speedup vs Mode 0')
         ax.set_title('Speedup factor')
         ax.axhline(1.0, color='gray', ls='--', lw=0.8)
-        for i, s in enumerate(speedups):
-            ax.text(i, s*1.02, f'{s:.1f}×', ha='center', va='bottom', fontsize=9)
+        ax.text(0, speedup*1.02, f'{speedup:.1f}×',
+                ha='center', va='bottom', fontsize=9)
     else:
         ax.text(0.5, 0.5, 'Mode 0 timing\nnot available',
                 ha='center', va='center', transform=ax.transAxes, fontsize=9)
@@ -479,14 +477,14 @@ def make_comparison_plots(res_dict, wall_dict, out_path):
         f'  t_span = (1e-6, 1e4) s',
         f'  rtol={BASE_SOLVER_CFG["rtol"]:.0e}  atol={BASE_SOLVER_CFG["atol"]:.0e}',
         '',
-        'Window parameters (III & IV)',
+        'Window parameters (Mode IV)',
         f'  SIA: w0={WINDOW_METHOD["window_w0_i"]}  '
             f'pad={WINDOW_METHOD["window_expand_pad"]}',
         f'  VAC: w0={WINDOW_METHOD["window_w0_v"]}  '
             f'pad={WINDOW_METHOD["window_expand_pad_v"]}',
         f'  C_expand = {WINDOW_METHOD["window_C_expand"]:.0e}',
         f'  linsol = gmres  maxl={WINDOW_METHOD["window_gmres_maxl"]}',
-        f'  OMP threads (IV) = auto (OMP_NUM_THREADS or machine max)',
+        f'  OMP threads = auto from N_eq (override via OMP_NUM_THREADS)',
         '',
         'From I=V=1000 reference:',
         '  SIA 99.9% content: n≤24',
@@ -498,7 +496,7 @@ def make_comparison_plots(res_dict, wall_dict, out_path):
 
     fig.suptitle(
         'Sliding-window solver comparison\n'
-        f'Mode 0 (full) vs Mode III (cpp_sliding_win) vs Mode IV (sliding_OpenMP)\n'
+        f'Mode 0 (full_system) vs Mode IV (active_window)\n'
         f'I = V = {I:,}   physics: {PHYSICS_OPTION}   fission cascade',
         fontsize=11, y=0.995
     )
@@ -512,7 +510,7 @@ def make_comparison_plots(res_dict, wall_dict, out_path):
 # ══════════════════════════════════════════════════════════════════════════════
 
 def make_distribution_plots(res_dict, out_path):
-    modes = [k for k in ['mode0','mode3','mode4'] if k in res_dict and res_dict[k] is not None]
+    modes = [k for k in ['mode0','mode4'] if k in res_dict and res_dict[k] is not None]
     fig, axes = plt.subplots(1, 2, figsize=(13, 5))
 
     for m in modes:
@@ -583,7 +581,7 @@ def write_report(res_dict, wall_dict, report_path):
               f'  rtol:            {BASE_SOLVER_CFG["rtol"]:.0e}',
               f'  atol:            {BASE_SOLVER_CFG["atol"]:.0e}',
               '',
-              'WINDOW PARAMETERS (modes III & IV)',
+              'WINDOW PARAMETERS (Mode IV)',
               '-'*40,
               f'  SIA:  w0={WINDOW_METHOD["window_w0_i"]}  '
                   f'C_expand={WINDOW_METHOD["window_C_expand"]:.0e}  '
@@ -591,14 +589,14 @@ def write_report(res_dict, wall_dict, report_path):
               f'  VAC:  w0={WINDOW_METHOD["window_w0_v"]}  '
                   f'C_expand_v={WINDOW_METHOD["window_C_expand_v"]:.0e}  '
                   f'pad_v={WINDOW_METHOD["window_expand_pad_v"]}',
-              f'  OMP threads (mode IV):  auto (OMP_NUM_THREADS or machine max)',
+              f'  OMP threads:  auto from N_eq (override via OMP_NUM_THREADS)',
               '']
 
     # ── Timing table ─────────────────────────────────────────────────────────
     lines += ['WALL-CLOCK TIME',
               '-'*40]
     w0 = wall_dict.get('mode0', None)
-    for m, lbl in [('mode0','cpp_full'), ('mode3','cpp_sliding_win'), ('mode4','sliding_OpenMP')]:
+    for m, lbl in [('mode0','full_system'), ('mode4','active_window')]:
         if m in wall_dict:
             w = wall_dict[m]
             speedup = f'  ({w0/w:.1f}× speedup)' if w0 and m != 'mode0' else ''
@@ -611,30 +609,26 @@ def write_report(res_dict, wall_dict, report_path):
               '-'*40]
     if ref is None:
         lines.append('  [mode 0 reference not available]')
+    elif 'mode4' not in res_dict or res_dict['mode4'] is None:
+        lines.append('  [Mode IV result not available]')
     else:
         keys = ['swelling','N_loops','N_voids','mean_n_i','mean_n_v','delta_FP']
-        hdr  = f'  {"Quantity":<14}' + ''.join(f'  {"Mode "+m[-1]:>12}' for m in ['mode3','mode4'] if m in res_dict)
-        lines.append(hdr)
-        lines.append('  ' + '-'*60)
+        lines.append(f'  {"Quantity":<14}  {"Mode IV":>12}')
+        lines.append('  ' + '-'*30)
         for k in keys:
-            row = f'  {k:<14}'
-            for m in ['mode3','mode4']:
-                if m not in res_dict or res_dict[m] is None:
-                    continue
-                try:
-                    r0   = float(ref[k][-1])
-                    rw   = float(res_dict[m][k][-1])
-                    err  = abs(rw - r0) / (abs(r0) + 1e-30)
-                    row += f'  {err:>12.3e}'
-                except Exception:
-                    row += f'  {"N/A":>12}'
-            lines.append(row)
+            try:
+                r0   = float(ref[k][-1])
+                rw   = float(res_dict['mode4'][k][-1])
+                err  = abs(rw - r0) / (abs(r0) + 1e-30)
+                lines.append(f'  {k:<14}  {err:>12.3e}')
+            except Exception:
+                lines.append(f'  {k:<14}  {"N/A":>12}')
     lines.append('')
 
     # ── Conservation ─────────────────────────────────────────────────────────
     lines += ['CONSERVATION DIAGNOSTICS (at final time)',
               '-'*40]
-    for m, lbl in [('mode0','cpp_full'), ('mode3','cpp_sliding_win'), ('mode4','sliding_OpenMP')]:
+    for m, lbl in [('mode0','full_system'), ('mode4','active_window')]:
         if m in res_dict and res_dict[m] is not None:
             r = res_dict[m]
             lines.append(f'  {lbl:<22}  '
@@ -653,7 +647,7 @@ def write_report(res_dict, wall_dict, report_path):
               f'    VAC: ~{1200/V*100:.1f}% of domain at saturation',
               '  Expected GMRES cost reduction: ~15× per linear solve.',
               '',
-              '  Modes III and IV should give results within rtol of mode 0.',
+              '  Mode IV should give results within rtol of mode 0.',
               '  Any residual difference is due to boundary truncation, not',
               '  algorithmic error; increase window_expand_pad to reduce it.',
               sep]
@@ -670,20 +664,15 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--ref-dir',      help='Path to existing mode-0 output directory')
-    ap.add_argument('--load-mode3',   help='Load mode III from this existing output directory')
-    ap.add_argument('--load-mode4',   help='Load mode IV  from this existing output directory')
+    ap.add_argument('--load-mode4',   help='Load Mode IV from this existing output directory')
     ap.add_argument('--skip-mode0',   action='store_true',
                     help='Skip running mode 0 (use existing reference only)')
-    ap.add_argument('--skip-mode3',   action='store_true',
-                    help='Skip running mode III (load existing if available)')
     ap.add_argument('--skip-mode4',   action='store_true',
-                    help='Skip running mode IV  (load existing if available)')
+                    help='Skip running Mode IV (load existing if available)')
     ap.add_argument('--wall-mode0',   type=float, default=0.0,
                     help='Known wall-clock time for mode 0 (s), for speedup plots')
-    ap.add_argument('--wall-mode3',   type=float, default=0.0,
-                    help='Known wall-clock time for mode III (s)')
     ap.add_argument('--wall-mode4',   type=float, default=0.0,
-                    help='Known wall-clock time for mode IV  (s)')
+                    help='Known wall-clock time for Mode IV (s)')
     ap.add_argument('--physics',       default='full_CD_fission',
                     choices=['full_CD_fission','full_CD_fusion',
                              'bin_moment_CD_fission','bin_moment_CD_fusion'],
@@ -704,7 +693,7 @@ def main():
 
     # ── Mode 0 (reference) ───────────────────────────────────────────────────
     if not args.skip_mode0:
-        r0, w0, _ = run_mode('Mode 0 — cpp_full', 'cpp_full', MODE0_CFG)
+        r0, w0, _ = run_mode('Mode 0 — full_system', 'full_system', MODE0_CFG)
         res_dict['mode0']  = r0
         wall_dict['mode0'] = w0
     else:
@@ -717,29 +706,14 @@ def main():
         else:
             print('  No I=V=10000 mode-0 run found.  Relative-error plots will be skipped.')
 
-    # ── Mode III ─────────────────────────────────────────────────────────────
-    if not args.skip_mode3:
-        r3, w3, _ = run_mode('Mode III — cpp_sliding_win', 'cpp_sliding_win', MODE3_CFG)
-        res_dict['mode3']  = r3
-        wall_dict['mode3'] = w3
-    else:
-        print('\nSearching for existing Mode III run …')
-        r3, src3 = find_window_run('cpp_sliding_win', args.load_mode3)
-        if r3 is not None:
-            res_dict['mode3']  = r3
-            wall_dict['mode3'] = args.wall_mode3
-            print(f'  Loaded from {src3}')
-        else:
-            print('  No Mode III run found.')
-
     # ── Mode IV ──────────────────────────────────────────────────────────────
     if not args.skip_mode4:
-        r4, w4, _ = run_mode('Mode IV  — sliding_OpenMP',  'sliding_OpenMP',  MODE4_CFG)
+        r4, w4, _ = run_mode('Mode IV  — active_window',  'active_window',  MODE4_CFG)
         res_dict['mode4']  = r4
         wall_dict['mode4'] = w4
     else:
         print('\nSearching for existing Mode IV run …')
-        r4, src4 = find_window_run('sliding_OpenMP', args.load_mode4)
+        r4, src4 = find_window_run(args.load_mode4)
         if r4 is not None:
             res_dict['mode4']  = r4
             wall_dict['mode4'] = args.wall_mode4

@@ -36,7 +36,7 @@ using CVRhsFn_t = int(*)(sunrealtype, N_Vector, N_Vector, void*);
 struct UserData {
     Parameters* P;            // non-const: preconditioner writes storage
     CVRhsFn_t   rhs_fn;       // RHS function pointer (for FD probing in preconditioner)
-    // Dynamic window state (used by cpp_sliding_win and sliding_OpenMP)
+    // Dynamic window state (used by active_window)
     int x_lo_i;    // lower active SIA index (0-based)
     int x_hi_i;    // upper active SIA index (inclusive, 0-based)
     int x_lo_v;    // lower active VAC index (0-based)

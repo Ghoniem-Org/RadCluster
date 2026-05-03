@@ -29,9 +29,9 @@ _saved = sys.stdout, sys.stderr
 sys.stdout = sys.stderr = io.StringIO()
 try:
     sim = RadClusterSimulation(
-        I=I, V=V, solver_mode='cpp_full',
+        I=I, V=V, solver_mode='full_system',
         physics_option='bin_moment_CD_fission',
-        C_floor=1e-25, he_options='quasi_steady_state',
+        C_floor=1e-25, he_kinetics='quasi_steady_state',
         i_mobile=i_mobile, v_mobile=v_mobile)
 finally:
     sys.stdout, sys.stderr = _saved
@@ -71,7 +71,7 @@ SOLVER_CONFIG = {
     'log_time': True,
     'rtol': 1e-6, 'atol': 1e-25,
     'solver_method': {
-        'backend': 'cvode', 'lmm': 'bdf', 'linsol': 'gmres',
+        'linsol': 'gmres',
         'window_prec': 1, 'window_gmres_maxl': 20,
     }
 }

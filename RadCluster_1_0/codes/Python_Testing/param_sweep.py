@@ -9,7 +9,7 @@ Diameter formula:  d_nm = 2 * sqrt(n * Omega / (pi * b_111)) * 1e9
   -> d=2 nm => n ~ 66,  d=5 nm => n ~ 413,  d=3 nm => n ~ 149
 
 Strategy: vary the most influential parameters within physical ranges,
-run the C++ sliding_OpenMP solver, extract the SIA peak location at
+run the C++ active_window solver, extract the SIA peak location at
 the time step closest to 0.1 dpa.
 """
 
@@ -66,8 +66,6 @@ SOLVER_CONFIG = {
     'rtol':     1e-5,          # slightly relaxed for speed
     'atol':     1e-20,
     'solver_method': {
-        'backend':           'cvode',
-        'lmm':               'bdf',
         'linsol':            'gmres',
         'window_w0_i':       50,
         'window_width':      150,
@@ -162,10 +160,10 @@ def run_single(name, overrides, I=I_SWEEP, V=V_SWEEP):
     try:
         sim = RadClusterSimulation(
             I=I, V=V,
-            solver_mode='sliding_OpenMP',
+            solver_mode='active_window',
             physics_option='full_CD_fission',
             C_floor=1e-25,
-            he_options='quasi_steady_state',
+            he_kinetics='quasi_steady_state',
             i_mobile=i_mob,
             v_mobile=v_mob,
         )

@@ -68,7 +68,7 @@ def make_config(prec_type, t_end):
         'rtol': 1e-6,
         'atol': 1e-25,
         'solver_method': {
-            'backend': 'cvode', 'lmm': 'bdf', 'linsol': 'gmres',
+            'linsol': 'gmres',
             'window_w0_i': 50, 'window_width': 200,
             'window_C_expand': 1e-20, 'window_expand_pad': 100,
             'window_prec': 1,
@@ -83,9 +83,9 @@ def create_sim(i_mob, v_mob):
     sys.stdout = sys.stderr = io.StringIO()
     try:
         sim = RadClusterSimulation(
-            I=I, V=V, solver_mode='sliding_OpenMP',
+            I=I, V=V, solver_mode='active_window',
             physics_option='full_CD_fission',
-            C_floor=1e-25, he_options='quasi_steady_state',
+            C_floor=1e-25, he_kinetics='quasi_steady_state',
             i_mobile=i_mob, v_mobile=v_mob,
         )
         ov = dict(BASE_OVERRIDES)

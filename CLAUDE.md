@@ -1,58 +1,53 @@
-# EuroferMicrostructure — Project Overview
+# RadCluster — Project Overview
 
 Physics-based simulation suite for **EUROFER97 / ferritic-martensitic steel** behaviour under irradiation and thermal loading. Modelled after the structure of the `Fluor_Zr` repository.
 
 ## Repository Layout
 
 ```
-EuroferMicrostructure/
-├── EuroferExperiments/     # Radiation microstructure evolution (active)
-├── RadCluster_1_0/    # Cluster dynamics — current research code (active)
-├── Monomer_CD/                # Cluster dynamics scaling reference (active)
-├── ClusterDynamics/    # Cluster-size resolved rate equations (placeholder)
-├── Creep/              # Thermal + irradiation creep (placeholder)
-├── EuroferProps/       # Material property fitting utilities (placeholder)
+RadCluster/
+├── RadCluster_1_0/     # Cluster dynamics — current research code (active)
+├── Monomer_CD/         # Cluster dynamics scaling reference (active)
 ├── archive/            # Archived modules (read-only, kept for reproducibility)
+│   ├── Eurofer/            # Archived earlier microstructure work
 │   └── Eurofer_CD/         # Archived 2026-05-02 — superseded by RadCluster_1_0
-└── Docs/               # Shared documentation, literature, databases
-    ├── Database/       # Experimental microstructure databases (xlsx)
-    ├── Formulation/    # Rate-equation derivations and code notes (PDF)
-    └── Literature/     # Peer-reviewed papers (PDF)
+├── docs/               # Shared documentation, literature, databases
+│   ├── Database/           # Experimental microstructure databases (xlsx)
+│   ├── Formulation/        # Rate-equation derivations and code notes (PDF)
+│   └── Literature/         # Peer-reviewed papers (PDF)
+└── requirements.txt
 ```
 
 ## Module Status
 
 | Module | Status | Description |
 |---|---|---|
-| `EuroferExperiments/` | **Active** | Mean-field rate equations for loop + void evolution in EUROFER97 |
-| `RadCluster_1_0/` | **Active** | Generalized cluster dynamics (Ghoniem 2026) — current research code |
+| `RadCluster_1_0/` | **Active** | Generalized cluster dynamics (Ghoniem 2026) — current research code. Notebooks: `RadCluster_1_0.ipynb` (simulation driver) and `EuroferExperiments.ipynb` (experimental-database analysis). |
 | `Monomer_CD/` | **Active** | Monomer-mobility cluster dynamics scaling reference (Ghoniem & Cho 1979, no He) |
-| `ClusterDynamics/` | Placeholder | Cluster-size-resolved model (adapt from Fluor_Zr/ClusterDynamics) |
-| `Creep/` | Placeholder | Dislocation-mechanics creep model (adapt from Fluor_Zr/Creep) |
-| `EuroferProps/` | Placeholder | Property fitting utilities (adapt from Fluor_Zr/ZrProps) |
+| `archive/Eurofer/` | Archived | Earlier EUROFER microstructure notebooks |
 | `archive/Eurofer_CD/` | Archived 2026-05-02 | Superseded by `RadCluster_1_0/`. Last active state at git tag `eurofer_cd-final`. |
 
 ## Conventions (mirror Fluor_Zr)
 
 ### Module structure
-Each module follows:
+Each active module follows:
 ```
 <Module>/
 ├── CLAUDE.md           # Physics description, solver notes
-├── code/               # Jupyter notebooks (main + development/)
+├── codes/              # Jupyter notebooks and Python test scripts
+│   ├── Notebooks/
+│   └── Python_Testing/
 ├── py_utils/           # Python utilities package
 │   ├── __init__.py
 │   ├── input_data.py   # InputData class (reads 3-sheet Excel)
 │   ├── rate_equations.py
-│   ├── reaction_rates.py
 │   ├── simulation.py   # Orchestrator; writes timestamped output/
-│   ├── post_process.py # Macroscopic quantity derivation
+│   ├── cpp_bridge.py   # subprocess wrapper for C++ solver
 │   └── visualization.py
 ├── cpp_utils/          # C++ solver (optional, for performance)
 │   ├── CMakeLists.txt
 │   ├── parameters.h
-│   ├── rate_equations.cpp / .h
-│   └── ode_solver.cpp  (Creep only)
+│   └── rate_equations.cpp / .h
 ├── input/              # input_parameters.xlsx (3 sheets)
 ├── output/             # Timestamped run directories (gitignored)
 └── build/              # CMake build artifacts (gitignored)
@@ -75,7 +70,7 @@ output/YYYYMMDD_HHMMSS_<git-hash>/
 ```
 
 ### C++ solvers
-- Use SUNDIALS 7.1.1 (CVODE for EuroferExperiments/ClusterDynamics, ARKODE for Creep)
+- Use SUNDIALS 7.1.1 (CVODE)
 - Built with CMake; binaries land in `build/` (gitignored)
 - Invoked from Python via `py_utils/cpp_bridge.py` subprocess wrapper
 
@@ -86,11 +81,11 @@ output/YYYYMMDD_HHMMSS_<git-hash>/
 pip install -r requirements.txt
 
 # Register Jupyter kernel (optional)
-python -m ipykernel install --user --name eurofer_micro --display-name "EuroferMicrostructure"
+python -m ipykernel install --user --name radcluster --display-name "RadCluster"
 ```
 
 ## Shared Resources
 
-- `Docs/Database/` — experimental radiation microstructure data for ferritic-martensitic steels
-- `Docs/Formulation/` — rate-equation derivations (canonical; supersedes `docs/Rate Equations/`)
-- `Docs/Literature/` — reference papers
+- `docs/Database/` — experimental radiation microstructure data for ferritic-martensitic steels
+- `docs/Formulation/` — rate-equation derivations (canonical)
+- `docs/Literature/` — reference papers

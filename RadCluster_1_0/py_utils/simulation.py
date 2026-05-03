@@ -9,16 +9,28 @@ Responsibilities
 
 Solver modes
 ------------
-cpp_full        → C++ SUNDIALS CVODE BDF, full system, via cpp_bridge.run_cpp_solver
-cpp_sliding_win → C++ SUNDIALS CVODE BDF with sliding SIA window, via cpp_bridge
-sliding_OpenMP  → C++ sliding window + OpenMP, via cpp_bridge
+full_system   → C++ SUNDIALS CVODE BDF, full system, via cpp_bridge.run_cpp_solver
+active_window → C++ SUNDIALS CVODE BDF with two independent sliding windows
+                (SIA + VAC) and OpenMP-parallel RHS. Thread count is auto-set
+                from N_eq; falls back to single-threaded sliding when OpenMP
+                is unavailable or only one thread is selected.
 
-Physics options
----------------
-full_CD_fission      → RateEquations he_mode='case2' (Eq. 175)
-full_CD_fusion       → RateEquations he_mode='case1' (Eq. 174)
-bin_moment_CD_fission → BinMomentRateEquations he_mode='case2'
-bin_moment_CD_fusion  → BinMomentRateEquations he_mode='case1'
+Legacy aliases (still accepted): cpp_full → full_system,
+                                 sliding_OpenMP → active_window.
+
+Physics options (two orthogonal axes)
+-------------------------------------
+equations ∈ {'discrete', 'bin_moment'} : per-size ODEs vs. bin-moment grouping
+cascade   ∈ {'fission',  'fusion'}     : He coupling case + cascade spectrum
+
+Combinations map to the canonical physics_option string:
+  discrete   + fission → 'full_CD_fission'        (he_mode='case2', Eq. 175)
+  discrete   + fusion  → 'full_CD_fusion'         (he_mode='case1', Eq. 174)
+  bin_moment + fission → 'bin_moment_CD_fission'  (he_mode='case2')
+  bin_moment + fusion  → 'bin_moment_CD_fusion'   (he_mode='case1')
+
+Either form is accepted by RadClusterSimulation.  Legacy equations='full_CD'
+is silently aliased to 'discrete'.
 """
 
 import time as _time
@@ -48,14 +60,22 @@ class RadClusterSimulation:
     ----------
     I              : int, optional  — override max SIA cluster size
     V              : int, optional  — override max vacancy cluster size
-    solver_mode    : str, optional  — 'cpp_full' | 'cpp_sliding_win' | 'sliding_OpenMP'
+    solver_mode    : str, optional  — 'full_system' | 'active_window'
     physics_option : str, optional  — 'full_CD_fission' | 'full_CD_fusion' |
-                                      'bin_moment_CD_fission' | 'bin_moment_CD_fusion'
+                                      'bin_moment_CD_fission' | 'bin_moment_CD_fusion'.
+                                      Mutually exclusive with the new (equations,
+                                      cascade) pair below.
+    equations      : str, optional  — 'discrete' | 'bin_moment'.  Use together with
+                                      `cascade` instead of `physics_option`.
+                                      Legacy 'full_CD' is silently aliased to
+                                      'discrete'.
+    cascade        : str, optional  — 'fission' | 'fusion'.  Use together with
+                                      `equations`.
     excel_file     : path-like, optional
     C_floor        : float, optional — concentration floor (default 1e-15).
                                        Any state variable below this is clamped
                                        before evaluating rate terms.
-    he_options     : str, optional   — 'dynamic' (default) integrates free He as a
+    he_kinetics    : str, optional   — 'dynamic' (default) integrates free He as a
                                        full ODE (Eq. 157); 'quasi_steady_state'
                                        eliminates it via dc_h/dt = 0 (valid because
                                        E_m_h = 0.06 eV gives rapid equilibration).
@@ -68,8 +88,9 @@ class RadClusterSimulation:
     """
 
     def __init__(self, I=None, V=None, solver_mode=None,
-                 physics_option=None, excel_file=None,
-                 C_floor=None, he_options=None,
+                 physics_option=None, equations=None, cascade=None,
+                 excel_file=None,
+                 C_floor=None, he_kinetics=None,
                  i_mobile=None, v_mobile=None,
                  **legacy_kw):
         # Backward compatibility: accept old N/M and n_max_i/m_max_v kwargs
@@ -81,6 +102,20 @@ class RadClusterSimulation:
             i_mobile = legacy_kw.pop('n_max_i')
         if v_mobile is None and 'm_max_v' in legacy_kw:
             v_mobile = legacy_kw.pop('m_max_v')
+
+        # Resolve (equations, cascade) → physics_option.  Either form is
+        # accepted, but not both at once.
+        if equations is not None or cascade is not None:
+            if physics_option is not None:
+                raise ValueError(
+                    "Pass either physics_option= OR (equations=, cascade=), "
+                    "not both.")
+            if equations is None or cascade is None:
+                raise ValueError(
+                    "Both equations= and cascade= must be provided together "
+                    "(or use physics_option= instead).")
+            from .input_data import make_physics_option
+            physics_option = make_physics_option(equations, cascade)
 
         print("Initializing RadCluster_1_0 simulation…")
         kwargs = {}
@@ -103,13 +138,13 @@ class RadClusterSimulation:
             self.input_data.derived['v_mobile']   = int(v_mobile)
         if C_floor is not None:
             self.input_data.reactions['C_floor'] = float(C_floor)
-        if he_options is not None:
-            validated = str(he_options).lower()
+        if he_kinetics is not None:
+            validated = str(he_kinetics).lower()
             if validated not in ('dynamic', 'quasi_steady_state'):
                 import warnings
-                warnings.warn(f"Unknown he_options='{he_options}'. Using 'dynamic'.")
+                warnings.warn(f"Unknown he_kinetics='{he_kinetics}'. Using 'dynamic'.")
                 validated = 'dynamic'
-            self.input_data.reactions['he_options'] = validated
+            self.input_data.reactions['he_kinetics'] = validated
 
         self.reaction_rates = ReactionRates(self.input_data)
 
@@ -129,7 +164,9 @@ class RadClusterSimulation:
         self._accumulated_results = None
 
         print(f"Simulation initialized: solver_mode='{self.input_data.solver_mode}'"
-              f"  physics_option='{po}'")
+              f"  equations='{self.input_data.equations}'"
+              f"  cascade='{self.input_data.cascade}'"
+              f"  (physics_option='{po}')")
 
     def rebuild_rates(self):
         """Rebuild reaction rates and rate equations from current input_data.
@@ -606,6 +643,19 @@ class RadClusterSimulation:
                     self._save_output(accumulated, solver_config)
                 return accumulated
 
+            # If this segment came back partial (Ctrl+C / timeout / signal),
+            # honor the interrupt: merge what we have and stop the adaptive
+            # loop instead of launching another segment.
+            seg_partial = results.get('metadata', {}).get(
+                'solver_stats', {}).get('partial', False)
+            if seg_partial:
+                print("  Segment ended early (interrupt or timeout) — "
+                      "stopping adaptive run.")
+                accumulated = self._merge_results(accumulated, results)
+                self._accumulated_results = accumulated
+                interrupted = True
+                break
+
             # Check tail at the last point of this segment
             frac_I, frac_V = self._boundary_fraction_at(results, -1)
             can_double_I = frac_I > boundary_threshold and n_doublings_I < max_doublings
@@ -709,7 +759,7 @@ class RadClusterSimulation:
         ----------
         solver_config     : dict, optional
             Keys: t_span, n_points, rtol, atol, log_time,
-                  solver_method (dict with backend, linsol, window_*, etc.)
+                  solver_method (dict with linsol, window_*, etc.)
         save_output       : bool
             Write timestamped output/ directory.
         progress_callback : callable or None
@@ -732,20 +782,41 @@ class RadClusterSimulation:
         print(f"\nLaunching solver_mode='{sm}' …")
 
         _t0 = _time.perf_counter()
-        if sm in ('cpp_full', 'cpp_sliding_win', 'sliding_OpenMP'):
-            results = self._run_cpp(solver_config, progress_callback,
-                                    timeout_s=timeout_s,
-                                    y0_override=y0_override)
-        else:
-            raise ValueError(f"Unknown solver_mode='{sm}'. "
-                             "Use cpp_full, cpp_sliding_win, or sliding_OpenMP.")
+        results = None
+        # Pre-clear any stash from a previous run so we don't accidentally
+        # save stale data from an earlier interrupted run.
+        self._partial_results = None
+        try:
+            if sm in ('full_system', 'active_window'):
+                results = self._run_cpp(solver_config, progress_callback,
+                                        timeout_s=timeout_s,
+                                        y0_override=y0_override)
+            else:
+                raise ValueError(f"Unknown solver_mode='{sm}'. "
+                                 "Use full_system or active_window.")
+        except KeyboardInterrupt:
+            # Defense-in-depth: cpp_bridge already catches Ctrl+C and returns
+            # whatever it could parse, but a *second* Ctrl+C during its own
+            # graceful-shutdown wait can propagate up to here.  Recover from
+            # the stash that cpp_bridge sets as soon as it has any data, so
+            # the partial output still gets saved.
+            print("\n*** KeyboardInterrupt at orchestrator — "
+                  "recovering partial output. ***")
+            results = getattr(self, '_partial_results', None)
         self._wall_clock_s = _time.perf_counter() - _t0
 
+        # Mirror the cpp_bridge stash to the run_adaptive-style attribute so
+        # the notebook fallback `if results is None: results = sim._accumulated_results`
+        # works for the non-adaptive path too.
         if results is not None:
+            self._accumulated_results = results
             # Store diagnostic text for file output (no inline printing)
-            self._diag_text = self.reaction_rates.format_diagnostic(
-                mean_n_i=results['mean_n_i'][-1] if 'mean_n_i' in results else None
-            )
+            try:
+                self._diag_text = self.reaction_rates.format_diagnostic(
+                    mean_n_i=results['mean_n_i'][-1] if 'mean_n_i' in results else None
+                )
+            except Exception:
+                self._diag_text = ''
             if save_output:
                 self._save_output(results, solver_config)
 
@@ -780,9 +851,8 @@ class RadClusterSimulation:
 
         # Map solver mode to window_mode integer
         window_mode_map = {
-            'cpp_full':        0,
-            'cpp_sliding_win': 3,
-            'sliding_OpenMP':  4,
+            'full_system':   0,
+            'active_window': 4,
         }
         win_mode = window_mode_map.get(sm, 0)
 
@@ -798,8 +868,6 @@ class RadClusterSimulation:
             'rtol':      float(re.get('rtol', 1e-8)),
             'atol':      float(re.get('atol', 1e-20)),
             'solver_method': {
-                'backend':              'cvode',
-                'lmm':                  'bdf',
                 'linsol':               linsol,
                 'window_mode':          win_mode,
                 'window_w0_i':          w0_i,
@@ -855,7 +923,12 @@ class RadClusterSimulation:
         return info
 
     def _save_output(self, results, solver_config):
-        """Write timestamped output directory."""
+        """Write timestamped output directory.
+
+        Resilient to partial/interrupted runs: each artifact (provenance,
+        summary, diagnostics, .npy, plots) is written under its own try/except
+        so a failure in one does not abort the others.
+        """
         sm = self.input_data.solver_mode
         po = self.input_data.physics_option
         I  = self.input_data.I
@@ -865,11 +938,21 @@ class RadClusterSimulation:
         ts = datetime.now().strftime('%Y%m%d_%H%M%S')
         domain   = f"I{I}V{V}"
         mobility = f"im{im}vm{vm}"
-        label = f"{ts}_{sm}_{po}_{domain}_{mobility}"
+        # Tag interrupted runs in the directory name for easy identification.
+        partial_tag = ''
+        try:
+            if results.get('metadata', {}).get('solver_stats', {}).get('partial'):
+                partial_tag = '_PARTIAL'
+        except Exception:
+            pass
+        label = f"{ts}_{sm}_{po}_{domain}_{mobility}{partial_tag}"
 
         out_dir  = BASE_DIR / 'output' / label
         plot_dir = out_dir / 'plots'
         plot_dir.mkdir(parents=True, exist_ok=True)
+        print(f"Saving output to: {out_dir}")
+        n_pts_have = len(results.get('t', [])) if isinstance(results, dict) else 0
+        print(f"  {n_pts_have} time points to save")
 
         # ── Provenance (4-section layout) ─────────────────────────────────
         idata   = self.input_data
@@ -890,7 +973,7 @@ class RadClusterSimulation:
             'shape_function': idata.shape_function,
             'L_He_max':       idata.L_He_max,
             'alpha_He':       idata.alpha_He,
-            'he_options':     idata.reactions.get('he_options', 'dynamic'),
+            'he_kinetics':    idata.reactions.get('he_kinetics', 'dynamic'),
             'C_floor':        idata.reactions.get('C_floor', 1e-15),
             'boundary_flux':  derived.get('boundary_flux'),
             'spectrum':       derived.get('spectrum'),
@@ -922,73 +1005,116 @@ class RadClusterSimulation:
                       'npe', 'nps', 'ncfn', 'netf', 'nlsetup'):
                 if k in ssf:
                     run_stats[f'solver.{k}'] = ssf[k]
+        # Mark interrupted runs explicitly so partial output is identifiable
+        # in the provenance without having to compare time-point counts.
+        partial = results.get('metadata', {}).get('solver_stats', {}).get('partial')
+        if partial is not None:
+            run_stats['partial'] = bool(partial)
+            run_stats['run_status'] = 'interrupted' if partial else 'completed'
 
-        with open(out_dir / 'provenance.md', 'w', encoding='utf-8') as f:
-            f.write(f"# RadCluster_1_0 run — {label}\n\n")
+        # ── 1. Provenance (always safe — pulls from self/input_data only) ────
+        try:
+            with open(out_dir / 'provenance.md', 'w', encoding='utf-8') as f:
+                f.write(f"# RadCluster_1_0 run — {label}\n\n")
 
-            f.write("## (1) Material Data\n\n")
-            f.write("_All input tables from the Excel workbook with parameter "
-                    "overrides applied._\n\n")
-            self._write_dict_block(f, 'Production (Fission)',  idata.production_fission)
-            self._write_dict_block(f, 'Production (Fusion)',   idata.production_fusion)
-            self._write_dict_block(f, 'Energetics',            idata.energetics)
-            self._write_dict_block(f, 'Diffusion',             idata.diffusion)
-            self._write_dict_block(f, 'Dissociation',          idata.dissociation)
-            self._write_dict_block(f, 'Reactions',             idata.reactions)
-            self._write_dict_block(f, 'Derived (computed)',    derived)
+                f.write("## (1) Material Data\n\n")
+                f.write("_All input tables from the Excel workbook with parameter "
+                        "overrides applied._\n\n")
+                self._write_dict_block(f, 'Production (Fission)',  idata.production_fission)
+                self._write_dict_block(f, 'Production (Fusion)',   idata.production_fusion)
+                self._write_dict_block(f, 'Energetics',            idata.energetics)
+                self._write_dict_block(f, 'Diffusion',             idata.diffusion)
+                self._write_dict_block(f, 'Dissociation',          idata.dissociation)
+                self._write_dict_block(f, 'Reactions',             idata.reactions)
+                self._write_dict_block(f, 'Derived (computed)',    derived)
 
-            f.write("## (2) User Selections\n\n")
-            self._write_dict_block(f, 'Run configuration', user_selections)
+                f.write("## (2) User Selections\n\n")
+                self._write_dict_block(f, 'Run configuration', user_selections)
 
-            f.write("## (3) Solver Configuration\n\n")
-            self._write_dict_block(f, 'Solver settings', sc_flat)
+                f.write("## (3) Solver Configuration\n\n")
+                self._write_dict_block(f, 'Solver settings', sc_flat)
 
-            f.write("## (4) Run Statistics\n\n")
-            self._write_dict_block(f, 'Runtime and machine', run_stats)
+                f.write("## (4) Run Statistics\n\n")
+                self._write_dict_block(f, 'Runtime and machine', run_stats)
+            print(f"  ✓ provenance.md")
+        except Exception as exc:
+            print(f"  ✗ provenance.md: {type(exc).__name__}: {exc}")
 
-        # Summary CSV
-        import csv
-        row = post_process.summary_csv_row(results, self.input_data,
-                                           solver_label=f"{sm}/{po}")
-        with open(out_dir / 'summary.csv', 'w', newline='', encoding='utf-8') as f:
-            writer = csv.DictWriter(f, fieldnames=list(row.keys()))
-            writer.writeheader()
-            writer.writerow(row)
+        # ── 2. Binary results (.npy) — write FIRST so the raw data is safe ───
+        # even if everything else fails.  These are always present in `results`
+        # for any non-empty run.
+        try:
+            t_arr = results.get('t')
+            y_arr = results.get('y')
+            if t_arr is not None and len(t_arr) > 0:
+                np.save(str(out_dir / 'results_t.npy'),  t_arr)
+                if y_arr is not None:
+                    np.save(str(out_dir / 'results_y.npy'),  y_arr)
+                print(f"  ✓ results_t.npy / results_y.npy")
+            else:
+                print(f"  ✗ results_t.npy: no time points in results")
+        except Exception as exc:
+            print(f"  ✗ results_*.npy: {type(exc).__name__}: {exc}")
 
-        # Diagnostics file
-        diag_path = out_dir / 'diagnostics.txt'
-        with open(diag_path, 'w', encoding='utf-8') as f:
-            f.write(f"# Diagnostics for {label}\n\n")
-            f.write(f"## Rate constants\n")
-            f.write(getattr(self, '_diag_text', '') + '\n\n')
-            f.write(f"## Conservation diagnostics (final time step)\n")
-            f.write(f"delta_FP = {results['delta_FP'][-1]:.6e}  (Frenkel pair)\n")
-            f.write(f"delta_He = {results['delta_He'][-1]:.6e}  (He balance)\n\n")
-            f.write(f"## Key results\n")
-            f.write(f"Final dose:       {results['dose'][-1]:.4e} dpa\n")
-            f.write(f"Swelling (final): {results['swelling'][-1]*100:.6f} %\n")
-            f.write(f"C_He_tot (final): {results['C_He_tot'][-1]:.3e} m^-3\n")
-            f.write(f"mean_n_i (final): {results['mean_n_i'][-1]:.2f}\n")
-            f.write(f"mean_n_v (final): {results['mean_n_v'][-1]:.2f}\n\n")
-            # Write progress table if collected
-            prog = getattr(self, '_progress_rows', None)
-            if prog:
-                f.write(f"## Time-step diagnostics ({len(prog)} rows)\n")
-                keys = list(prog[0].keys())
-                f.write('\t'.join(keys) + '\n')
-                for row in prog:
-                    f.write('\t'.join(f"{row.get(k, 0.0):.6e}" for k in keys) + '\n')
-        print(f"Diagnostics written to: {diag_path}")
+        # ── 3. Summary CSV ───────────────────────────────────────────────────
+        try:
+            import csv
+            row = post_process.summary_csv_row(results, self.input_data,
+                                               solver_label=f"{sm}/{po}")
+            with open(out_dir / 'summary.csv', 'w', newline='', encoding='utf-8') as f:
+                writer = csv.DictWriter(f, fieldnames=list(row.keys()))
+                writer.writeheader()
+                writer.writerow(row)
+            print(f"  ✓ summary.csv")
+        except Exception as exc:
+            print(f"  ✗ summary.csv: {type(exc).__name__}: {exc}")
 
-        # Binary results (numpy)
-        np.save(str(out_dir / 'results_t.npy'),  results['t'])
-        np.save(str(out_dir / 'results_y.npy'),  results['y'])
+        # ── 4. Diagnostics — guard each field access individually ────────────
+        def _last(key, fmt='{:.6e}', mul=1.0):
+            arr = results.get(key)
+            if arr is None or len(arr) == 0:
+                return '<unavailable>'
+            try:
+                return fmt.format(float(arr[-1]) * mul)
+            except Exception:
+                return '<unavailable>'
 
-        # Plots
-        from . import visualization
-        visualization.save_all_plots(results, self.input_data,
-                                     str(plot_dir), label=f"{sm}/{po}",
-                                     rate_eq_obj=self.rate_equations)
+        try:
+            diag_path = out_dir / 'diagnostics.txt'
+            with open(diag_path, 'w', encoding='utf-8') as f:
+                f.write(f"# Diagnostics for {label}\n\n")
+                f.write("## Rate constants\n")
+                f.write(getattr(self, '_diag_text', '') + '\n\n')
+                f.write("## Conservation diagnostics (final time step)\n")
+                f.write(f"delta_FP = {_last('delta_FP')}  (Frenkel pair)\n")
+                f.write(f"delta_He = {_last('delta_He')}  (He balance)\n\n")
+                f.write("## Key results\n")
+                f.write(f"Final dose:       {_last('dose', '{:.4e}')} dpa\n")
+                f.write(f"Swelling (final): {_last('swelling', '{:.6f}', 100.0)} %\n")
+                f.write(f"C_He_tot (final): {_last('C_He_tot', '{:.3e}')} m^-3\n")
+                f.write(f"mean_n_i (final): {_last('mean_n_i', '{:.2f}')}\n")
+                f.write(f"mean_n_v (final): {_last('mean_n_v', '{:.2f}')}\n\n")
+                prog = getattr(self, '_progress_rows', None)
+                if prog:
+                    f.write(f"## Time-step diagnostics ({len(prog)} rows)\n")
+                    keys = list(prog[0].keys())
+                    f.write('\t'.join(keys) + '\n')
+                    for row in prog:
+                        f.write('\t'.join(f"{row.get(k, 0.0):.6e}" for k in keys) + '\n')
+            print(f"  ✓ diagnostics.txt")
+        except Exception as exc:
+            print(f"  ✗ diagnostics.txt: {type(exc).__name__}: {exc}")
+
+        # ── 5. Plots — most likely to fail on degenerate partial data ────────
+        try:
+            from . import visualization
+            visualization.save_all_plots(results, self.input_data,
+                                         str(plot_dir), label=f"{sm}/{po}",
+                                         rate_eq_obj=self.rate_equations)
+            print(f"  ✓ plots/")
+        except Exception as exc:
+            print(f"  ✗ plots/: {type(exc).__name__}: {exc}  "
+                  f"(numerical artifacts above are still safe)")
 
         print(f"Output written to: {out_dir}")
         return out_dir

@@ -55,7 +55,7 @@ SOLVER_CONFIG = {
     'rtol':     1e-5,
     'atol':     1e-20,
     'solver_method': {
-        'backend': 'cvode', 'lmm': 'bdf', 'linsol': 'gmres',
+        'linsol': 'gmres',
         'window_w0_i': 50, 'window_width': 150,
         'window_C_expand': 1e-18, 'window_expand_pad': 10,
         'window_prec': 1,
@@ -86,8 +86,8 @@ def run_one(name, Z_ii_val):
     try:
         sim = RadClusterSimulation(
             I=I_SIM, V=V_SIM,
-            solver_mode='sliding_OpenMP', physics_option='full_CD_fission',
-            C_floor=1e-25, he_options='quasi_steady_state',
+            solver_mode='active_window', physics_option='full_CD_fission',
+            C_floor=1e-25, he_kinetics='quasi_steady_state',
             i_mobile=10, v_mobile=5,
         )
         inp = sim.input_data

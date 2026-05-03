@@ -440,15 +440,28 @@ Both $\delta_{\rm FP}$ and $\delta_{\rm He}$ should remain below $\sim 10^{-6}$;
 
 | Mode | Description |
 |---|---|
-| `cpp_full` | Full system, SUNDIALS CVODE BDF, dense/band/GMRES linear solver |
-| `cpp_sliding_win` | Sliding-window SIA truncation, CVODE BDF GMRES |
-| `sliding_OpenMP` | Sliding window + OpenMP intra-RHS parallelism |
+| `full_system` | Full system, SUNDIALS CVODE BDF, dense/band/GMRES linear solver. |
+| `active_window` | Two independent sliding windows (SIA + VAC) + OpenMP-parallel RHS. Thread count is auto-picked from `N_eq` (overridable via `OMP_NUM_THREADS`); when OpenMP is unavailable or the auto-pick lands on 1, the same code path runs serial transparently. |
 
-Physics options (4 per solver mode):
-- `full_CD_fission`: Eqs. ME\_SIA/ME\_vac/ME\_He with He Case 2 (decoupled)
-- `full_CD_fusion`:  Eqs. ME\_SIA/ME\_vac/ME\_He with He Case 1 (mean-field)
-- `bin_moment_CD_fission`: Chapter 9 bin-moment, fission cascade
-- `bin_moment_CD_fusion`:  Chapter 9 bin-moment, fusion cascade
+Legacy aliases `cpp_full` → `full_system` and `sliding_OpenMP` → `active_window` are accepted silently for back-compatibility with older configs and saved output directories.
+
+Physics is selected by two orthogonal axes:
+
+| Axis | Values | Meaning |
+|---|---|---|
+| `equations` | `discrete` \| `bin_moment` | Per-size ODEs (Eqs. ME\_SIA/ME\_vac/ME\_He) vs. Chapter 9 bin-moment grouping. |
+| `cascade`   | `fission`  \| `fusion`     | He coupling case + cascade spectrum. `fission` → Case 2 (decoupled, Eq. 175). `fusion` → Case 1 (mean-field, Eq. 174). |
+
+The four combinations map to the canonical `physics_option` strings used internally and on disk (the historical `full_CD` token is preserved in the combined string):
+
+| equations | cascade | physics_option |
+|---|---|---|
+| `discrete`   | `fission` | `full_CD_fission` |
+| `discrete`   | `fusion`  | `full_CD_fusion` |
+| `bin_moment` | `fission` | `bin_moment_CD_fission` |
+| `bin_moment` | `fusion`  | `bin_moment_CD_fusion` |
+
+`RadClusterSimulation` accepts either the new `(equations, cascade)` pair or the legacy single `physics_option=` kwarg. Legacy `equations='full_CD'` is silently aliased to `'discrete'`. Helpers `make_physics_option(eq, cas)` / `split_physics_option(po)` are exported from `RadCluster_1_0.py_utils`.
 
 ### Preconditioner options (for GMRES linear solver, `linsol=2`)
 
@@ -464,7 +477,7 @@ rank-$r$ correction ($r = i_{\rm mobile} + v_{\rm mobile}$) from
 mobile species coupling. Uses LAPACK `dgbtrf`/`dgbtrs` for the band
 and `dgetrf`/`dgetrs` for the $r \times r$ Schur complement.
 
-**Default selection:** Woodbury is used only for `cpp_full` mode
+**Default selection:** Woodbury is used only for `full_system` mode
 (`window_mode=0`) with GMRES. For sliding-window modes (3, 4), the
 active system is kept small (50--200 unknowns) so Jacobi+GMRES
 converges efficiently; Woodbury's 58-RHS setup cost is

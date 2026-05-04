@@ -237,8 +237,8 @@ class InputData:
         # Cast integer fields
         _int_keys = ('I', 'V', 'L_He_max', 'n_points', 'log_time',
                      'i_discrete', 'v_discrete', 'I_bin', 'V_bin',
-                     'n_moments', 'n_group', 'window_w0_i',
-                     'window_width', 'v_mobile', 'i_mobile',
+                     'n_moments', 'n_group', 'window_width',
+                     'v_mobile', 'i_mobile',
                      'i_cascade', 'v_cascade')
         for k in _int_keys:
             for d in (self.reactions, self.diffusion, self.production_fission,

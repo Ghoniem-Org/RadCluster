@@ -264,6 +264,11 @@ def calculate_derived_quantities(t, y, input_data, rate_eq_obj,
     C_i1       *= inv_Omega
     C_v1       *= inv_Omega
 
+    # n_active_sia / n_active_vac / n_active are populated by cpp_bridge from
+    # the C++ window-bounds sidecar (<bin>.window.csv).  We can't infer them
+    # from y because out-of-window indices remain at C_floor (the initial
+    # value), so they look identical to evolved-but-still-low in-window slots.
+
     # Concentration names for quality checks
     conc_names = ([f'Ci_{n}' for n in range(1, I + 1)] +
                   [f'Cv_{m}' for m in range(1, V + 1)] + ['C_He'])

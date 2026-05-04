@@ -82,7 +82,6 @@ SOLVER_CONFIG = {
         'linsol':             'gmres',  # required for Woodbury auto-engage
         # window_mode=0 (full_system) so Woodbury preconditioner kicks in
         # whenever i_mobile>=2 or v_mobile>=2  (parameters.h:494-501)
-        'window_gmres_maxl':  30,
     },
 }
 

@@ -164,27 +164,21 @@ struct Parameters {
     // window_mode: 0=full_system, 4=active_window (two independent sliding windows + OpenMP-parallel RHS)
     // Two independent windows: one for SIA cluster indices, one for VAC cluster indices.
     int    window_mode;
-    int    window_w0_v;
-    int    window_w0_i;
-    double window_C_expand;      // SIA window expansion threshold
-    int    window_expand_pad;    // SIA window expansion pad
-    double window_C_expand_v;    // VAC window expansion threshold (default = window_C_expand)
-    int    window_expand_pad_v;  // VAC window expansion pad (default = window_expand_pad)
+    int    window_width;             // initial window width (shared by SIA and VAC)
+    double concentration_threshold;  // window expansion threshold (shared by SIA and VAC)
+    int    window_pad;               // SIA window expansion pad
+    int    window_pad_v;             // VAC window expansion pad (default = window_pad)
     double window_expand_factor;
     int    window_check_every;
     double window_C_contract;
     int    window_min_active_i;
-    int    window_prec;
     double window_nuc_guard;
-    int    window_width;
     double window_t_start;
-    int    window_N_thresh;
-    int    window_gmres_maxl;
     double Ni_extend_tol;
     int    Ni_extend_margin;
 
     // ── Preconditioner storage ───────────────────────────────────────────────
-    // Legacy Jacobi diagonal (used when window_prec==1 and prec_type==0)
+    // Jacobi diagonal (used when prec_type==0)
     std::vector<double> prec_diag;
 
     // Woodbury bordered-banded preconditioner (used when prec_type==1)
@@ -446,26 +440,20 @@ inline Parameters build_parameters(const std::map<std::string, double>& p) {
 
     // Window parameters
     P.window_mode          = static_cast<int>(optional_param(p, "window_mode",       0.0));
-    P.window_w0_v          = static_cast<int>(optional_param(p, "window_w0_v",
-                                 static_cast<double>(P.V)));
-    P.window_w0_i          = static_cast<int>(optional_param(p, "window_w0_i",
-                                 static_cast<double>(P.I)));
-    P.window_C_expand      = optional_param(p, "window_C_expand",      1e-18);
-    P.window_expand_pad    = static_cast<int>(optional_param(p, "window_expand_pad", 10.0));
-    // VAC window parameters default to the SIA values if not supplied
-    P.window_C_expand_v    = optional_param(p, "window_C_expand_v",    P.window_C_expand);
-    P.window_expand_pad_v  = static_cast<int>(optional_param(p, "window_expand_pad_v",
-                                 static_cast<double>(P.window_expand_pad)));
+    // Single initial width shared by SIA and VAC; defaults to the larger domain.
+    P.window_width         = static_cast<int>(optional_param(p, "window_width",
+                                 static_cast<double>(std::max(P.I, P.V))));
+    P.concentration_threshold = optional_param(p, "concentration_threshold", 1e-18);
+    P.window_pad           = static_cast<int>(optional_param(p, "window_pad", 10.0));
+    // VAC expansion pad defaults to the SIA pad if not supplied.
+    P.window_pad_v         = static_cast<int>(optional_param(p, "window_pad_v",
+                                 static_cast<double>(P.window_pad)));
     P.window_expand_factor = optional_param(p, "window_expand_factor", 0.0);
     P.window_check_every   = static_cast<int>(optional_param(p, "window_check_every", 1.0));
     P.window_C_contract    = optional_param(p, "window_C_contract",    0.0);
     P.window_min_active_i  = static_cast<int>(optional_param(p, "window_min_active_i", 5.0));
-    P.window_prec          = static_cast<int>(optional_param(p, "window_prec",          0.0));
     P.window_nuc_guard     = optional_param(p, "window_nuc_guard",     0.0);
-    P.window_width         = static_cast<int>(optional_param(p, "window_width",   500.0));
     P.window_t_start       = optional_param(p, "window_t_start",  10.0);
-    P.window_N_thresh      = static_cast<int>(optional_param(p, "window_N_thresh",1000.0));
-    P.window_gmres_maxl    = static_cast<int>(optional_param(p, "window_gmres_maxl",  20.0));
     P.Ni_extend_tol        = optional_param(p, "Ni_extend_tol",    0.0);
     P.Ni_extend_margin     = static_cast<int>(optional_param(p, "Ni_extend_margin", 0.0));
 

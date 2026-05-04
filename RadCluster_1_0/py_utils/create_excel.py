@@ -257,8 +257,7 @@ REACTIONS = [
     ('Linear solver',    'linsol',        'dense',             '−', 'dense | band | gmres'),
     ('Band upper bw',    'mu_band',       0,                   '−', '0 = auto'),
     ('Band lower bw',    'ml_band',       0,                   '−', '0 = auto'),
-    ('Window initial Ni','window_w0_i',   100,                 '−', 'sliding window initial size'),
-    ('Window width',     'window_width',  500,                 '−', 'Phase III constant width'),
+    ('Window width',     'window_width',  100,                 '−', 'sliding window initial width (shared SIA/VAC)'),
     ('Window expand thr','window_C_exp',  1.0e-18,             '−', 'expand when C > this'),
     ('Concentration floor','C_floor',     1.0e-100,            '−', None),
 

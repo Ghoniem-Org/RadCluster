@@ -210,6 +210,33 @@ def plot_swelling(results, out_path=None, title=''):
     return fig
 
 
+def plot_system_size(results, out_path=None, title=''):
+    """Active system size vs. dose. In active_window mode this tracks the
+    independent SIA and VAC sliding windows as they expand; in full_system
+    mode the curves are flat at the segment lengths."""
+    _check_mpl()
+    if 'n_active' not in results:
+        return None
+    fig, ax = plt.subplots(figsize=(7, 4))
+    dose = results['dose']
+    ax.semilogx(dose, results['n_active_sia'], label='SIA window', color='steelblue', lw=2)
+    ax.semilogx(dose, results['n_active_vac'], label='VAC window', color='tomato',    lw=2)
+    ax.semilogx(dose, results['n_active'],     label='total (SIA + VAC)',
+                color='black', lw=1.5, ls='--')
+    ax.set_xlabel('Dose (dpa)')
+    ax.set_ylabel('Active size (cluster bins)')
+    ax.set_title(f'Active System Size vs Dose {title}')
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+    ax.set_xlim(left=_dose_xlim(dose))
+    ax.set_ylim(bottom=0)
+    _apply_axis_config(ax, 'scalar')
+    fig.tight_layout()
+    if out_path:
+        fig.savefig(out_path, dpi=150)
+    return fig
+
+
 def plot_mean_sizes(results, out_path=None, title=''):
     """Mean SIA and vacancy cluster sizes vs. dose."""
     _check_mpl()
@@ -1305,6 +1332,7 @@ def save_all_plots(results, input_data, out_dir, label='',
     plot_totals(results,             out_path=f"{out_dir}/totals.png",            **opts)
     plot_swelling(results,           out_path=f"{out_dir}/swelling.png",          **opts)
     plot_mean_sizes(results,         out_path=f"{out_dir}/mean_sizes.png",        **opts)
+    plot_system_size(results,        out_path=f"{out_dir}/system_size.png",       **opts)
     plot_he_content(results,         out_path=f"{out_dir}/he_content.png",        **opts)
     plot_conservation(results,       out_path=f"{out_dir}/conservation.png",      **opts)
     plot_number_densities(results,   out_path=f"{out_dir}/number_densities.png",  **opts)

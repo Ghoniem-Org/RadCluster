@@ -13,8 +13,8 @@ Physical parameters are taken verbatim from the notebook cell:
   he_kinetics=quasi_steady_state, fission cascade.
 
 Window design (derived from I=V=1000 reference run):
-  SIA front saturates at n≈62 at t=1e4 s  →  window_w0_i = 100
-  VAC front reaches m≈1000 at t=1e4 s     →  window_w0_v = 500
+  SIA front saturates at n≈62 at t=1e4 s,  VAC front reaches m≈1000 at t=1e4 s.
+  Initial width must accommodate both axes  →  window_width = 500.
   (expand thresholds / pads tuned to match these observations)
 
 Usage:
@@ -107,25 +107,19 @@ BASE_SOLVER_CFG = {
 #   VAC: void front grows ~linearly; extrapolates to m≈1000 at t=1e4 s for V=10000.
 WINDOW_METHOD = {
     'linsol':            'gmres',
-    'window_gmres_maxl': 40,
-    'window_prec':       1,
-    # SIA window
-    'window_w0_i':       100,     # initial SIA window: sizes 1..100
-    'window_C_expand':   1e-22,   # expand when c_i[x_hi] > 1e-22
-    'window_expand_pad': 50,      # grow SIA window by 50 at a time
-    # VAC window
-    'window_w0_v':       500,     # initial VAC window: sizes 1..500
-    'window_C_expand_v': 1e-22,   # expand when c_v[x_hi] > 1e-22
-    'window_expand_pad_v': 200,   # grow VAC window by 200 at a time
+    # Shared initial width and expansion threshold (SIA + VAC)
+    'window_width':      500,     # initial active window: sizes 1..500
+    'concentration_threshold': 1e-22,  # expand when leading concentration > 1e-22
+    # Per-axis expansion pads
+    'window_pad':   50,           # grow SIA window by 50 at a time
+    'window_pad_v': 200,          # grow VAC window by 200 at a time
     # Misc
     'window_check_every': 1,
-    'window_N_thresh':    500,
 }
 
 MODE4_CFG = {**BASE_SOLVER_CFG, 'solver_method': WINDOW_METHOD}
 MODE0_CFG = {**BASE_SOLVER_CFG, 'solver_method': {
     'linsol': 'gmres',
-    'window_gmres_maxl': 40, 'window_prec': 1,
 }}
 
 
@@ -478,12 +472,11 @@ def make_comparison_plots(res_dict, wall_dict, out_path):
         f'  rtol={BASE_SOLVER_CFG["rtol"]:.0e}  atol={BASE_SOLVER_CFG["atol"]:.0e}',
         '',
         'Window parameters (Mode IV)',
-        f'  SIA: w0={WINDOW_METHOD["window_w0_i"]}  '
-            f'pad={WINDOW_METHOD["window_expand_pad"]}',
-        f'  VAC: w0={WINDOW_METHOD["window_w0_v"]}  '
-            f'pad={WINDOW_METHOD["window_expand_pad_v"]}',
-        f'  C_expand = {WINDOW_METHOD["window_C_expand"]:.0e}',
-        f'  linsol = gmres  maxl={WINDOW_METHOD["window_gmres_maxl"]}',
+        f'  width = {WINDOW_METHOD["window_width"]}  (shared SIA/VAC)',
+        f'  SIA pad={WINDOW_METHOD["window_pad"]}  '
+            f'VAC pad={WINDOW_METHOD["window_pad_v"]}',
+        f'  conc_threshold = {WINDOW_METHOD["concentration_threshold"]:.0e}  (shared)',
+        f'  linsol = gmres  maxl=50 (hardwired)',
         f'  OMP threads = auto from N_eq (override via OMP_NUM_THREADS)',
         '',
         'From I=V=1000 reference:',
@@ -583,12 +576,10 @@ def write_report(res_dict, wall_dict, report_path):
               '',
               'WINDOW PARAMETERS (Mode IV)',
               '-'*40,
-              f'  SIA:  w0={WINDOW_METHOD["window_w0_i"]}  '
-                  f'C_expand={WINDOW_METHOD["window_C_expand"]:.0e}  '
-                  f'pad={WINDOW_METHOD["window_expand_pad"]}',
-              f'  VAC:  w0={WINDOW_METHOD["window_w0_v"]}  '
-                  f'C_expand_v={WINDOW_METHOD["window_C_expand_v"]:.0e}  '
-                  f'pad_v={WINDOW_METHOD["window_expand_pad_v"]}',
+              f'  width = {WINDOW_METHOD["window_width"]}  (shared SIA/VAC)',
+              f'  conc_threshold = {WINDOW_METHOD["concentration_threshold"]:.0e}  (shared)',
+              f'  pad SIA = {WINDOW_METHOD["window_pad"]}  '
+                  f'pad VAC = {WINDOW_METHOD["window_pad_v"]}',
               f'  OMP threads:  auto from N_eq (override via OMP_NUM_THREADS)',
               '']
 
@@ -649,7 +640,7 @@ def write_report(res_dict, wall_dict, report_path):
               '',
               '  Mode IV should give results within rtol of mode 0.',
               '  Any residual difference is due to boundary truncation, not',
-              '  algorithmic error; increase window_expand_pad to reduce it.',
+              '  algorithmic error; increase window_pad to reduce it.',
               sep]
 
     report_path.write_text('\n'.join(lines))

@@ -69,10 +69,8 @@ def make_config(prec_type, t_end):
         'atol': 1e-25,
         'solver_method': {
             'linsol': 'gmres',
-            'window_w0_i': 50, 'window_width': 200,
-            'window_C_expand': 1e-20, 'window_expand_pad': 100,
-            'window_prec': 1,
-            'window_gmres_maxl': 30, 'window_N_thresh': 500,
+            'window_width': 50,
+            'concentration_threshold': 1e-20, 'window_pad': 100,
             'prec_type': prec_type,
         }
     }

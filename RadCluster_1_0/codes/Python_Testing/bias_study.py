@@ -52,10 +52,8 @@ SOLVER_CONFIG = {
     'atol':     1e-20,
     'solver_method': {
         'linsol': 'gmres',
-        'window_w0_i': 50, 'window_width': 150,
-        'window_C_expand': 1e-18, 'window_expand_pad': 10,
-        'window_prec': 1,
-        'window_gmres_maxl': 20, 'window_N_thresh': 500,
+        'window_width': 50,
+        'concentration_threshold': 1e-18, 'window_pad': 10,
     }
 }
 

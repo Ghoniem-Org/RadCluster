@@ -72,7 +72,6 @@ SOLVER_CONFIG = {
     'rtol': 1e-6, 'atol': 1e-25,
     'solver_method': {
         'linsol': 'gmres',
-        'window_prec': 1, 'window_gmres_maxl': 20,
     }
 }
 

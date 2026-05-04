@@ -283,23 +283,18 @@ def write_param_file(sim, solver_config, path, y0_override=None):
     lines.append(f"hmin={float(method.get('hmin', 0.0)):.17e}")
 
     # ── Dynamic window parameters ──────────────────────────────────────────────
-    lines.append(f"window_w0_v={V}")
-    lines.append(f"window_w0_i={int(method.get('window_w0_i', I))}")
-    lines.append(f"window_C_expand={float(method.get('window_C_expand', 1e-18)):.17e}")
-    lines.append(f"window_expand_pad={int(method.get('window_expand_pad', 10))}")
-    # VAC window parameters — default to the SIA values if not explicitly set
-    lines.append(f"window_C_expand_v={float(method.get('window_C_expand_v', method.get('window_C_expand', 1e-18))):.17e}")
-    lines.append(f"window_expand_pad_v={int(method.get('window_expand_pad_v', method.get('window_expand_pad', 10)))}")
+    # window_width is shared by SIA and VAC; defaults to max(I, V) (full domain).
+    lines.append(f"window_width={int(method.get('window_width', max(I, V)))}")
+    lines.append(f"concentration_threshold={float(method.get('concentration_threshold', 1e-18)):.17e}")
+    lines.append(f"window_pad={int(method.get('window_pad', 10))}")
+    # VAC expansion pad defaults to the SIA pad if not explicitly set.
+    lines.append(f"window_pad_v={int(method.get('window_pad_v', method.get('window_pad', 10)))}")
     lines.append(f"window_expand_factor={float(method.get('window_expand_factor', 0.0)):.17e}")
     lines.append(f"window_check_every={int(method.get('window_check_every', 1))}")
     lines.append(f"window_C_contract={float(method.get('window_C_contract', 0.0)):.17e}")
     lines.append(f"window_min_active_i={int(method.get('window_min_active_i', 5))}")
-    lines.append(f"window_prec={int(method.get('window_prec', 1))}")
     lines.append(f"window_nuc_guard={float(method.get('window_nuc_guard', 0.0)):.17e}")
-    lines.append(f"window_width={int(method.get('window_width', 500))}")
     lines.append(f"window_t_start={float(method.get('window_t_start', 10.0)):.17e}")
-    lines.append(f"window_N_thresh={int(method.get('window_N_thresh', 1000))}")
-    lines.append(f"window_gmres_maxl={int(method.get('window_gmres_maxl', 20))}")
     lines.append(f"Ni_extend_tol=0.00000000000000000e+00")
     lines.append(f"Ni_extend_margin=0")
 
@@ -641,6 +636,33 @@ def run_cpp_solver(sim, solver_config, base_dir=None, progress_callback=None,
 
         results = calculate_derived_quantities(t, y, sim.input_data, re_obj)
         results['y'] = y   # raw ODE state [N_eq, n_pts] in atom fraction
+
+        # ── Window-bounds sidecar (active_window mode tracks expansion) ───
+        # The C++ solver writes <bin_path>.window.csv with one row per output
+        # point: t,x_hi_i,x_hi_v.  We trust this over any heuristic derived
+        # from y, because indices outside the window stay at C_floor (the
+        # initial value), making y-based detection unreliable.
+        win_path = bin_path + '.window.csv'
+        try:
+            if os.path.exists(win_path):
+                wdata = np.genfromtxt(win_path, delimiter=',', skip_header=1)
+                if wdata.ndim == 1:
+                    wdata = wdata.reshape(1, -1)
+                n_w = min(wdata.shape[0], len(t))
+                # x_hi_i/x_hi_v are 0-indexed inclusive upper bounds; the
+                # active window covers sizes 1..(x_hi+1).
+                results['n_active_sia'] = (wdata[:n_w, 1].astype(int) + 1)
+                results['n_active_vac'] = (wdata[:n_w, 2].astype(int) + 1)
+                results['n_active'] = (results['n_active_sia']
+                                       + results['n_active_vac'])
+        except Exception as exc:
+            print(f"  window sidecar parse failed: {type(exc).__name__}: {exc}")
+        finally:
+            try:
+                os.unlink(win_path)
+            except OSError:
+                pass
+
         # Stash immediately so a Ctrl+C during the metadata stamping below
         # still leaves something for the orchestrator/notebook to save.
         sim._partial_results = results

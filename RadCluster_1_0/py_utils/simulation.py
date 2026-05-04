@@ -845,8 +845,7 @@ class RadClusterSimulation:
 
         # Linear solver and window parameters from reactions sheet
         linsol = str(re.get('linsol', 'dense')).lower()
-        w0_i   = int(float(re.get('window_w0_i',  100)))
-        w_w    = int(float(re.get('window_width', 500)))
+        w_w    = int(float(re.get('window_width', 100)))
         C_exp  = float(re.get('window_C_exp',  1e-18))
 
         # Map solver mode to window_mode integer
@@ -870,12 +869,9 @@ class RadClusterSimulation:
             'solver_method': {
                 'linsol':               linsol,
                 'window_mode':          win_mode,
-                'window_w0_i':          w0_i,
                 'window_width':         w_w,
-                'window_C_expand':      C_exp,
-                'window_expand_pad':    10,
-                'window_gmres_maxl':    20,
-                'window_prec':          1,
+                'concentration_threshold': C_exp,
+                'window_pad':              10,
             },
         }
 

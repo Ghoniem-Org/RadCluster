@@ -156,6 +156,7 @@ int main(int argc, char* argv[]) {
 
     // ── Binary output ─────────────────────────────────────────────────────────
     FILE* fp_bin = nullptr;
+    FILE* fp_win = nullptr;   // sidecar CSV: t,x_hi_i,x_hi_v per output point
     if (!param_path.empty()) {
         std::string bp = param_path;
         const std::string suf = ".txt";
@@ -170,6 +171,16 @@ int main(int argc, char* argv[]) {
 #endif
         if (!fp_bin)
             std::cerr << "Warning: cannot open " << bp << " — using stdout\n";
+
+        // Window-bounds sidecar: <bin_path>.window.csv
+        const std::string wp = bp + ".window.csv";
+#ifdef _MSC_VER
+        fopen_s(&fp_win, wp.c_str(), "w");
+#else
+        fp_win = std::fopen(wp.c_str(), "w");
+#endif
+        if (fp_win)
+            std::fprintf(fp_win, "t,x_hi_i,x_hi_v\n");
     }
 
     auto write_row = [&](double t, const double* data, int n) {
@@ -184,11 +195,19 @@ int main(int argc, char* argv[]) {
         }
     };
 
+    auto write_window = [&](double t, int x_hi_i, int x_hi_v) {
+        if (fp_win) {
+            std::fprintf(fp_win, "%.17e,%d,%d\n", t, x_hi_i, x_hi_v);
+            std::fflush(fp_win);
+        }
+    };
+
     // Window mode validation
+    constexpr int WINDOW_N_THRESH = 500;
     if (P.window_mode == 4 &&
-        P.I < P.window_N_thresh && P.V < P.window_N_thresh) {
+        P.I < WINDOW_N_THRESH && P.V < WINDOW_N_THRESH) {
         std::cerr << "[Window] I=" << P.I << " and V=" << P.V
-                  << " both < threshold=" << P.window_N_thresh
+                  << " both < threshold=" << WINDOW_N_THRESH
                   << " — using full solver.\n";
         P.window_mode = 0;
     }
@@ -256,8 +275,8 @@ int main(int argc, char* argv[]) {
               << "  C_floor=" << P.C_floor
               << "  window_mode=" << P.window_mode;
     if (P.window_mode != 0) {
-        std::cerr << "  win_SIA=[0," << std::min(P.window_w0_i - 1, P.I - 1) << "->" << (P.I - 1) << "]"
-                  << "  win_VAC=[0," << std::min(P.window_w0_v - 1, P.V - 1) << "->" << (P.V - 1) << "]";
+        std::cerr << "  win_SIA=[0," << std::min(P.window_width - 1, P.I - 1) << "->" << (P.I - 1) << "]"
+                  << "  win_VAC=[0," << std::min(P.window_width - 1, P.V - 1) << "->" << (P.V - 1) << "]";
     }
     std::cerr << "\n";
 
@@ -338,21 +357,18 @@ int main(int argc, char* argv[]) {
     SUNLinearSolver sunls = nullptr;
 
     if (P.linsol == 2) {
-        // GMRES
-        sunls = SUNLinSol_SPGMR(y, SUN_PREC_RIGHT,
-                                  P.window_gmres_maxl > 0 ? P.window_gmres_maxl : 20,
-                                  sunctx);
+        // GMRES is always preconditioned (Jacobi or Woodbury, selected by prec_type).
+        constexpr int GMRES_MAXL = 50;
+        sunls = SUNLinSol_SPGMR(y, SUN_PREC_RIGHT, GMRES_MAXL, sunctx);
         if (!sunls) { std::cerr << "SPGMR create failed\n"; return 1; }
         CHECK_SUNDIALS(CVodeSetLinearSolver(cvode_mem, sunls, nullptr));
-        if (P.window_prec) {
-            CHECK_SUNDIALS(CVodeSetPreconditioner(cvode_mem, prec_setup, prec_solve));
-            std::cout << "[solver] preconditioner: "
-                      << (P.prec_type == 1 ? "Woodbury (bordered-arrow, rank "
-                                             + std::to_string(P.prec_rank)
-                                             + ", bw " + std::to_string(P.prec_bw) + ")"
-                                           : "Jacobi (diagonal)")
-                      << "\n";
-        }
+        CHECK_SUNDIALS(CVodeSetPreconditioner(cvode_mem, prec_setup, prec_solve));
+        std::cout << "[solver] preconditioner: "
+                  << (P.prec_type == 1 ? "Woodbury (bordered-arrow, rank "
+                                         + std::to_string(P.prec_rank)
+                                         + ", bw " + std::to_string(P.prec_bw) + ")"
+                                       : "Jacobi (diagonal)")
+                  << "\n";
     } else if (P.linsol == 1) {
         // Band
         int mu = (P.mu > 0) ? P.mu : N_EQ - 1;
@@ -374,15 +390,15 @@ int main(int argc, char* argv[]) {
     //   SIA window: active SIA state indices  x_lo_i .. x_hi_i  (0-based, ≤ I-1)
     //   VAC window: active VAC state indices  x_lo_v .. x_hi_v  (0-based, ≤ V_states-1)
     // window_mode==0: windows span the full domain (no truncation).
-    // window_mode==4: start from a user-specified initial width and expand
-    //   independently as the leading concentration exceeds window_C_expand /
-    //   window_C_expand_v respectively.
+    // window_mode==4: start from a user-specified initial width (window_width,
+    //   shared by SIA and VAC) and expand independently as the leading
+    //   concentration in each axis exceeds concentration_threshold.
     int x_lo_i = 0;
     int x_hi_i = (P.window_mode == 0) ? P.I - 1
-                                       : std::min(P.window_w0_i - 1, P.I - 1);
+                                       : std::min(P.window_width - 1, P.I - 1);
     int x_lo_v = 0;
     int x_hi_v = (P.window_mode == 0) ? V_states - 1
-                                       : std::min(P.window_w0_v - 1, V_states - 1);
+                                       : std::min(P.window_width - 1, V_states - 1);
 
     // Output buffer
     std::vector<double> out_row(N_EQ);
@@ -391,6 +407,7 @@ int main(int argc, char* argv[]) {
     for (int k = 0; k < N_EQ; ++k)
         out_row[k] = std::max(ydata[k], 0.0);
     write_row(P.t_begin, out_row.data(), N_EQ);
+    write_window(P.t_begin, x_hi_i, x_hi_v);
 
     int n_written = 1;
     int check_every = std::max(P.window_check_every, 1);
@@ -411,18 +428,18 @@ int main(int argc, char* argv[]) {
             if ((i - 1) % check_every == 0) {
                 // ── SIA window expansion ───────────────────────────────────
                 // Expand when the leading SIA cluster concentration exceeds
-                // window_C_expand (absolute index x_hi_i in state vector).
+                // concentration_threshold (absolute index x_hi_i in state vector).
                 if (x_hi_i < P.I - 1 && x_hi_i < N_EQ - 1 &&
-                    ydata[x_hi_i] > P.window_C_expand) {
-                    x_hi_i = std::min(x_hi_i + P.window_expand_pad, P.I - 1);
+                    ydata[x_hi_i] > P.concentration_threshold) {
+                    x_hi_i = std::min(x_hi_i + P.window_pad, P.I - 1);
                 }
                 // ── VAC window expansion ───────────────────────────────────
                 // ydata[i_VAC_off + x_hi_v] is the leading VAC concentration
                 // in the state vector (absolute index i_VAC_off + x_hi_v).
                 if (x_hi_v < V_states - 1) {
                     const int vac_abs = i_VAC_off + x_hi_v;
-                    if (vac_abs < N_EQ && ydata[vac_abs] > P.window_C_expand_v) {
-                        x_hi_v = std::min(x_hi_v + P.window_expand_pad_v, V_states - 1);
+                    if (vac_abs < N_EQ && ydata[vac_abs] > P.concentration_threshold) {
+                        x_hi_v = std::min(x_hi_v + P.window_pad_v, V_states - 1);
                     }
                 }
             }
@@ -477,6 +494,7 @@ int main(int argc, char* argv[]) {
             for (int k = 0; k < N_EQ; ++k)
                 out_row[k] = ydata[k];
             write_row(t_out, out_row.data(), N_EQ);
+            write_window(t_out, x_hi_i, x_hi_v);
             ++n_written;
 
             // ── Progress diagnostics ───────────────────────────────────────
@@ -713,6 +731,7 @@ int main(int argc, char* argv[]) {
 
     // ── Cleanup ───────────────────────────────────────────────────────────────
     if (fp_bin) std::fclose(fp_bin);
+    if (fp_win) std::fclose(fp_win);
     N_VDestroy_Serial(y);
     CVodeFree(&cvode_mem);
     if (sunls)  SUNLinSolFree(sunls);

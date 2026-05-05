@@ -1,0 +1,254 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{booktabs}
+\usepackage[round,authoryear]{natbib}
+\usepackage{hyperref}
+
+\title{Geometric--Elastic Loss of SIA Loops to the\\Network-Dislocation Reservoir}
+\author{RadCluster\_1\_0 formulation note}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section*{Introduction}
+
+The absorption of irradiation-induced self-interstitial atom (SIA) loops
+into the network dislocation structure, together with the coalescence of
+loops with one another, are two of the central processes that govern the
+long-time dose dependence of swelling, hardening, and embrittlement in
+body-centred-cubic (BCC) metals and ferritic--martensitic steels.  In
+the rate-theory tradition initiated by Brailsford and
+Bullough~\citep{Brailsford1972} and extended by Bullough, Eyre, and
+Krishan~\citep{Bullough1975} and Mansur~\citep{Mansur1993}, both
+processes are folded into effective sink strengths $k_d^2$ and
+$k_\ell^2$ that enter linearly in the loss term $D_n k^2 c_n$ of every
+diffusing-species balance.  The same construction underlies essentially
+all production cluster-dynamics codes for ferritic alloys and pure
+iron~\citep{GhoniemCho1979,HardouinDuparc2002,StollerGolubov2008,%
+BarashevGolubov2009,KohnertWirth2018}: the network density
+$\rho_{\rm net}$ enters as a static, mean-field absorber whose biases
+for SIAs and vacancies are set once at the start of the simulation.
+
+Two limitations of this picture become apparent in regimes where
+loop--network and loop--loop encounters dominate the microstructural
+evolution.  First, a constant sink strength does not distinguish between
+a small mobile cluster, whose elastic field is weak and short ranged,
+and a large prismatic loop, whose strain field extends over distances
+comparable with the inter-sink spacing itself.  Atomic-scale simulations
+of loop--dislocation~\citep{BaconOsetsky2009,Terentyev2010} and
+loop--loop~\citep{Marian2002} interactions in $\alpha$-iron show clearly
+that absorption is driven by the overlap of the strain fields of the
+participants, rather than by simple geometric capture cross-sections,
+and that the relevant length scales depend on loop size and character.
+Second, loop coalescence in the standard treatment is governed by
+3-D diffusion encounter kinetics, whereas the dominant
+$\tfrac{1}{2}\langle 111\rangle$ loop family in BCC iron migrates by
+1-D glide along its Burgers vector and reorients only
+intermittently~\citep{TrinkausSingh1992,SinghForemanTrinkaus1997},
+producing encounter statistics that depart strongly from the mean-field
+$D_n k^2$ result.
+
+Several refinements have been proposed to address these limitations,
+ranging from spatially-resolved cluster dynamics in which the network
+density is treated as a field~\citep{KohnertWirth2018}, to dislocation-
+dynamics simulations that absorb loops explicitly~\citep{Arsenlis2004},
+and elastic-interaction-based capture cross-sections derived from
+anisotropic-elasticity calculations~\citep{Dudarev2003}.  The model
+developed below remains in the mean-field cluster-dynamics framework
+but introduces the two geometrical scales that govern loop transfer to
+the network---the mean inter-loop spacing $L_{\ell\ell}$ and the mean
+loop--network spacing $L_{\ell d}$---explicitly, together with a
+size-dependent elastic interaction radius $R_{\rm int}(n)$ and a smooth
+probability function that interpolates between the dilute and dense-
+sink limits.  The resulting closed-form loss term
+$\Lambda_n^{\rm net}c_n$ preserves the simplicity of rate theory while
+responding directly to the evolving geometry of the simulated
+microstructure.
+
+\section*{Comparison of the two formulations}
+
+The attached formulation and an earlier proposal share the same overall
+architecture: (i)~length scales for inter-loop and loop--network
+proximity, (ii)~a size-dependent elastic interaction radius, and
+(iii)~independent-channel union of capture probabilities driven by a
+diffusive encounter frequency.  The differences are confined to
+modelling choices, summarised in Table~\ref{tab:diffs}.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lll}
+\toprule
+Element & Adopted (canonical) & Earlier alternative \\
+\midrule
+Size variable                & diameter $d_n$              & radius $r_n$ \\
+Distance metric              & edge-to-edge $s_{\ell\ell},s_{\ell d}$ & centre-to-centre \\
+Mean inter-loop spacing      & $N_\ell^{-1/3}$             & $(3/4\pi N_L)^{1/3}$ \\
+Mean loop--network spacing   & $\rho_{\rm net}^{-1/2}$     & $1/(2\sqrt{\rho_d})$ \\
+Elastic zone                 & $R_{\rm int}=\chi d_n$       & $r_n+\xi b\sqrt{n\mu\Omega/k_BT}$ \\
+Smoother                     & $\tanh$, width $\Delta$     & Poisson exponential / Hill \\
+Channel union                & $1-(1-P_{\ell\ell})(1-P_{\ell d})$ & identical \\
+Encounter frequency          & $D_n^{\rm eff}/L_{\rm eff}^2$ & identical \\
+\bottomrule
+\end{tabular}
+\caption{Modelling choices in the two formulations.}
+\label{tab:diffs}
+\end{table}
+
+The attached choices are simpler and more transparent and are retained
+as the canonical form below.  Three refinements are incorporated:
+(R1)~distance non-negativity, (R2)~elimination of self-coupling in
+$P_{\ell\ell}$, and (R3)~an optional thermal-escape extension of
+$R_{\rm int}$ for very small loops.  A companion mass-balance equation
+for $\rho_{\rm net}$ is added so that the transfer is consistent with
+SIA-number and dislocation-line conservation.
+
+\section*{Loss of large loops to the network-dislocation reservoir}
+
+Large irradiation-induced SIA loops are progressively incorporated into
+the network dislocation structure when their elastic interaction zones
+overlap with neighbouring loops or with pre-existing dislocation lines.
+This is represented by an additional loss term in the SIA-loop
+population equation,
+\begin{equation}
+  \left.\frac{dc_n}{dt}\right|_{\rm net}=-\Lambda_n^{\rm net}\,c_n,
+  \label{eq:loop_network_loss}
+\end{equation}
+where $\Lambda_n^{\rm net}$ is the size-dependent transfer rate from the
+discrete loop population to the network-dislocation reservoir.
+
+\subsection*{Geometric length scales}
+
+For a circular prismatic loop containing $n$ SIAs, the loop diameter is
+\begin{equation}
+  d_n=2\!\left(\frac{n\,\Omega}{\pi b_\ell}\right)^{1/2},
+  \label{eq:loop_diameter_from_n}
+\end{equation}
+with $\Omega$ the atomic volume and $b_\ell$ the loop Burgers-vector
+magnitude.  The mean centre-to-centre interloop spacing is
+\begin{equation}
+  L_{\ell\ell}=N_\ell^{-1/3},\qquad
+  N_\ell=\!\sum_{n\ge n_{\rm loop}}\!c_n,\qquad
+  \bar d_\ell=\frac{\sum_n d_n c_n}{\sum_n c_n}.
+  \label{eq:interloop_spacing}
+\end{equation}
+The edge-to-edge spacing experienced by a loop of size $n$ uses the
+self-excluded partner density $N_\ell-c_n$ and is clamped from below to
+prevent unphysical negative gaps:
+\begin{equation}
+  s_{\ell\ell}(n)=\max\!\left[\,b_\ell\,,\;
+  (N_\ell-c_n)^{-1/3}-\frac{d_n+\bar d_\ell}{2}\right]\!.
+  \label{eq:loop_loop_spacing}
+\end{equation}
+Similarly, with $\rho_{\rm net}$ the network-dislocation density,
+\begin{equation}
+  L_{\ell d}=\rho_{\rm net}^{-1/2},\qquad
+  s_{\ell d}(n)=\max\!\left[\,b_\ell\,,\;
+  L_{\ell d}-\frac{d_n}{2}\right]\!.
+  \label{eq:loop_network_spacing}
+\end{equation}
+
+\subsection*{Elastic interaction zone}
+
+The elastic interaction range of a loop of size $n$ is taken to be
+\begin{equation}
+  R_{\rm int}(n)=\chi\,d_n
+  \;+\;\underbrace{\xi\,b_\ell\sqrt{\dfrac{\mu\,\Omega\,n}{k_B T}}}_{\text{optional thermal-escape term}},
+  \label{eq:elastic_interaction_zone}
+\end{equation}
+where $\chi=\mathcal O(1)$ is the dimensionless geometric range
+parameter, $\mu$ is the shear modulus, and $T$ is the temperature.
+The optional second term provides a non-vanishing lower bound at small
+$n$ where $d_n\!\to\!0$ but the elastic strain field remains finite;
+setting $\xi=0$ recovers the original $R_{\rm int}(n)=\chi d_n$.
+
+\subsection*{Capture probability and transfer rate}
+
+The probability that a loop of size $n$ interacts with another loop or
+with the network dislocation population is modelled by smooth threshold
+functions,
+\begin{align}
+  P_{\ell\ell}(n)
+  &=\tfrac{1}{2}\!\left[1+\tanh\!\left(\dfrac{R_{\rm int}(n)-s_{\ell\ell}(n)}{\Delta_{\ell\ell}}\right)\right],
+  \label{eq:P_loop_loop}\\[2pt]
+  P_{\ell d}(n)
+  &=\tfrac{1}{2}\!\left[1+\tanh\!\left(\dfrac{R_{\rm int}(n)-s_{\ell d}(n)}{\Delta_{\ell d}}\right)\right],
+  \label{eq:P_loop_dislocation}
+\end{align}
+with widths $\Delta_{\ell\ell},\Delta_{\ell d}\sim b_\ell$.  Treating
+the two channels as independent, the total transfer probability is
+\begin{equation}
+  P_n^{\rm net}
+  =1-\bigl[1-P_{\ell\ell}(n)\bigr]\bigl[1-P_{\ell d}(n)\bigr],
+  \label{eq:P_network_total}
+\end{equation}
+which guarantees $0\le P_n^{\rm net}\le 1$ and saturates at unity when
+either the inter-loop or the loop--network spacing falls below the
+elastic interaction range.
+
+The transfer rate combines $P_n^{\rm net}$ with a diffusive encounter
+frequency,
+\begin{equation}
+  \Lambda_n^{\rm net}=\nu_n^{\rm eff}\,P_n^{\rm net},\qquad
+  \nu_n^{\rm eff}=\frac{D_n^{\rm eff}}{L_{\rm eff}^2},\qquad
+  L_{\rm eff}=\min(L_{\ell\ell},L_{\ell d}),
+  \label{eq:Lambda_network}
+\end{equation}
+where $D_n^{\rm eff}$ is the effective loop mobility (1-D glide for
+glissile $\tfrac{1}{2}\langle 111\rangle$ loops, climb-controlled for
+sessile loops; $D_n^{\rm eff}\!=\!0$ disables this channel for that
+size).
+
+\subsection*{Companion mass balance for the network reservoir}
+
+Each loop of size $n$ absorbed into the network injects $n$ SIAs and,
+to a good approximation, adds one loop circumference of dislocation
+line.  Conservation of SIA number and of dislocation line length per
+unit volume therefore require, in addition to
+Eq.~\eqref{eq:loop_network_loss},
+\begin{align}
+  \left.\frac{dN_{\rm SIA}^{\rm net}}{dt}\right|_{\rm gain}
+  &=\sum_{n}n\,\Lambda_n^{\rm net}\,c_n,
+  \label{eq:N_sia_balance}\\[2pt]
+  \left.\frac{d\rho_{\rm net}}{dt}\right|_{\rm gain}
+  &=\pi\sum_{n}d_n\,\Lambda_n^{\rm net}\,c_n,
+  \label{eq:rho_net_balance}
+\end{align}
+which feed the rate equation governing $\rho_{\rm net}$ (and any
+companion equation tracking SIAs absorbed by the network).
+
+\subsection*{Limits and consistency}
+
+\begin{itemize}\itemsep1pt
+  \item \emph{Dilute limit} $\rho_{\rm net},N_\ell\!\to\!0$: both
+        spacings diverge, $P_n^{\rm net}\!\to\!0$, and the loss term
+        vanishes.
+  \item \emph{Dense-sink limit} $L_{\ell\ell}$ or
+        $L_{\ell d}\!\lesssim\!R_{\rm int}$: $P_n^{\rm net}\!\to\!1$
+        and $\Lambda_n^{\rm net}\!\to\!D_n^{\rm eff}/L_{\rm eff}^{2}$,
+        the diffusion-transit-limited rate.
+  \item \emph{Sub-threshold regime} $R_{\rm int}\!\ll\!s$: linearising
+        the $\tanh$ recovers a classical Bullough-form
+        $D_n^{\rm eff}\,Z(\chi,\Delta)\,\rho_{\rm sink}\,c_n$ with an
+        effective bias factor $Z(\chi,\Delta)$.
+  \item \emph{Sessile loops} ($D_n^{\rm eff}\!=\!0$): channel switched
+        off, as required physically.
+\end{itemize}
+
+\subsection*{Model parameters}
+
+The new dimensionless parameters are
+\[
+  \chi,\quad\xi\;\text{(optional)},\quad\Delta_{\ell\ell}/b_\ell,\quad\Delta_{\ell d}/b_\ell,
+\]
+all of order unity and naturally placed in the
+\texttt{Model\_Parameters} sheet of \texttt{input\_parameters.xlsx}
+alongside the existing $Z$-factors and capture radii.
+
+\bibliographystyle{plainnat}
+\bibliography{loop_network_loss}
+
+\end{document}

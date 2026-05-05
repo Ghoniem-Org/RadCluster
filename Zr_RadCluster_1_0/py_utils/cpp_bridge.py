@@ -1,5 +1,5 @@
 """
-cpp_bridge.py -- Python -> C++ solver bridge for RadCluster_1_0.
+cpp_bridge.py — Python → C++ solver bridge for RadCluster_1_0.
 
 Responsibilities
 ----------------
@@ -41,7 +41,7 @@ log = logging.getLogger(__name__)
 # How long to wait for the C++ solver to finish its current step and emit
 # its final [stats] line after we ask it to stop.  The solver checks the
 # interrupt flag once per output time-point, so the upper bound is roughly
-# one CVode(t_out) call -- typically seconds, but can be tens of seconds
+# one CVode(t_out) call — typically seconds, but can be tens of seconds
 # when a single step has been struggling to converge.
 GRACEFUL_SHUTDOWN_TIMEOUT_S = 60.0
 
@@ -84,10 +84,10 @@ def write_param_file(sim, solver_config, path, y0_override=None):
 
     Parameters
     ----------
-    sim           : RadClusterSimulation -- fully initialised
-    solver_config : dict  -- t_span, rtol, atol, solver_method, etc.
+    sim           : RadClusterSimulation — fully initialised
+    solver_config : dict  — t_span, rtol, atol, solver_method, etc.
     path          : str or Path
-    y0_override   : ndarray or None -- if provided, use these initial conditions
+    y0_override   : ndarray or None — if provided, use these initial conditions
                     instead of re_obj.get_initial_conditions().  Used by
                     adaptive continuation to resume from a mid-run state.
     """
@@ -302,7 +302,7 @@ def write_param_file(sim, solver_config, path, y0_override=None):
     # prec_type: 0=Jacobi (legacy), 1=Woodbury (bordered-banded, default for GMRES)
     linsol_int = _linsol_map.get(str(method.get('linsol','dense')).lower(), 0)
     window_mode_int = int(method.get('window_mode', 0))
-    # Woodbury only for full solver (window_mode==0) with GMRES -- the sliding
+    # Woodbury only for full solver (window_mode==0) with GMRES — the sliding
     # window already keeps the active system small enough for Jacobi+GMRES.
     prec_type_default = 1 if (linsol_int == 2 and window_mode_int == 0) else 0
     # User-facing name takes priority over the legacy integer.  Accept a few
@@ -371,8 +371,8 @@ def _make_stderr_handler(progress_callback, info_out=None):
     Return a callable suitable for use as a daemon-thread target that reads
     proc.stderr line by line.
 
-    When progress_callback is None  -> forward each line to sys.stderr verbatim.
-    When progress_callback is given -> also parse [diag] / [ci5_rates] /
+    When progress_callback is None  → forward each line to sys.stderr verbatim.
+    When progress_callback is given → also parse [diag] / [ci5_rates] /
     [cv5_rates] lines and call progress_callback(row_dict) once all three
     lines for a given time step have been received.
 
@@ -532,49 +532,36 @@ def run_cpp_solver(sim, solver_config, base_dir=None, progress_callback=None,
         t_fwd = threading.Thread(target=stderr_fn, args=(proc.stderr,), daemon=True)
         t_fwd.start()
         partial = False
-        # Drain stdout in a thread so proc.wait(timeout=...) is actually
-        # reachable while the child is still running.  If we instead call
-        # proc.stdout.read() inline it blocks until the child closes stdout
-        # (i.e. exits), defeating the wall-clock cap entirely.
-        stdout_buf = []
-        def _drain_stdout(stream, buf):
-            try:
-                buf.append(stream.read())
-            except Exception:
-                pass
-        t_out = threading.Thread(target=_drain_stdout,
-                                 args=(proc.stdout, stdout_buf), daemon=True)
-        t_out.start()
         stdout_data = b''
         try:
+            stdout_data = proc.stdout.read()
             proc.wait(timeout=timeout_s)
         except subprocess.TimeoutExpired:
-            print(f"C++ solver hit {timeout_s}s timeout -- asking it to finalize gracefully...")
+            print(f"C++ solver hit {timeout_s}s timeout — asking it to finalize gracefully…")
             partial = True
             _send_graceful_interrupt(proc)
             try:
                 proc.wait(timeout=GRACEFUL_SHUTDOWN_TIMEOUT_S)
             except subprocess.TimeoutExpired:
                 print(f"    Solver did not finalize within "
-                      f"{GRACEFUL_SHUTDOWN_TIMEOUT_S:.0f}s -- forcing kill.")
+                      f"{GRACEFUL_SHUTDOWN_TIMEOUT_S:.0f}s — forcing kill.")
                 proc.kill()
                 proc.wait()
         t_fwd.join(timeout=5)
-        t_out.join(timeout=5)
-        stdout_data = b''.join(stdout_buf) if stdout_buf else b''
     except KeyboardInterrupt:
-        print("\n*** Ctrl+C -- asking C++ solver to flush and exit gracefully ***")
+        print("\n*** Ctrl+C — asking C++ solver to flush and exit gracefully ***")
         partial = True
         _send_graceful_interrupt(proc)
         if proc is not None:
             try:
-                # Wait for the child to finish its current output step and
-                # emit the final [stats] line; the stdout drain thread keeps
-                # collecting whatever lands.  A second Ctrl+C escalates.
+                # Drain remaining stdout while the child finishes its current
+                # output step and emits the final [stats] line.  A second
+                # Ctrl+C here escalates to a hard kill.
+                stdout_data = proc.stdout.read()
                 proc.wait(timeout=GRACEFUL_SHUTDOWN_TIMEOUT_S)
             except (subprocess.TimeoutExpired, KeyboardInterrupt):
                 print(f"    Solver did not exit within "
-                      f"{GRACEFUL_SHUTDOWN_TIMEOUT_S:.0f}s -- forcing kill.")
+                      f"{GRACEFUL_SHUTDOWN_TIMEOUT_S:.0f}s — forcing kill.")
                 try:
                     proc.kill()
                     proc.wait(timeout=5)
@@ -582,8 +569,6 @@ def run_cpp_solver(sim, solver_config, base_dir=None, progress_callback=None,
                     pass
             try:
                 t_fwd.join(timeout=5)
-                t_out.join(timeout=5)
-                stdout_data = b''.join(stdout_buf) if stdout_buf else b''
             except Exception:
                 pass
     finally:
@@ -598,7 +583,7 @@ def run_cpp_solver(sim, solver_config, base_dir=None, progress_callback=None,
     # ── Parse + post-process under a KeyboardInterrupt shield ────────────────
     # The C++ child flushes each row to the .bin file as it's computed, so
     # there is real data to rescue even after Ctrl+C.  We must NOT lose it to
-    # a second interrupt during numpy parsing or post-processing -- stash
+    # a second interrupt during numpy parsing or post-processing — stash
     # partial results onto `sim` as soon as they exist so the orchestrator
     # (and the notebook fallback) can recover them.
     sim._partial_results = None
@@ -614,19 +599,11 @@ def run_cpp_solver(sim, solver_config, base_dir=None, progress_callback=None,
             raw    = np.fromfile(bin_path, dtype=np.float64)
             n_cols = 1 + N_tot
             n_rows = raw.size // n_cols
-            # Reshape FIRST -- losing partial data to a downstream print/encode
-            # error would be far worse than a missing log line.
+            print(f"  parsed {raw.size} doubles → {n_rows} rows × {n_cols} cols")
             if n_rows > 0:
                 sol_arr = raw[:n_rows * n_cols].reshape(n_rows, n_cols)
-            try:
-                print(f"  parsed {raw.size} doubles -> {n_rows} rows x {n_cols} cols")
-            except Exception:
-                pass
         except Exception as exc:
-            try:
-                print(f"  bin parse failed: {type(exc).__name__}: {exc}")
-            except Exception:
-                pass
+            print(f"  bin parse failed: {type(exc).__name__}: {exc}")
         finally:
             try:
                 os.unlink(bin_path)
@@ -643,7 +620,7 @@ def run_cpp_solver(sim, solver_config, base_dir=None, progress_callback=None,
             return None
 
         # The C++ solver also stamps interrupted=1 in its [stats] line when its
-        # own signal handler tripped -- pick that up too so we don't miss the
+        # own signal handler tripped — pick that up too so we don't miss the
         # case where the timeout/Ctrl+C path wasn't exercised but the OS killed
         # the child via console close.
         final_stats = solver_info.get('solver_stats_final') or {}
@@ -652,7 +629,7 @@ def run_cpp_solver(sim, solver_config, base_dir=None, progress_callback=None,
 
         status = "partial" if partial else "completed"
         n_pts = sol_arr.shape[0]
-        print(f"C++ solver {status} -- {n_pts} time points")
+        print(f"C++ solver {status} — {n_pts} time points")
 
         t = sol_arr[:, 0]
         y = sol_arr[:, 1:].T   # (N_tot, n_pts)
@@ -690,7 +667,7 @@ def run_cpp_solver(sim, solver_config, base_dir=None, progress_callback=None,
         # still leaves something for the orchestrator/notebook to save.
         sim._partial_results = results
     except KeyboardInterrupt:
-        print("\n*** Ctrl+C during result post-processing -- "
+        print("\n*** Ctrl+C during result post-processing — "
               "returning whatever was rescued. ***")
         return sim._partial_results
 
@@ -700,7 +677,7 @@ def run_cpp_solver(sim, solver_config, base_dir=None, progress_callback=None,
         linsol = str(solver_config.get('solver_method', {}).get('linsol', 'dense')).upper()
         msg = f'C++ CVODE BDF {sm}/{po} / {linsol}'
         if partial:
-            msg += ' (partial -- interrupted)'
+            msg += ' (partial — interrupted)'
         results['metadata'] = {
             'solver_stats': {
                 'success':       True,
@@ -713,6 +690,6 @@ def run_cpp_solver(sim, solver_config, base_dir=None, progress_callback=None,
         }
         print("Results processing complete.")
     except KeyboardInterrupt:
-        print("\n*** Ctrl+C during metadata stamping -- "
+        print("\n*** Ctrl+C during metadata stamping — "
               "returning rescued results without metadata. ***")
     return results

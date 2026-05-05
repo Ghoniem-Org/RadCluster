@@ -709,7 +709,6 @@ def plot_mean_sizes_tem(results, input_data, rate_eq_obj,
 
     Omega = input_data.derived.get('Omega', _OMEGA)
     b_111 = input_data.derived.get('b_111', _B_111)
-    C_floor = float(input_data.reactions.get('C_floor', 1e-15)) / Omega
 
     mean_n_i_tem = np.zeros(n_t)
     mean_n_v_tem = np.zeros(n_t)
@@ -717,12 +716,10 @@ def plot_mean_sizes_tem(results, input_data, rate_eq_obj,
     d_v_nm = np.zeros(n_t)
 
     for j in range(n_t):
-        ci_eff = np.maximum(c_n_all[mask_i, j] - C_floor, 0.0)
-        cv_eff = np.maximum(c_v_all[mask_v, j] - C_floor, 0.0)
-        cnt_i = np.sum(ci_eff)
-        cnt_v = np.sum(cv_eff)
-        mean_n_i_tem[j] = np.dot(ns[mask_i], ci_eff) / cnt_i if cnt_i > 0 else 0.0
-        mean_n_v_tem[j] = np.dot(ms[mask_v], cv_eff) / cnt_v if cnt_v > 0 else 0.0
+        cnt_i = np.sum(c_n_all[mask_i, j])
+        cnt_v = np.sum(c_v_all[mask_v, j])
+        mean_n_i_tem[j] = np.dot(ns[mask_i], c_n_all[mask_i, j]) / max(cnt_i, 1e-30)
+        mean_n_v_tem[j] = np.dot(ms[mask_v], c_v_all[mask_v, j]) / max(cnt_v, 1e-30)
         d_i_nm[j] = 2 * np.sqrt(mean_n_i_tem[j] * Omega / (np.pi * b_111)) * 1e9
         d_v_nm[j] = 2 * (3 * mean_n_v_tem[j] * Omega / (4 * np.pi))**(1./3.) * 1e9
 

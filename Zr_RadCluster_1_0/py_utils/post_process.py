@@ -54,7 +54,6 @@ def calculate_derived_quantities(t, y, input_data, rate_eq_obj,
     he_mode = getattr(rate_eq_obj, 'he_mode', 'case2')
     is_bin  = hasattr(rate_eq_obj, 'bins')  # BinMomentRateEquations
     qss_He  = getattr(rate_eq_obj, 'qss_He', False)
-    C_floor = float(input_data.reactions.get('C_floor', 1e-15))
 
     i_SIA  = getattr(rate_eq_obj, 'i_SIA', 0)
     i_VAC  = getattr(rate_eq_obj, 'i_VAC', I)
@@ -186,21 +185,16 @@ def calculate_derived_quantities(t, y, input_data, rate_eq_obj,
                         else np.dot(ms, c_v)
         C_He_tot[j]  = c_h + Q_tot
 
-        # Mean cluster sizes (weighted average) — subtract C_floor so the
-        # uniform-floor IC does not contaminate ⟨n⟩ at very early times.
-        c_n_eff = np.maximum(c_n[1:] - C_floor, 0.0)
-        sum_cni_eff = np.sum(c_n_eff)
-        mean_n_i[j] = (np.dot(ns[1:], c_n_eff) / sum_cni_eff) \
-                      if sum_cni_eff > 0.0 else 0.0
+        # Mean cluster sizes (weighted average)
+        sum_cni = np.sum(c_n[1:])   # clusters n ≥ 2
+        mean_n_i[j] = np.dot(ns[1:], c_n[1:]) / max(sum_cni, 1e-300)
 
-        c_v_eff = np.maximum(c_v[1:] - C_floor, 0.0)
-        sum_cvi_eff = np.sum(c_v_eff)
-        mean_n_v[j] = (np.dot(ms[1:], c_v_eff) / sum_cvi_eff) \
-                      if sum_cvi_eff > 0.0 else 0.0
+        sum_cvi = np.sum(c_v[1:])   # clusters m ≥ 2
+        mean_n_v[j] = np.dot(ms[1:], c_v[1:]) / max(sum_cvi, 1e-300)
 
         # Number densities (clusters n,m ≥ 2)
-        N_loops[j] = np.sum(c_n[1:])
-        N_voids[j] = np.sum(c_v[1:])
+        N_loops[j] = sum_cni
+        N_voids[j] = sum_cvi
 
         # Void swelling (Eq. 161): S = Σ_m m·c_m
         # V_m = m·Ω per cluster; c_m is cluster number density in at.frac;

@@ -434,6 +434,20 @@ $$\delta_{\rm He}(t) = \frac{\displaystyle\left|c_h + \sum_{m,\ell}\ell\,c_{m,\e
 
 Both $\delta_{\rm FP}$ and $\delta_{\rm He}$ should remain below $\sim 10^{-6}$; values above $10^{-3}$ indicate a coding error.
 
+### TEM-visible size-distribution plots
+
+The `plot_*_distribution_tem_*` routines in `py_utils/visualization.py`
+display **per-bin density** $dc/dn$ (size axis) or $dc/dD$ (diameter axis)
+as stair segments rather than per-size $c_n$ at integer sizes.  Each
+visualization bin spans $[n_{\rm lo}, n_{\rm hi})$ and is rendered with
+height $\rho_k = \mu_k^{(0)} / (x_{\rm hi} - x_{\rm lo})$, so the
+integral under the stairs equals total concentration in the displayed
+range.  This avoids the comb artefact produced by integer-resolved
+lognormal reconstructions when $\sigma_k^2 \to 0$ (near-monodisperse
+bins): the closure is faithful to $\mu_k^{(0)}$ but not to per-integer
+$c_n$, so per-integer sampling is not the right display primitive when
+the underlying representation is coarse-grained.
+
 ---
 
 ## 9. Solver Modes

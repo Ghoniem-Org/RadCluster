@@ -281,6 +281,7 @@ def write_param_file(sim, solver_config, path, y0_override=None):
     lines.append(f"ml={int(method.get('ml', N_tot - 1))}")
     lines.append(f"max_order={int(method.get('max_order', 0))}")
     lines.append(f"hmin={float(method.get('hmin', 0.0)):.17e}")
+    lines.append(f"hmax={float(method.get('hmax', 0.0)):.17e}")
 
     # ── Dynamic window parameters ──────────────────────────────────────────────
     # window_width is shared by SIA and VAC; defaults to max(I, V) (full domain).

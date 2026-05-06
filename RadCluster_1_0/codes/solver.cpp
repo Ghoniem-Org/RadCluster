@@ -352,6 +352,8 @@ int main(int argc, char* argv[]) {
         CHECK_SUNDIALS(CVodeSetMaxOrd(cvode_mem, P.max_order));
     if (P.hmin > 0.0)
         CHECK_SUNDIALS(CVodeSetMinStep(cvode_mem, P.hmin));
+    if (P.hmax > 0.0)
+        CHECK_SUNDIALS(CVodeSetMaxStep(cvode_mem, P.hmax));
 
     // Non-negativity is enforced via C_floor clamping at output time (line 317-318).
     // CVODE constraint enforcement (CVodeSetConstraints) is intentionally disabled

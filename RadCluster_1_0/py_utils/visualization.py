@@ -697,21 +697,88 @@ def plot_mean_sizes_tem(results, input_data, rate_eq_obj,
     return fig
 
 
-def _plot_tem_distribution_panel(x_vals, c_arr, dose, mask, *, n_times,
-                                 xlabel, plot_title, cmap_name,
-                                 use_loglog, out_path):
-    """Single-panel TEM-visible distribution plot. Shared by SIA / cavity."""
+def _visualization_bins(rate_eq_obj, max_size, kind):
+    """
+    Build the visualization bin list covering sizes 1..max_size.
+
+    Each entry is (n_lo, n_hi) with n_hi exclusive (matching the
+    bin_moment_rates convention).  For full_CD modes every integer is
+    its own width-1 bin.  For bin_moment modes the discrete portion is
+    width-1 integers and the grouped portion is taken from
+    rate_eq_obj.bins (kind='sia') or rate_eq_obj.vac_bins (kind='vac').
+    """
+    is_bin = hasattr(rate_eq_obj, 'bins')
+    if not is_bin:
+        return [(n, n + 1) for n in range(1, max_size + 1)]
+    if kind == 'sia':
+        d_disc = getattr(rate_eq_obj, 'i_discrete', 0)
+        grouped = list(rate_eq_obj.bins)
+    else:
+        d_disc = getattr(rate_eq_obj, 'v_discrete', 0)
+        grouped = list(rate_eq_obj.vac_bins)
+    out = [(n, n + 1) for n in range(1, d_disc + 1)]
+    out.extend(grouped)
+    return out
+
+
+def _aggregate_to_bins(c_per_size, bins_full):
+    """
+    Sum per-size concentrations over each visualization bin.
+
+    Returns mu0 of shape [K, n_t] where K = len(bins_full).  For width-1
+    bins this is just c_n; for grouped bins it is the bin's zeroth
+    moment (the lognormal/linear closure preserves this exactly).
+    """
+    n_t = c_per_size.shape[1]
+    K   = len(bins_full)
+    mu0 = np.zeros((K, n_t))
+    for k, (nlo, nhi) in enumerate(bins_full):
+        mu0[k] = c_per_size[nlo - 1:nhi - 1].sum(axis=0)
+    return mu0
+
+
+def _plot_tem_density_panel(bins_full, mu0_arr, dose, *, n_times,
+                            xform, n_min, xlabel, ylabel, plot_title,
+                            cmap_name, use_logx, out_path):
+    """
+    TEM-visible per-bin density plot.
+
+    Each visualization bin is rendered as a stair segment of height
+    rho_k = mu_0(k) / (x_hi - x_lo) where the x-edges come from
+    `xform` (identity for size axis, diameter formula for diameter
+    axes).  This is the standard microstructure-distribution
+    representation: integral under the stairs equals total
+    concentration in the displayed range.  Per-bin density is well
+    defined regardless of the intra-bin shape function, so the comb
+    artefact of integer-resolved lognormal reconstruction is avoided
+    by construction.
+    """
+    keep = [k for k, (nlo, _nhi) in enumerate(bins_full) if nlo >= n_min]
+    if not keep:
+        return None
+
+    edges_x = np.array(
+        [xform(bins_full[keep[0]][0])]
+        + [xform(bins_full[k][1]) for k in keep],
+        dtype=float)
+    widths = np.diff(edges_x)
+    widths = np.where(widths > 0.0, widths, 1.0)
+
     indices = _log_snapshot_indices(dose, n_times)
     cmap = getattr(plt.cm, cmap_name)(np.linspace(0.15, 0.95, len(indices)))
 
     fig, ax = plt.subplots(figsize=(8, 6))
-    plotter = ax.loglog if use_loglog else ax.semilogy
     for idx, color in zip(indices, cmap):
-        plotter(x_vals[mask], np.maximum(c_arr[mask, idx], 1e-10),
-                color=color, lw=1.5,
-                label=f'{dose[idx]:.2e} dpa')
+        rho = mu0_arr[keep, idx] / widths
+        rho = np.maximum(rho, 1e-30)
+        ax.stairs(rho, edges_x, color=color, lw=1.5, baseline=None,
+                  label=f'{dose[idx]:.2e} dpa')
+
+    if use_logx:
+        ax.set_xscale('log')
+    ax.set_yscale('log')
     ax.set_xlabel(xlabel)
-    ax.set_ylabel(_CONC_LABEL)
+    ax.set_ylabel(ylabel)
     ax.set_title(plot_title)
     ax.legend(ncol=2, title='Dose', loc='best', fontsize=_INTERIOR_LEGEND_FONTSIZE)
     ax.grid(True, which='both', alpha=0.3)
@@ -723,81 +790,101 @@ def _plot_tem_distribution_panel(x_vals, c_arr, dose, mask, *, n_times,
     return fig
 
 
+_DENSITY_LABEL_SIZE = r'$dc/dn$ (m$^{-3}$)'
+_DENSITY_LABEL_DIAM = r'$dc/dD$ (m$^{-3}$ nm$^{-1}$)'
+
+
 def plot_sia_distribution_tem_size(results, input_data, rate_eq_obj,
                                    n_times=8, out_path=None, title=''):
-    """SIA distribution vs cluster size (TEM-visible, n ≥ N_MIN_TEM)."""
+    """SIA distribution density vs cluster size (TEM-visible, n ≥ N_MIN_TEM)."""
     _check_mpl()
     c_n_all, _, dose = _reconstruct_distributions(
         results, input_data, rate_eq_obj)
     if c_n_all is None:
         return None
-    N  = c_n_all.shape[0]
-    ns = np.arange(1, N + 1, dtype=float)
-    return _plot_tem_distribution_panel(
-        ns, c_n_all, dose, ns >= _N_MIN_TEM,
+    N         = c_n_all.shape[0]
+    bins_full = _visualization_bins(rate_eq_obj, N, kind='sia')
+    mu0_arr   = _aggregate_to_bins(c_n_all, bins_full)
+    return _plot_tem_density_panel(
+        bins_full, mu0_arr, dose,
         n_times=n_times,
+        xform=lambda n: float(n),
+        n_min=_N_MIN_TEM,
         xlabel='SIA cluster size n',
+        ylabel=_DENSITY_LABEL_SIZE,
         plot_title=rf'TEM-Visible SIA Distribution ($n\geq{_N_MIN_TEM}$) {title}',
-        cmap_name='viridis', use_loglog=True, out_path=out_path)
+        cmap_name='viridis', use_logx=True, out_path=out_path)
 
 
 def plot_sia_distribution_tem_diameter(results, input_data, rate_eq_obj,
                                        n_times=8, out_path=None, title=''):
-    """SIA distribution vs loop diameter (TEM-visible, n ≥ N_MIN_TEM)."""
+    """SIA distribution density vs loop diameter (TEM-visible, n ≥ N_MIN_TEM)."""
     _check_mpl()
     c_n_all, _, dose = _reconstruct_distributions(
         results, input_data, rate_eq_obj)
     if c_n_all is None:
         return None
-    N      = c_n_all.shape[0]
-    Omega  = input_data.derived.get('Omega', _OMEGA)
-    b_111  = input_data.derived.get('b_111', _B_111)
-    ns     = np.arange(1, N + 1, dtype=float)
-    d_loop = 2.0 * np.sqrt(ns * Omega / (np.pi * b_111)) * 1e9  # nm
-    return _plot_tem_distribution_panel(
-        d_loop, c_n_all, dose, ns >= _N_MIN_TEM,
+    N         = c_n_all.shape[0]
+    Omega     = input_data.derived.get('Omega', _OMEGA)
+    b_111     = input_data.derived.get('b_111', _B_111)
+    pref      = 2.0 * np.sqrt(Omega / (np.pi * b_111)) * 1e9
+    bins_full = _visualization_bins(rate_eq_obj, N, kind='sia')
+    mu0_arr   = _aggregate_to_bins(c_n_all, bins_full)
+    return _plot_tem_density_panel(
+        bins_full, mu0_arr, dose,
         n_times=n_times,
+        xform=lambda n: pref * np.sqrt(float(n)),
+        n_min=_N_MIN_TEM,
         xlabel='SIA loop diameter (nm)',
+        ylabel=_DENSITY_LABEL_DIAM,
         plot_title=rf'TEM-Visible SIA Loop Diameters ($n\geq{_N_MIN_TEM}$) {title}',
-        cmap_name='viridis', use_loglog=False, out_path=out_path)
+        cmap_name='viridis', use_logx=False, out_path=out_path)
 
 
 def plot_vac_distribution_tem_size(results, input_data, rate_eq_obj,
                                    n_times=8, out_path=None, title=''):
-    """Cavity distribution vs cluster size (TEM-visible, m ≥ N_MIN_TEM)."""
+    """Cavity distribution density vs cluster size (TEM-visible, m ≥ N_MIN_TEM)."""
     _check_mpl()
     _, c_v_all, dose = _reconstruct_distributions(
         results, input_data, rate_eq_obj)
     if c_v_all is None:
         return None
-    M  = c_v_all.shape[0]
-    ms = np.arange(1, M + 1, dtype=float)
-    return _plot_tem_distribution_panel(
-        ms, c_v_all, dose, ms >= _N_MIN_TEM,
+    M         = c_v_all.shape[0]
+    bins_full = _visualization_bins(rate_eq_obj, M, kind='vac')
+    mu0_arr   = _aggregate_to_bins(c_v_all, bins_full)
+    return _plot_tem_density_panel(
+        bins_full, mu0_arr, dose,
         n_times=n_times,
+        xform=lambda m: float(m),
+        n_min=_N_MIN_TEM,
         xlabel='Cavity cluster size m',
+        ylabel=_DENSITY_LABEL_SIZE,
         plot_title=rf'TEM-Visible Cavity Distribution ($m\geq{_N_MIN_TEM}$) {title}',
-        cmap_name='plasma', use_loglog=True, out_path=out_path)
+        cmap_name='plasma', use_logx=True, out_path=out_path)
 
 
 def plot_vac_distribution_tem_diameter(results, input_data, rate_eq_obj,
                                        n_times=8, out_path=None, title=''):
-    """Cavity distribution vs void diameter (TEM-visible, m ≥ N_MIN_TEM)."""
+    """Cavity distribution density vs void diameter (TEM-visible, m ≥ N_MIN_TEM)."""
     _check_mpl()
     _, c_v_all, dose = _reconstruct_distributions(
         results, input_data, rate_eq_obj)
     if c_v_all is None:
         return None
-    M      = c_v_all.shape[0]
-    r0     = results.get('r0', input_data.derived['r0'])
-    ms     = np.arange(1, M + 1, dtype=float)
-    d_void = 2.0 * r0 * ms ** (1.0 / 3.0) * 1e9  # nm
-    return _plot_tem_distribution_panel(
-        d_void, c_v_all, dose, ms >= _N_MIN_TEM,
+    M         = c_v_all.shape[0]
+    r0        = results.get('r0', input_data.derived['r0'])
+    pref      = 2.0 * r0 * 1e9
+    bins_full = _visualization_bins(rate_eq_obj, M, kind='vac')
+    mu0_arr   = _aggregate_to_bins(c_v_all, bins_full)
+    return _plot_tem_density_panel(
+        bins_full, mu0_arr, dose,
         n_times=n_times,
+        xform=lambda m: pref * float(m) ** (1.0 / 3.0),
+        n_min=_N_MIN_TEM,
         xlabel='Void diameter (nm)',
+        ylabel=_DENSITY_LABEL_DIAM,
         plot_title=rf'TEM-Visible Cavity Diameters ($m\geq{_N_MIN_TEM}$) {title}',
-        cmap_name='plasma', use_loglog=False, out_path=out_path)
+        cmap_name='plasma', use_logx=False, out_path=out_path)
 
 
 def _reconstruct_distributions(results, input_data, rate_eq_obj):

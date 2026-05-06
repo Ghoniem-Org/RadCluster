@@ -840,6 +840,11 @@ class RadClusterSimulation:
         if solver_config is None:
             solver_config = self._default_solver_config()
 
+        # Explicit kwarg wins; otherwise fall back to the config-level default
+        # (added by _default_solver_config: 1 hour wall-clock cap).
+        if timeout_s is None:
+            timeout_s = solver_config.get('timeout_s')
+
         sm = self.input_data.solver_mode
         print(f"\nLaunching solver_mode='{sm}' …")
 
@@ -922,19 +927,30 @@ class RadClusterSimulation:
         if 'bin_moment' in po:
             linsol = 'gmres'
 
+        t_begin = float(re.get('t_begin', 1e-8))
+        t_end   = float(re.get('t_end',   1e7))
+
         return {
-            't_span':    (float(re.get('t_begin', 1e-8)),
-                          float(re.get('t_end',   1e7))),
+            't_span':    (t_begin, t_end),
             'n_points':  int(float(re.get('n_points', 200))),
             'log_time':  bool(int(float(re.get('log_time', 1)))),
             'rtol':      float(re.get('rtol', 1e-8)),
             'atol':      float(re.get('atol', 1e-20)),
+            # Wall-clock cap for the C++ solver; partial output is saved on
+            # timeout.  Override per-call via run(timeout_s=…) or by editing
+            # this entry in solver_config.
+            'timeout_s': float(re.get('timeout_s', 3600.0)),
             'solver_method': {
                 'linsol':               linsol,
                 'window_mode':          win_mode,
                 'window_width':         w_w,
                 'concentration_threshold': C_exp,
                 'window_pad':              10,
+                # CVODE max internal step.  Capping at t_end/10 prevents BDF
+                # from speculating across many simulated decades in one step
+                # (which leads to Newton failures at near-steady states).
+                # 0 means no limit; override via solver_method['hmax'].
+                'hmax':                 float(re.get('hmax', t_end / 10.0)),
             },
         }
 

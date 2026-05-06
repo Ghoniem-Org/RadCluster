@@ -159,6 +159,7 @@ struct Parameters {
     int mu, ml;     // band solver bandwidths
     int max_order;  // 0 = solver default
     double hmin;    // minimum step size (0 = no limit)
+    double hmax;    // maximum step size (0 = no limit)
 
     // ── Dynamic window (active_window) ────────────────────────────────────────
     // window_mode: 0=full_system, 4=active_window (two independent sliding windows + OpenMP-parallel RHS)
@@ -453,6 +454,7 @@ inline Parameters build_parameters(const std::map<std::string, double>& p) {
                                    static_cast<double>(P.N_eq - 1)));
     P.max_order = static_cast<int>(optional_param(p, "max_order", 4.0));
     P.hmin      = optional_param(p, "hmin", 0.0);
+    P.hmax      = optional_param(p, "hmax", 0.0);
 
     // Window parameters
     P.window_mode          = static_cast<int>(optional_param(p, "window_mode",       0.0));

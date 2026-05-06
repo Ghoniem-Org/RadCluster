@@ -186,21 +186,59 @@ def calculate_derived_quantities(t, y, input_data, rate_eq_obj,
                         else np.dot(ms, c_v)
         C_He_tot[j]  = c_h + Q_tot
 
-        # Mean cluster sizes (weighted average) — subtract C_floor so the
-        # uniform-floor IC does not contaminate ⟨n⟩ at very early times.
-        c_n_eff = np.maximum(c_n[1:] - C_floor, 0.0)
-        sum_cni_eff = np.sum(c_n_eff)
-        mean_n_i[j] = (np.dot(ns[1:], c_n_eff) / sum_cni_eff) \
-                      if sum_cni_eff > 0.0 else 0.0
+        # Mean cluster sizes and number densities — computed from tracked
+        # moments (μ₀, μ₁) to stay consistent with C_SIA_tot / C_VAC_tot.
+        # Floor subtraction is applied at the moment level (exact, no
+        # reconstruction): for a bin spanning [nlo, nhi) of width Δ, the
+        # uniform C_floor IC contributes Δ·C_floor to μ₀ and
+        # C_floor·Δ·(nlo+nhi-1)/2 to μ₁.
+        if is_bin:
+            # SIA: discrete (n=2..i_d) + binned
+            disc_i_eff   = np.maximum(yj[1:i_d] - C_floor, 0.0)
+            count_i      = float(np.sum(disc_i_eff))
+            content_i    = float(np.dot(ns_disc[1:], disc_i_eff))
+            if I_bin > 0:
+                for kb, (nlo, nhi) in enumerate(rate_eq_obj.bins):
+                    width   = float(nhi - nlo)
+                    sum_n   = width * (nlo + nhi - 1) / 2.0
+                    mu0_eff = max(float(mu0_j[kb]) - width * C_floor, 0.0)
+                    if P >= 2:
+                        mu1_eff = max(float(mu1_j[kb]) - C_floor * sum_n, 0.0)
+                    else:
+                        mu1_eff = mu0_eff * (nlo + nhi - 1) / 2.0
+                    count_i   += mu0_eff
+                    content_i += mu1_eff
+            N_loops[j]  = count_i
+            mean_n_i[j] = content_i / count_i if count_i > 0.0 else 0.0
 
-        c_v_eff = np.maximum(c_v[1:] - C_floor, 0.0)
-        sum_cvi_eff = np.sum(c_v_eff)
-        mean_n_v[j] = (np.dot(ms[1:], c_v_eff) / sum_cvi_eff) \
-                      if sum_cvi_eff > 0.0 else 0.0
-
-        # Number densities (clusters n,m ≥ 2)
-        N_loops[j] = np.sum(c_n[1:])
-        N_voids[j] = np.sum(c_v[1:])
+            # VAC: discrete (m=2..v_d) + binned
+            disc_v_eff   = np.maximum(yj[i_VAC + 1:i_VAC + v_d] - C_floor, 0.0)
+            count_v      = float(np.sum(disc_v_eff))
+            content_v    = float(np.dot(ms_disc[1:], disc_v_eff))
+            if V_bin > 0:
+                for kb, (mlo, mhi) in enumerate(rate_eq_obj.vac_bins):
+                    width   = float(mhi - mlo)
+                    sum_m   = width * (mlo + mhi - 1) / 2.0
+                    mu0_eff = max(float(vmu0[kb]) - width * C_floor, 0.0)
+                    if P >= 2:
+                        mu1_eff = max(float(vmu1[kb]) - C_floor * sum_m, 0.0)
+                    else:
+                        mu1_eff = mu0_eff * (mlo + mhi - 1) / 2.0
+                    count_v   += mu0_eff
+                    content_v += mu1_eff
+            N_voids[j]  = count_v
+            mean_n_v[j] = content_v / count_v if count_v > 0.0 else 0.0
+        else:
+            c_n_eff = np.maximum(c_n[1:] - C_floor, 0.0)
+            sum_cni_eff = np.sum(c_n_eff)
+            mean_n_i[j] = (np.dot(ns[1:], c_n_eff) / sum_cni_eff) \
+                          if sum_cni_eff > 0.0 else 0.0
+            c_v_eff = np.maximum(c_v[1:] - C_floor, 0.0)
+            sum_cvi_eff = np.sum(c_v_eff)
+            mean_n_v[j] = (np.dot(ms[1:], c_v_eff) / sum_cvi_eff) \
+                          if sum_cvi_eff > 0.0 else 0.0
+            N_loops[j] = np.sum(c_n[1:])
+            N_voids[j] = np.sum(c_v[1:])
 
         # Void swelling (Eq. 161): S = Σ_m m·c_m
         # V_m = m·Ω per cluster; c_m is cluster number density in at.frac;

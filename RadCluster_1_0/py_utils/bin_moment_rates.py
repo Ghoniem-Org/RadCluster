@@ -380,7 +380,8 @@ def distribution_from_moments_lognormal(mu0, mu1, mu2, bins, N_max):
     return c_n
 
 
-def reconstruct_distribution(shape_function, mu0, mu1, mu2, bins, N_max):
+def reconstruct_distribution(shape_function, mu0, mu1, mu2, bins, N_max,
+                             *, smooth_edges=False):
     """
     Dispatch to the appropriate reconstruction function.
 
@@ -392,19 +393,82 @@ def reconstruct_distribution(shape_function, mu0, mu1, mu2, bins, N_max):
     mu2 : ndarray [K] or None
     bins : list of (n_lo, n_hi)
     N_max : int
+    smooth_edges : bool, default False
+        If True, post-process the reconstructed distribution by averaging
+        the two values straddling each internal bin boundary (geometric
+        mean in log-space) and rescaling each bin so that
+        Σ_{n ∈ B_k} c_n equals its pre-smoothing sum, preserving μ_k^(0)
+        exactly. Use for visualization only — ODE right-hand sides and
+        conservation diagnostics must pass False.
 
     Returns
     -------
     c_n : ndarray [N_max]
     """
     if shape_function == 'constant':
-        return distribution_from_moments_pc(mu0, mu1, bins, N_max)
+        c_n = distribution_from_moments_pc(mu0, mu1, bins, N_max)
     elif shape_function == 'linear':
-        return distribution_from_moments_hat(mu0, mu1, bins, N_max)
+        c_n = distribution_from_moments_hat(mu0, mu1, bins, N_max)
     elif shape_function == 'lognormal':
-        return distribution_from_moments_lognormal(mu0, mu1, mu2, bins, N_max)
+        c_n = distribution_from_moments_lognormal(mu0, mu1, mu2, bins, N_max)
     else:
         raise ValueError(f"Unknown shape_function='{shape_function}'")
+
+    if smooth_edges:
+        _smooth_bin_edges_inplace(c_n, bins)
+    return c_n
+
+
+def _smooth_bin_edges_inplace(c_n, bins):
+    """
+    Visualization post-process: kill the staircase jumps at internal bin
+    boundaries while preserving each bin's μ_k^(0) exactly.
+
+    Algorithm:
+      1. Record each bin's pre-smoothing sum (= μ_k^(0) of the closure).
+      2. At each internal boundary, replace both straddling values
+         (last size of bin k, first size of bin k+1) with their
+         geometric mean (or arithmetic mean if either is non-positive).
+      3. Multiplicatively rescale each bin's interior so the sum is
+         restored to step 1.
+
+    Width-1 bins are effectively unchanged (the rescale undoes the mean).
+    First/last bins keep their outer edge untouched.
+    """
+    K = len(bins)
+    if K < 2:
+        return c_n
+    N_max = len(c_n)
+
+    pre_sums = np.empty(K)
+    for k, (nlo, nhi) in enumerate(bins):
+        idx_lo = max(nlo - 1, 0)
+        idx_hi = min(nhi - 1, N_max)
+        pre_sums[k] = np.sum(c_n[idx_lo:idx_hi]) if idx_hi > idx_lo else 0.0
+
+    for k in range(K - 1):
+        n_boundary = bins[k][1]      # = bins[k+1][0]
+        i_left  = n_boundary - 2     # 0-idx: last size of bin k
+        i_right = n_boundary - 1     # 0-idx: first size of bin k+1
+        if i_left < 0 or i_right >= N_max:
+            continue
+        v_l, v_r = c_n[i_left], c_n[i_right]
+        if v_l > 0.0 and v_r > 0.0:
+            avg = np.sqrt(v_l * v_r)
+        else:
+            avg = 0.5 * (v_l + v_r)
+        c_n[i_left]  = avg
+        c_n[i_right] = avg
+
+    for k, (nlo, nhi) in enumerate(bins):
+        idx_lo = max(nlo - 1, 0)
+        idx_hi = min(nhi - 1, N_max)
+        if idx_hi <= idx_lo or pre_sums[k] <= 0.0:
+            continue
+        new_sum = np.sum(c_n[idx_lo:idx_hi])
+        if new_sum > 0.0:
+            c_n[idx_lo:idx_hi] *= pre_sums[k] / new_sum
+    return c_n
 
 
 def distribution_from_moments_continuous(mu0, mu1, bins, N_max):

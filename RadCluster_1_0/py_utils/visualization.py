@@ -16,12 +16,16 @@ except ImportError:
 _CONC_LABEL = r'Concentration (m$^{-3}$)'
 
 _PLOT_FONTSIZE = 16
+_INTERIOR_LEGEND_FONTSIZE = 12
 if _HAS_MPL:
     plt.rcParams.update({
-        'axes.titlesize':  _PLOT_FONTSIZE,
-        'axes.labelsize':  _PLOT_FONTSIZE,
-        'xtick.labelsize': _PLOT_FONTSIZE,
-        'ytick.labelsize': _PLOT_FONTSIZE,
+        'axes.titlesize':       _PLOT_FONTSIZE,
+        'axes.labelsize':       _PLOT_FONTSIZE,
+        'xtick.labelsize':      _PLOT_FONTSIZE,
+        'ytick.labelsize':      _PLOT_FONTSIZE,
+        'legend.fontsize':      _PLOT_FONTSIZE,
+        'legend.title_fontsize': _PLOT_FONTSIZE,
+        'figure.titlesize':     _PLOT_FONTSIZE,
     })
 
 
@@ -49,7 +53,7 @@ _PLOT_CONFIG = {
     # vs loop/void diameter (nm).
     'size_dist':     {'xlim': (None, None), 'ylim': (None, None),
                       'xscale': None,       'yscale': None},
-    'legend_fontsize': 5,
+    'legend_fontsize': _PLOT_FONTSIZE,
 }
 
 
@@ -160,7 +164,7 @@ def plot_point_defects(results, out_path=None, title=''):
     ax.set_xlabel('Dose (dpa)')
     ax.set_ylabel(_CONC_LABEL)
     ax.set_title(f'Point Defects {title}')
-    ax.legend()
+    ax.legend(loc='best', fontsize=_INTERIOR_LEGEND_FONTSIZE)
     ax.grid(True, which='both', alpha=0.3)
     ax.set_xlim(left=_dose_xlim(dose))
     ax.set_ylim(bottom=1e14)
@@ -184,7 +188,7 @@ def plot_totals(results, out_path=None, title=''):
     ax.set_xlabel('Dose (dpa)')
     ax.set_ylabel(_CONC_LABEL)
     ax.set_title(f'Defect Contents {title}')
-    ax.legend()
+    ax.legend(loc='best', fontsize=_INTERIOR_LEGEND_FONTSIZE)
     ax.grid(True, which='both', alpha=0.3)
     _apply_axis_config(ax, 'concentration')
     fig.tight_layout()
@@ -210,33 +214,6 @@ def plot_swelling(results, out_path=None, title=''):
     return fig
 
 
-def plot_system_size(results, out_path=None, title=''):
-    """Active system size vs. dose. In active_window mode this tracks the
-    independent SIA and VAC sliding windows as they expand; in full_system
-    mode the curves are flat at the segment lengths."""
-    _check_mpl()
-    if 'n_active' not in results:
-        return None
-    fig, ax = plt.subplots(figsize=(7, 4))
-    dose = results['dose']
-    ax.semilogx(dose, results['n_active_sia'], label='SIA window', color='steelblue', lw=2)
-    ax.semilogx(dose, results['n_active_vac'], label='VAC window', color='tomato',    lw=2)
-    ax.semilogx(dose, results['n_active'],     label='total (SIA + VAC)',
-                color='black', lw=1.5, ls='--')
-    ax.set_xlabel('Dose (dpa)')
-    ax.set_ylabel('Active size (cluster bins)')
-    ax.set_title(f'Active System Size vs Dose {title}')
-    ax.legend()
-    ax.grid(True, alpha=0.3)
-    ax.set_xlim(left=_dose_xlim(dose))
-    ax.set_ylim(bottom=0)
-    _apply_axis_config(ax, 'scalar')
-    fig.tight_layout()
-    if out_path:
-        fig.savefig(out_path, dpi=150)
-    return fig
-
-
 def plot_mean_sizes(results, out_path=None, title=''):
     """Mean SIA and vacancy cluster sizes vs. dose."""
     _check_mpl()
@@ -247,7 +224,7 @@ def plot_mean_sizes(results, out_path=None, title=''):
     ax.set_xlabel('Dose (dpa)')
     ax.set_ylabel('Mean cluster size (defects)')
     ax.set_title(f'Mean Cluster Sizes {title}')
-    ax.legend()
+    ax.legend(loc='best', fontsize=_INTERIOR_LEGEND_FONTSIZE)
     ax.grid(True, alpha=0.3)
     ax.set_xlim(left=_dose_xlim(dose))
     ax.set_ylim(bottom=0)
@@ -268,38 +245,10 @@ def plot_he_content(results, out_path=None, title=''):
     ax.set_xlabel('Dose (dpa)')
     ax.set_ylabel(_CONC_LABEL)
     ax.set_title(f'Helium Content {title}')
-    ax.legend()
+    ax.legend(loc='best', fontsize=_INTERIOR_LEGEND_FONTSIZE)
     ax.grid(True, which='both', alpha=0.3)
     ax.set_xlim(left=_dose_xlim(dose))
     _apply_axis_config(ax, 'concentration')
-    fig.tight_layout()
-    if out_path:
-        fig.savefig(out_path, dpi=150)
-    return fig
-
-
-def plot_conservation(results, out_path=None, title=''):
-    """
-    FP balance and He retention diagnostics (Eqs. 164-165).
-
-    δ_FP = |Σn·n·c_n − Σm·m·c_m| / (η·G·t)  — SIA/VAC imbalance; near 0 = balanced.
-    δ_He = |c_h + Q_tot − G_He·t| / (G_He·t) — He retention; near 0 = all He in clusters/free.
-    """
-    _check_mpl()
-    fig, ax = plt.subplots(figsize=(7, 4))
-    dose = results['dose']
-    ax.semilogy(dose, np.maximum(results['delta_FP'], 1e-20),
-                label=r'$\delta_{FP}$ (SIA–VAC imbalance, Eq. 164)', color='navy')
-    ax.semilogy(dose, np.maximum(results['delta_He'], 1e-20),
-                label=r'$\delta_{He}$ (He retention, Eq. 165)', color='darkred')
-    ax.set_xlabel('Dose (dpa)')
-    ax.set_ylabel('Diagnostic (near 0 = good)')
-    ax.set_title(f'Balance Diagnostics {title}')
-    ax.legend()
-    ax.grid(True, alpha=0.3)
-    ax.set_xlim(left=_dose_xlim(dose))
-    ax.set_ylim(bottom=1e-5, top=10)
-    _apply_axis_config(ax, 'scalar')
     fig.tight_layout()
     if out_path:
         fig.savefig(out_path, dpi=150)
@@ -535,13 +484,13 @@ def plot_sia_distribution_evolution(results, input_data, n_times=10,
     ax1.set_xlabel('SIA cluster size n')
     ax1.set_ylabel(_CONC_LABEL)
     ax1.set_title(f'SIA Size Distribution {title}')
-    ax1.legend(fontsize=7, ncol=2, title='Dose')
+    ax1.legend(ncol=2, title='Dose', loc='best', fontsize=_INTERIOR_LEGEND_FONTSIZE)
     ax1.grid(True, which='both', alpha=0.3)
 
     ax2.set_xlabel('SIA loop diameter (nm)')
     ax2.set_ylabel(_CONC_LABEL)
     ax2.set_title(f'SIA Loop Size Distribution {title}')
-    ax2.legend(fontsize=7, ncol=2, title='Dose')
+    ax2.legend(ncol=2, title='Dose', loc='best', fontsize=_INTERIOR_LEGEND_FONTSIZE)
     ax2.grid(True, alpha=0.3)
 
     _apply_axis_config_to_fig(fig, 'size_dist')
@@ -588,13 +537,13 @@ def plot_void_distribution_evolution(results, input_data, n_times=10,
     ax1.set_xlabel('Vacancy cluster size m')
     ax1.set_ylabel(_CONC_LABEL)
     ax1.set_title(f'Void Size Distribution {title}')
-    ax1.legend(fontsize=7, ncol=2, title='Dose')
+    ax1.legend(ncol=2, title='Dose', loc='best', fontsize=_INTERIOR_LEGEND_FONTSIZE)
     ax1.grid(True, which='both', alpha=0.3)
 
     ax2.set_xlabel('Void diameter (nm)')
     ax2.set_ylabel(_CONC_LABEL)
     ax2.set_title(f'Void Diameter Distribution {title}')
-    ax2.legend(fontsize=7, ncol=2, title='Dose')
+    ax2.legend(ncol=2, title='Dose', loc='best', fontsize=_INTERIOR_LEGEND_FONTSIZE)
     ax2.grid(True, alpha=0.3)
 
     _apply_axis_config_to_fig(fig, 'size_dist')
@@ -616,7 +565,7 @@ def plot_number_densities(results, out_path=None, title=''):
     ax.set_xlabel('Dose (dpa)')
     ax.set_ylabel(r'Number density (m$^{-3}$)')
     ax.set_title(f'Loop and Void Number Densities {title}')
-    ax.legend()
+    ax.legend(loc='best', fontsize=_INTERIOR_LEGEND_FONTSIZE)
     ax.grid(True, which='both', alpha=0.3)
     ax.set_xlim(left=_dose_xlim(dose))
     _apply_axis_config(ax, 'concentration')
@@ -677,7 +626,7 @@ def plot_number_densities_tem(results, input_data, rate_eq_obj,
     ax.set_xlabel('Dose (dpa)')
     ax.set_ylabel(r'Number density (m$^{-3}$)')
     ax.set_title(f'TEM-Visible Number Densities {title}')
-    ax.legend(fontsize=8)
+    ax.legend(loc='best', fontsize=_INTERIOR_LEGEND_FONTSIZE)
     ax.grid(True, which='both', alpha=0.3)
     ax.set_xlim(left=_dose_xlim(full_dose), right=full_dose[-1])
     _apply_axis_config(ax, 'concentration')
@@ -726,32 +675,20 @@ def plot_mean_sizes_tem(results, input_data, rate_eq_obj,
         d_i_nm[j] = 2 * np.sqrt(mean_n_i_tem[j] * Omega / (np.pi * b_111)) * 1e9
         d_v_nm[j] = 2 * (3 * mean_n_v_tem[j] * Omega / (4 * np.pi))**(1./3.) * 1e9
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(13, 5))
-
-    # SIA loops
-    ax1.semilogx(dose, d_i_nm, color='steelblue', lw=2,
-                 label=rf'TEM-visible ($n\geq{_N_MIN_TEM}$)')
-    ax1.axhline(10.0, color='gray', ls='--', alpha=0.5, label='Exp. target (10 nm)')
-    ax1.set_xlabel('Dose (dpa)')
+    fig, ax = plt.subplots(figsize=(8, 6))
     full_dose = results['dose']
-    ax1.set_ylabel('Mean SIA loop diameter (nm)')
-    ax1.set_title(f'TEM-Visible SIA Loop Size {title}')
-    ax1.legend(fontsize=8)
-    ax1.grid(True, alpha=0.3)
-    ax1.set_xlim(left=_dose_xlim(full_dose), right=full_dose[-1])
-    ax1.set_ylim(bottom=0)
 
-    # Voids
-    ax2.semilogx(dose, d_v_nm, color='tomato', lw=2,
-                 label=rf'TEM-visible ($m\geq{_N_MIN_TEM}$)')
-    ax2.axhline(3.0, color='gray', ls='--', alpha=0.5, label='Exp. target (3 nm)')
-    ax2.set_xlabel('Dose (dpa)')
-    ax2.set_ylabel('Mean void diameter (nm)')
-    ax2.set_title(f'TEM-Visible Void Size {title}')
-    ax2.legend(fontsize=8)
-    ax2.grid(True, alpha=0.3)
-    ax2.set_xlim(left=_dose_xlim(full_dose), right=full_dose[-1])
-    ax2.set_ylim(bottom=0)
+    ax.plot(dose, d_i_nm, color='steelblue', lw=2,
+            label=rf'SIA loops ($n\geq{_N_MIN_TEM}$)')
+    ax.plot(dose, d_v_nm, color='tomato', lw=2,
+            label=rf'Voids ($m\geq{_N_MIN_TEM}$)')
+    ax.set_xlabel('Dose (dpa)')
+    ax.set_ylabel('Mean diameter (nm)')
+    ax.set_title(f'TEM-Visible Mean Cluster Sizes {title}')
+    ax.legend(loc='best', fontsize=_INTERIOR_LEGEND_FONTSIZE)
+    ax.grid(True, alpha=0.3)
+    ax.set_xlim(left=0, right=full_dose[-1])
+    ax.set_ylim(bottom=0)
 
     _apply_axis_config_to_fig(fig, 'scalar')
     fig.tight_layout()
@@ -760,56 +697,107 @@ def plot_mean_sizes_tem(results, input_data, rate_eq_obj,
     return fig
 
 
-def plot_sia_distribution_tem(results, input_data, rate_eq_obj,
-                              n_times=8, out_path=None, title=''):
-    """
-    SIA loop size distribution — TEM-visible range only.
-    Top: concentration vs cluster size (log-log, n ≥ N_MIN_TEM).
-    Bottom: concentration vs loop diameter in nm.
-    """
-    _check_mpl()
-
-    c_n_all, _, dose = _reconstruct_distributions(
-        results, input_data, rate_eq_obj)
-    if c_n_all is None:
-        return None
-
-    N = c_n_all.shape[0]
-    Omega = input_data.derived.get('Omega', _OMEGA)
-    b_111 = input_data.derived.get('b_111', _B_111)
-    ns = np.arange(1, N + 1, dtype=float)
-    d_loop = 2.0 * np.sqrt(ns * Omega / (np.pi * b_111)) * 1e9
-    mask = ns >= _N_MIN_TEM
-
+def _plot_tem_distribution_panel(x_vals, c_arr, dose, mask, *, n_times,
+                                 xlabel, plot_title, cmap_name,
+                                 use_loglog, out_path):
+    """Single-panel TEM-visible distribution plot. Shared by SIA / cavity."""
     indices = _log_snapshot_indices(dose, n_times)
-    cmap = plt.cm.viridis(np.linspace(0.15, 0.95, len(indices)))
+    cmap = getattr(plt.cm, cmap_name)(np.linspace(0.15, 0.95, len(indices)))
 
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 9))
-
+    fig, ax = plt.subplots(figsize=(8, 6))
+    plotter = ax.loglog if use_loglog else ax.semilogy
     for idx, color in zip(indices, cmap):
-        c_n = c_n_all[:, idx]
-        ax1.loglog(ns[mask], np.maximum(c_n[mask], 1e-10), color=color,
-                   marker='.', ms=3, label=f'{dose[idx]:.2e} dpa')
-        ax2.semilogy(d_loop[mask], np.maximum(c_n[mask], 1e-10), color=color,
-                     marker='.', ms=3, label=f'{dose[idx]:.2e} dpa')
-
-    ax1.set_xlabel('SIA cluster size n')
-    ax1.set_ylabel(_CONC_LABEL)
-    ax1.set_title(rf'TEM-Visible SIA Distribution ($n\geq{_N_MIN_TEM}$) {title}')
-    ax1.legend(fontsize=7, ncol=2, title='Dose')
-    ax1.grid(True, which='both', alpha=0.3)
-
-    ax2.set_xlabel('SIA loop diameter (nm)')
-    ax2.set_ylabel(_CONC_LABEL)
-    ax2.set_title(rf'TEM-Visible SIA Loop Diameters ($n\geq{_N_MIN_TEM}$) {title}')
-    ax2.legend(fontsize=7, ncol=2, title='Dose')
-    ax2.grid(True, which='both', alpha=0.3)
+        plotter(x_vals[mask], np.maximum(c_arr[mask, idx], 1e-10),
+                color=color, lw=1.5,
+                label=f'{dose[idx]:.2e} dpa')
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(_CONC_LABEL)
+    ax.set_title(plot_title)
+    ax.legend(ncol=2, title='Dose', loc='best', fontsize=_INTERIOR_LEGEND_FONTSIZE)
+    ax.grid(True, which='both', alpha=0.3)
 
     _apply_axis_config_to_fig(fig, 'size_dist')
     fig.tight_layout()
     if out_path:
         fig.savefig(out_path, dpi=150)
     return fig
+
+
+def plot_sia_distribution_tem_size(results, input_data, rate_eq_obj,
+                                   n_times=8, out_path=None, title=''):
+    """SIA distribution vs cluster size (TEM-visible, n ≥ N_MIN_TEM)."""
+    _check_mpl()
+    c_n_all, _, dose = _reconstruct_distributions(
+        results, input_data, rate_eq_obj)
+    if c_n_all is None:
+        return None
+    N  = c_n_all.shape[0]
+    ns = np.arange(1, N + 1, dtype=float)
+    return _plot_tem_distribution_panel(
+        ns, c_n_all, dose, ns >= _N_MIN_TEM,
+        n_times=n_times,
+        xlabel='SIA cluster size n',
+        plot_title=rf'TEM-Visible SIA Distribution ($n\geq{_N_MIN_TEM}$) {title}',
+        cmap_name='viridis', use_loglog=True, out_path=out_path)
+
+
+def plot_sia_distribution_tem_diameter(results, input_data, rate_eq_obj,
+                                       n_times=8, out_path=None, title=''):
+    """SIA distribution vs loop diameter (TEM-visible, n ≥ N_MIN_TEM)."""
+    _check_mpl()
+    c_n_all, _, dose = _reconstruct_distributions(
+        results, input_data, rate_eq_obj)
+    if c_n_all is None:
+        return None
+    N      = c_n_all.shape[0]
+    Omega  = input_data.derived.get('Omega', _OMEGA)
+    b_111  = input_data.derived.get('b_111', _B_111)
+    ns     = np.arange(1, N + 1, dtype=float)
+    d_loop = 2.0 * np.sqrt(ns * Omega / (np.pi * b_111)) * 1e9  # nm
+    return _plot_tem_distribution_panel(
+        d_loop, c_n_all, dose, ns >= _N_MIN_TEM,
+        n_times=n_times,
+        xlabel='SIA loop diameter (nm)',
+        plot_title=rf'TEM-Visible SIA Loop Diameters ($n\geq{_N_MIN_TEM}$) {title}',
+        cmap_name='viridis', use_loglog=False, out_path=out_path)
+
+
+def plot_vac_distribution_tem_size(results, input_data, rate_eq_obj,
+                                   n_times=8, out_path=None, title=''):
+    """Cavity distribution vs cluster size (TEM-visible, m ≥ N_MIN_TEM)."""
+    _check_mpl()
+    _, c_v_all, dose = _reconstruct_distributions(
+        results, input_data, rate_eq_obj)
+    if c_v_all is None:
+        return None
+    M  = c_v_all.shape[0]
+    ms = np.arange(1, M + 1, dtype=float)
+    return _plot_tem_distribution_panel(
+        ms, c_v_all, dose, ms >= _N_MIN_TEM,
+        n_times=n_times,
+        xlabel='Cavity cluster size m',
+        plot_title=rf'TEM-Visible Cavity Distribution ($m\geq{_N_MIN_TEM}$) {title}',
+        cmap_name='plasma', use_loglog=True, out_path=out_path)
+
+
+def plot_vac_distribution_tem_diameter(results, input_data, rate_eq_obj,
+                                       n_times=8, out_path=None, title=''):
+    """Cavity distribution vs void diameter (TEM-visible, m ≥ N_MIN_TEM)."""
+    _check_mpl()
+    _, c_v_all, dose = _reconstruct_distributions(
+        results, input_data, rate_eq_obj)
+    if c_v_all is None:
+        return None
+    M      = c_v_all.shape[0]
+    r0     = results.get('r0', input_data.derived['r0'])
+    ms     = np.arange(1, M + 1, dtype=float)
+    d_void = 2.0 * r0 * ms ** (1.0 / 3.0) * 1e9  # nm
+    return _plot_tem_distribution_panel(
+        d_void, c_v_all, dose, ms >= _N_MIN_TEM,
+        n_times=n_times,
+        xlabel='Void diameter (nm)',
+        plot_title=rf'TEM-Visible Cavity Diameters ($m\geq{_N_MIN_TEM}$) {title}',
+        cmap_name='plasma', use_loglog=False, out_path=out_path)
 
 
 def _reconstruct_distributions(results, input_data, rate_eq_obj):
@@ -819,7 +807,8 @@ def _reconstruct_distributions(results, input_data, rate_eq_obj):
 
     Returns (c_n, c_v, dose) or (None, None, None) on failure.
     """
-    from .bin_moment_rates import reconstruct_distribution
+    from .bin_moment_rates import (reconstruct_distribution,
+                                    distribution_from_moments_continuous)
 
     N     = input_data.I
     M     = input_data.V
@@ -840,6 +829,28 @@ def _reconstruct_distributions(results, input_data, rate_eq_obj):
     c_n_all = np.zeros((N, n_t))
     c_v_all = np.zeros((M, n_t))
 
+    def _bridge_discrete_to_bin(c_arr, j_idx, i_disc, bins_list):
+        # Visualization-only smoothing across the discrete↔bin transition.
+        # Adjusts only the leftmost-bin's first value (closure side) and
+        # rescales that bin so its zeroth moment is preserved.
+        if i_disc < 1 or not bins_list:
+            return
+        nlo, nhi = bins_list[0]
+        lo, hi = nlo - 1, nhi - 1   # 0-indexed bin extent (hi exclusive)
+        if hi <= lo:
+            return
+        v_disc = c_arr[i_disc - 1, j_idx]
+        v_bin  = c_arr[lo, j_idx]
+        if v_disc <= 0.0 or v_bin <= 0.0:
+            return
+        pre_sum = c_arr[lo:hi, j_idx].sum()
+        if pre_sum <= 0.0:
+            return
+        c_arr[lo, j_idx] = np.sqrt(v_disc * v_bin)
+        new_sum = c_arr[lo:hi, j_idx].sum()
+        if new_sum > 0.0:
+            c_arr[lo:hi, j_idx] *= pre_sum / new_sum
+
     for j in range(n_t):
         yj = np.maximum(y[:, j], 0.0)
         if is_bin:
@@ -852,8 +863,10 @@ def _reconstruct_distributions(results, input_data, rate_eq_obj):
                 mu1 = mom[1::P][:I_bin] if P >= 2 else None
                 mu2 = mom[2::P][:I_bin] if P >= 3 else None
                 c_binned = reconstruct_distribution(
-                    sf, mu0, mu1, mu2, rate_eq_obj.bins, N) * inv_O
+                    sf, mu0, mu1, mu2, rate_eq_obj.bins, N,
+                    smooth_edges=True) * inv_O
                 c_n_all[i_d:, j] = c_binned[i_d:]
+                _bridge_discrete_to_bin(c_n_all, j, i_d, rate_eq_obj.bins)
         else:
             c_n_all[:, j] = yj[:N] * inv_O
 
@@ -867,79 +880,23 @@ def _reconstruct_distributions(results, input_data, rate_eq_obj):
                 vmu0 = vmom[0::P][:V_bin]
                 vmu1 = vmom[1::P][:V_bin] if P >= 2 else None
                 vmu2 = vmom[2::P][:V_bin] if P >= 3 else None
-                c_v_binned = reconstruct_distribution(
-                    sf, vmu0, vmu1, vmu2,
-                    rate_eq_obj.vac_bins, M) * inv_O
+                # Vacancy distribution decays steeply, so the linear hat
+                # function clamps at bin edges and produces sawtooth cliffs.
+                # For viz only, use the C⁰-continuous reconstruction when
+                # the linear closure is active.
+                if sf == 'linear':
+                    c_v_binned = distribution_from_moments_continuous(
+                        vmu0, vmu1, rate_eq_obj.vac_bins, M) * inv_O
+                else:
+                    c_v_binned = reconstruct_distribution(
+                        sf, vmu0, vmu1, vmu2,
+                        rate_eq_obj.vac_bins, M, smooth_edges=True) * inv_O
                 c_v_all[v_d:, j] = c_v_binned[v_d:]
+                _bridge_discrete_to_bin(c_v_all, j, v_d, rate_eq_obj.vac_bins)
         else:
             c_v_all[:, j] = yj[iv:iv + M] * inv_O
 
     return c_n_all, c_v_all, dose
-
-
-def _reconstruct_smooth_distributions(results, input_data, rate_eq_obj):
-    """
-    Reconstruct smooth (midpoint-based) size distributions for plotting.
-
-    Uses the chosen shape function closure evaluated at geometric
-    bin midpoints.
-
-    Returns
-    -------
-    sia_mid : ndarray [K_i] — SIA bin midpoints
-    sia_conc: ndarray [K_i, n_t] — SIA concentration at midpoints (m^-3)
-    vac_mid : ndarray [K_v] — vacancy bin midpoints
-    vac_conc: ndarray [K_v, n_t] — vacancy concentration at midpoints (m^-3)
-    dose    : ndarray [n_t]
-    """
-    from .bin_moment_rates import midpoint_distribution_from_moments
-
-    y, dose = _align_dose_to_y(results)
-    Omega = results.get('Omega', input_data.derived['Omega'])
-    inv_O = 1.0 / Omega
-    n_t   = y.shape[1]
-
-    is_bin = hasattr(rate_eq_obj, 'bins')
-    I_bin  = getattr(rate_eq_obj, 'I_bin', getattr(rate_eq_obj, 'K_i', 0))
-    V_bin  = getattr(rate_eq_obj, 'V_bin', getattr(rate_eq_obj, 'K_v', 0))
-    i_d    = getattr(rate_eq_obj, 'i_discrete', 0)
-    v_d    = getattr(rate_eq_obj, 'v_discrete', 0)
-    iv     = getattr(rate_eq_obj, 'i_VAC', input_data.I)
-    P      = getattr(rate_eq_obj, 'n_mom', 2)
-    sf     = getattr(rate_eq_obj, 'shape_function', 'linear')
-
-    sia_mid = np.zeros(I_bin)
-    sia_conc = np.zeros((I_bin, n_t))
-    vac_mid = np.zeros(V_bin)
-    vac_conc = np.zeros((V_bin, n_t))
-
-    for j in range(n_t):
-        yj = np.maximum(y[:, j], 0.0)
-
-        if is_bin and I_bin > 0:
-            mom = yj[i_d:i_d + P * I_bin]
-            mu0 = mom[0::P][:I_bin]
-            mu1 = mom[1::P][:I_bin] if P >= 2 else None
-            mu2 = mom[2::P][:I_bin] if P >= 3 else None
-            mid, c = midpoint_distribution_from_moments(
-                mu0, mu1, rate_eq_obj.bins,
-                mu2=mu2, shape_function=sf)
-            sia_mid = mid
-            sia_conc[:, j] = c * inv_O
-
-        if is_bin and V_bin > 0:
-            vac_start = iv + v_d
-            vmom = yj[vac_start:vac_start + P * V_bin]
-            vmu0 = vmom[0::P][:V_bin]
-            vmu1 = vmom[1::P][:V_bin] if P >= 2 else None
-            vmu2 = vmom[2::P][:V_bin] if P >= 3 else None
-            mid, c = midpoint_distribution_from_moments(
-                vmu0, vmu1, rate_eq_obj.vac_bins,
-                mu2=vmu2, shape_function=sf)
-            vac_mid = mid
-            vac_conc[:, j] = c * inv_O
-
-    return sia_mid, sia_conc, vac_mid, vac_conc, dose
 
 
 # ── Bin-moment-aware plots ────────────────────────────────────────────────────
@@ -1005,13 +962,13 @@ def plot_sia_conc_vs_dose(results, input_data, rate_eq_obj,
     return fig
 
 
-def plot_vac_conc_vs_dose(results, input_data, rate_eq_obj,
-                          out_path=None, title=''):
+def _plot_vac_moment_vs_dose(results, input_data, rate_eq_obj,
+                             *, weight, ylabel, plot_title, out_path):
     """
-    (2) Cavity concentrations vs. dose — discrete sizes + bin mu0.
+    Cavity moment vs. dose — discrete sizes + bin mu0, weighted by `weight`.
 
-    Left panel: zeroth moment mu0 (number density per bin).
-    Right panel: vacancy content per bin (mu0 x midpoint).
+    weight='mu0'    → plot mu0 (number density per bin).
+    weight='content'→ plot mu0 * (m or midpoint) (vacancy content per bin).
     """
     _check_mpl()
     is_bin = hasattr(rate_eq_obj, 'bins')
@@ -1021,32 +978,28 @@ def plot_vac_conc_vs_dose(results, input_data, rate_eq_obj,
     Omega  = results.get('Omega', input_data.derived['Omega'])
     inv_O  = 1.0 / Omega
     y, dose = _align_dose_to_y(results)
+    use_content = (weight == 'content')
 
-    fig, axes = plt.subplots(1, 2, figsize=(14, 7))
+    fig, ax = plt.subplots(figsize=(8, 6))
     n_curves = v_d + V_bin if is_bin else min(input_data.V, 20)
     cmap = plt.cm.plasma(np.linspace(0.1, 0.85, max(n_curves, 1)))
 
     if is_bin:
         ci = 0
-        # Discrete vacancy sizes (1..v_discrete)
         for m in range(1, v_d + 1):
             cv = np.maximum(y[iv + m - 1, :], 0.0) * inv_O
-            axes[0].loglog(dose, np.maximum(cv, 1e-10), color=cmap[ci],
-                           label=f'm={m}')
-            axes[1].loglog(dose, np.maximum(cv * m, 1e-10), color=cmap[ci],
-                           label=f'm={m}')
+            vals = cv * m if use_content else cv
+            ax.loglog(dose, np.maximum(vals, 1e-10), color=cmap[ci],
+                      label=f'm={m}')
             ci += 1
-        # Binned vacancy (mu0 for each bin)
         if V_bin > 0:
             vac_mid = rate_eq_obj.vac_mid
             for k in range(V_bin):
                 mlo, mhi = rate_eq_obj.vac_bins[k]
                 mu0 = np.maximum(y[iv + v_d + k, :], 0.0) * inv_O
-                axes[0].loglog(dose, np.maximum(mu0, 1e-10), color=cmap[ci],
-                               label=f'm={mlo}-{mhi-1}')
-                content = mu0 * vac_mid[k]
-                axes[1].loglog(dose, np.maximum(content, 1e-10), color=cmap[ci],
-                               label=f'm={mlo}-{mhi-1}')
+                vals = mu0 * vac_mid[k] if use_content else mu0
+                ax.loglog(dose, np.maximum(vals, 1e-10), color=cmap[ci],
+                          label=f'm={mlo}-{mhi-1}')
                 ci += 1
     else:
         V = input_data.V
@@ -1056,30 +1009,46 @@ def plot_vac_conc_vs_dose(results, input_data, rate_eq_obj,
             if m > V:
                 break
             cv = np.maximum(y[iv + m - 1, :] * inv_O, 1e-10)
-            axes[0].loglog(dose, cv, color=cmap[i], label=f'm={m}')
-            axes[1].loglog(dose, cv * m, color=cmap[i], label=f'm={m}')
+            vals = cv * m if use_content else cv
+            ax.loglog(dose, vals, color=cmap[i], label=f'm={m}')
 
     full_dose = results['dose']
-    axes[0].set_xlabel('Dose (dpa)')
-    axes[0].set_ylabel(_CONC_LABEL)
-    axes[0].set_title(r'Cavity $\mu_k^{(0)}$ (number density) ' + title)
-    axes[0].grid(True, which='both', alpha=0.3)
-    axes[0].set_xlim(left=_dose_xlim(full_dose), right=full_dose[-1])
+    ax.set_xlabel('Dose (dpa)')
+    ax.set_ylabel(ylabel)
+    ax.set_title(plot_title)
+    ax.grid(True, which='both', alpha=0.3)
+    ax.set_xlim(left=_dose_xlim(full_dose), right=full_dose[-1])
 
-    axes[1].set_xlabel('Dose (dpa)')
-    axes[1].set_ylabel(r'Content $\mu_k^{(0)} \times \bar{m}_k$ (m$^{-3}$)')
-    axes[1].set_title(r'Cavity content per bin ' + title)
-    axes[1].grid(True, which='both', alpha=0.3)
-    axes[1].set_xlim(left=_dose_xlim(full_dose), right=full_dose[-1])
-
-    _apply_axis_config_to_fig(fig, 'concentration')
+    _apply_axis_config(ax, 'concentration')
     fig.tight_layout()
-    n_entries = len(axes[0].get_lines())
+    n_entries = len(ax.get_lines())
     ncol = min(10, max(2, (n_entries + 5) // 6))
-    _legend_below(fig, axes, ncol=ncol, bottom=0.30)
+    _legend_below(fig, ax, ncol=ncol, bottom=0.30)
     if out_path:
         fig.savefig(out_path, dpi=150, bbox_inches='tight')
     return fig
+
+
+def plot_vac_conc_vs_dose(results, input_data, rate_eq_obj,
+                          out_path=None, title=''):
+    """Cavity zeroth moment μ_k^(0) (number density per bin) vs. dose."""
+    return _plot_vac_moment_vs_dose(
+        results, input_data, rate_eq_obj,
+        weight='mu0',
+        ylabel=_CONC_LABEL,
+        plot_title=f'Cavity Cluster Concentrations {title}',
+        out_path=out_path)
+
+
+def plot_vac_content_vs_dose(results, input_data, rate_eq_obj,
+                             out_path=None, title=''):
+    """Cavity content per bin (μ_k^(0) × m̄_k) vs. dose."""
+    return _plot_vac_moment_vs_dose(
+        results, input_data, rate_eq_obj,
+        weight='content',
+        ylabel=r'Content $\mu_k^{(0)} \times \bar{m}_k$ (m$^{-3}$)',
+        plot_title=r'Cavity content per bin ' + title,
+        out_path=out_path)
 
 
 def _quarter_indices(dose):
@@ -1097,128 +1066,6 @@ def _logspaced_indices(dose, n_snap=8):
     fracs = np.linspace(1.0 / n_snap, 1.0, n_snap)
     targets = [10**(log_min + f * (log_max - log_min)) for f in fracs]
     return [int(np.argmin(np.abs(d - t))) for t in targets]
-
-
-def plot_sia_size_dist_quarters(results, input_data, rate_eq_obj,
-                                out_path=None, title='', n_snap=8):
-    """
-    (3) SIA size distribution at *n_snap* log-spaced dose snapshots.
-
-    Top panel: log-scale concentration vs cluster size n.
-    Bottom panel: linear-scale concentration vs SIA loop diameter (nm).
-    """
-    _check_mpl()
-    is_bin = hasattr(rate_eq_obj, 'bins') and getattr(rate_eq_obj, 'K_i', 0) > 0
-
-    if is_bin:
-        sia_mid, sia_conc, _, _, dose = _reconstruct_smooth_distributions(
-            results, input_data, rate_eq_obj)
-    else:
-        c_n, _, dose = _reconstruct_distributions(results, input_data, rate_eq_obj)
-        if c_n is None:
-            return None
-
-    Omega = results.get('Omega', input_data.derived['Omega'])
-    b_111 = results.get('b_111', input_data.derived['b_111'])
-
-    indices = _logspaced_indices(dose, n_snap)
-    cmap = plt.cm.viridis(np.linspace(0.15, 0.90, len(indices)))
-
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 9))
-    for i, idx in enumerate(indices):
-        if is_bin:
-            ns = sia_mid
-            cn = np.maximum(sia_conc[:, idx], 1e-10)
-            ax1.loglog(ns, cn, '-o', color=cmap[i], lw=1.5, ms=3,
-                       label=f'{dose[idx]:.2e} dpa')
-        else:
-            ns = np.arange(1, input_data.I + 1)
-            cn = np.maximum(c_n[:, idx], 1e-10)
-            ax1.semilogy(ns, cn, color=cmap[i], lw=1.5,
-                         label=f'{dose[idx]:.2e} dpa')
-
-        # Loop diameter: d = 2*sqrt(n*Omega / (pi*b))
-        d_loop = 2.0 * np.sqrt(ns * Omega / (np.pi * b_111)) * 1e9  # nm
-        ax2.plot(d_loop, cn, color=cmap[i], lw=1.5,
-                 label=f'{dose[idx]:.2e} dpa')
-
-    ax1.set_xlabel('SIA cluster size n')
-    ax1.set_ylabel(_CONC_LABEL)
-    ax1.set_title(f'SIA Size Distribution {title}')
-    ax1.legend(title='Dose', fontsize=7)
-    ax1.grid(True, which='both', alpha=0.3)
-
-    ax2.set_xlabel('SIA loop diameter (nm)')
-    ax2.set_ylabel(_CONC_LABEL)
-    ax2.set_title(f'SIA Loop Size Distribution {title}')
-    ax2.legend(title='Dose', fontsize=7)
-    ax2.grid(True, alpha=0.3)
-
-    _apply_axis_config_to_fig(fig, 'size_dist')
-    fig.tight_layout()
-    if out_path:
-        fig.savefig(out_path, dpi=150)
-    return fig
-
-
-def plot_vac_size_dist_quarters(results, input_data, rate_eq_obj,
-                                out_path=None, title='', n_snap=8):
-    """
-    (4) Cavity size distribution at *n_snap* log-spaced dose snapshots.
-
-    Top panel: log-scale concentration vs vacancy cluster size m.
-    Bottom panel: linear-scale concentration vs void diameter (nm).
-    """
-    _check_mpl()
-    is_bin = hasattr(rate_eq_obj, 'bins') and getattr(rate_eq_obj, 'K_v', 0) > 0
-
-    if is_bin:
-        _, _, vac_mid, vac_conc, dose = _reconstruct_smooth_distributions(
-            results, input_data, rate_eq_obj)
-    else:
-        _, c_v, dose = _reconstruct_distributions(results, input_data, rate_eq_obj)
-        if c_v is None:
-            return None
-
-    r0 = results.get('r0', input_data.derived['r0'])
-
-    indices = _logspaced_indices(dose, n_snap)
-    cmap = plt.cm.plasma(np.linspace(0.15, 0.90, len(indices)))
-
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 9))
-    for i, idx in enumerate(indices):
-        if is_bin:
-            ms = vac_mid
-            cv = np.maximum(vac_conc[:, idx], 1e-10)
-        else:
-            ms = np.arange(1, input_data.V + 1)
-            cv = np.maximum(c_v[:, idx], 1e-10)
-
-        ax1.loglog(ms, cv, '-o', color=cmap[i], lw=1.5, ms=3,
-                   label=f'{dose[idx]:.2e} dpa')
-
-        # Void diameter: d = 2*r0*m^(1/3)
-        d_void = 2.0 * r0 * ms ** (1.0 / 3.0) * 1e9  # nm
-        ax2.plot(d_void, cv, color=cmap[i], lw=1.5,
-                 label=f'{dose[idx]:.2e} dpa')
-
-    ax1.set_xlabel('Cavity cluster size m')
-    ax1.set_ylabel(_CONC_LABEL)
-    ax1.set_title(f'Cavity Size Distribution {title}')
-    ax1.legend(title='Dose', fontsize=7)
-    ax1.grid(True, which='both', alpha=0.3)
-
-    ax2.set_xlabel('Void diameter (nm)')
-    ax2.set_ylabel(_CONC_LABEL)
-    ax2.set_title(f'Cavity Diameter Distribution {title}')
-    ax2.legend(title='Dose', fontsize=7)
-    ax2.grid(True, alpha=0.3)
-
-    _apply_axis_config_to_fig(fig, 'size_dist')
-    fig.tight_layout()
-    if out_path:
-        fig.savefig(out_path, dpi=150)
-    return fig
 
 
 def plot_sia_fraction_breakdown(results, out_path=None, title=''):
@@ -1261,7 +1108,7 @@ def plot_sia_fraction_breakdown(results, out_path=None, title=''):
     ax.set_xlabel('Dose (dpa)')
     ax.set_ylabel('Fraction of total SIA produced')
     ax.set_title(f'SIA Content Balance {title}')
-    ax.legend(fontsize=9)
+    ax.legend(loc='best', fontsize=_INTERIOR_LEGEND_FONTSIZE)
     ax.grid(True, alpha=0.3)
     ax.set_ylim(-0.05, 1.15)
     ax.set_xlim(left=_dose_xlim(dose))
@@ -1311,7 +1158,7 @@ def plot_vac_fraction_breakdown(results, out_path=None, title=''):
     ax.set_xlabel('Dose (dpa)')
     ax.set_ylabel('Fraction of total VAC produced')
     ax.set_title(f'Vacancy Content Balance {title}')
-    ax.legend(fontsize=9)
+    ax.legend(loc='best', fontsize=_INTERIOR_LEGEND_FONTSIZE)
     ax.grid(True, alpha=0.3)
     ax.set_ylim(-0.05, 1.15)
     ax.set_xlim(left=_dose_xlim(dose))
@@ -1322,47 +1169,133 @@ def plot_vac_fraction_breakdown(results, out_path=None, title=''):
     return fig
 
 
+PLOT_DATA_FILENAME = 'plot_data.pkl'
+
+
+def _atomic_pickle_dump(payload, out_path):
+    """Pickle to a sibling .tmp file, fsync, then atomic-rename to out_path.
+
+    A crash, Ctrl+C, or OOM during the dump leaves the .tmp behind (cleaned
+    up here on its way out) and never touches an existing good file at
+    out_path.  Callers can therefore re-load the previous run's pickle even
+    if the latest save was interrupted.
+    """
+    import os, pickle
+    out_path = str(out_path)
+    tmp_path = out_path + '.tmp'
+    try:
+        with open(tmp_path, 'wb') as f:
+            pickle.dump(payload, f, protocol=pickle.HIGHEST_PROTOCOL)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp_path, out_path)
+    except BaseException:
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
+        raise
+
+
+def save_plot_data(results, input_data, out_path, *, rate_eq_obj=None, label=''):
+    """
+    Pickle everything needed to regenerate the plots later.
+
+    The dump contains the full `results` dict, the `InputData` object, the
+    rate-equation object (if provided), and the title `label` so a notebook
+    can call any plot function later without re-running the simulation.
+
+    Writes are atomic (temp file + os.replace) so an interrupt mid-dump
+    never leaves a truncated pickle at `out_path`.
+    """
+    payload = {
+        'results':     results,
+        'input_data':  input_data,
+        'rate_eq_obj': rate_eq_obj,
+        'label':       label,
+    }
+    _atomic_pickle_dump(payload, out_path)
+
+
+def load_plot_data(path):
+    """Inverse of save_plot_data — returns the dict that was pickled."""
+    import pickle
+    with open(path, 'rb') as f:
+        return pickle.load(f)
+
+
+def _safe_save(artifact, fn, *args, **kwargs):
+    """Run a save call, catching/printing any failure with a traceback.
+
+    KeyboardInterrupt is NOT caught here — it propagates so the outer
+    interrupt shield (see simulation._InterruptDeferred) can decide whether
+    to defer it through the rest of the save or escalate.
+    """
+    try:
+        fn(*args, **kwargs)
+        return True
+    except KeyboardInterrupt:
+        raise
+    except Exception as exc:
+        import traceback
+        print(f"  ✗ {artifact}: {type(exc).__name__}: {exc}")
+        traceback.print_exc()
+        return False
+
+
 def save_all_plots(results, input_data, out_dir, label='',
                    rate_eq_obj=None):
-    """Save all standard plots to out_dir/."""
+    """Save all standard plots to out_dir/.
+
+    Each artifact (the pickle and every PNG) is wrapped in its own
+    try/except so a single failure cannot abort the rest.  The pickle uses
+    atomic writes; if it fails, any pre-existing good pickle is preserved.
+    """
     from pathlib import Path
     Path(out_dir).mkdir(parents=True, exist_ok=True)
 
+    # Persist plotting inputs (atomic; previous good file is preserved on failure).
+    _safe_save(PLOT_DATA_FILENAME,
+               save_plot_data, results, input_data,
+               f"{out_dir}/{PLOT_DATA_FILENAME}",
+               rate_eq_obj=rate_eq_obj, label=label)
+
     opts = dict(title=label)
-    plot_sia_fraction_breakdown(results, out_path=f"{out_dir}/sia_balance.png", **opts)
-    plot_vac_fraction_breakdown(results, out_path=f"{out_dir}/vac_balance.png", **opts)
-    plot_point_defects(results,      out_path=f"{out_dir}/point_defects.png",    **opts)
-    plot_totals(results,             out_path=f"{out_dir}/totals.png",            **opts)
-    plot_swelling(results,           out_path=f"{out_dir}/swelling.png",          **opts)
-    plot_mean_sizes(results,         out_path=f"{out_dir}/mean_sizes.png",        **opts)
-    plot_system_size(results,        out_path=f"{out_dir}/system_size.png",       **opts)
-    plot_he_content(results,         out_path=f"{out_dir}/he_content.png",        **opts)
-    plot_conservation(results,       out_path=f"{out_dir}/conservation.png",      **opts)
-    plot_number_densities(results,   out_path=f"{out_dir}/number_densities.png",  **opts)
-    plot_size_distribution(results, input_data, out_path=f"{out_dir}/size_distributions.png", **opts)
-    plot_sia_distribution_evolution(results, input_data, out_path=f"{out_dir}/sia_dist_evolution.png", **opts)
-    plot_void_distribution_evolution(results, input_data, out_path=f"{out_dir}/void_dist_evolution.png", **opts)
-    # Per-cluster time-series (full_CD modes only; skipped for bin_moment)
-    plot_sia_clusters(results, input_data, out_path=f"{out_dir}/sia_small.png",  **opts)
-    plot_vac_clusters(results, input_data, out_path=f"{out_dir}/vac_small.png",  **opts)
+    common = [
+        ('sia_balance.png',         plot_sia_fraction_breakdown,      (results,)),
+        ('vac_balance.png',         plot_vac_fraction_breakdown,      (results,)),
+        ('point_defects.png',       plot_point_defects,               (results,)),
+        ('totals.png',              plot_totals,                      (results,)),
+        ('swelling.png',            plot_swelling,                    (results,)),
+        ('mean_sizes.png',          plot_mean_sizes,                  (results,)),
+        ('he_content.png',          plot_he_content,                  (results,)),
+        ('number_densities.png',    plot_number_densities,            (results,)),
+        ('size_distributions.png',  plot_size_distribution,           (results, input_data)),
+        ('sia_dist_evolution.png',  plot_sia_distribution_evolution,  (results, input_data)),
+        ('void_dist_evolution.png', plot_void_distribution_evolution, (results, input_data)),
+        # Per-cluster time-series (full_CD modes only; skipped for bin_moment)
+        ('sia_small.png',           plot_sia_clusters,                (results, input_data)),
+        ('vac_small.png',           plot_vac_clusters,                (results, input_data)),
+    ]
+    for name, fn, args in common:
+        _safe_save(name, fn, *args, out_path=f"{out_dir}/{name}", **opts)
 
     # (1)-(4) Bin-moment-aware plots (work for both full_CD and bin_moment)
     if rate_eq_obj is not None:
-        plot_sia_conc_vs_dose(results, input_data, rate_eq_obj,
-                              out_path=f"{out_dir}/sia_bin_conc.png", **opts)
-        plot_vac_conc_vs_dose(results, input_data, rate_eq_obj,
-                              out_path=f"{out_dir}/vac_bin_conc.png", **opts)
-        plot_sia_size_dist_quarters(results, input_data, rate_eq_obj,
-                                    out_path=f"{out_dir}/sia_dist_quarters.png", **opts)
-        plot_vac_size_dist_quarters(results, input_data, rate_eq_obj,
-                                    out_path=f"{out_dir}/vac_dist_quarters.png", **opts)
-
-        # TEM-visible plots (n,m ≥ 10)
-        plot_number_densities_tem(results, input_data, rate_eq_obj,
-                                  out_path=f"{out_dir}/number_densities_tem.png", **opts)
-        plot_mean_sizes_tem(results, input_data, rate_eq_obj,
-                            out_path=f"{out_dir}/mean_sizes_tem.png", **opts)
-        plot_sia_distribution_tem(results, input_data, rate_eq_obj,
-                                  out_path=f"{out_dir}/sia_dist_tem.png", **opts)
+        bin_aware = [
+            ('sia_bin_conc.png',          plot_sia_conc_vs_dose),
+            ('vac_bin_conc.png',          plot_vac_conc_vs_dose),
+            ('vac_bin_content.png',       plot_vac_content_vs_dose),
+            # TEM-visible plots (n,m ≥ 10)
+            ('number_densities_tem.png',  plot_number_densities_tem),
+            ('mean_sizes_tem.png',        plot_mean_sizes_tem),
+            ('sia_dist_tem_size.png',     plot_sia_distribution_tem_size),
+            ('sia_dist_tem_diameter.png', plot_sia_distribution_tem_diameter),
+            ('vac_dist_tem_size.png',     plot_vac_distribution_tem_size),
+            ('vac_dist_tem_diameter.png', plot_vac_distribution_tem_diameter),
+        ]
+        for name, fn in bin_aware:
+            _safe_save(name, fn, results, input_data, rate_eq_obj,
+                       out_path=f"{out_dir}/{name}", **opts)
 
     print(f"Saved plots to {out_dir}/")

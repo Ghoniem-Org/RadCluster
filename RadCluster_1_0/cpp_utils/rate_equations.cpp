@@ -1488,6 +1488,38 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
         }
     }
 
+    // ── Discrete-discrete SIA coalescence with BINNED product ─────────────
+    // The discrete-discrete losses (D_np at L1310, D_sn at L1316) fire for
+    // any pair (sn, np) ≤ i_d when at least one is mobile.  The matching
+    // GAIN was missing for pairs whose product sn+np > i_d: the in-discrete
+    // gain block is gated by sn ≤ i_d, and the discrete-binned loop above
+    // only handles binned targets.  Add the missing gain at the binned
+    // product here, mirroring the D_sn ordering of the loss loop — when np
+    // is the mobile projectile, its contribution is added in the iteration
+    // where sn_proj=np in this loop.
+    for (int n = 1; n < std::min(i_d, P.i_mobile); ++n) {
+        const int sn = n + 1;
+        const double cn = std::max(c_n[n], 0.0);
+        if (cn < 1e-300) continue;
+        if (P.D_SIA_eff[sn - 1] < 1e-300) continue;
+        int kp = 0;
+        for (int np = 1; np <= i_d; ++np) {
+            const int prod = sn + np;
+            if (prod <= i_d) continue;   // discrete product handled at L1301-L1308
+            if (prod > I)    continue;   // overflow handled by reflection block
+            const double c_np = std::max(c_n[np - 1], 0.0);
+            if (c_np < 1e-300) continue;
+            const double rate = K_ii_coal(P, np, sn) * cn * c_np;
+            while (kp < Ib && prod >= n_hi[kp]) ++kp;
+            if (kp < Ib && prod >= n_lo[kp]) {
+                const double pf = static_cast<double>(prod);
+                coal_dmu0[kp] += rate;
+                if (PM >= 2) coal_dmu1[kp] += pf * rate;
+                if (PM >= 3) coal_dmu2[kp] += pf * pf * rate;
+            }
+        }
+    }
+
     // ── Project dc_n into dydt ────────────────────────────────────────────
     // Discrete sizes: direct copy
     for (int n = 0; n < i_d; ++n)

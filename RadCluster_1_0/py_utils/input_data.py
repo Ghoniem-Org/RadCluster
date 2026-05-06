@@ -42,6 +42,24 @@ from pathlib import Path
 
 _kB = 8.617333262e-5          # Boltzmann constant [eV K^-1]
 
+
+class _D1DFunction:
+    """Module-level callable for the SIA 1D-glide diffusivity D_n^{1D}(n).
+
+    Defined at module scope (rather than as a closure inside
+    InputData._calculate_derived) so that an InputData object containing a
+    reference to it can be pickled — local closures are not picklable.
+    """
+    __slots__ = ('D1D_base', 's_1D', 'trap_loop')
+
+    def __init__(self, D1D_base, s_1D, trap_loop):
+        self.D1D_base = D1D_base
+        self.s_1D     = s_1D
+        self.trap_loop = trap_loop
+
+    def __call__(self, n):
+        return self.D1D_base / float(n) ** self.s_1D / (1.0 + self.trap_loop)
+
 BASE_DIR   = Path(__file__).parent.parent
 INPUT_FILE = BASE_DIR / 'input' / 'input_parameters.xlsx'
 
@@ -368,9 +386,9 @@ class InputData:
         # D_n^{1D}(n) = (3a²ν_0^{1D}) / (2n^{s_1D}) · exp(−E_m^{1D}/k_BT)  (Eq. 33)
         D1D_base = (3.0 * a_m**2 * nu0_1D / 2.0) * np.exp(-E_m_1D / kBT)
 
-        # Loop trapping correction for 1D glide (Eq. 52)
-        def D1D(n):
-            return D1D_base / float(n)**s_1D / (1.0 + trap_loop)
+        # Loop trapping correction for 1D glide (Eq. 52).
+        # Module-level callable (picklable); same call signature D1D(n).
+        D1D = _D1DFunction(D1D_base, s_1D, trap_loop)
 
         # Mean free path for 1D/3D mixed (Eq. 121)
         L_hat = float(d.get('L_hat', 50.0))   # L/a (dimensionless)

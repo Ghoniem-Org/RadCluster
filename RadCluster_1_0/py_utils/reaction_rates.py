@@ -335,12 +335,11 @@ class ReactionRates:
         # V–SIA recombination scalar (Eq. 130)
         self.K_iv = K_iv_scalar
 
-        # Store callables for He-vacancy reactions (used in full 2D grid mode)
+        # Store callables for He-vacancy reactions (used in full 2D grid mode).
+        # These are nested functions — excluded from pickling via __getstate__.
         self.alpha_bubble_fn  = alpha_bubble
         self.alpha_He_emit_fn = alpha_He_emit
         self.K_1D_eff_fn      = K_1D_eff
-        self.Gamma_TM_fn      = lambda m, ell: Gamma_TM(m, ell, T, nu0_TM)
-        self.Gamma_res_fn     = lambda ell: Gamma_res(ell, G, b0_res)
 
         # 3D cavity absorption prefactor: A_sph · Di_eff / Ω^{2/3}
         # Used for mobile SIA clusters n=1..3 hitting cavities (Eq. K_cav, 3D branch)
@@ -381,6 +380,15 @@ class ReactionRates:
         self.B_rot  = B_rot
         self.L_hat  = L_hat
         self.alpha_He = alpha_He
+
+    def __getstate__(self):
+        # Nested-function attributes from _precompute can't be pickled.
+        # They are reconstructable but unused after unpickling (replot path
+        # only reads data arrays), so drop them.
+        state = self.__dict__.copy()
+        for k in ('alpha_bubble_fn', 'alpha_He_emit_fn', 'K_1D_eff_fn'):
+            state.pop(k, None)
+        return state
 
     def format_diagnostic(self, mean_n_i=None):
         """Return key rate constants as a formatted string.

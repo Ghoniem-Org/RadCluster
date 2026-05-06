@@ -36,6 +36,7 @@ is silently aliased to 'discrete'.
 import time as _time
 import os
 import platform
+import signal as _signal
 import sys
 from pathlib import Path
 from datetime import datetime
@@ -50,6 +51,67 @@ from .                import post_process
 
 
 BASE_DIR = Path(__file__).parent.parent
+
+
+class _InterruptDeferred:
+    """Defer SIGINT through a critical save block.
+
+    First Ctrl+C inside the block prints a notice and continues — the save
+    finishes flushing partial output, then KeyboardInterrupt is re-raised
+    on exit.  A second Ctrl+C inside the same block restores the default
+    handler so the user can force-abort if a save step is hung.
+
+    Only used in main-thread Python contexts; signal.signal raises
+    ValueError off the main thread, so we silently fall back to a no-op.
+    """
+    __slots__ = ('_msg', '_caught', '_prev', '_active')
+
+    def __init__(self, msg=('Ctrl+C — finishing pending writes before exit. '
+                            'Press Ctrl+C again to force-abort.')):
+        self._msg     = msg
+        self._caught  = False
+        self._prev    = None
+        self._active  = False
+
+    def __enter__(self):
+        try:
+            self._prev = _signal.getsignal(_signal.SIGINT)
+            _signal.signal(_signal.SIGINT, self._handler)
+            self._active = True
+        except (ValueError, OSError):
+            # Off main thread, or signal not available — no-op.
+            self._active = False
+        return self
+
+    def _handler(self, signum, frame):
+        if not self._caught:
+            self._caught = True
+            try:
+                print(f"\n*** {self._msg}", flush=True)
+            except Exception:
+                pass
+        else:
+            # User insisted — restore previous handler and re-raise now.
+            try:
+                _signal.signal(_signal.SIGINT, self._prev)
+            except Exception:
+                pass
+            self._active = False
+            raise KeyboardInterrupt
+
+    def __exit__(self, exc_type, exc, tb):
+        if self._active:
+            try:
+                _signal.signal(_signal.SIGINT, self._prev)
+            except Exception:
+                pass
+            self._active = False
+        # If a Ctrl+C arrived during the block and no other exception is
+        # already propagating, raise it now so the caller still sees the
+        # interrupt — just after the partial output has been written.
+        if self._caught and exc_type is None:
+            raise KeyboardInterrupt
+        return False
 
 
 class RadClusterSimulation:
@@ -925,7 +987,18 @@ class RadClusterSimulation:
         Resilient to partial/interrupted runs: each artifact (provenance,
         summary, diagnostics, .npy, plots) is written under its own try/except
         so a failure in one does not abort the others.
+
+        The whole body runs under an `_InterruptDeferred` shield so that a
+        Ctrl+C arriving mid-save does not abandon partially-written files —
+        the current write completes, the rest of the artifacts are flushed,
+        then the interrupt is re-raised for the caller.  A second Ctrl+C in
+        the same block restores the default handler so the user can still
+        force-abort if a save step hangs.
         """
+        with _InterruptDeferred():
+            return self._save_output_impl(results, solver_config)
+
+    def _save_output_impl(self, results, solver_config):
         sm = self.input_data.solver_mode
         po = self.input_data.physics_option
         I  = self.input_data.I

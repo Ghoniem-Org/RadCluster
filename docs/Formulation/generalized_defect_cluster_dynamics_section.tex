@@ -1,0 +1,970 @@
+%===================================================================
+\section{Generalized Defect-Cluster Population Dynamics}
+\label{sec:general_defect_cluster_dynamics}
+%===================================================================
+
+This section develops a generalized master-equation formulation for the
+population dynamics of defect clusters in irradiated crystalline solids. The
+formulation is intended to describe the production of vacancies,
+self-interstitial atoms, and gas atoms by irradiation; the subsequent formation
+and evolution of interstitial and vacancy-cluster populations; the trapping and
+release of gas atoms by vacancy clusters; and cross-species collisions between
+interstitial and vacancy clusters. The formulation is written first in an
+abstract reaction-network form, then in a code-generation-ready form, and
+finally specialized to the vacancy--interstitial--helium system.
+
+The resolved defect-cluster system contains two primary species classes:
+\begin{equation}
+    \mathcal{C}_I
+    =
+    \text{interstitial clusters},
+    \qquad
+    \mathcal{C}_V
+    =
+    \text{vacancy clusters/cavities}.
+\end{equation}
+Vacancy clusters are also referred to as \emph{cavities}. A cavity may be an
+empty void or a gas-bearing bubble. Gas atoms that are not trapped in cavities
+are represented by a matrix gas reservoir. Gas atoms do not form a third
+resolved cluster class in the present formulation, and gas--gas reactions are
+not allowed.
+
+%===================================================================
+\subsection{Primitive Species and Gas Reservoir}
+\label{sec:primitive_species_and_gas_reservoir}
+%===================================================================
+
+Let the primitive irradiation-produced species be
+\begin{equation}
+    \mathcal{E}=\{I,V,\mathbf{g}\},
+\end{equation}
+where $I$ denotes a self-interstitial atom, $V$ denotes a vacancy, and
+$\mathbf{g}$ denotes an ordered list of gas species. The gas list is written as
+\begin{equation}
+    \mathbf{g}
+    =
+    (g_1,g_2,\ldots,g_{N_g}),
+    \label{eq:gas_species_list}
+\end{equation}
+where $N_g$ is the number of gas species included in the model. Depending on
+the physical application,
+\begin{equation}
+    \mathbf{g}=\varnothing,
+    \qquad
+    \mathbf{g}=(\mathrm{He}),
+    \qquad
+    \mathbf{g}=(\mathrm{H},\mathrm{T}),
+    \qquad
+    \mathbf{g}=(\mathrm{Xe}),
+\end{equation}
+or a larger gas-species list may be used.
+
+Gas atoms in the matrix are represented by reservoir concentrations
+\begin{equation}
+    c^g_\mu(t),
+    \qquad
+    \mu=1,\ldots,N_g,
+    \label{eq:gas_reservoir_concentration}
+\end{equation}
+where $\mu$ labels the gas species $g_\mu$. These variables represent
+monomeric gas atoms in the matrix reservoir. They are coupled to vacancy
+clusters through trapping, emission, re-solution, and gas release from
+eliminated cavities. The model does not include reactions of the type
+\begin{equation}
+    g_\mu+g_\nu\longrightarrow \text{gas cluster},
+\end{equation}
+so gas-only clusters are excluded.
+
+%===================================================================
+\subsection{Species Classes, Defect Populations, and State Variables}
+\label{sec:species_classes_populations_state_variables}
+%===================================================================
+
+The formulation distinguishes between a \emph{species class} and a
+\emph{defect population}. A species class identifies the broad physical type of
+defect cluster. A defect population identifies a subcollection of clusters
+within a species class that share the same mobility law, orientation state,
+microstructural environment, or sink coupling.
+
+The interstitial-cluster species class is denoted by $\mathcal{C}_I$. Its
+defect populations are denoted by
+\begin{equation}
+    \mathcal{P}_I^\alpha \subset \mathcal{C}_I,
+    \qquad
+    \alpha=1,\ldots,N_P^I .
+\end{equation}
+The label $\alpha$ is a population label, not a cluster-size index. For
+example, different interstitial-cluster populations may represent mobile SIA
+clusters, sessile SIA loops, loops aligned with a principal stress direction,
+or loops not aligned with that direction.
+
+The vacancy-cluster species class is denoted by $\mathcal{C}_V$. Its defect
+populations are denoted by
+\begin{equation}
+    \mathcal{P}_V^\beta \subset \mathcal{C}_V,
+    \qquad
+    \beta=1,\ldots,N_P^V .
+\end{equation}
+The label $\beta$ is also a population label. For example, different
+vacancy-cluster populations may represent bulk cavities, dislocation-attached
+cavities, grain-boundary cavities, or surface-attached cavities.
+
+An interstitial-cluster state is written as
+\begin{equation}
+    I_{n,\alpha},
+    \qquad
+    n=1,\ldots,N_I,
+    \qquad
+    \alpha=1,\ldots,N_P^I,
+    \label{eq:I_state}
+\end{equation}
+where $n$ is the number of self-interstitial atoms and $\alpha$ identifies the
+interstitial-cluster population. Its concentration is
+\begin{equation}
+    c^I_{n,\alpha}(t).
+    \label{eq:I_concentration}
+\end{equation}
+
+A vacancy-cluster, or cavity, state is written as
+\begin{equation}
+    V_{m,\boldsymbol{\ell},\beta},
+    \qquad
+    m=1,\ldots,N_V,
+    \qquad
+    \boldsymbol{\ell}\in\mathcal{G}_m,
+    \qquad
+    \beta=1,\ldots,N_P^V .
+    \label{eq:V_state}
+\end{equation}
+Here $m$ is the number of vacancies in the cavity, $\beta$ identifies the
+vacancy-cluster population, and
+\begin{equation}
+    \boldsymbol{\ell}
+    =
+    (\ell_1,\ell_2,\ldots,\ell_{N_g})
+    \in \mathbb{Z}_{\geq 0}^{N_g}
+    \label{eq:gas_occupancy_vector}
+\end{equation}
+is the gas inventory trapped inside the cavity. The component $\ell_\mu$ is
+the number of atoms of gas species $g_\mu$ trapped inside the cavity. The set
+$\mathcal{G}_m$ denotes the admissible gas occupancies for a cavity containing
+$m$ vacancies. Its concentration is
+\begin{equation}
+    c^V_{m,\boldsymbol{\ell},\beta}(t).
+    \label{eq:V_concentration}
+\end{equation}
+
+The notation $V_{m,\boldsymbol{\ell},\beta}$ denotes a vacancy-cluster, or cavity, state. Conventional chemical notation may be recovered as a
+special case. For example, if $\mathbf{g}=(\mathrm{He})$, then
+\begin{equation}
+    V_{m,(\ell),\beta}
+    \quad\text{denotes}\quad
+    V_m\mathrm{He}_{\ell}
+    \quad\text{in population }\beta .
+\end{equation}
+If $\mathbf{g}=(\mathrm{He},\mathrm{T})$, then
+\begin{equation}
+    V_{m,(\ell,p),\beta}
+    \quad\text{denotes}\quad
+    V_m\mathrm{He}_{\ell}\mathrm{T}_{p}
+    \quad\text{in population }\beta .
+\end{equation}
+A gas-free cavity is obtained by setting
+\begin{equation}
+    \boldsymbol{\ell}=\mathbf{0},
+    \qquad
+    V_{m,\mathbf{0},\beta}
+    \quad\text{denotes a pure vacancy cluster }V_m
+    \quad\text{in population }\beta .
+\end{equation}
+
+The full deterministic state vector is therefore
+\begin{equation}
+    \mathbf{c}(t)
+    =
+    \left[
+    \{c^I_{n,\alpha}\}_{n,\alpha},
+    \{c^V_{m,\boldsymbol{\ell},\beta}\}_{m,\boldsymbol{\ell},\beta},
+    \{c^g_\mu\}_{\mu=1}^{N_g}
+    \right]^\top .
+    \label{eq:general_state_vector}
+\end{equation}
+The first block contains interstitial-cluster populations, the second block
+contains vacancy-cluster/cavity populations, and the third block contains
+matrix gas-reservoir variables.
+
+%===================================================================
+\subsection{Signed Lattice-Defect Content}
+\label{sec:signed_lattice_defect_content}
+%===================================================================
+
+Vacancies and interstitials represent opposite deviations from the perfect
+lattice. This motivates the use of a signed lattice-defect content. For the
+resolved states,
+\begin{equation}
+    q(I_{n,\alpha})=+n,
+    \qquad
+    q(V_{m,\boldsymbol{\ell},\beta})=-m,
+    \qquad
+    q(g_\mu)=0 .
+    \label{eq:signed_defect_content}
+\end{equation}
+The population labels $\alpha$ and $\beta$ do not affect the signed defect
+content; they affect mobility, sink coupling, reaction rates, and admissible
+population-transfer pathways.
+
+Cross-species collisions between interstitial and vacancy clusters are
+therefore described by signed-defect cancellation. For a collision between an
+interstitial cluster $I_{n,\alpha}$ and a vacancy cluster
+$V_{m,\boldsymbol{\ell},\beta}$, the outgoing signed defect content is
+\begin{equation}
+    q_{\mathrm{out}} = n-m .
+\end{equation}
+Thus the lattice-defect part of the product is an interstitial cluster if
+$n>m$, no lattice defect if $n=m$, and a vacancy cluster if $m>n$.
+
+The generic signed-collision rule is
+\begin{equation}
+    I_{n,\alpha}
+    +
+    V_{m,\boldsymbol{\ell},\beta}
+    \longrightarrow
+    \begin{cases}
+    I_{n-m,\alpha'} + \mathcal{R}_{\boldsymbol{\ell}}, & n>m, \\[4pt]
+    \mathcal{R}_{\boldsymbol{\ell}}, & n=m, \\[4pt]
+    V_{m-n,\boldsymbol{\ell},\beta'}, & m>n .
+    \end{cases}
+    \label{eq:signed_collision_rule}
+\end{equation}
+Here $\alpha'$ and $\beta'$ denote the product populations, determined by the
+specific reaction rule. In the simplest single-population model,
+$\alpha'=\alpha$ and $\beta'=\beta$ may be suppressed. The operator
+$\mathcal{R}_{\boldsymbol{\ell}}$ denotes release of the gas inventory from an
+eliminated cavity to the matrix gas reservoir. In the default reservoir model,
+\begin{equation}
+    \mathcal{R}_{\boldsymbol{\ell}}
+    =
+    \sum_{\mu=1}^{N_g} \ell_\mu g_\mu .
+    \label{eq:gas_release_operator}
+\end{equation}
+If $m>n$, the cavity survives and retains its gas inventory
+$\boldsymbol{\ell}$. If $n\geq m$, the supporting vacancy cluster is
+eliminated and its gas content is returned to the gas reservoir.
+
+%===================================================================
+\subsection{Reaction-Network Representation}
+\label{sec:reaction_network_representation}
+%===================================================================
+
+The master equation is assembled from elementary reactions. Each reaction is
+assigned an index $r$. The index $r$ labels one specific physical process, for
+example interstitial--interstitial coalescence, vacancy--vacancy coalescence,
+gas trapping, gas emission, trap mutation, radiation re-solution,
+population transfer, sink absorption, or an interstitial--vacancy collision.
+
+Let $X_a$ denote a generic state in the model. The state index $a$ may refer
+to an interstitial cluster, a vacancy cluster, or a gas-reservoir species:
+\begin{equation}
+    X_a
+    \in
+    \left\{
+    I_{n,\alpha},\;
+    V_{m,\boldsymbol{\ell},\beta},\;
+    g_\mu
+    \right\}.
+    \label{eq:generic_state_index}
+\end{equation}
+Thus $a$ is not a physical size by itself. It is a compact label for one state
+variable in the ODE system.
+
+For a given reaction $r$, let
+\begin{equation}
+    \nu^-_{ar}
+\end{equation}
+be the number of objects of state $X_a$ consumed by the reaction, and let
+\begin{equation}
+    \nu^+_{ar}
+\end{equation}
+be the number of objects of state $X_a$ produced by the reaction. The net
+change of state $X_a$ caused by one occurrence of reaction $r$ is
+\begin{equation}
+    S_{ar}
+    =
+    \nu^+_{ar}-\nu^-_{ar} .
+    \label{eq:stoich_increment}
+\end{equation}
+The quantity $S_{ar}$ is the stoichiometric coefficient of state $a$ in
+reaction $r$.
+
+A general reaction can therefore be written compactly as
+\begin{equation}
+    \sum_a \nu^-_{ar} X_a
+    \longrightarrow
+    \sum_a \nu^+_{ar} X_a .
+    \label{eq:general_reaction_network_form}
+\end{equation}
+This expression means that reaction $r$ consumes all states with nonzero
+$\nu^-_{ar}$ and produces all states with nonzero $\nu^+_{ar}$.
+
+For example, the interstitial-cluster coalescence reaction
+\begin{equation}
+    I_{n,\alpha}+I_{n',\alpha'}
+    \longrightarrow
+    I_{n+n',\alpha''}
+    \label{eq:example_II_stoich}
+\end{equation}
+has
+\begin{equation}
+    S_{I_{n,\alpha},r}=-1,
+    \qquad
+    S_{I_{n',\alpha'},r}=-1,
+    \qquad
+    S_{I_{n+n',\alpha''},r}=+1,
+\end{equation}
+with all other entries of $S_{ar}$ equal to zero. Similarly, gas trapping by a
+cavity,
+\begin{equation}
+    g_\mu + V_{m,\boldsymbol{\ell},\beta}
+    \longrightarrow
+    V_{m,\boldsymbol{\ell}+\mathbf{e}_\mu,\beta'},
+    \label{eq:example_gas_trapping_stoich}
+\end{equation}
+has
+\begin{equation}
+    S_{g_\mu,r}=-1,
+    \qquad
+    S_{V_{m,\boldsymbol{\ell},\beta},r}=-1,
+    \qquad
+    S_{V_{m,\boldsymbol{\ell}+\mathbf{e}_\mu,\beta'},r}=+1.
+\end{equation}
+Here $\mathbf{e}_\mu$ is the unit vector in gas-species space.
+
+%===================================================================
+\subsection{Deterministic Master Equation}
+\label{sec:deterministic_master_equation}
+%===================================================================
+
+The deterministic concentration of state $X_a$ is denoted by $c_a(t)$. In
+terms of the explicit variables,
+\begin{equation}
+    c_a
+    \in
+    \left\{
+    c^I_{n,\alpha},\;
+    c^V_{m,\boldsymbol{\ell},\beta},\;
+    c^g_\mu
+    \right\}.
+\end{equation}
+The deterministic mean-field master equation is
+\begin{equation}
+    \boxed{
+    \frac{dc_a}{dt}
+    =
+    G_a
+    +
+    \sum_r S_{ar}J_r(\mathbf{c})
+    -
+    D_a c_a .
+    }
+    \label{eq:abstract_master_equation}
+\end{equation}
+Here $G_a$ is the direct production rate of state $a$, $J_r(\mathbf{c})$ is
+the flux of reaction $r$, and $D_a c_a$ is a first-order loss to unresolved
+fixed sinks. Equation~\eqref{eq:abstract_master_equation} states that the
+concentration of state $a$ changes by summing the contributions of all
+reactions that produce or consume that state.
+
+The reaction flux $J_r$ depends on the reaction type. For a unary transition,
+\begin{equation}
+    X_b \longrightarrow \text{products},
+    \qquad
+    J_r(\mathbf{c}) = \Gamma_r c_b,
+    \label{eq:unary_flux}
+\end{equation}
+where $\Gamma_r$ is a first-order rate coefficient. For a binary collision,
+\begin{equation}
+    X_b+X_c \longrightarrow \text{products},
+    \qquad
+    J_r(\mathbf{c}) = K^{(r)}_{bc} c_b c_c,
+    \label{eq:binary_flux}
+\end{equation}
+where $K^{(r)}_{bc}$ is the appropriate collision or capture rate. For a direct
+source process,
+\begin{equation}
+    \emptyset \longrightarrow X_a,
+    \qquad
+    J_r=G_r .
+    \label{eq:source_flux}
+\end{equation}
+
+%===================================================================
+\subsection{Elementary Process Classes}
+\label{sec:elementary_process_classes}
+%===================================================================
+
+The generalized model is built from the following process classes.
+
+\subsubsection*{Irradiation production.}
+
+Displacement cascades and gas-production processes introduce source terms
+\begin{equation}
+    G_a
+    =
+    G_a^{\mathrm{FP}}
+    +
+    G_a^{\mathrm{cascade}}
+    +
+    G_a^{\mathrm{gas}}
+    +
+    G_a^{\mathrm{trans}},
+    \label{eq:general_source_decomposition}
+\end{equation}
+where the terms denote Frenkel-pair production, clustered cascade production,
+direct gas production, and transmutation or implantation sources. Conservative
+Frenkel-pair production satisfies
+\begin{equation}
+    \sum_{n,\alpha} n G^I_{n,\alpha}
+    =
+    \sum_{m,\boldsymbol{\ell},\beta} m G^V_{m,\boldsymbol{\ell},\beta} .
+    \label{eq:cascade_pair_conservation}
+\end{equation}
+
+\subsubsection*{Interstitial--interstitial coalescence.}
+
+Interstitial clusters may coalesce according to
+\begin{equation}
+    I_{n,\alpha}+I_{n',\alpha'}
+    \longrightarrow
+    I_{n+n',\alpha''},
+    \label{eq:II_coalescence}
+\end{equation}
+with flux
+\begin{equation}
+    J^{II}_{n\alpha,n'\alpha'}
+    =
+    K^{II}_{n\alpha,n'\alpha'}
+    c^I_{n,\alpha}c^I_{n',\alpha'} .
+\end{equation}
+The product population $\alpha''$ is specified by the physical population rule.
+For a single interstitial population, the population indices are suppressed.
+
+\subsubsection*{Vacancy--vacancy coalescence.}
+
+Vacancy clusters may coalesce according to
+\begin{equation}
+    V_{m,\boldsymbol{\ell},\beta}
+    +
+    V_{m',\boldsymbol{\ell}',\beta'}
+    \longrightarrow
+    V_{m+m',\boldsymbol{\ell}+\boldsymbol{\ell}',\beta''} .
+    \label{eq:VV_coalescence}
+\end{equation}
+The vacancy numbers add, and the gas occupancy vectors add componentwise. The
+product population $\beta''$ is determined by the population rule for the
+coalescence event.
+
+\subsubsection*{Interstitial--vacancy signed cancellation.}
+
+Cross-species collisions between interstitial and vacancy clusters obey
+Eq.~\eqref{eq:signed_collision_rule}. These events conserve signed
+lattice-defect content and conserve each gas species after the matrix reservoir
+is included.
+
+\subsubsection*{Gas trapping by cavities.}
+
+A gas monomer of species $\mu$ may be trapped by a vacancy cluster:
+\begin{equation}
+    g_\mu
+    +
+    V_{m,\boldsymbol{\ell},\beta}
+    \longrightarrow
+    V_{m,\boldsymbol{\ell}+\mathbf{e}_\mu,\beta'} .
+    \label{eq:gas_trapping}
+\end{equation}
+The corresponding flux is
+\begin{equation}
+    J^{\mathrm{trap}}_{m\boldsymbol{\ell}\beta,\mu}
+    =
+    K^{\mathrm{trap}}_{m\boldsymbol{\ell}\beta,\mu}
+    c^g_\mu c^V_{m,\boldsymbol{\ell},\beta} .
+\end{equation}
+
+\subsubsection*{Gas emission and radiation re-solution.}
+
+Gas may be thermally emitted or athermally re-solved from a cavity:
+\begin{equation}
+    V_{m,\boldsymbol{\ell},\beta}
+    \longrightarrow
+    V_{m,\boldsymbol{\ell}-\mathbf{e}_\mu,\beta'}
+    +
+    g_\mu,
+    \qquad
+    \ell_\mu\geq 1 .
+    \label{eq:gas_emission_general}
+\end{equation}
+The corresponding flux may include both thermal and athermal contributions:
+\begin{equation}
+    J^{\mathrm{rel}}_{m\boldsymbol{\ell}\beta,\mu}
+    =
+    \left[
+    \varepsilon_\mu(m,\boldsymbol{\ell},\beta)
+    +
+    \Gamma^{\mathrm{res}}_\mu(m,\boldsymbol{\ell},\beta)
+    \right]
+    c^V_{m,\boldsymbol{\ell},\beta} .
+    \label{eq:gas_release_flux}
+\end{equation}
+
+\subsubsection*{Trap mutation.}
+
+An over-pressurized gas-bearing cavity may emit an SIA while increasing its
+vacancy content:
+\begin{equation}
+    V_{m,\boldsymbol{\ell},\beta}
+    \longrightarrow
+    V_{m+1,\boldsymbol{\ell},\beta'}
+    +
+    I_{1,\alpha'} .
+    \label{eq:trap_mutation_general}
+\end{equation}
+This reaction conserves signed lattice-defect content because
+\begin{equation}
+    -m = -(m+1)+1 .
+\end{equation}
+
+\subsubsection*{Thermal vacancy and interstitial emission.}
+
+Vacancy emission from a cavity is represented by
+\begin{equation}
+    V_{m,\boldsymbol{\ell},\beta}
+    \longrightarrow
+    V_{m-1,\boldsymbol{\ell},\beta'}
+    +
+    V_{1,\mathbf{0},\beta''},
+    \qquad
+    m\geq 2 .
+    \label{eq:vacancy_emission_general}
+\end{equation}
+SIA emission from an interstitial cluster is represented by
+\begin{equation}
+    I_{n,\alpha}
+    \longrightarrow
+    I_{n-1,\alpha'}+I_{1,\alpha''},
+    \qquad
+    n\geq 2 .
+    \label{eq:SIA_emission_general}
+\end{equation}
+Both processes conserve signed lattice-defect content.
+
+\subsubsection*{Population transfer.}
+
+A cluster may move between defect populations without changing its size or gas
+inventory. For interstitial clusters,
+\begin{equation}
+    I_{n,\alpha}
+    \longrightarrow
+    I_{n,\alpha'},
+    \label{eq:I_population_transfer}
+\end{equation}
+and for vacancy clusters,
+\begin{equation}
+    V_{m,\boldsymbol{\ell},\beta}
+    \longrightarrow
+    V_{m,\boldsymbol{\ell},\beta'} .
+    \label{eq:V_population_transfer}
+\end{equation}
+These transitions may represent changes in mobility, stress orientation,
+attachment to a dislocation, capture by a grain boundary, or transfer between
+bulk and microstructural reservoirs. They conserve signed defect content and
+gas inventory.
+
+\subsubsection*{Loss to unresolved sinks.}
+
+Unresolved sinks are represented by first-order losses:
+\begin{equation}
+    X_a \longrightarrow \emptyset,
+    \qquad
+    J_a^{\mathrm{sink}} = D_a c_a .
+    \label{eq:sink_loss_general}
+\end{equation}
+When sinks are unbiased, their contributions cancel in the signed-defect
+balance. When sinks are biased, their net contribution must be accumulated as a
+separate sink-flux correction.
+
+%===================================================================
+\subsection{Operator Form}
+\label{sec:operator_form}
+%===================================================================
+
+The deterministic master equation may be decomposed into production, binary
+collision, unary transition, gas exchange, population-transfer, and sink terms:
+\begin{equation}
+    \dot{c}_a
+    =
+    G_a
+    +
+    \mathcal{Q}_a(\mathbf{c},\mathbf{c})
+    +
+    \mathcal{L}_{ab}c_b
+    +
+    \mathcal{H}_a(\mathbf{c},\mathbf{c}^g)
+    +
+    \mathcal{P}_{ab}c_b
+    -
+    D_a c_a .
+    \label{eq:deterministic_operator_decomposition}
+\end{equation}
+Here $\mathcal{Q}_a$ collects binary cluster--cluster collisions,
+$\mathcal{L}_{ab}$ collects unary emission, trap mutation, and re-solution
+operators, $\mathcal{H}_a$ collects gas-reservoir exchange terms, and
+$\mathcal{P}_{ab}$ collects population-transfer processes. This decomposition
+is only organizational; all of these terms are generated by the single
+stoichiometric form in Eq.~\eqref{eq:abstract_master_equation}.
+
+The binary collision operator may be written as
+\begin{equation}
+    \mathcal{Q}_a(\mathbf{c},\mathbf{c})
+    =
+    \frac{1}{2}C^+_{abc}K_{bc}c_b c_c
+    -
+    C^-_{abc}K_{bc}c_b c_c,
+    \label{eq:binary_collision_operator}
+\end{equation}
+where repeated state indices are summed. The tensor $C^+_{abc}$ identifies
+binary reactions in which states $b$ and $c$ produce state $a$, while
+$C^-_{abc}$ identifies binary reactions in which state $a$ is consumed by
+collision with another state. The factor $1/2$ avoids double counting of
+symmetric collisions.
+
+%===================================================================
+\subsection{Conservation Laws}
+\label{sec:general_conservation_laws}
+%===================================================================
+
+The abstraction is constrained by two primary conservation laws: signed
+lattice-defect balance and gas-species balance.
+
+\subsubsection{Signed lattice-defect balance.}
+
+Define the signed lattice-defect inventory
+\begin{equation}
+    Q(t)
+    =
+    \sum_{n,\alpha} n c^I_{n,\alpha}(t)
+    -
+    \sum_{m,\boldsymbol{\ell},\beta}
+    m c^V_{m,\boldsymbol{\ell},\beta}(t)
+    +
+    Q_{\mathrm{sink}}(t) .
+    \label{eq:signed_defect_inventory}
+\end{equation}
+The cumulative term $Q_{\mathrm{sink}}$ accounts for biased absorption by
+unresolved sinks. Differentiating gives
+\begin{equation}
+    \frac{dQ}{dt}
+    =
+    \sum_{n,\alpha} n G^I_{n,\alpha}
+    -
+    \sum_{m,\boldsymbol{\ell},\beta} m G^V_{m,\boldsymbol{\ell},\beta}
+    +
+    \dot{Q}_{\mathrm{bias}} .
+    \label{eq:signed_defect_balance}
+\end{equation}
+For conservative Frenkel-pair production and unbiased sinks,
+\begin{equation}
+    \frac{dQ}{dt}=0 .
+\end{equation}
+When biased sink absorption is present,
+\begin{equation}
+    Q_{\mathrm{sink}}(t)
+    =
+    \int_0^t
+    \left[
+    J_I^{\mathrm{bias}}(t')
+    -
+    J_V^{\mathrm{bias}}(t')
+    \right]dt' .
+    \label{eq:biased_sink_correction}
+\end{equation}
+This is the signed-defect version of the swelling balance: vacancy storage in
+cavities is balanced by interstitial storage in loops and the cumulative net
+biased absorption of interstitials by microstructural sinks.
+
+\subsubsection{Gas-species balance.}
+
+For each gas species $\mu$, define the total gas inventory
+\begin{equation}
+    M_\mu(t)
+    =
+    c^g_\mu(t)
+    +
+    \sum_{m,\boldsymbol{\ell},\beta}
+    \ell_\mu c^V_{m,\boldsymbol{\ell},\beta}(t).
+    \label{eq:gas_inventory_general}
+\end{equation}
+Gas trapping, gas emission, re-solution, vacancy-cluster coalescence, trap
+mutation, population transfer, and signed-defect cancellation redistribute gas
+between the matrix reservoir and vacancy clusters, but do not create or destroy
+gas. Therefore,
+\begin{equation}
+    \boxed{
+    \frac{dM_\mu}{dt}
+    =
+    G^g_\mu
+    -
+    J^{g,\mathrm{ext}}_\mu .
+    }
+    \label{eq:gas_species_conservation}
+\end{equation}
+Here $G^g_\mu$ is the external production rate of gas species $\mu$, and
+$J^{g,\mathrm{ext}}_\mu$ is an explicitly modeled external gas loss. In a
+closed matrix reservoir,
+\begin{equation}
+    J^{g,\mathrm{ext}}_\mu=0,
+    \qquad
+    \frac{dM_\mu}{dt}=G^g_\mu .
+\end{equation}
+
+%===================================================================
+\subsection{Stochastic Jump-Process Counterpart}
+\label{sec:stochastic_jump_process_counterpart}
+%===================================================================
+
+The same reaction-network structure defines a stochastic cluster-dynamics
+model. Let $N_a(t)$ denote the integer number of objects in state $X_a$ in a
+representative volume $\Omega$. Each reaction $r$ changes the stochastic state
+by
+\begin{equation}
+    \mathbf{N}
+    \longrightarrow
+    \mathbf{N}+\mathbf{S}_r,
+\end{equation}
+where $\mathbf{S}_r$ is the stoichiometric increment vector for reaction $r$.
+The stochastic propensity of reaction $r$ is denoted by $a_r(\mathbf{N})$.
+For a unary reaction,
+\begin{equation}
+    a_r(\mathbf{N}) = \Gamma_r N_b .
+\end{equation}
+For a binary reaction between distinct states $b$ and $c$,
+\begin{equation}
+    a_r(\mathbf{N})
+    =
+    \frac{K^{(r)}_{bc}}{\Omega}N_bN_c .
+\end{equation}
+For a self-collision $b=c$,
+\begin{equation}
+    a_r(\mathbf{N})
+    =
+    \frac{K^{(r)}_{bb}}{\Omega}
+    \frac{N_b(N_b-1)}{2} .
+\end{equation}
+The deterministic concentration equation is recovered in the mean-field limit
+\begin{equation}
+    c_a = \frac{N_a}{\Omega},
+    \qquad
+    \Omega\rightarrow\infty .
+\end{equation}
+Thus the deterministic and stochastic formulations use the same state list,
+reaction list, stoichiometric matrix, and conservation checks.
+
+%===================================================================
+\subsection{Code-Generation-Ready Representation}
+\label{sec:code_generation_ready_representation}
+%===================================================================
+
+For implementation, each state can be represented by a structured record
+\begin{equation}
+    a
+    =
+    \left(
+    \mathrm{kind},
+    q,
+    n,
+    m,
+    \boldsymbol{\ell},
+    p,
+    \mathrm{mobility},
+    \mathrm{sink\_coupling}
+    \right),
+    \label{eq:state_record}
+\end{equation}
+where
+\begin{equation}
+    \mathrm{kind}
+    \in
+    \{\mathrm{I\_cluster},\mathrm{V\_cavity},\mathrm{gas\_reservoir}\},
+\end{equation}
+$q$ is the signed lattice-defect content, $n$ is the SIA number if the state is
+an interstitial cluster, $m$ is the vacancy number if the state is a vacancy
+cluster, $\boldsymbol{\ell}$ is the gas occupancy vector, and $p$ is the
+population label. For interstitial states, $p=\alpha$; for vacancy states,
+$p=\beta$; for gas-reservoir states, $p$ may be omitted.
+
+Each reaction can be represented by
+\begin{equation}
+    r
+    =
+    \left(
+    \mathcal{R}^-_r,
+    \mathcal{R}^+_r,
+    J_r,
+    \mathbf{S}_r,
+    \mathcal{C}_r
+    \right),
+    \label{eq:reaction_record}
+\end{equation}
+where $\mathcal{R}^-_r$ is the reactant list, $\mathcal{R}^+_r$ is the product
+list, $J_r$ is the rate law, $\mathbf{S}_r$ is the stoichiometric increment,
+and $\mathcal{C}_r$ is a set of conservation checks.
+
+For an internally conservative lattice-defect reaction, the signed-defect
+check is
+\begin{equation}
+    \sum_a q_a S_{ar}=0 .
+    \label{eq:code_signed_defect_check}
+\end{equation}
+For an internally conservative gas-transfer reaction, the gas-species checks
+are
+\begin{equation}
+    \sum_a \ell_{\mu a} S_{ar}=0,
+    \qquad
+    \mu=1,\ldots,N_g .
+    \label{eq:code_gas_check}
+\end{equation}
+External sources and sinks are not required to satisfy the zero-sum checks, but
+their contributions must enter the corresponding production, loss, or
+cumulative reservoir terms.
+
+The deterministic ODE system is assembled as
+\begin{equation}
+    \dot{\mathbf{c}}
+    =
+    \mathbf{G}
+    +
+    \mathbf{S}\mathbf{J}(\mathbf{c})
+    -
+    \mathbf{D}\mathbf{c},
+    \label{eq:assembled_ode_system}
+\end{equation}
+where $\mathbf{S}$ is sparse. The same data structure defines stochastic
+propensities for stochastic cluster dynamics.
+
+%===================================================================
+\subsection{Specialization to the Vacancy--Interstitial--Helium System}
+\label{sec:specialization_V_I_He}
+%===================================================================
+
+The vacancy--interstitial--helium system is recovered by setting
+\begin{equation}
+    N_g=1,
+    \qquad
+    g_1=\mathrm{He},
+    \qquad
+    \boldsymbol{\ell}=(\ell).
+\end{equation}
+If only one interstitial-cluster population and one vacancy-cluster population
+are retained, then
+\begin{equation}
+    N_P^I=1,
+    \qquad
+    N_P^V=1,
+\end{equation}
+and the population labels can be suppressed. The general variables reduce to
+\begin{equation}
+    c^I_{n,\alpha}\rightarrow c_n,
+    \qquad
+    c^V_{m,(\ell),\beta}\rightarrow c_{m,\ell},
+    \qquad
+    c^g_1\rightarrow c_h .
+    \label{eq:VIHe_variable_reduction}
+\end{equation}
+Thus the two resolved cluster populations are
+\begin{equation}
+    \{I_n\}_{n=1}^{N_I},
+    \qquad
+    \{V_m\mathrm{He}_{\ell}\}_{m,\ell},
+\end{equation}
+and the matrix gas reservoir is the free helium concentration $c_h$.
+
+Gas trapping becomes
+\begin{equation}
+    \mathrm{He}
+    +
+    V_m\mathrm{He}_{\ell}
+    \longrightarrow
+    V_m\mathrm{He}_{\ell+1},
+\end{equation}
+while helium emission and radiation re-solution become
+\begin{equation}
+    V_m\mathrm{He}_{\ell}
+    \longrightarrow
+    V_m\mathrm{He}_{\ell-1}
+    +
+    \mathrm{He} .
+\end{equation}
+The signed interstitial--vacancy collision rule becomes
+\begin{equation}
+    I_n + V_m\mathrm{He}_{\ell}
+    \longrightarrow
+    \begin{cases}
+    I_{n-m}+\ell\,\mathrm{He}, & n>m, \\[4pt]
+    \ell\,\mathrm{He}, & n=m, \\[4pt]
+    V_{m-n}\mathrm{He}_{\ell}, & m>n .
+    \end{cases}
+    \label{eq:VIHe_signed_collision}
+\end{equation}
+If the vacancy cluster survives, its helium content remains trapped. If the
+cavity is eliminated, the helium inventory is returned to the matrix reservoir.
+
+Trap mutation becomes
+\begin{equation}
+    V_m\mathrm{He}_{\ell}
+    \longrightarrow
+    V_{m+1}\mathrm{He}_{\ell}
+    +
+    I_1,
+    \label{eq:VIHe_trap_mutation}
+\end{equation}
+which conserves signed lattice-defect content because
+\begin{equation}
+    -m=-(m+1)+1 .
+\end{equation}
+
+The helium conservation law reduces to
+\begin{equation}
+    \frac{d}{dt}
+    \left[
+    c_h
+    +
+    \sum_{m=1}^{N_V}
+    \sum_{\ell=1}^{\ell_{\max}(m)}
+    \ell c_{m,\ell}
+    \right]
+    =
+    G_{\mathrm{He}}
+    -
+    J_{\mathrm{He}}^{\mathrm{ext}} .
+    \label{eq:He_conservation_specialized}
+\end{equation}
+For a closed matrix reservoir with no external helium escape,
+\begin{equation}
+    J_{\mathrm{He}}^{\mathrm{ext}}=0 .
+\end{equation}
+
+The signed Frenkel-pair balance reduces to
+\begin{equation}
+    Q(t)
+    =
+    \sum_{n=1}^{N_I} n c_n(t)
+    -
+    \sum_{m=1}^{N_V}
+    \sum_{\ell=0}^{\ell_{\max}(m)}
+    m c_{m,\ell}(t)
+    +
+    Q_{\mathrm{sink}}(t) .
+    \label{eq:VIHe_signed_balance}
+\end{equation}
+For conservative cascade production and unbiased sinks, $Q(t)$ is constant.
+With biased dislocation absorption, $Q_{\mathrm{sink}}(t)$ is the cumulative
+net biased absorption term. This is the signed-defect form of the swelling
+identity.

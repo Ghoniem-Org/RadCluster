@@ -1,0 +1,258 @@
+% =====================================================================
+%  loop_111_to_100_conversion.tex
+%  Drop-in section for the RadCluster formulation paper.
+%  Requires: amsmath, amssymb, booktabs, natbib[round,authoryear], hyperref
+%  Bibliography: \bibliography{loop_111_to_100_conversion}
+% =====================================================================
+
+\section{Burgers-Vector Character and \texorpdfstring{$\tfrac12\langle111\rangle\!\to\!\langle100\rangle$}{1/2<111> to <100>} Loop Conversion}
+\label{sec:loop-conversion}
+
+\subsection{Two loop characters and the conversion puzzle}
+
+Irradiation of body-centred-cubic (bcc) iron and ferritic--martensitic steels
+produces prismatic interstitial dislocation loops of two Burgers-vector
+characters: glissile $\tfrac12 a\langle111\rangle$ loops, which migrate
+one-dimensionally along $\langle111\rangle$ and remain mobile to large sizes
+($n\gtrsim100$ self-interstitial atoms, SIAs), and sessile $a\langle100\rangle$
+loops, which are essentially immobile and adopt a square $\{100\}$ habit
+\citep{Masters1965,EyreBartlett1965}.  Isotropic elasticity ($E_l\propto Gb^2$)
+favours the smaller Burgers vector $\tfrac12\langle111\rangle$, yet
+$a\langle100\rangle$ loops are routinely observed in $\alpha$-Fe and ferritic
+alloys, becoming the dominant population at elevated temperature.  Molecular
+dynamics shows that displacement cascades inject almost exclusively
+$\tfrac12\langle111\rangle$ clusters \citep{Marian2002}; the $\langle100\rangle$
+population must therefore be \emph{generated} during microstructural evolution.
+
+We model this generation with two additive channels: a kinetic
+collision/junction route \citep{Marian2002} and a thermodynamic
+single-loop transformation route \citep{Dudarev2008}.  The former carries the
+dose- and size-dependence of $\langle100\rangle$ formation; the latter carries
+the temperature trend, in which the $\tfrac12\langle111\rangle$-dominated
+microstructure below $\sim350\,^\circ$C gives way to a
+$\langle100\rangle$-dominated one above $\sim550\,^\circ$C
+\citep{Arakawa2006,Dudarev2008}.
+
+\subsection{Loop free energies}
+\label{sec:loop-energies}
+
+The free energy of a prismatic loop of $n$ SIAs and character $X\in\{111,100\}$
+is written in the anisotropic-elasticity form of \citet{Dudarev2008}
+(equivalently \citealp{Marian2002}, after \citealp{HirthLothe}):
+\begin{equation}
+  E_l^{X}(n,T) = P_X(n)\!\left[\,
+    \hat F_X(T)\,\ln\!\frac{4R^\ast_X(n)}{e\,\delta}
+    + F_\delta^{X}(T) + F_c^{X}\,\right],
+  \label{eq:loop-energy}
+\end{equation}
+where $P_X(n)$ is the loop perimeter, $R^\ast_X(n)$ the radius of the equivalent
+circular loop, $\delta\simeq0.4$~nm the core cutoff, $\hat F_X$ the
+prelogarithmic energy factor (per unit length), $F_\delta^{X}$ the
+core-traction term, and $F_c^{X}$ the (zero-temperature) nonlinear core term.
+The loop geometry follows from the platelet area $A=n\Omega/b_X$ with $\Omega$
+the atomic volume:
+\begin{equation}
+  R^\ast_X(n)=\sqrt{A/\pi},\quad
+  P_{111}(n)=6\sqrt{\tfrac{2A}{3\sqrt3}}\ \text{(hexagon)},\quad
+  P_{100}(n)=4\sqrt{A}\ \text{(square)},
+  \label{eq:loop-geometry}
+\end{equation}
+with $b_{111}=\tfrac{\sqrt3}{2}a$ and $b_{100}=a$.  The pure-edge
+$\langle100\rangle[100]$ prelogarithmic factor is analytic,
+\begin{equation}
+  \hat F_{001}([100]) = \frac{a^2}{4\pi}(c_{11}{+}c_{12})
+  \!\left[\frac{c_{44}(c_{11}{-}c_{12})}{c_{11}(c_{11}{+}c_{12}{+}2c_{44})}\right]^{1/2}
+  \;\xrightarrow{\;c'\to0\;}\;0,
+  \label{eq:F100}
+\end{equation}
+and \emph{vanishes} as the shear constant $c'=\tfrac12(c_{11}-c_{12})$ softens,
+whereas all $\tfrac12\langle111\rangle$ factors remain finite.  The softening is
+driven by spin fluctuations approaching the $\alpha$--$\gamma$ transition
+\citep{Dudarev2008},
+\begin{equation}
+  c'(T)\simeq 56.8\,(1-T/T_c)^{1/2}\ \text{GPa},\qquad T_c=1185\ \text{K}.
+  \label{eq:cprime}
+\end{equation}
+This is the microscopic origin of the temperature trend: the
+$\langle100\rangle$ elastic self-energy collapses at high $T$ while the
+$\tfrac12\langle111\rangle$ energy does not.  Representative zero-temperature
+core constants from \citet{Dudarev2008} are listed in
+Table~\ref{tab:core-constants}.
+
+\subsection{Channel A: thermodynamic single-loop transformation}
+\label{sec:channel-A}
+
+A single $\tfrac12\langle111\rangle$ loop of size $n$ reorients to
+$\langle100\rangle$ when the latter becomes the lower-energy configuration.  The
+driving force is the per-loop free-energy difference
+\begin{equation}
+  \Delta F(n,T) = E_l^{111}(n,T) - E_l^{100}(n,T) = P(n)\,\Delta f(T),
+  \label{eq:driving-force}
+\end{equation}
+which we parametrise through a per-unit-length difference $\Delta f(T)$ tied to
+the same softening law~\eqref{eq:cprime},
+\begin{equation}
+  \boxed{\;\Delta f(T) = f_{111} - f_{100}^{0}\,(1-T/T_c)^{p}\;}
+  \label{eq:delta-f}
+\end{equation}
+with $f_{111},f_{100}^{0}$ the (near-zero-$T$) per-length energies of the two
+characters and the exponent $p$ fixed so that $\Delta f$ changes sign near
+$350\,^\circ$C and is strongly positive by $550\,^\circ$C, reproducing the three
+stability regions of \citet{Dudarev2008}.  Conversion is thermodynamically
+admissible for $T>T^\ast$, where $f_{111}=f_{100}^{0}(1-T^\ast/T_c)^{p}$.
+
+The transformation is a thermally activated, one-way process.  Because the
+reorientation propagates segment-by-segment along the loop
+\citep{Marian2002}, its effective barrier scales with the number of dislocation
+segments to be reoriented, i.e.\ with the perimeter:
+\begin{equation}
+  \boxed{\;\Gamma_{\rm uni}(n,T) = \nu_0\,
+    \exp\!\left[-\frac{E_a^{\rm uni}(n)}{k_BT}\right]
+    \max\!\left[0,\;1-\exp\!\left(-\frac{\Delta F(n,T)}{k_BT}\right)\right],\qquad
+    E_a^{\rm uni}(n) = E_a^{0} + \gamma_a\,\frac{P(n)}{b_{111}}\;}
+  \label{eq:gamma-uni}
+\end{equation}
+where $\nu_0\sim10^{13}\,\mathrm{s}^{-1}$ is an attempt frequency, $E_a^{0}$ an
+offset barrier ($\sim$ the rate-limiting $\tfrac12\langle110\rangle\!\to\!\langle100\rangle$
+step, $\sim1$~eV, \citealp{Marian2002}), and $\gamma_a$ sets the size
+suppression.  The gating factor favours large loops (larger $\Delta F$) while the
+size-dependent barrier suppresses them, producing a preferred conversion-size
+window: this reproduces the spontaneous transformation of \emph{small} loops on
+heating \citep{Arakawa2006} while leaving large mobile $\tfrac12\langle111\rangle$
+loops to convert through Channel~B.
+
+\subsection{Channel B: kinetic junction nucleation and absorption growth}
+\label{sec:channel-B}
+
+\paragraph{Nucleation.}  Two mobile $\tfrac12\langle111\rangle$ loops of
+\emph{comparable} size that collide can react through the junction
+\citep{EyreBullough1965,Marian2002}
+\begin{equation}
+  \tfrac12[111] + \tfrac12[1\bar1\bar1] \rightarrow [100],
+  \label{eq:junction}
+\end{equation}
+condensing into a single $\langle100\rangle$ loop of the combined SIA content,
+driven by the energy reduction of merging.  Molecular dynamics shows the
+junction forms only when the two loops are of similar size; otherwise the
+smaller simply rotates into the orientation of the larger (ordinary
+coalescence).  We therefore split the $\tfrac12\langle111\rangle$ collision
+kernel $\mathcal K^{ii}_{n,n'}$ (Eq.~\ref{eq:Kii} below) with a
+size-comparability branching fraction
+\begin{equation}
+  \boxed{\;K^{\rm junc}_{n,n'} = \varphi_{\rm junc}(n,n')\,\mathcal K^{ii}_{n,n'},
+  \qquad
+  \varphi_{\rm junc}(n,n') = \varphi_{\max}
+  \exp\!\left[-\frac{\big(\ln(n/n')\big)^2}{2\sigma_s^2}\right]
+  \Theta\!\big(\min(n,n')\ge n_{j,\min}\big)\;}
+  \label{eq:phi-junc}
+\end{equation}
+the product ($\langle100\rangle$, size $n{+}n'$) entering the
+$\langle100\rangle$ population and the complement $(1-\varphi_{\rm junc})$
+remaining ordinary $\tfrac12\langle111\rangle$ coalescence.  Here
+$\varphi_{\max}\!\le\!1$ is the peak yield at $n=n'$, $\sigma_s$ the log-size
+tolerance, and $n_{j,\min}$ the minimum junction size.  The same-polarity
+collision kernel is the standard size-resolved form
+\begin{equation}
+  \mathcal K^{ii}_{n,n'} = \frac{8\pi}{\Omega^{2/3}}
+  \big(\xi_n+\xi_{n'}\big)\big(D^{111}_n+D^{111}_{n'}\big),\qquad
+  \xi_n=\Big(\tfrac{3n}{8\pi}\Big)^{1/3}.
+  \label{eq:Kii}
+\end{equation}
+
+\paragraph{Growth by absorption.}  Once formed, $\langle100\rangle\{100\}$ loops
+are effectively stationary (glide barrier $>2.5$~eV) and act as biased sinks for
+mobile cascade-produced $\tfrac12\langle111\rangle$ clusters \citep{Marian2002},
+\begin{equation}
+  [100]_m + \tfrac12\langle111\rangle_n \rightarrow [100]_{m+n},
+  \label{eq:absorption}
+\end{equation}
+the absorbed cluster rotating into the $\langle100\rangle$ orientation.  This is
+the dominant route by which $\langle100\rangle$ loops reach TEM-visible sizes.
+The capture kernel is the cross-character collision rate, driven by the mobile
+$\tfrac12\langle111\rangle$ partner ($D^{100}_m\approx0$):
+\begin{equation}
+  \boxed{\;K^{\rm abs}_{m,n} = \frac{8\pi}{\Omega^{2/3}}
+  \big(\xi_m+\xi_n\big)\big(D^{100}_m+D^{111}_n\big)
+  \approx \frac{8\pi}{\Omega^{2/3}}\big(\xi_m+\xi_n\big)D^{111}_n\;}
+  \label{eq:Kabs}
+\end{equation}
+
+\subsection{Incorporation into the cluster-dynamics equations}
+\label{sec:cd-incorporation}
+
+The single SIA cluster population $c_n$ is split into two coupled populations:
+$c_n^{(111)}$ (glissile, mobile to $n_{\max}^i$, fed by all cascade SIA
+production, undergoing self-coalescence) and $c_m^{(100)}$ (sessile,
+$m\ge n_{\rm conv}$, no cascade source, no self-coalescence).  The
+$\langle100\rangle$ onset size $n_{\rm conv}$ is fixed self-consistently as the
+smallest $n$ with $\Delta F(n,T)>0$.  The added terms in the master equation are
+
+\begin{align}
+  \frac{dc_n^{(111)}}{dt}\Big|_{\rm conv}
+    &= -\,\Gamma_{\rm uni}(n,T)\,c_n^{(111)}
+       \;-\; c_n^{(111)}\!\sum_{n'} K^{\rm junc}_{n,n'}\,c_{n'}^{(111)}
+       \;-\; c_n^{(111)}\!\sum_{m} K^{\rm abs}_{m,n}\,c_m^{(100)},
+       \label{eq:me-111}\\[4pt]
+  \frac{dc_m^{(100)}}{dt}\Big|_{\rm conv}
+    &= +\,\Gamma_{\rm uni}(m,T)\,c_m^{(111)}
+       \;+\; \tfrac12\!\!\sum_{n+n'=m}\!\! K^{\rm junc}_{n,n'}\,c_n^{(111)}c_{n'}^{(111)}
+       \;+\!\!\sum_{n}\! K^{\rm abs}_{m-n,n}\,c_{m-n}^{(100)}c_n^{(111)}
+       \;-\!\!\sum_{n}\! K^{\rm abs}_{m,n}\,c_m^{(100)}c_n^{(111)}.
+       \label{eq:me-100}
+\end{align}
+
+In addition, $c_m^{(100)}$ obeys the usual point-defect absorption (SIA and
+vacancy monomer capture), thermal emission with a $\langle100\rangle$-specific
+binding energy $E_b^{100}(m)=A_{100}m^{-B_{100}}$, fixed-sink loss, and
+vacancy--SIA recombination/annihilation, all in their sessile form.  Every term
+in \eqref{eq:me-111}--\eqref{eq:me-100} conserves the SIA content
+$\sum_n n\,c_n^{(111)}+\sum_m m\,c_m^{(100)}$ (the junction and absorption
+products carry the summed sizes; the unary transfer is size-preserving), so the
+Frenkel-pair conservation diagnostic is unaffected.
+
+\subsection{Input data and parameters}
+\label{sec:loop-conversion-data}
+
+\begin{table}[ht]
+\centering
+\caption{Zero-temperature core constants for the loop free
+energy~\eqref{eq:loop-energy}, after \citet{Dudarev2008} (eV/\AA).}
+\label{tab:core-constants}
+\begin{tabular}{lcccc}
+\toprule
+term & $111[11\bar2]$ & $111[\bar110]$ & $001[100]$ & $001[110]$ \\
+\midrule
+$F_c$ (nonlinear core)   & 0.46 & 0.47 & 0.33 & --- \\
+$F_\delta$ (core-traction) & 0.345 & 0.349 & 0.387 & 0.390 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[ht]
+\centering
+\caption{Conversion-model parameters.  Values marked ``cal.'' are calibrated
+against the measured $\tfrac12\langle111\rangle$ fraction $f_{111}(T,\text{dose})$.}
+\label{tab:conversion-params}
+\begin{tabular}{llll}
+\toprule
+symbol & meaning & first-cut value & source \\
+\midrule
+$T_c$            & $\alpha$--$\gamma$ softening temperature & 1185 K & \citet{Dudarev2008} \\
+$c'(T)$          & shear softening law & $56.8(1{-}T/T_c)^{1/2}$ GPa & \citet{Dudarev2008} \\
+$\delta$         & dislocation core cutoff & $0.4$ nm & \citet{Dudarev2008} \\
+$f_{111},f_{100}^{0}$ & per-length loop energies & $0.3$--$0.5$ eV/\AA & Tab.~\ref{tab:core-constants} \\
+$p$              & softening exponent in $\Delta f(T)$ & cal.\ ($\Delta f{=}0$ near $350\,^\circ$C) & \citet{Dudarev2008} \\
+$\nu_0$          & attempt frequency & $10^{13}\,\mathrm{s}^{-1}$ & Debye \\
+$E_a^{0}$        & unary barrier offset & $0.5$--$1.0$ eV & \citet{Marian2002} \\
+$\gamma_a$       & unary barrier size slope & cal. & \citet{Arakawa2006} \\
+$\varphi_{\max}$ & peak junction yield ($n{=}n'$) & $0.5$--$1.0$ & \citet{Marian2002} \\
+$\sigma_s$       & log-size tolerance & $0.3$--$0.5$ & \citet{Marian2002} \\
+$n_{j,\min}$     & minimum junction size & $\mathcal O(10)$ SIAs & \citet{Marian2002} \\
+$A_{100},B_{100}$& $\langle100\rangle$ binding-energy fit & from Eq.~\eqref{eq:loop-energy} & this work \\
+$n_{\rm conv}$   & $\langle100\rangle$ onset size & \emph{derived} ($\Delta F{>}0$) & Eq.~\eqref{eq:driving-force} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% \bibliographystyle{plainnat}
+% \bibliography{loop_111_to_100_conversion}

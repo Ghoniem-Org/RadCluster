@@ -245,6 +245,17 @@ REACTIONS = [
     ('Number of VAC bin-moment eqs',  'V_bin', 14,     '−',      'grouped bins for vacancy clusters'),
     ('Grouping transition',     'n_group',     50,     '−',      'Eq. 190'),
 
+    ('Loop 1/2<111> -> <100> Conversion (Marian 2002 + Dudarev 2008)', None, None, None, None),
+    ('Unary barrier offset',      'E_a0_conv',    0.8,    'eV',  'Dudarev unary E_a^0; Marian dH2 ~ 1.0 eV'),
+    ('Unary barrier size slope',  'gamma_a_conv', 0.03,   'eV',  'per perimeter-segment; calibrate to Arakawa onset + size window'),
+    ('Unary attempt frequency',   'nu0_conv',     1.0e13, '1/s', 'Debye'),
+    ('Conversion crossover temp', 'T_star_conv_C',450.0,  'C',   'dF(n_ref,T*)=0; in [350,550] (Dudarev Fig. 4)'),
+    ('Conversion reference size', 'n_ref_conv',   50,     '-',   'calibration anchor size for LoopEnergetics'),
+    ('Junction peak yield',       'phi_max_junc', 0.5,    '-',   'Marian; yield at n=n_prime (0-1)'),
+    ('Junction log-size tol.',    'sigma_s_junc', 0.35,   '-',   'Marian comparable-size width in ln(n/n_prime)'),
+    ('Junction min size',         'n_j_min_junc', 30,     '-',   'Marian; junctions from n ~ 34-37'),
+    ('<100> loop-onset size',     'n_loop_min',   4,      '-',   'bulk-100 n_min; below this no <100> loop exists'),
+
     ('Solver Settings (Table 29)', None, None, None, None),
     ('Solver mode',      'solver_mode',   'full_system',       '−', 'full_system | active_window'),
     ('Physics option',   'physics_option','full_CD_fission',   '−', 'full_CD_fission | full_CD_fusion | bin_moment_CD_fission | bin_moment_CD_fusion'),

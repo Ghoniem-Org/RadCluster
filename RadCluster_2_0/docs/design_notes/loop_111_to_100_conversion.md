@@ -459,8 +459,16 @@ Files to touch are listed per step (all paths under `RadCluster_2_0/`).
    total SIA content flat to 0). `check_eurofer_rag.py` updated for the new
    population name + SIA100 block.
    - `py_utils/materials/eurofer97/declaration.py`
-5. **Inputs** — 9 new sheet parameters (§3.6).
-   - `py_utils/input_data.py`, `py_utils/create_excel.py`, `input/*.xlsx`
+5. **Inputs** — ✅ **DONE (2026-06-12)**. The 9 conversion/junction params
+   (§3.6) added to the `Reactions` sheet (keyed by Symbol → `inp.reactions`):
+   `E_a0_conv, gamma_a_conv, nu0_conv, T_star_conv_C, n_ref_conv, phi_max_junc,
+   sigma_s_junc, n_j_min_junc, n_loop_min`. Round-trip + override tested
+   (`check_loop_conversion_params.py`, 13/13).
+   - `py_utils/create_excel.py` (canonical source rows) and the live
+     `input/input_parameters.xlsx` (surgically appended via openpyxl, other
+     values untouched).
+   - Note: `create_excel.OUTPUT_FILE` targets a stale `py_utils/input/` path
+     (pre-existing); the live file read by sims is `input/…`. Left as-is.
 6. **Validate** against the Python walker: conservation (δ_FP, δ_He) **and** the
    `f₁₁₁(T)` / `f₁₁₁(dose)` trend from `loop_burgers_fraction.py`; calibrate the
    six §3.6 knobs here.

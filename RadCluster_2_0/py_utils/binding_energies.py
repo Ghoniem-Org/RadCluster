@@ -264,6 +264,42 @@ def E_b_loop_i(n, A_111=0.7501, B_111=0.3873, A_100=0.7160, B_100=0.3581,
     return float(Eb) if Eb.ndim == 0 else Eb
 
 
+def E_b_loop_100(n, A_100=0.7160, B_100=0.3581,
+                 n_tr=25.0, sigma_tr=5.0,
+                 E_f_i=3.77, G_shear=82e9, b_100=2.8665e-10, nu=0.29,
+                 gamma_sf=0.6, Omega=1.18e-29):
+    """
+    Binding energy of the n-th SIA to a ⟨100⟩ interstitial loop of size n−1.
+
+    Sibling of :func:`E_b_loop_i` for the sessile ⟨100⟩ population
+    (½⟨111⟩→⟨100⟩ loop-conversion work).  Same small-n DFT fit blended to the
+    continuum limit (Eqs. Eb_smalln_fit, Eb_blended), but with the ⟨100⟩ fit
+    amplitudes ``A_100, B_100`` (Table 18 — already carried, dormant, by
+    :func:`E_b_loop_i`) and the ⟨100⟩ Burgers vector ``b_100 = a`` in the
+    continuum tail.
+
+      E_b^fit(n)  = A_100 · n^{+B_100}
+      E_b^cont(n) = E_f^i − μ_loop(n; b_100)
+      w(n)        = 0.5·(1 + tanh((n_tr − n)/σ_tr))
+      E_b(n)      = w·E_b^fit + (1−w)·E_b^cont
+
+    ⟨100⟩ loops are slightly less bound than ½⟨111⟩ at small n
+    (``A_100 < A_111``); emission is therefore slow but nonzero, feeding the
+    ⟨100⟩ ``DISSOCIATION`` edge.
+
+    Parameters mirror :func:`E_b_loop_i`; ``b_100`` defaults to the bcc-Fe
+    lattice parameter ``a = 2.8665 Å`` (= ⟨100⟩ Burgers vector magnitude).
+    """
+    n = np.asarray(n, dtype=float)
+    n_safe = np.maximum(n, 2.0)
+    Eb_fit = A_100 * n_safe**(B_100)
+    Eb_cont = _E_b_loop_i_continuum(n_safe, E_f_i, G_shear, b_100,
+                                     nu, gamma_sf, Omega)
+    w  = 0.5 * (1.0 + np.tanh((n_tr - n_safe) / sigma_tr))
+    Eb = w * Eb_fit + (1.0 - w) * Eb_cont
+    return float(Eb) if Eb.ndim == 0 else Eb
+
+
 def E_b_loop_v(m, E_f_v, gamma_sf, Omega, b_111):
     """
     Vacancy loop binding energy (Eqs. 104-105).

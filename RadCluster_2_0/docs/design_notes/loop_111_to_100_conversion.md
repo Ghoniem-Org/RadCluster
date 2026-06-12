@@ -215,9 +215,21 @@ $$\boxed{\;\Gamma_{\rm uni}(n,T) = \nu_0\,
   barrier suppresses it — yielding a **preferred conversion-size window** that
   reproduces Arakawa's spontaneous transformation of *small* loops while leaving
   large mobile ½⟨111⟩ to convert via the junction/absorption channels instead.
-- Registered as a 1-D array over n; zero below the size where ΔF first turns
-  positive — this fixes `n_conv` (the `n_min` of `bulk-100`) *self-consistently*
-  from the energetics rather than as a free parameter.
+- Registered as a 1-D array over n; **nonzero only on the thermodynamic
+  support** where ΔF(n,T) > 0 (`LoopEnergetics.conversion_mask`).
+  **Phase-2 finding (2026-06-11):** with the default Dudarev constants +
+  Table-18 binding, the crossover temperature *increases with size*
+  (n=20→−13 °C, n=50→450 °C, n=200→611 °C), so the support is **small-loop
+  biased** — small loops unary-convert (Arakawa) while large mobile ½⟨111⟩
+  stay and convert via the Marian junction/absorption channels. This is
+  physically consistent and reinforced by the size-dependent barrier
+  $E_a^{\rm uni}(n)$, which further suppresses large-loop unary conversion.
+  *Correction:* the conversion support is therefore **not** a single
+  lower-`n_conv` cutoff; `bulk-100`'s `n_min` is a separate **loop-onset
+  floor** `n_loop_min` (≈ 4, below which the loop-energy formula is invalid
+  and no ⟨100⟩ loop exists), independent of the ΔF>0 mask. The size direction
+  and absolute crossover are sensitive to the (approximate) elastic constants
+  and are a Phase-6 calibration decision against `f₁₁₁(T,dose)`.
 
 ### 3.3 Marian junction kernel `K_111_junction[n,n′]` (2-D)
 
@@ -296,7 +308,9 @@ sheet already carries the `b_100` Burgers vector.
 | softening exponent | $1/4$ (pinned) | Dudarev Eq. 4 — *not* a fit knob (see §3.1) |
 | δ | 0.4 nm | constant (Dudarev) |
 | $E_f^i, G, b_{111}, \nu, \gamma_{\rm sf}, \Omega, n_{\rm tr}, \sigma_{\rm tr}$ | — | already in `binding_energies.py` |
-| $n_{\rm conv}$ | *derived* from ΔF>0 | §3.2 (not free) |
+| conversion support | *derived* — ΔF>0 mask (small-loop biased) | §3.2 (not free) |
+| $n_{\rm loop\_min}$ | ≈ 4 (loop-onset floor = `bulk-100` `n_min`) | constant |
+| $T^\*$, $n_{\rm ref}$ | calibration anchor for `LoopEnergetics` | 450 °C, 50 (default) |
 
 Net: **9 new sheet parameters**; of these, 6
 ($E_a^0,\gamma_a,T^\*,\varphi_{\max},\sigma_s,n_{j,\min}$ — all bounded by the
@@ -313,7 +327,7 @@ energetics.
 | Population | Polarity | `n_min` | `mobile_max` | Role |
 |---|---|---|---|---|
 | `bulk-111` | SIA | 1 | `i_mobile` | 3-D-mobile small clusters + glissile ½⟨111⟩ loops; **SIA monomer pool**; **all cascade SIA source**; self-coalesces (now split by φ_junc) |
-| `bulk-100` | SIA | `n_conv` | **0** (sessile) | ⟨100⟩ loops; no glide, no self-coalescence, no cascade source; grows by junction + absorption + monomer capture; strong V/I sink |
+| `bulk-100` | SIA | `n_loop_min` (≈4) | **0** (sessile) | ⟨100⟩ loops; no glide, no self-coalescence, no cascade source; grows by junction + absorption + monomer capture; strong V/I sink. `n_min` is the loop-onset floor, *not* the conversion support (which is the ΔF>0 mask, see §3.2). |
 | `bulk` (VAC) | VACANCY | 1 | `v_mobile` | voids/bubbles — **unchanged** |
 
 Monomer population stays `bulk-111` only; ⟨100⟩ GROWTH/SHRINKAGE auto-draw from
@@ -404,16 +418,27 @@ Files to touch are listed per step (all paths under `RadCluster_2_0/`).
    - `py_utils/core/rag.py` (`Edge.__post_init__`: same-polarity product validation)
    - `py_utils/core/graph_walker.py:196` (`_c_coalescence`: gain → `dprod`)
    - `codes/Python_Testing/check_coalescence_product_population.py` (new test)
-   - ⚠️ **Pre-existing bug fixed here:** the same-population coalescence gain was
-     `2.0*rate` (with a `*0.5` already applied) → it *created* SIA content
-     (`d/dt Σn·cₙ = +0.76` in a no-over-top probe). Corrected to `rate`.
-     **Follow-up:** check the C++ `rate_equations.cpp` coalescence gain for the
-     same factor-2 before trusting the C++↔Python agreement.
-2. **Energetics module** — `E_l^{111/100}(n,T)`, two-term `Δf(T)` (§3.1, exponent
-   pinned ¼), `ΔF(n,T)`, `n_conv` from ΔF>0.
-   - **new** `py_utils/loop_energetics.py` (reuse `E_f_i, G, b_111, nu, Omega` from `binding_energies.py`)
+   - ⚠️ **Pre-existing bug fixed here (Python reference only):** the
+     same-population coalescence gain was `2.0*rate` (with a `*0.5` already
+     applied) → it *created* SIA content (`d/dt Σn·cₙ = +0.76` in a no-over-top
+     probe). Corrected to `rate`.
+   - ✅ **C++ audited — correct, no factor-2.** `cpp_utils/.../rate_kernels.cpp`
+     `K_ii_coal(n,np)` uses an *asymmetric single-diffusivity* convention
+     (returns `…·D_np`, the projectile's D only): both orderings a→b and b→a
+     fire separately and sum to the full `(D_a+D_b)` rate, so no symmetry factor
+     is needed and nothing is over-produced. The Python reference used a
+     *symmetric* `(D_a+D_b)` kernel and tried to compensate with `0.5`/`2.0` —
+     the `2.0` was wrong. **Net: C++ production results are valid; the fix
+     brings the Python reference into agreement with the C++.**
+2. **Energetics module** — ✅ **DONE (2026-06-11)**. `E_l^{111/100}(n,T)`,
+   two-term `Δf(T)` (§3.1, exponent pinned ¼), `ΔF(n,T)`, single-knob
+   calibration to `(T*, n_ref)`, `conversion_mask`. 7/7 self-test checks pass.
+   - **new** `py_utils/loop_energetics.py` (`LoopEnergetics` dataclass;
+     `python py_utils/loop_energetics.py` runs the self-test)
    - `py_utils/binding_energies.py` (**new** `E_b_loop_100(n)` — activates the
-     dormant `A_100=0.7160, B_100=0.3581` already in `E_b_loop_i`)
+     dormant `A_100=0.7160, B_100=0.3581`)
+   - Finding: crossover T increases with size ⇒ small-loop-biased unary support
+     (see §3.2). C++ port (Phase 7) must mirror this.
 3. **Kernels** — `K_111to100` (§3.2), `φ_junc` → `K_111_junction` + the
    `(1−φ)·𝒦ⁱⁱ` self-coal split (§3.3), `K_100_absorb` (§3.4), ⟨100⟩ sessile
    capture/emission/sink arrays (§3.5).

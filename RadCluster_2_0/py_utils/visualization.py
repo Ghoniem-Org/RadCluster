@@ -214,12 +214,34 @@ def plot_swelling(results, out_path=None, title=''):
     return fig
 
 
+_LBL_111 = r'$\frac{1}{2}\langle 111\rangle$ loops'
+_LBL_100 = r'$\langle 100\rangle$ loops'
+_C_111   = 'steelblue'
+_C_100   = 'darkviolet'
+
+
+def _has_conversion(results):
+    """True if the run carries a populated ⟨100⟩ loop population."""
+    n100 = results.get('N_loops_100')
+    return n100 is not None and np.any(np.asarray(n100, dtype=float) > 0.0)
+
+
 def plot_mean_sizes(results, out_path=None, title=''):
-    """Mean SIA and vacancy cluster sizes vs. dose."""
+    """Mean SIA and vacancy cluster sizes vs. dose.
+
+    With loop conversion, the SIA loops are split into ½⟨111⟩ and ⟨100⟩.
+    """
     _check_mpl()
     fig, ax = plt.subplots(figsize=(7, 4))
     dose = results['dose']
-    ax.semilogx(dose, results['mean_n_i'], label=r'$\langle n \rangle$ SIA loops', color='steelblue')
+    if _has_conversion(results):
+        ax.semilogx(dose, results['mean_n_111'],
+                    label=r'$\langle n\rangle$ ' + _LBL_111, color=_C_111)
+        ax.semilogx(dose, results['mean_n_100'],
+                    label=r'$\langle n\rangle$ ' + _LBL_100, color=_C_100)
+    else:
+        ax.semilogx(dose, results['mean_n_i'],
+                    label=r'$\langle n \rangle$ SIA loops', color=_C_111)
     ax.semilogx(dose, results['mean_n_v'], label=r'$\langle m \rangle$ voids',     color='tomato')
     ax.set_xlabel('Dose (dpa)')
     ax.set_ylabel('Mean cluster size (defects)')
@@ -270,6 +292,10 @@ def plot_size_distribution(results, input_data, t_idx=-1, out_path=None, title='
     # Raw ODE state is in at.frac; convert to m^-3 for display
     c_n = np.maximum(y[:N], 0.0) * inv_Omega
     c_v = np.maximum(y[N:N + M], 0.0) * inv_Omega
+    # ⟨100⟩ loop distribution (loop conversion), if present
+    y100 = results.get('y_sia100')
+    c_n100 = (np.maximum(np.asarray(y100)[:, t_idx], 0.0) * inv_Omega
+              if y100 is not None and np.asarray(y100).size else None)
 
     ns = np.arange(1, N + 1)
     ms = np.arange(1, M + 1)
@@ -286,7 +312,11 @@ def plot_size_distribution(results, input_data, t_idx=-1, out_path=None, title='
 
     # --- Row 1: log-scale vs cluster size ---
     ax1 = axes[0, 0]
-    ax1.semilogy(ns, c_n + 1e-10, color='steelblue')
+    ax1.semilogy(ns, c_n + 1e-10, color=_C_111,
+                 label=_LBL_111 if c_n100 is not None else None)
+    if c_n100 is not None:
+        ax1.semilogy(ns, c_n100 + 1e-10, color=_C_100, label=_LBL_100)
+        ax1.legend(loc='best', fontsize=_INTERIOR_LEGEND_FONTSIZE)
     ax1.set_xlabel('SIA cluster size n')
     ax1.set_ylabel(_CONC_LABEL)
     ax1.set_title(f'SIA Distribution  {time_label} {title}')
@@ -307,7 +337,11 @@ def plot_size_distribution(results, input_data, t_idx=-1, out_path=None, title='
 
     # --- Row 2: linear-scale vs diameter (nm) ---
     ax3 = axes[1, 0]
-    ax3.plot(d_loop, c_n, color='steelblue')
+    ax3.plot(d_loop, c_n, color=_C_111,
+             label=_LBL_111 if c_n100 is not None else None)
+    if c_n100 is not None:
+        ax3.plot(d_loop, c_n100, color=_C_100, label=_LBL_100)
+        ax3.legend(loc='best', fontsize=_INTERIOR_LEGEND_FONTSIZE)
     ax3.set_xlabel('SIA loop diameter (nm)')
     ax3.set_ylabel(_CONC_LABEL)
     ax3.set_title(f'SIA Loop Size  {time_label} {title}')
@@ -558,8 +592,16 @@ def plot_number_densities(results, out_path=None, title=''):
     _check_mpl()
     fig, ax = plt.subplots(figsize=(7, 4))
     dose = results['dose']
-    ax.loglog(dose, np.maximum(results['N_loops'], 1e-10),
-              label='Loop density (SIA, n≥2)', color='steelblue')
+    if _has_conversion(results):
+        ax.loglog(dose, np.maximum(results['N_loops_111'], 1e-10),
+                  label=_LBL_111 + r' (n≥2)', color=_C_111)
+        ax.loglog(dose, np.maximum(results['N_loops_100'], 1e-10),
+                  label=_LBL_100 + r' (n≥2)', color=_C_100)
+        ax.loglog(dose, np.maximum(results['N_loops'], 1e-10),
+                  label='SIA loops (total)', color='gray', ls=':', alpha=0.7)
+    else:
+        ax.loglog(dose, np.maximum(results['N_loops'], 1e-10),
+                  label='Loop density (SIA, n≥2)', color=_C_111)
     ax.loglog(dose, np.maximum(results['N_voids'], 1e-10),
               label='Void density (vac, m≥2)', color='tomato', ls='--')
     ax.set_xlabel('Dose (dpa)')
@@ -569,6 +611,37 @@ def plot_number_densities(results, out_path=None, title=''):
     ax.grid(True, which='both', alpha=0.3)
     ax.set_xlim(left=_dose_xlim(dose))
     _apply_axis_config(ax, 'concentration')
+    fig.tight_layout()
+    if out_path:
+        fig.savefig(out_path, dpi=150)
+    return fig
+
+
+def plot_loop_fraction(results, out_path=None, title=''):
+    """½⟨111⟩ loop fraction f₁₁₁ vs. dose (loop conversion).
+
+    f₁₁₁ = Σ n c_n^{111} / Σ n (c_n^{111}+c_n^{100}) — the content-weighted
+    fraction of SIA-loop atoms still in ½⟨111⟩ loops, directly comparable to the
+    experimental Burgers-vector fraction.  Returns None if conversion is off.
+    """
+    _check_mpl()
+    if not _has_conversion(results):
+        return None
+    fig, ax = plt.subplots(figsize=(7, 4))
+    dose = results['dose']
+    f111 = np.asarray(results['f_111_loop'], dtype=float)
+    ax.semilogx(dose, 100.0 * f111, color=_C_111, lw=2,
+                label=r'$\frac{1}{2}\langle 111\rangle$')
+    ax.semilogx(dose, 100.0 * (1.0 - f111), color=_C_100, lw=2, ls='--',
+                label=r'$\langle 100\rangle$')
+    ax.set_xlabel('Dose (dpa)')
+    ax.set_ylabel('Loop fraction (% of SIA-loop atoms)')
+    ax.set_title(f'½⟨111⟩ / ⟨100⟩ Loop Fraction {title}')
+    ax.set_ylim(-5, 105)
+    ax.legend(loc='best', fontsize=_INTERIOR_LEGEND_FONTSIZE)
+    ax.grid(True, alpha=0.3)
+    ax.set_xlim(left=_dose_xlim(dose))
+    _apply_axis_config(ax, 'scalar')
     fig.tight_layout()
     if out_path:
         fig.savefig(out_path, dpi=150)
@@ -1357,6 +1430,8 @@ def save_all_plots(results, input_data, out_dir, label='',
         ('mean_sizes.png',          plot_mean_sizes,                  (results,)),
         ('he_content.png',          plot_he_content,                  (results,)),
         ('number_densities.png',    plot_number_densities,            (results,)),
+        # ½⟨111⟩/⟨100⟩ loop fraction (loop conversion; auto-skips if off)
+        ('loop_fraction.png',       plot_loop_fraction,               (results,)),
         ('size_distributions.png',  plot_size_distribution,           (results, input_data)),
         ('sia_dist_evolution.png',  plot_sia_distribution_evolution,  (results, input_data)),
         ('void_dist_evolution.png', plot_void_distribution_evolution, (results, input_data)),

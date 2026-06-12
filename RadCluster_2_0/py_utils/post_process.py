@@ -255,15 +255,39 @@ def calculate_derived_quantities(t, y, input_data, rate_eq_obj,
         C_He_free[j] = c_h
 
 
-    # ── Loop-conversion ⟨100⟩ block: fold its SIA content into the inventory ─
-    # The C++ appends a sessile ⟨100⟩ SIA block; cpp_bridge passes it here as
-    # y_sia100 [I, n_t].  The total SIA inventory is S_I = Σ n (c_n^{111}+c_n^{100}),
-    # so the conservation diagnostics below see the full SIA content (otherwise
-    # the ⟨100⟩ atoms would read as a spurious conservation deficit).
+    # ── Loop-conversion: split SIA loops into ½⟨111⟩ and ⟨100⟩ populations ────
+    # y_sia100 [I, n_t] is the appended sessile ⟨100⟩ block (discrete); the
+    # ½⟨111⟩ block is y[0:I] (discrete when conversion is on).  We expose, per
+    # population: number density (N_loops_111/100), mean size (mean_n_111/100),
+    # and the content-weighted ½⟨111⟩ fraction f₁₁₁(t) — directly comparable to
+    # the experimental loop fraction.  The combined SIA totals (C_SIA_tot,
+    # N_loops, mean_n_i) are also updated so the conservation diagnostics and
+    # legacy plots see the full SIA content.  When conversion is off the ⟨100⟩
+    # arrays are zero and f₁₁₁ ≡ 1 (all SIA loops are ½⟨111⟩).
+    N_loops_111 = N_loops.copy()        # ½⟨111⟩ density (loops, n ≥ 2)
+    N_loops_100 = np.zeros(n_t)
+    mean_n_111  = mean_n_i.copy()        # ½⟨111⟩ mean size
+    mean_n_100  = np.zeros(n_t)
+    f_111_loop  = np.ones(n_t)           # ½⟨111⟩ loop fraction (content-weighted)
     if y_sia100 is not None and np.asarray(y_sia100).size:
-        c100 = np.maximum(np.asarray(y_sia100, dtype=float), 0.0)   # [I, n_t]
-        C_SIA_tot = C_SIA_tot + ns @ c100            # add ⟨100⟩ content to S_I
-        N_loops   = N_loops   + np.sum(c100[1:], axis=0)  # ⟨100⟩ loops
+        c100    = np.maximum(np.asarray(y_sia100, dtype=float), 0.0)   # [I, n_t]
+        cont100 = ns @ c100                                  # ⟨100⟩ content [at.frac]
+        N_loops_100 = np.sum(c100[1:, :], axis=0)            # ⟨100⟩ density
+        C_SIA_tot   = C_SIA_tot + cont100                    # full SIA inventory
+        if not is_bin:
+            c111    = np.maximum(y[:I, :], 0.0)              # [I, n_t]
+            cnt111  = np.sum(c111[1:, :], axis=0)
+            cont111 = ns @ c111
+            cnt100  = N_loops_100
+            mean_n_100 = np.divide(cont100, cnt100,
+                                   out=np.zeros(n_t), where=cnt100 > 0)
+            tot = cont111 + cont100
+            f_111_loop = np.divide(cont111, tot,
+                                   out=np.ones(n_t), where=tot > 0)
+            cnt_tot  = cnt111 + cnt100
+            mean_n_i = np.divide(cont111 + cont100, cnt_tot,
+                                 out=mean_n_i.copy(), where=cnt_tot > 0)
+        N_loops = N_loops_111 + N_loops_100                  # combined density
 
     # Dose axis [dpa]
     dose = G * t
@@ -345,6 +369,8 @@ def calculate_derived_quantities(t, y, input_data, rate_eq_obj,
     C_He_tot   *= inv_Omega
     C_He_free  *= inv_Omega
     N_loops    *= inv_Omega
+    N_loops_111 *= inv_Omega
+    N_loops_100 *= inv_Omega
     N_voids    *= inv_Omega
     C_i1       *= inv_Omega
     C_v1       *= inv_Omega
@@ -369,7 +395,12 @@ def calculate_derived_quantities(t, y, input_data, rate_eq_obj,
         'C_He_free':  C_He_free,   # [m^-3]
         'mean_n_i':   mean_n_i,    # [atoms]
         'mean_n_v':   mean_n_v,    # [atoms]
-        'N_loops':    N_loops,     # [m^-3]
+        'N_loops':    N_loops,     # [m^-3]  (combined SIA loops)
+        'N_loops_111': N_loops_111, # [m^-3]  ½⟨111⟩ loops
+        'N_loops_100': N_loops_100, # [m^-3]  ⟨100⟩ loops (loop conversion)
+        'mean_n_111':  mean_n_111,  # [atoms] ½⟨111⟩ mean loop size
+        'mean_n_100':  mean_n_100,  # [atoms] ⟨100⟩ mean loop size
+        'f_111_loop':  f_111_loop,  # ½⟨111⟩ loop fraction (content-weighted)
         'N_voids':    N_voids,     # [m^-3]
         'swelling':   swelling,    # [dimensionless fraction]
         'C_i1':       C_i1,        # [m^-3]

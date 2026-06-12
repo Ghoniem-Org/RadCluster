@@ -491,7 +491,16 @@ Files to touch are listed per step (all paths under `RadCluster_2_0/`).
      ⟨100⟩ (validated `full_system` + `linsol=dense`). **Limitation:** ON needs
      a dense/FD Jacobian for now — the analytic sparse Jacobian + Woodbury
      preconditioner don't yet include the SIA100 coupling (7c).
-   - 7c — analytic sparse Jacobian + Woodbury for the SIA100 block + coupling.
+   - 7c ✅ (2026-06-12) — ON now works with **dense** *and* **gmres** (Woodbury
+     auto-falls-back to Jacobi when `loop_conversion`, since the bordered-banded
+     structure doesn't model the appended block; `parameters.h`). The analytic
+     **sparse Jacobian** (`sparse_jacobian.cpp`) was made conversion-aware
+     (`cons_off` instead of `N_eq-5`; ⟨100⟩ block coupling; conservation-row
+     loop bounded to 5) — ready for `klu` once its **pre-existing** heap bug is
+     fixed. ⚠️ **`klu` is broken independently of this work** — it heap-corrupts
+     at exit even with conversion OFF on the original (pre-Phase-7) code; it's
+     not the default solver (dense/gmres are), so it had gone unnoticed.
+     Verified: dense ON ≡ gmres ON (⟨100⟩ content 1.1764e-9, no crash).
    - 7d — bin-moment ⟨100⟩ (reconstruct→transfer→project).
    - 7e — end-to-end conservation test with conversion ON.
 

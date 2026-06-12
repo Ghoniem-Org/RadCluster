@@ -46,8 +46,11 @@ int build_sparsity_pattern_full_CD(Parameters& P)
     const int i_mob   = std::max(1, P.i_mobile);
     const int v_mob   = std::max(1, P.v_mobile);
     const int he_off  = I + V;
-    const int n_he    = N_eq - he_off - 5;          // Q vars + (maybe) c_h
-    const int cons_off = N_eq - 5;                  // 5 conservation entries
+    // cons_off is stable under the optional appended ⟨100⟩ block (P.cons_off =
+    // N_eq-5 when loop conversion is off).  n_he is the He-extra count between
+    // the VAC block and the conservation block.
+    const int cons_off = P.cons_off;                // 5 conservation entries
+    const int n_he    = cons_off - he_off;          // Q vars + (maybe) c_h
 
     // Build pattern as list of nonzero rows per column (CSC).
     std::vector<std::vector<int>> col_rows(N_eq);
@@ -124,11 +127,42 @@ int build_sparsity_pattern_full_CD(Parameters& P)
         for (int j = he_off; j < he_off + n_he; ++j) add(r, j);
     }
 
-    // ── Conservation rows (last 5): aggregates over all clusters ────────────
-    for (int r = cons_off; r < N_eq; ++r) {
+    // ── Conservation rows (the 5 at cons_off): aggregates over all clusters ──
+    // Bounded by cons_off+5 (NOT N_eq): the appended ⟨100⟩ block sits after the
+    // conservation block, so r<N_eq would spill across all ⟨100⟩ rows.
+    for (int r = cons_off; r < cons_off + 5; ++r) {
         for (int j = 0; j < I; ++j)             add(r, j);   // SIA
         for (int j = I; j < I + V; ++j)         add(r, j);   // VAC
         for (int j = he_off; j < he_off + n_he; ++j) add(r, j);
+    }
+
+    // ── Loop-conversion ⟨100⟩ block (appended at sia100_off) ────────────────
+    // Mobile SIA columns (0..i_mob-1) and mobile VAC columns (I..I+v_mob-1) are
+    // already dense over ALL rows (incl. the appended ⟨100⟩ rows), which covers
+    // the junction / absorption / growth / shrink dependencies on the mobile
+    // ½⟨111⟩ and vacancy monomer pools.  Here we add the remaining structure:
+    //   ⟨100⟩ self band (ladders ±1, absorption product reach +i_mob backward),
+    //   the unary same-size ½⟨111⟩→⟨100⟩ diagonal coupling, and the ⟨100⟩
+    //   columns feeding the monomer / mobile-½⟨111⟩ / conservation rows.
+    if (P.loop_conversion) {
+        const int s0    = P.sia100_off;
+        const int i_mob_c = std::min(i_mob, I);
+        for (int r = 0; r < I; ++r) {
+            const int r100 = s0 + r;                 // ⟨100⟩ row, size r+1
+            add(r100, r100);                         // self (diagonal)
+            if (r - 1 >= 0) add(r100, s0 + (r - 1)); // growth predecessor
+            if (r + 1 < I)  add(r100, s0 + (r + 1)); // shrink/emission predecessor
+            for (int n = 1; n <= i_mob && r - n >= 0; ++n)
+                add(r100, s0 + (r - n));             // absorption product reach
+            add(r100, r);                            // unary: dci100[r] <- c_i[r]
+
+            // ⟨100⟩ column r100 feeds: ½⟨111⟩ & vacancy monomer rows, the mobile
+            // ½⟨111⟩ rows (absorption consumes them), and the conservation rows.
+            add(0, r100);                            // ½⟨111⟩ monomer row
+            add(I, r100);                            // vacancy monomer row
+            for (int n = 0; n < i_mob_c; ++n) add(n, r100);
+            for (int rc = cons_off; rc < cons_off + 5; ++rc) add(rc, r100);
+        }
     }
 
     // ── Diagonal (structural, KLU requirement) ──────────────────────────────

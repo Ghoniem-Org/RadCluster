@@ -584,7 +584,13 @@ inline Parameters build_parameters(const std::map<std::string, double>& p) {
         const bool gmres          = (P.linsol == 2);
         const bool full_domain    = (P.window_mode == 0);
         const bool has_coalescence = (P.i_mobile >= 2) || (P.v_mobile >= 2);
-        const bool use_woodbury   = gmres && full_domain && has_coalescence;
+        // The Woodbury bordered-banded structure (band + mobile-species low rank)
+        // does not model the appended ⟨100⟩ block's coupling, so fall back to
+        // Jacobi-preconditioned GMRES when loop conversion is on (Jacobi is
+        // FD-based and handles arbitrary structure).  Woodbury+conversion is a
+        // future optimization.  The user can still force prec_type via the file.
+        const bool use_woodbury   = gmres && full_domain && has_coalescence
+                                    && !P.loop_conversion;
         P.prec_type = static_cast<int>(optional_param(p, "prec_type",
                           use_woodbury ? 1.0 : 0.0));
     }

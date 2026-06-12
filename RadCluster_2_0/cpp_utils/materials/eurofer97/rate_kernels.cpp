@@ -698,6 +698,18 @@ static int rhs_case2(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
     // V_{m'-n}, losing only n vacancies (not m').
     dydt[P.cons_off + 3] = dydt[P.cons_off + 1];  // J_VAC_mutual = J_SIA_mutual
 
+    // Loop conversion: each ⟨100⟩ shrink (⟨100⟩_n + V_1 → ⟨100⟩_{n-1}) annihilates
+    // one SIA and one vacancy, so it belongs in the mutual-annihilation flux for
+    // both species (keeps δ_FP_sia / δ_FP_vac exact with conversion on).
+    if (P.loop_conversion) {
+        const double* c_i100 = y + P.sia100_off;
+        double s100_mut = 0.0;
+        for (int n = P.conv_n_loop_min; n <= I; ++n)
+            s100_mut += P.K_100_shrink[n - 1] * std::max(c_i100[n - 1], 0.0) * cv1;
+        dydt[P.cons_off + 1] += s100_mut;   // J_SIA_mutual
+        dydt[P.cons_off + 3] += s100_mut;   // J_VAC_mutual
+    }
+
     // J_He_sink: He lost to sinks
     {
         double he_sink = P.k2_disl_He * c_h;

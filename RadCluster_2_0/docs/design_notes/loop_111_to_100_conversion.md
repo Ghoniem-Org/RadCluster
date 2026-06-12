@@ -501,8 +501,16 @@ Files to touch are listed per step (all paths under `RadCluster_2_0/`).
      at exit even with conversion OFF on the original (pre-Phase-7) code; it's
      not the default solver (dense/gmres are), so it had gone unnoticed.
      Verified: dense ON ≡ gmres ON (⟨100⟩ content 1.1764e-9, no crash).
-   - 7d — bin-moment ⟨100⟩ (reconstruct→transfer→project).
-   - 7e — end-to-end conservation test with conversion ON.
+   - 7e ✅ (2026-06-12) — conservation accounting now includes the ⟨100⟩ block:
+     `post_process.calculate_derived_quantities(..., y_sia100=…)` folds the
+     ⟨100⟩ content into S_I (and `N_loops`); `rate_kernels.cpp` adds the ⟨100⟩
+     shrink (a Frenkel-pair annihilation) to `J_SIA_mutual`/`J_VAC_mutual`.
+     End-to-end test `check_loop_conversion_conservation.py` (6/6): with
+     conversion ON, δ_FP reaches **6e-15** and δ_FP_sia ~1e-6 in the accumulated
+     regime, total SIA inventory (111+100) < cascade production. (A benign
+     startup transient at t≈1e-6 is excluded — production ≈ floor there.)
+   - 7d — bin-moment ⟨100⟩ (reconstruct→transfer→project). *Optional: only for
+     very-large-N production runs; discrete conversion is complete & validated.*
 
 ---
 

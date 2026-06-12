@@ -696,7 +696,8 @@ def run_cpp_solver(sim, solver_config, base_dir=None, progress_callback=None,
             y_sia100 = y[-_n_sia100:, :]
             y        = y[:-_n_sia100, :]
 
-        results = calculate_derived_quantities(t, y, sim.input_data, re_obj)
+        results = calculate_derived_quantities(t, y, sim.input_data, re_obj,
+                                               y_sia100=y_sia100)
         results['y'] = y   # raw ODE state [N_eq, n_pts] in atom fraction
         if y_sia100 is not None:
             results['y_sia100'] = y_sia100   # ⟨100⟩ loop densities [I, n_pts]

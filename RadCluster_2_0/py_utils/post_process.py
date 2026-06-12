@@ -20,7 +20,7 @@ _kB = 8.617333262e-5
 
 
 def calculate_derived_quantities(t, y, input_data, rate_eq_obj,
-                                 xmax_history=None):
+                                 xmax_history=None, y_sia100=None):
     """
     Compute macroscopic quantities from ODE solution.
 
@@ -255,6 +255,16 @@ def calculate_derived_quantities(t, y, input_data, rate_eq_obj,
         C_He_free[j] = c_h
 
 
+    # ── Loop-conversion ⟨100⟩ block: fold its SIA content into the inventory ─
+    # The C++ appends a sessile ⟨100⟩ SIA block; cpp_bridge passes it here as
+    # y_sia100 [I, n_t].  The total SIA inventory is S_I = Σ n (c_n^{111}+c_n^{100}),
+    # so the conservation diagnostics below see the full SIA content (otherwise
+    # the ⟨100⟩ atoms would read as a spurious conservation deficit).
+    if y_sia100 is not None and np.asarray(y_sia100).size:
+        c100 = np.maximum(np.asarray(y_sia100, dtype=float), 0.0)   # [I, n_t]
+        C_SIA_tot = C_SIA_tot + ns @ c100            # add ⟨100⟩ content to S_I
+        N_loops   = N_loops   + np.sum(c100[1:], axis=0)  # ⟨100⟩ loops
+
     # Dose axis [dpa]
     dose = G * t
 
@@ -308,18 +318,23 @@ def calculate_derived_quantities(t, y, input_data, rate_eq_obj,
     # He conservation diagnostic (Eq. 97):
     #   δ_He = |S_He + J_He_sink - ∫G_He dt - S_He(0)|
     #          / (S_He + J_He_sink + ∫G_He dt)
-    # with S_He = C_He_tot (free + trapped He) and S_He(0) ≈ 0 for a
-    # defect-free start. The fixed-sink loss J_He_sink must be tracked
-    # explicitly; S_He is NOT conserved against ∫G_He dt alone.
-    # This identity holds for BOTH dynamic and QSS He modes: in QSS the
-    # free-He concentration is constructed precisely so that dc_h/dt = 0
-    # makes the balance hold instantaneously. Hence the SAME formula is
-    # used regardless of qss_He.
-    S_He0 = C_He_tot[0]   # trapped+free He at t[0] (≈0 for defect-free IC)
+    # The fixed-sink loss J_He_sink must be tracked explicitly; S_He is NOT
+    # conserved against ∫G_He dt alone.
+    #
+    # The integrated balance depends on the He kinetics mode:
+    #   dynamic:  c_h is a state variable, so S_He = c_h + Q (free + trapped)
+    #             satisfies d(S_He)/dt = G_He - (sink losses) exactly.
+    #   QSS:      c_h is algebraic (dc_h/dt = 0 substituted), so only the
+    #             trapped inventory obeys dQ/dt = G_He - k2_He*c_h - sink,
+    #             and the conserved combination is S_He = Q alone.  Including
+    #             the algebraic c_h would book the entire instantaneous
+    #             free-He concentration as an apparent conservation error.
+    He_bal = (C_He_tot - C_He_free) if qss_He else C_He_tot
+    S_He0 = He_bal[0]   # balance inventory at t[0] (≈0 for defect-free IC)
     for j in range(n_t):
         he_prod = G_He * t[j]   # ∫₀ᵗ G_He dt' (constant G_He)
-        num = abs(C_He_tot[j] + J_He_sink[j] - he_prod - S_He0)
-        den = C_He_tot[j] + J_He_sink[j] + he_prod
+        num = abs(He_bal[j] + J_He_sink[j] - he_prod - S_He0)
+        den = He_bal[j] + J_He_sink[j] + he_prod
         delta_He[j] = num / den if den > 1e-300 else 0.0
 
     # Convert concentrations from atomic fraction to m^-3

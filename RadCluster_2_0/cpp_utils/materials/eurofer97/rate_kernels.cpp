@@ -204,7 +204,7 @@ static inline double K_vi_coal(const Parameters& P, int n, int mp) {
 static inline double conv_phi_junc(const Parameters& P, int a, int b) {
     if (std::min(a, b) < P.conv_n_j_min) return 0.0;
     const double lr = std::log(static_cast<double>(a) / static_cast<double>(b));
-    return P.conv_phi_max
+    return P.conv_phi_max * P.conv_psuccess        // Marian two-step success gate
          * std::exp(-(lr * lr) / (2.0 * P.conv_sigma_s * P.conv_sigma_s));
 }
 // Marian absorption kernel for ⟨100⟩_m + ½⟨111⟩_n → ⟨100⟩_{m+n}:
@@ -215,7 +215,7 @@ static inline double K_100_absorb(const Parameters& P, int m, int n) {
     const double A_8pi = P.A_sph_inv_O23 * (8.0 * PI / P.A_sph);
     const double xi_m  = std::cbrt(3.0 * static_cast<double>(m) / (8.0 * PI));
     const double xi_n  = std::cbrt(3.0 * static_cast<double>(n) / (8.0 * PI));
-    return A_8pi * (xi_m + xi_n) * P.D_SIA_eff[n - 1];
+    return A_8pi * (xi_m + xi_n) * P.D_SIA_eff[n - 1] * P.conv_psuccess;
 }
 
 static int rhs_case2(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,

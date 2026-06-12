@@ -37,6 +37,13 @@ def _run(loop_conversion):
             I=200, V=200, solver_mode="full_system",
             physics_option="full_CD_fission", C_floor=1e-25,
             he_kinetics="quasi_steady_state", i_mobile=5, v_mobile=2)
+        # Drive conversion hard so the ⟨100⟩ block is genuinely populated and the
+        # conservation accounting is exercised: high T + low unary barrier.
+        if loop_conversion:
+            sim.input_data.reactions["T"] = 700.0 + 273.15
+            sim.input_data.reactions["E_a0_conv"] = 0.8
+            sim.input_data._calculate_derived()
+            sim.rebuild_rates()
         cfg = {"t_span": (1e-6, 1e0), "n_points": 8, "log_time": True,
                "rtol": 1e-7, "atol": 1e-28,
                "solver_method": {"linsol": "dense"}}

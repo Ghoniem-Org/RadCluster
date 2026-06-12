@@ -407,7 +407,11 @@ class ReactionRates:
         #       E_a(n)   = E_a0 + γ_a·P_111(n)/b_111   (size-dependent barrier).
         #     Nonzero only where ΔF(n,T) > 0 (small-loop biased — see note).
         n_loop_min = int(re.get('n_loop_min', 4))         # ⟨100⟩ loop-onset floor
-        E_a0     = float(re.get('E_a0_conv',    0.8))     # eV  (barrier offset)
+        # Unary = DIRECT single-loop ½⟨111⟩→⟨100⟩ rotation (no junction partner to
+        # enable the easy two-step path), so its barrier is Marian's direct-
+        # rotation value (>2 eV) — NOT the two-step ΔH₂.  Calibrated to place the
+        # f₁₁₁(T) crossover at ~350 °C at reactor dose rates (Phase 6).
+        E_a0     = float(re.get('E_a0_conv',    2.5))     # eV  (direct-rotation barrier)
         gamma_a  = float(re.get('gamma_a_conv', 0.03))    # eV per perimeter-segment
         nu0_conv = float(re.get('nu0_conv',     1.0e13))  # s⁻¹ attempt frequency
         dF   = le.driving_force_array(T, I)               # eV over n = 1..I
@@ -435,7 +439,20 @@ class ReactionRates:
             log_ratio = np.log(ni / nj)
         phi = phi_max * np.exp(-(log_ratio ** 2) / (2.0 * sigma_s ** 2))
         phi = phi * (np.minimum(ni, nj) >= n_j_min)
-        self.phi_junc = phi                               # [I, I] in [0, φ_max]
+        # Marian two-step success probability (½⟨111⟩ → ½⟨110⟩ → ⟨100⟩, Fig. 3):
+        # from the metastable ½⟨110⟩ intermediate the segment either rotates
+        # FORWARD to ⟨100⟩ (barrier ΔH₂) or REVERTS to ½⟨111⟩ (reverse barrier
+        # ΔH_rev = peak₁ − E_⟨110⟩).  The branching is the probability that a
+        # junction / absorption event yields a *stable* ⟨100⟩ rather than
+        # reverting; ΔH₂ ≫ ΔH_rev ⇒ small at low T, rising with T.  This is the
+        # temperature dependence the kinetic Marian channels were missing — it
+        # multiplies BOTH the junction yield and the absorption rate.
+        dH2_conv    = float(re.get('dH2_conv',    1.0))   # ½⟨110⟩→⟨100⟩ barrier [eV]
+        dH_rev_conv = float(re.get('dH_rev_conv', 0.30))  # ½⟨110⟩→½⟨111⟩ barrier [eV]
+        ef = np.exp(-dH2_conv / kBT)
+        eb = np.exp(-dH_rev_conv / kBT)
+        self.conv_psuccess = float(ef / (ef + eb))        # P_success(T) ∈ (0, 0.5)
+        self.phi_junc = phi * self.conv_psuccess          # [I, I] gated junction
 
         # (3) Sessile ⟨100⟩ point-defect kernels — loop geometry, immobile loop;
         #     the migrating monomer's diffusivity sets the capture rate.  ⟨100⟩

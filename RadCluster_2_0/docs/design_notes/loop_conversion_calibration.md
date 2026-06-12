@@ -80,3 +80,53 @@ the junction/absorption *magnitudes*. After gating, the EUROFER crossover
 This is a model-physics change, so it is left for the author's decision rather
 than applied unilaterally — it is precisely the ½⟨111⟩↔⟨100⟩ mechanism question
 flagged at the start of this work.
+
+---
+
+## Resolution (2026-06-12) — Marian two-step success probability + direct-rotation unary
+
+The author identified the missing physics: the conversion reaction rate lacked a
+**probability of success** carrying the **two-step barrier** through the
+metastable ½⟨110⟩ intermediate (Marian Fig. 3: ½⟨111⟩ →[ΔH₁≈0.5 eV]→ ½⟨110⟩
+→[ΔH₂≈1.0 eV]→ ⟨100⟩, with E₍₁₀₀₎ < E₍₁₁₁₎ < E₍₁₁₀₎).
+
+**Implemented.** From the metastable ½⟨110⟩ the segment branches forward to
+⟨100⟩ or reverts to ½⟨111⟩:
+$$P_{\rm success}(T) = \frac{e^{-\Delta H_2/k_BT}}{e^{-\Delta H_2/k_BT}+e^{-\Delta H_{\rm rev}/k_BT}}$$
+(`dH2_conv`≈1.0, `dH_rev_conv`≈0.30 eV). This scalar multiplies **both** the
+junction yield φ_junc and the absorption rate K_100_absorb
+(`reaction_rates.py` + C++ `conv_phi_junc`/`K_100_absorb`, passed as
+`loop_conv_psuccess`).
+
+**Diagnostic that pinned the over-conversion.** With the unary channel disabled
+(`E_a0_conv` large) and the gate on, **f₁₁₁ = 1.0 at 300 °C *and* 450 °C** — the
+gated junction/absorption do *not* over-convert. So the over-conversion was
+**entirely the unary channel**: its barrier `E_a0 = 0.8 eV` (with ν₀=10¹³)
+converts loops fast even at 300 °C.
+
+**Physical fix — the unary is a *direct* rotation.** A single loop with no
+junction partner cannot use the easy two-step path; it must rotate
+½⟨111⟩→⟨100⟩ **directly**, which Marian gives as **> 2 eV**. So `E_a0_conv` was
+raised from 0.8 to ~2.0–2.5 eV. This is fully consistent with Marian: the direct
+path is hard (unary), the two-step path is easy *because the partner enables it*
+(junction/absorption). With the high direct barrier the unary correctly switches
+off at low T and turns on near the crossover.
+
+**Behaviour (confirmed).** The model now reproduces the f₁₁₁(T) crossover: f₁₁₁
+stays ≈ 1 at low T and drops toward 0 at high T, with the crossover temperature
+set by `E_a0_conv` and the **dose** (a rate-vs-time competition,
+ν₀·e^{−E_a/kT}·t ~ 1 — physically real; ion vs neutron irradiation differ for
+this reason). At ~2 dpa, `E_a0_conv` ≈ 2.5 eV pushes the crossover above 450 °C;
+the EUROFER data (~16 dpa, ~340 °C) imply `E_a0_conv` ≈ 2.0–2.3 eV. The precise
+value needs a **dose-matched** calibration sweep (slow, real G; the harness
+supports it).
+
+**Defaults set:** `E_a0_conv = 2.5` (placeholder in Marian's >2 eV range),
+`dH2_conv = 1.0`, `dH_rev_conv = 0.30` eV. Junction/absorption gated by
+P_success; conservation unaffected.
+
+### Remaining calibration step
+Run `calibrate_loop_conversion.py` at the experimental dose (~16 dpa, real G) to
+fit `E_a0_conv` (and optionally `dH_rev_conv`) so the modeled crossover lands at
+~340–350 °C. This is a slow offline sweep (low-T full-domain runs are stiff);
+the dominant knob is now `E_a0_conv`.

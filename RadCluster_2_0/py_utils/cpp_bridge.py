@@ -193,6 +193,9 @@ def write_param_file(sim, solver_config, path, y0_override=None):
         lines.append(f"n_j_min_junc={int(inp.reactions.get('n_j_min_junc', 30))}")
         lines.append(f"phi_max_junc={float(inp.reactions.get('phi_max_junc', 0.5)):.17e}")
         lines.append(f"sigma_s_junc={float(inp.reactions.get('sigma_s_junc', 0.35)):.17e}")
+        # Marian two-step success probability P_success(T) — gates junction +
+        # absorption (½⟨111⟩→½⟨110⟩→⟨100⟩, Fig. 3); computed by ReactionRates.
+        lines.append(f"loop_conv_psuccess={float(getattr(rr, 'conv_psuccess', 1.0)):.17e}")
         for k, v in enumerate(rr.Gamma_uni):
             lines.append(f"Gamma_uni_{k}={v:.17e}")
         for k, v in enumerate(rr.K_100_grow):

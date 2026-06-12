@@ -162,6 +162,8 @@ struct Parameters {
     int conv_n_j_min    = 30;         // junction minimum size
     double conv_phi_max = 0.5;        // junction peak yield at n = n'
     double conv_sigma_s = 0.35;       // junction log-size tolerance
+    double conv_psuccess = 1.0;       // Marian two-step success prob P_success(T)
+                                      // (gates junction + absorption; Fig. 3)
     std::vector<double> Gamma_uni;    // [I] unary ½⟨111⟩→⟨100⟩ conversion rate
     std::vector<double> K_100_grow;   // [I] ⟨100⟩ + I_1 capture (sessile)
     std::vector<double> K_100_shrink; // [I] ⟨100⟩ + V_1 capture (sessile)
@@ -509,6 +511,7 @@ inline Parameters build_parameters(const std::map<std::string, double>& p) {
         P.conv_n_j_min    = static_cast<int>(optional_param(p, "n_j_min_junc", 30.0));
         P.conv_phi_max    = optional_param(p, "phi_max_junc", 0.5);
         P.conv_sigma_s    = optional_param(p, "sigma_s_junc", 0.35);
+        P.conv_psuccess   = optional_param(p, "loop_conv_psuccess", 1.0);
         P.Gamma_uni.assign(P.I, 0.0);
         P.K_100_grow.assign(P.I, 0.0);
         P.K_100_shrink.assign(P.I, 0.0);

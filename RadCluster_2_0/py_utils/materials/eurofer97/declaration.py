@@ -298,9 +298,12 @@ def build_eurofer_rag(input_data, reaction_rates, *,
     # ── ½⟨111⟩ → ⟨100⟩ conversion + sessile-⟨100⟩ kernels (loop-conversion) ──
     # Unary (Dudarev) transformation rate Γ_uni(n) (1-D, INTER_POPULATION edge).
     rag.register_kernel("Gamma_uni", np.asarray(rr.Gamma_uni, dtype=float))
-    # Marian absorption  ⟨100⟩_m + ½⟨111⟩_n -> ⟨100⟩_{m+n}  (cross-character).
+    # Marian absorption  ⟨100⟩_m + ½⟨111⟩_n -> ⟨100⟩_{m+n}  (cross-character),
+    # gated by the two-step success probability P_success(T) (Marian Fig. 3) —
+    # the absorbed ½⟨111⟩ must rotate through the metastable ½⟨110⟩ to ⟨100⟩.
     rag.register_kernel("K_100_absorb",
-                        _absorb_kernel(np.asarray(rr.D_SIA_eff, float), A_8pi))
+                        float(rr.conv_psuccess)
+                        * _absorb_kernel(np.asarray(rr.D_SIA_eff, float), A_8pi))
     # Sessile ⟨100⟩ point-defect ladders (loop geometry; monomer-driven).
     rag.register_kernel("K_100_grow",   np.asarray(rr.K_100_grow, dtype=float))
     rag.register_kernel("K_100_shrink", np.asarray(rr.K_100_shrink, dtype=float))

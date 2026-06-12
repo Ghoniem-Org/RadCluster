@@ -1,9 +1,18 @@
 # Design Note — ½⟨111⟩ → ⟨100⟩ Loop Conversion in the EUROFER-97 RAG
 
-**Status:** Draft for review — *no code written yet.*
+**Status:** Approved for implementation (2026-06-11). Work proceeds on branch
+**`CodeDevelopment`** (main merged in; all 27 `py_utils` sources present).
 **Scope:** Add interstitial-loop Burgers-vector character (½⟨111⟩ vs ⟨100⟩) and
 the ⟨111⟩→⟨100⟩ conversion physics to the RadCluster_2_0 reaction
 admissibility graph (RAG).
+
+> **Existing hooks found in code (reuse, do not re-derive):**
+> `binding_energies.py:216` `E_b_loop_i(...)` already accepts
+> `A_100=0.7160, B_100=0.3581` (Table 18) — *dormant* (line 254 uses only
+> `A_111/B_111`); wire these into a ⟨100⟩ emission curve `E_b_loop_100`.
+> Material constants for the loop-energy module are already in that file:
+> `E_f_i=3.77` eV, `G_shear=82e9` Pa, `b_111=2.49e-10` m, `nu=0.29`,
+> `gamma_sf=0.6` J/m², `Omega=1.18e-29` m³, `n_tr=25`, `sigma_tr=5`.
 
 **Decisions taken:**
 
@@ -164,18 +173,25 @@ $T_c$.
 | $F_c$ (nonlinear core) | 0.46 | 0.47 | 0.33 | — |
 | $F_\delta$ (core-traction) | 0.345 | 0.349 | 0.387 | 0.390 |
 
-**Adopted: parametrised $\Delta f(T)$.** We bypass the full
-anisotropic-elasticity evaluation and parametrise the per-unit-length
-free-energy difference, tying the ⟨100⟩ softening to the same $c'(T)$ law that
-makes $\hat F_{001}([100])\to0$:
-$$\boxed{\;\Delta f(T) = f_{111} - f_{100}^{0}\,(1-T/T_c)^{p}\;}\qquad
-  \Delta F(n,T) = P(n)\,\Delta f(T),$$
-with $T_c=1185$ K fixed, $f_{111}$ and $f_{100}^{0}$ the (≈ zero-T) per-length
-energies of the two characters (eV/Å, scale set by the §3.1 core constants), and
-the exponent $p$ chosen so $\Delta f$ changes sign near 350 °C and is strongly
-positive by 550 °C (Dudarev Fig. 4 regions). Conversion is favoured for
-$T>T^\*$ where $f_{111}=f_{100}^{0}(1-T^\*/T_c)^{p}$. The full anisotropic route
-(Dudarev Eqs. 3–4) remains the high-fidelity upgrade behind the same kernel.
+**Adopted: parametrised $\Delta f(T)$, two-term form.** We bypass the full
+anisotropic-elasticity evaluation but keep the physics that only the ⟨100⟩
+*prelogarithmic* part softens (its core terms do not). Splitting $f_{100}$ into a
+T-independent core and a softening prelog tied to the analytic $\hat
+F_{001}([100])\propto\sqrt{c_{11}-c_{12}}\propto(1-T/T_c)^{1/4}$ scaling
+(Dudarev Eq. 4):
+$$\boxed{\;f_{100}(T) = f_{100}^{\rm core} + f_{100}^{\rm pre}\,(1-T/T_c)^{1/4},
+   \qquad \Delta f(T) = f_{111} - f_{100}(T)\;}\qquad
+   \Delta F(n,T) = P(n)\,\Delta f(T),$$
+with $T_c=1185$ K fixed and the exponent **pinned at $1/4$** by Eq. 4 — *not* a
+free knob. The two per-length energies $f_{100}^{\rm core}=(F_\delta+F_c)_{100}$
+and $f_{100}^{\rm pre}=\hat F_{001}\ln(4R^\*/e\delta)$ come from the §3.1 core
+constants; $f_{111}$ likewise. The single fit target is the crossover
+temperature $T^\*$ (where $\Delta f=0$), anchored to the Dudarev Fig. 4 regions
+(sign change ≈ 350 °C, strongly positive by ≈ 550 °C). This two-term form
+replaces the earlier single-exponent $f_{111}-f_{100}^{0}(1-T/T_c)^p$, which was
+numerically ill-conditioned when $f_{111}\approx f_{100}^{0}$. The full
+anisotropic route (Dudarev Eqs. 3–4) remains the high-fidelity upgrade behind the
+same kernel.
 
 ### 3.2 Dudarev unary kernel `K_111to100[n]` (1-D)
 
@@ -244,28 +260,49 @@ $\varphi_{\rm abs}\!\approx\!1$. Product ⟨100⟩ of size m+n → `bulk-100`.
 `ANNIHILATION` with vacancies. These reuse the loop-capture form
 $A_{\rm loop}\,n^{1/2}\,\omega^{\rm eff}$ with **sessile** mobility (so they
 never enter coalescence transport), and a **⟨100⟩-specific binding curve** for
-emission, analogous to ½⟨111⟩'s $E_b^{\rm loop}(n)=A_{111}n^{-B_{111}}$:
-$$E_b^{100}(n) = A_{100}\,n^{-B_{100}},$$
-fit to the ⟨100⟩ formation-energy curve of §3.1 (⟨100⟩ loops are very stable, so
-emission is slow but nonzero). The Excel `Physical_Properties` sheet already
-carries the `b_100` Burgers vector.
+emission, analogous to ½⟨111⟩'s $E_b^{\rm loop}(n)=A_{111}n^{+B_{111}}$ in
+[`binding_energies.py:216`](../../py_utils/binding_energies.py):
+$$E_b^{100}(n) = A_{100}\,n^{+B_{100}}\ \text{(small-n)} \;\xrightarrow{\tanh}\;
+   E_b^{\rm cont,100}(n)\ \text{(continuum)} .$$
+**Already in code:** `E_b_loop_i(...)` accepts `A_100=0.7160, B_100=0.3581`
+(Table 18) but currently ignores them (line 254 uses only `A_111/B_111`). The
+implementation adds a sibling `E_b_loop_100(n)` that activates the dormant
+⟨100⟩ fit with the *same* `n_tr`/`sigma_tr` blend and continuum tail. ⟨100⟩ loops
+are very stable, so emission is slow but nonzero. The Excel `Physical_Properties`
+sheet already carries the `b_100` Burgers vector.
 
-### 3.6 New physics parameters
+### 3.6 Physics parameters
 
-| Symbol | Meaning | First-cut value | Source / calibration |
-|---|---|---|---|
-| $E_a^{0}$ | unary barrier (offset) | ≈ 0.5–1.0 eV | Marian ΔH₂ |
-| $\gamma_a$ | unary barrier size slope | tune | Arakawa onset + size window |
-| $\nu_0$ | attempt frequency | ≈ 10¹³ s⁻¹ | Debye |
-| $f_{111}, f_{100}^{0}$ | per-length loop energies | O(0.3–0.5) eV/Å | §3.1 core constants |
-| $p$ | $\Delta f(T)$ softening exponent | tune | Dudarev Fig. 4 (sign change ≈350 °C) |
-| $T_c$ | α–γ / spin-fluct. softening | 1185 K | Dudarev |
-| δ | core cutoff | ≈ 0.4 nm | Dudarev |
-| $\varphi_{\max}$ | peak junction yield | 0.5–1.0 | MD / calibration |
-| $\sigma_s$ | log-size tolerance | 0.3–0.5 | Marian "comparable size" |
-| $n_{j,\min}$ | min junction size | O(10) SIAs | Marian (junctions from n≈34–37) |
-| $A_{100}, B_{100}$ | ⟨100⟩ binding fit | from §3.1 curve | — |
-| $n_{\rm conv}$ | ⟨100⟩ onset size | *derived* from ΔF>0 | §3.2 (not free) |
+**Genuinely new (9)** — add to the Excel sheets:
+
+| Symbol | Meaning | First-cut value | Source / calibration | Sheet |
+|---|---|---|---|---|
+| $E_a^{0}$ | unary barrier offset | ≈ 0.5–1.0 eV | Marian ΔH₂ | Model_Parameters |
+| $\gamma_a$ | unary barrier size slope [eV/segment] | ≈ 0.03 (cal.) | Arakawa onset + size window | Model_Parameters |
+| $\nu_0$ | attempt frequency | ≈ 10¹³ s⁻¹ | Debye; **reuse existing lattice ν₀** | Physical_Properties |
+| $f_{111}$ | per-length ½⟨111⟩ energy | ≈ 1.6 eV/Å | §3.1 (Dudarev constants) | Physical_Properties |
+| $f_{100}^{\rm core}, f_{100}^{\rm pre}$ | ⟨100⟩ core + softening prelog | core ≈ 0.7, pre ≈ 1.0 eV/Å | §3.1 (Dudarev constants) | Physical_Properties |
+| $T^\*$ | conversion crossover temperature | fit, ∈ [350, 550] °C | Dudarev Fig. 4 | Model_Parameters |
+| $\varphi_{\max}$ | peak junction yield | 0.5–1.0 | Marian MD | Model_Parameters |
+| $\sigma_s$ | log-size tolerance | 0.3–0.5 | Marian "comparable size" | Model_Parameters |
+| $n_{j,\min}$ | min junction size | ≈ 30 (10–35) | Marian (junctions from n≈34–37) | Model_Parameters |
+
+**Fixed / already in code (do not add as free knobs):**
+
+| Symbol | Value | Where |
+|---|---|---|
+| $A_{100}, B_{100}$ | 0.7160, 0.3581 | **already in** `binding_energies.py:216` (Table 18), dormant — just wire in |
+| $T_c$ | 1185 K | constant (Dudarev) |
+| softening exponent | $1/4$ (pinned) | Dudarev Eq. 4 — *not* a fit knob (see §3.1) |
+| δ | 0.4 nm | constant (Dudarev) |
+| $E_f^i, G, b_{111}, \nu, \gamma_{\rm sf}, \Omega, n_{\rm tr}, \sigma_{\rm tr}$ | — | already in `binding_energies.py` |
+| $n_{\rm conv}$ | *derived* from ΔF>0 | §3.2 (not free) |
+
+Net: **9 new sheet parameters**; of these, 6
+($E_a^0,\gamma_a,T^\*,\varphi_{\max},\sigma_s,n_{j,\min}$ — all bounded by the
+papers) are genuine calibration knobs against `f₁₁₁(T,dose)`; the remaining 3
+($f_{111}, f_{100}^{\rm core}, f_{100}^{\rm pre}$) are computed from the Dudarev
+energetics.
 
 ---
 
@@ -359,18 +396,39 @@ After the Python `GraphWalker` reference is validated, mirror in
 
 ## 7. Proposed build order
 
-1. **Layer-1:** `COALESCENCE` `product_population` + walker gain-redirect
-   (small, unit-testable against `δ_FP`).
-2. **Energetics module:** `E_l^{111/100}(n,T)`, `ΔF(n,T)`, T-dependent elastic
-   constants (or the parametrised `Δf(T)` first cut) — new helper alongside
-   `binding_energies.py`.
-3. **Kernels:** `K_111to100` (§3.2), `φ_junc` → `K_111_junction` and modified
-   self-coal (§3.3), `K_100_absorb` (§3.4), `E_b^{100}` (§3.5) + Table entries.
-4. **Layer-2 declaration:** two SIA populations, edges 1–9, monomer wiring.
-5. **Validate** against the Python walker: conservation (δ_FP, δ_He) **and** the
-   empirical `f₁₁₁(T)` / `f₁₁₁(dose)` trend from `loop_burgers_fraction.py` —
-   calibrate the §3.6 parameters here.
-6. **C++ mirror** last, gated on the Python reference.
+Files to touch are listed per step (all paths under `RadCluster_2_0/`).
+
+1. **Layer-1 core** — ✅ **DONE (2026-06-11)**. `COALESCENCE` `product_population`
+   + walker gain-redirect; 5/5 conservation tests pass.
+   - `py_utils/core/edge_classes.py` (documented optional `product_population`)
+   - `py_utils/core/rag.py` (`Edge.__post_init__`: same-polarity product validation)
+   - `py_utils/core/graph_walker.py:196` (`_c_coalescence`: gain → `dprod`)
+   - `codes/Python_Testing/check_coalescence_product_population.py` (new test)
+   - ⚠️ **Pre-existing bug fixed here:** the same-population coalescence gain was
+     `2.0*rate` (with a `*0.5` already applied) → it *created* SIA content
+     (`d/dt Σn·cₙ = +0.76` in a no-over-top probe). Corrected to `rate`.
+     **Follow-up:** check the C++ `rate_equations.cpp` coalescence gain for the
+     same factor-2 before trusting the C++↔Python agreement.
+2. **Energetics module** — `E_l^{111/100}(n,T)`, two-term `Δf(T)` (§3.1, exponent
+   pinned ¼), `ΔF(n,T)`, `n_conv` from ΔF>0.
+   - **new** `py_utils/loop_energetics.py` (reuse `E_f_i, G, b_111, nu, Omega` from `binding_energies.py`)
+   - `py_utils/binding_energies.py` (**new** `E_b_loop_100(n)` — activates the
+     dormant `A_100=0.7160, B_100=0.3581` already in `E_b_loop_i`)
+3. **Kernels** — `K_111to100` (§3.2), `φ_junc` → `K_111_junction` + the
+   `(1−φ)·𝒦ⁱⁱ` self-coal split (§3.3), `K_100_absorb` (§3.4), ⟨100⟩ sessile
+   capture/emission/sink arrays (§3.5).
+   - `py_utils/reaction_rates.py`
+4. **Layer-2 declaration** — two SIA populations, edges 1–9, monomer wiring,
+   `add_discrete("SIA100", …)`.
+   - `py_utils/materials/eurofer97/declaration.py` (realize the FUTURE HOOK at line 205)
+5. **Inputs** — 9 new sheet parameters (§3.6).
+   - `py_utils/input_data.py`, `py_utils/create_excel.py`, `input/*.xlsx`
+6. **Validate** against the Python walker: conservation (δ_FP, δ_He) **and** the
+   `f₁₁₁(T)` / `f₁₁₁(dose)` trend from `loop_burgers_fraction.py`; calibrate the
+   six §3.6 knobs here.
+   - **new** `codes/Python_Testing/check_loop_conversion.py`
+7. **C++ mirror** last, gated on the Python reference (§6).
+   - `cpp_utils/parameters.h`, `cpp_utils/rate_equations.{cpp,h}`, `py_utils/cpp_bridge.py`
 
 ---
 

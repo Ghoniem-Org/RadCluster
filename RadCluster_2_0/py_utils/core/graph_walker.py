@@ -197,11 +197,28 @@ class GraphWalker:
         """(chi,n) + (chi,n') -> (chi,n+n').  Same-polarity binary growth.
 
         Reference double sum; the kernel is a 2-D array K[n-1, n'-1].
+
+        Cross-population product.  If the edge carries a ``product_population``
+        (e.g. an SIA <111>+<111> junction whose product is a sessile <100>
+        loop), the gain is deposited into that block while the reactant losses
+        stay on the source and partner blocks.  The product keeps the same
+        polarity, so signed-defect content q = chi*n is conserved either way.
+
+        Pair weighting.  When the two reactants are the same population
+        (``same``) the ordered double loop visits each unordered pair twice
+        (and the diagonal once), so the per-event rate carries the 1/2
+        unordered-pair weight.  The gain is deposited once per visit at that
+        same weighted rate: summed over the two visits of an off-diagonal pair
+        this yields exactly one product, and over the single visit of the
+        diagonal it yields the 1/2-weighted self-pair product — so the loss
+        (also weighted) and the gain balance and total content is conserved.
         """
         ka = self._key(edge.population)
         kb = self._key(edge.partner_population)
         ca, cb = ctx.conc[ka], ctx.conc[kb]
         da, db = ctx.dconc[ka], ctx.dconc[kb]
+        dprod = (ctx.dconc[self._key(edge.product_population)]
+                 if edge.product_population is not None else da)
         K = np.atleast_2d(self._kernel(edge))
         same = (ka == kb)
         for i in range(ca.size):
@@ -209,17 +226,17 @@ class GraphWalker:
                 continue
             for j in range(cb.size):
                 ij = i + j + 1                   # product size index (n+n'-1)
-                if ij >= da.size:
+                if ij >= dprod.size:
                     if self.boundary == "reflection":
                         continue
                     ij = -1                      # absorption: drop product
                 rate = K[i, j] * ca[i] * cb[j]
                 if same:
-                    rate *= 0.5                  # avoid double counting
+                    rate *= 0.5                  # unordered-pair weight
                 da[i] -= rate
                 db[j] -= rate
                 if ij >= 0:
-                    da[ij] += 2.0 * rate if same else rate
+                    dprod[ij] += rate
 
     def _c_annihilation(self, edge: Edge, ctx: "_WalkContext") -> None:
         """(chi,n) + (-chi,n') -> survivor of size |n-n'|.  Reference sum."""

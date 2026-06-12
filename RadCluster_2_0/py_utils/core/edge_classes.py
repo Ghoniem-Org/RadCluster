@@ -127,7 +127,11 @@ EDGE_CLASS_SPEC: "dict[EdgeClass, EdgeClassSpec]" = {
     EdgeClass.COALESCENCE: EdgeClassSpec(
         EdgeClass.COALESCENCE, 2, 2, False, False, None, False, False, False, False,
         "(chi,n,p,c) + (chi,n',p,c') -> (chi,n+n',p,c+c'): same-polarity "
-        "binary growth (hyperedge with a quadratic rate kernel)"),
+        "binary growth (hyperedge with a quadratic rate kernel).  An optional "
+        "product_population redirects the product to a different same-polarity "
+        "population (cross-population coalescence, e.g. <111>+<111> junction -> "
+        "<100>); the default (no product_population) keeps the product in the "
+        "reactant population, so changes_population is False for the base case."),
     EdgeClass.SOURCE: EdgeClassSpec(
         EdgeClass.SOURCE, 0, 0, False, False, None, False, False, True, False,
         "(empty) -> (chi,n,p,c) at a rate set by the displacement-cascade "

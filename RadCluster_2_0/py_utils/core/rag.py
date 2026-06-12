@@ -100,6 +100,16 @@ class Edge:
                 raise ValueError(
                     f"edge {self.label!r}: ANNIHILATION partner must be of "
                     "opposite polarity")
+        if (self.edge_class is EdgeClass.COALESCENCE and
+                self.product_population is not None and
+                self.product_population.polarity is not self.population.polarity):
+            # Optional cross-population product (e.g. <111>+<111> junction ->
+            # <100>): same-polarity binary growth that deposits the product
+            # into a *different* same-polarity population.  Polarity must be
+            # preserved so signed-defect content q = chi*n is conserved.
+            raise ValueError(
+                f"edge {self.label!r}: COALESCENCE product_population must "
+                "share the reactants' polarity")
         if (self.edge_class is EdgeClass.SOLUTE_TRAPPING and
                 self.gas_species is None):
             raise ValueError(

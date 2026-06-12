@@ -125,8 +125,30 @@ supports it).
 `dH2_conv = 1.0`, `dH_rev_conv = 0.30` eV. Junction/absorption gated by
 P_success; conservation unaffected.
 
-### Remaining calibration step
-Run `calibrate_loop_conversion.py` at the experimental dose (~16 dpa, real G) to
-fit `E_a0_conv` (and optionally `dH_rev_conv`) so the modeled crossover lands at
-~340–350 °C. This is a slow offline sweep (low-T full-domain runs are stiff);
-the dominant knob is now `E_a0_conv`.
+### Dose-matched fit (2026-06-12)
+
+A 16 dpa (t = 1.6×10⁷ s, G = 10⁻⁶ dpa/s) calibration was attempted. Fast where
+`f₁₁₁ = 1` (no conversion: a single point is ~1.5 s), but the **crossover-region
+runs — where `f₁₁₁` is actively transitioning — are extremely stiff** and exceed
+the interactive budget (>10 min each) even at `I = 40`, `rtol = 2×10⁻³`, and in
+`active_window`/`gmres` mode. So a precise interactive fit was not possible; it
+is a genuine **offline / cluster** task.
+
+What the fit established (the bracket):
+- `E_a0_conv = 2.0 eV` → `f₁₁₁ = 1.0` at 360 °C / 16 dpa ⇒ its crossover is
+  **> 360 °C** (above the EUROFER ~340 °C).
+- the 2 dpa bracket (`E_a0 = 1.8`: `f₁₁₁ = 0.90` at 380 °C, `0.77` at 440 °C)
+  plus that point put the EUROFER-matching value at **E_a0_conv ≈ 1.7–1.9 eV**.
+
+**Default set to `E_a0_conv = 1.8 eV`** — the best estimate for the EUROFER
+crossover (~340–360 °C at reactor dose rates), consistent with Marian's
+direct-rotation barrier (he quotes "in excess of 2 eV" from MD; calibrating to
+experiment lands just below). The remaining work is a one-parameter offline sweep
+over `E_a0_conv ∈ [1.7, 1.9]` at 16 dpa (cluster, or `active_window` + long
+wall-clock) to pin the crossover precisely; the harness
+(`calibrate_loop_conversion.py`) supports it directly.
+
+Important physical corollary: because the crossover is a rate-vs-time balance
+(`ν₀·e^{−E_a/kT}·t ~ 1`), it is **dose- and dose-rate-dependent** — ion (high
+rate) and neutron (low rate) data crossover at different temperatures for the
+*same* material, which the model reproduces.

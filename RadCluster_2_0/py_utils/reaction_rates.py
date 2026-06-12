@@ -411,7 +411,7 @@ class ReactionRates:
         # enable the easy two-step path), so its barrier is Marian's direct-
         # rotation value (>2 eV) — NOT the two-step ΔH₂.  Calibrated to place the
         # f₁₁₁(T) crossover at ~350 °C at reactor dose rates (Phase 6).
-        E_a0     = float(re.get('E_a0_conv',    2.0))     # eV  (direct-rotation barrier)
+        E_a0     = float(re.get('E_a0_conv',    1.8))     # eV  (direct-rotation barrier)
         gamma_a  = float(re.get('gamma_a_conv', 0.03))    # eV per perimeter-segment
         nu0_conv = float(re.get('nu0_conv',     1.0e13))  # s⁻¹ attempt frequency
         dF   = le.driving_force_array(T, I)               # eV over n = 1..I

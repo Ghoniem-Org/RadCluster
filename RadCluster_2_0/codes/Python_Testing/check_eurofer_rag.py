@@ -79,7 +79,7 @@ def check(equations):
     from py_utils.core import Polarity
     sia_mono = rag.monomer_population(Polarity.SIA)
     vac_mono = rag.monomer_population(Polarity.VACANCY)
-    assert sia_mono.name == "bulk" and sia_mono.polarity is Polarity.SIA
+    assert sia_mono.name == "bulk-111" and sia_mono.polarity is Polarity.SIA
     assert vac_mono.name == "bulk" and vac_mono.polarity is Polarity.VACANCY
     print("SIA + vacancy monomer populations set .. OK")
 
@@ -88,20 +88,22 @@ def check(equations):
     print("gas list = ['He'] ...................... OK")
 
     # ── StateLayout sanity ───────────────────────────────────────────────────
-    assert layout.has("SIA") and layout.has("VAC")
+    assert layout.has("SIA") and layout.has("SIA100") and layout.has("VAC")
     assert layout.has("He") and layout.has("conservation")
     assert layout.block("conservation").length == 5
-    sia_len = layout.block("SIA").length
-    vac_len = layout.block("VAC").length
-    he_len  = layout.block("He").length
-    expected = sia_len + vac_len + he_len + 5
+    sia_len    = layout.block("SIA").length
+    sia100_len = layout.block("SIA100").length
+    vac_len    = layout.block("VAC").length
+    he_len     = layout.block("He").length
+    expected = sia_len + sia100_len + vac_len + he_len + 5
     assert layout.N_eq == expected, \
         f"N_eq {layout.N_eq} != {expected}"
     assert layout.N_eq > 0
     if equations == "discrete":
-        # discrete im5vm2: SIA(1000) + VAC(1000) + He(2: Q_tot + c_h) + aux(5)
-        assert sia_len == 1000 and vac_len == 1000, \
-            f"discrete ladders should be 1000/1000, got {sia_len}/{vac_len}"
+        # discrete im5vm2: SIA(1000) + SIA100(1000) + VAC(1000)
+        #                  + He(2: Q_tot + c_h) + aux(5)
+        assert sia_len == 1000 and sia100_len == 1000 and vac_len == 1000, \
+            f"discrete ladders should be 1000, got {sia_len}/{sia100_len}/{vac_len}"
         assert he_len == 2, f"fission He block should be 2 (Q_tot + c_h), got {he_len}"
     print(f"StateLayout N_eq sensible .............. OK  (N_eq = {layout.N_eq})")
 

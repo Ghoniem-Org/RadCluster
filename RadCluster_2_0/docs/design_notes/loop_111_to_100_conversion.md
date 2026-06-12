@@ -449,9 +449,16 @@ Files to touch are listed per step (all paths under `RadCluster_2_0/`).
    - The 2-D `K_111_junction = φ·𝒦ⁱⁱ`, `(1−φ)·𝒦ⁱⁱ` self-coal split, and
      `K_100_absorb` are assembled in `declaration.py` (Phase 4) from `phi_junc`
      + `D_SIA_eff`, matching the existing 2-D-in-declaration architecture.
-4. **Layer-2 declaration** — two SIA populations, edges 1–9, monomer wiring,
-   `add_discrete("SIA100", …)`.
-   - `py_utils/materials/eurofer97/declaration.py` (realize the FUTURE HOOK at line 205)
+4. **Layer-2 declaration** — ✅ **DONE (2026-06-11)**. FUTURE HOOK realized:
+   `bulk-111`/`bulk-100` populations; `_absorb_kernel` helper; the φ-split
+   (`K_111_self`/`K_111_junction`), `K_100_absorb`, `Gamma_uni`, and sessile
+   ⟨100⟩ kernels registered; conversion + ⟨100⟩-family edges added;
+   `add_discrete("SIA100", …)` (and bin-moment block). Now **3 populations,
+   24 edges**; discrete N_eq grows by I. Integration test
+   `check_loop_conversion_integration.py` (structural + composed conservation,
+   total SIA content flat to 0). `check_eurofer_rag.py` updated for the new
+   population name + SIA100 block.
+   - `py_utils/materials/eurofer97/declaration.py`
 5. **Inputs** — 9 new sheet parameters (§3.6).
    - `py_utils/input_data.py`, `py_utils/create_excel.py`, `input/*.xlsx`
 6. **Validate** against the Python walker: conservation (δ_FP, δ_He) **and** the

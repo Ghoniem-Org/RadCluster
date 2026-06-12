@@ -79,6 +79,23 @@ def _coalescence_kernel(D_eff: np.ndarray, A_pref: float) -> np.ndarray:
     return A_pref * xi_sum * D_sum
 
 
+def _absorb_kernel(D_partner: np.ndarray, A_pref: float) -> np.ndarray:
+    """Cross-character absorption kernel K[m-1, n-1] (Marian growth, P3-like).
+
+    For ``<100>_m + <111>_n -> <100>_{m+n}`` (paper Eqs. 79/81 form):
+
+      K_{m,n} = 8 pi (xi_m + xi_n) (D^{100}_m + D^{111}_n) / Omega^(2/3)
+
+    The sessile ⟨100⟩ primary contributes zero diffusivity, so only the mobile
+    ½⟨111⟩ partner ``D_partner = D_SIA_eff`` drives the capture.  Primary axis
+    m = ⟨100⟩ size, partner axis n = ½⟨111⟩ size (both span 1..I).
+    """
+    n = np.arange(1, D_partner.size + 1, dtype=float)
+    xi = _xi(n)
+    xi_sum = xi[:, None] + xi[None, :]
+    return A_pref * xi_sum * D_partner[None, :]
+
+
 def _annihilation_kernel(D_v: np.ndarray, D_i: np.ndarray,
                          A_pref: float) -> np.ndarray:
     """Cross-polarity V-I annihilation kernel K[m-1, n-1] (paper Eq. 81).
@@ -197,26 +214,32 @@ def build_eurofer_rag(input_data, reaction_rates, *,
     # ── 1. The graph and its populations (paper Eqs. 41-46) ──────────────────
     rag = ReactionAdmissibilityGraph("EUROFER-97", gas_species=["He"])
 
-    # One bulk population per polarity (Eqs. 42-43).  The single SIA
-    # population covers both 3D-mobile clusters (n < 4) and prismatic
-    # <111> loops (n >= 4): the distinction is carried by size-dependent
-    # rate kernels, not a separate population label (paper Section 4.1).
+    # Two SIA populations + one vacancy population (paper Eqs. 42-43, Eq. 12).
     #
-    # FUTURE HOOK — <111>/<100> SIA population split (paper Eq. 12):
-    #   EUROFER also forms sessile <100> loops alongside glissile <111>
-    #   loops.  A later sub-stage will split the SIA layer into two
-    #   populations ('bulk-111', 'bulk-100') coupled by an
-    #   INTER_POPULATION edge (loop unfaulting / Burgers-vector change).
-    #   That is deliberately NOT implemented here — one SIA population.
-    sia_bulk = rag.add_population(
-        Population("bulk", Polarity.SIA, n_min=1, mobile_max=i_mobile))
+    #   bulk-111 : glissile ½⟨111⟩ loops + 3D-mobile small clusters (n < 4);
+    #              holds the SIA monomer pool; receives ALL cascade SIA
+    #              production; self-coalesces (split by phi_junc).
+    #   bulk-100 : sessile ⟨100⟩ loops (mobile_max = 0); no glide, no
+    #              self-coalescence, no cascade source.  n_min is the
+    #              loop-onset floor (no ⟨100⟩ loop exists below it).
+    #
+    # The two are coupled by the ½⟨111⟩ → ⟨100⟩ conversion edges declared in
+    # Section 3: a unary INTER_POPULATION transformation (Dudarev), a binary
+    # junction COALESCENCE (Marian), and a ½⟨111⟩-absorption COALESCENCE
+    # (Marian growth).  See docs/design_notes/loop_111_to_100_conversion.md.
+    n_loop_min = int(getattr(reaction_rates, "n_loop_min", 4))
+    sia_111 = rag.add_population(
+        Population("bulk-111", Polarity.SIA, n_min=1, mobile_max=i_mobile))
+    sia_100 = rag.add_population(
+        Population("bulk-100", Polarity.SIA, n_min=n_loop_min, mobile_max=0))
     vac_bulk = rag.add_population(
         Population("bulk", Polarity.VACANCY, n_min=1, mobile_max=v_mobile))
 
-    # The size-1 vertex of each bulk population is the point-defect monomer
-    # pool consumed/emitted by GROWTH / SHRINKAGE / RECOMBINATION /
-    # DISSOCIATION edges.
-    rag.set_monomer_population(sia_bulk)
+    # The size-1 vertex of bulk-111 is the SIA point-defect monomer pool; the
+    # sessile bulk-100 loops draw/emit monomers from it automatically (the
+    # walker resolves the monomer by polarity).  Vacancy monomer pool is the
+    # vacancy bulk.  GROWTH / SHRINKAGE / RECOMBINATION / DISSOCIATION consume.
+    rag.set_monomer_population(sia_111)
     rag.set_monomer_population(vac_bulk)
 
     # ── 2. Rate-kernel library k (precomputed by ReactionRates) ──────────────
@@ -258,12 +281,36 @@ def build_eurofer_rag(input_data, reaction_rates, *,
 
     # SIA-SIA and V-V coalescence — 2-D same-polarity binary kernels
     # assembled from the precomputed effective diffusivities (Eqs. 79-80).
-    rag.register_kernel("K_ii_coal",
-                        _coalescence_kernel(np.asarray(rr.D_SIA_eff, float),
-                                            A_8pi))
+    #
+    # The ½⟨111⟩-½⟨111⟩ collision kernel K_ii is *split* by the Marian
+    # size-comparability branching phi_junc[n,n'] (built by ReactionRates):
+    #   K_111_self     = (1 - phi) * K_ii   ->  product stays in bulk-111
+    #   K_111_junction =      phi  * K_ii   ->  product is a ⟨100⟩ loop
+    # so the total ½⟨111⟩ collision rate is conserved (no double counting).
+    K_ii_full = _coalescence_kernel(np.asarray(rr.D_SIA_eff, float), A_8pi)
+    phi = np.asarray(rr.phi_junc, dtype=float)
+    rag.register_kernel("K_111_self",     (1.0 - phi) * K_ii_full)
+    rag.register_kernel("K_111_junction", phi * K_ii_full)
     rag.register_kernel("K_vv_coal",
                         _coalescence_kernel(np.asarray(rr.D_VAC_eff, float),
                                             A_8pi))
+
+    # ── ½⟨111⟩ → ⟨100⟩ conversion + sessile-⟨100⟩ kernels (loop-conversion) ──
+    # Unary (Dudarev) transformation rate Γ_uni(n) (1-D, INTER_POPULATION edge).
+    rag.register_kernel("Gamma_uni", np.asarray(rr.Gamma_uni, dtype=float))
+    # Marian absorption  ⟨100⟩_m + ½⟨111⟩_n -> ⟨100⟩_{m+n}  (cross-character).
+    rag.register_kernel("K_100_absorb",
+                        _absorb_kernel(np.asarray(rr.D_SIA_eff, float), A_8pi))
+    # Sessile ⟨100⟩ point-defect ladders (loop geometry; monomer-driven).
+    rag.register_kernel("K_100_grow",   np.asarray(rr.K_100_grow, dtype=float))
+    rag.register_kernel("K_100_shrink", np.asarray(rr.K_100_shrink, dtype=float))
+    rag.register_kernel("eps_100_emit", np.asarray(rr.G_100, dtype=float))
+    rag.register_kernel("D_100_sink",   np.asarray(rr.k2_100, dtype=float))
+    # Vacancy-cluster annihilation of sessile ⟨100⟩ loops (D^{100} = 0).
+    rag.register_kernel("K_vi_annih_100",
+                        _annihilation_kernel(np.asarray(rr.D_VAC_eff, float),
+                                             np.zeros(int(input_data.I)),
+                                             A_8pi))
 
     # V-I cluster annihilation — cross-polarity 2-D kernel K[m-1, n-1]
     # (paper Eq. 81).  Vacancy axis primary, SIA axis partner.
@@ -307,7 +354,7 @@ def build_eurofer_rag(input_data, reaction_rates, *,
     # Walked on the SIA ladder: I_n + V_1 -> I_{n-1}, consuming a vacancy
     # monomer.  The n=1 step (I_1 + V_1 -> empty) is pure recombination.
     rag.add_edge(Edge(
-        EdgeClass.RECOMBINATION, "P1_recombination", sia_bulk,
+        EdgeClass.RECOMBINATION, "P1_recombination", sia_111,
         kernel="K_iv",
         meta={"process": "P1", "note": "V-SIA recombination, paper Eq. 52"}))
 
@@ -325,18 +372,18 @@ def build_eurofer_rag(input_data, reaction_rates, *,
     # SIA side: loop absorbs an SIA monomer (grow, P3) or a vacancy
     # monomer (shrink, P3 vacancy side).
     rag.add_edge(Edge(
-        EdgeClass.GROWTH, "P3_loop_growth", sia_bulk,
+        EdgeClass.GROWTH, "P3_loop_growth", sia_111,
         kernel="K_SIA_grow",
         meta={"process": "P3", "note": "loop + I_1 -> loop_{n+1}"}))
     rag.add_edge(Edge(
-        EdgeClass.SHRINKAGE, "P3_loop_shrink", sia_bulk,
+        EdgeClass.SHRINKAGE, "P3_loop_shrink", sia_111,
         kernel="K_SIA_shrink",
         meta={"process": "P3", "note": "loop + V_1 -> loop_{n-1}"}))
 
     # P4 — absorption at fixed unresolved sinks (SINK): dislocation
     # network, grain boundaries, MX/M23C6 precipitates.
     rag.add_edge(Edge(
-        EdgeClass.SINK, "P4_SIA_sink", sia_bulk,
+        EdgeClass.SINK, "P4_SIA_sink", sia_111,
         kernel="D_SIA_sink",
         meta={"process": "P4", "note": "SIA fixed-sink loss D_i"}))
     rag.add_edge(Edge(
@@ -347,7 +394,7 @@ def build_eurofer_rag(input_data, reaction_rates, *,
     # P5 — thermal monomer emission (DISSOCIATION): loop emits an SIA,
     # void emits a vacancy, into the respective monomer pool.
     rag.add_edge(Edge(
-        EdgeClass.DISSOCIATION, "P5i_SIA_emission", sia_bulk,
+        EdgeClass.DISSOCIATION, "P5i_SIA_emission", sia_111,
         kernel="eps_SIA_emit",
         meta={"process": "P5", "note": "loop_n -> loop_{n-1} + I_1"}))
     rag.add_edge(Edge(
@@ -356,32 +403,83 @@ def build_eurofer_rag(input_data, reaction_rates, *,
         meta={"process": "P5", "note": "void_m -> void_{m-1} + V_1"}))
 
     # SIA-SIA and V-V coalescence (COALESCENCE, same-polarity binary).
+    # ½⟨111⟩ self-coalescence keeps the (1 - phi_junc) branch in bulk-111.
     rag.add_edge(Edge(
-        EdgeClass.COALESCENCE, "SIA_SIA_coalescence", sia_bulk,
-        kernel="K_ii_coal",
-        meta={"note": "I_n + I_n' -> I_{n+n'}, paper Eq. 79"}))
+        EdgeClass.COALESCENCE, "SIA111_self_coalescence", sia_111,
+        kernel="K_111_self",
+        meta={"note": "I_n + I_n' -> I_{n+n'} (½<111>), (1-phi) branch, Eq. 79"}))
     rag.add_edge(Edge(
         EdgeClass.COALESCENCE, "VAC_VAC_coalescence", vac_bulk,
         kernel="K_vv_coal",
         meta={"note": "V_m + V_m' -> V_{m+m'}, paper Eq. 80"}))
 
+    # ── ½⟨111⟩ → ⟨100⟩ conversion edges (loop-conversion work) ───────────────
+    # Marian junction (binary): ½⟨111⟩_n + ½⟨111⟩_n' -> ⟨100⟩_{n+n'}.  Cross-
+    # population COALESCENCE: reactants in bulk-111, product deposited into
+    # bulk-100 (the phi_junc branch of the ½⟨111⟩ collision rate).
+    rag.add_edge(Edge(
+        EdgeClass.COALESCENCE, "SIA111_junction", sia_111,
+        kernel="K_111_junction", product_population=sia_100,
+        meta={"mechanism": "Marian junction",
+              "note": "½<111>_n + ½<111>_n' -> <100>_{n+n'}"}))
+    # Dudarev unary transformation: ½⟨111⟩_n -> ⟨100⟩_n (size-fixed, one-way),
+    # INTER_POPULATION gated by the thermodynamic driving force ΔF(n,T).
+    rag.add_edge(Edge(
+        EdgeClass.INTER_POPULATION, "loop_111to100_unary", sia_111,
+        kernel="Gamma_uni", product_population=sia_100,
+        meta={"mechanism": "Dudarev unary transformation",
+              "note": "½<111>_n -> <100>_n, one-way, gated by ΔF(n,T)>0"}))
+
     # V-I cluster annihilation (ANNIHILATION, cross-polarity binary).
     # Primary = vacancy population, partner = SIA population.
     rag.add_edge(Edge(
         EdgeClass.ANNIHILATION, "VI_annihilation", vac_bulk,
-        kernel="K_vi_annih", partner_population=sia_bulk,
+        kernel="K_vi_annih", partner_population=sia_111,
         meta={"note": "V_m + I_n -> survivor of size |m-n|, paper Eq. 81"}))
 
     # Cascade production (SOURCE, no precursor vertex): displacement
     # cascades inject SIA and vacancy clusters across the size spectrum.
     rag.add_edge(Edge(
-        EdgeClass.SOURCE, "cascade_SIA_source", sia_bulk,
+        EdgeClass.SOURCE, "cascade_SIA_source", sia_111,
         kernel="G_SIA_cascade",
         meta={"process": "cascade", "note": "SIA cascade injection G_n"}))
     rag.add_edge(Edge(
         EdgeClass.SOURCE, "cascade_VAC_source", vac_bulk,
         kernel="G_VAC_cascade",
         meta={"process": "cascade", "note": "vacancy cascade injection G_m"}))
+
+    # ── Sessile ⟨100⟩ population edge families (loop-conversion work) ─────────
+    # ⟨100⟩ loops grow to TEM-visible sizes mainly by ABSORBING mobile ½⟨111⟩
+    # clusters (Marian growth): ⟨100⟩_m + ½⟨111⟩_n -> ⟨100⟩_{m+n}.  Cross-
+    # population COALESCENCE with the ½⟨111⟩ partner; product = bulk-100 = the
+    # primary population, so no product_population redirect is needed.
+    rag.add_edge(Edge(
+        EdgeClass.COALESCENCE, "SIA100_absorb", sia_100,
+        kernel="K_100_absorb", partner_population=sia_111,
+        meta={"mechanism": "Marian absorption growth",
+              "note": "<100>_m + ½<111>_n -> <100>_{m+n}"}))
+    # ⟨100⟩ point-defect ladders (sessile: monomer-driven capture/emission).
+    rag.add_edge(Edge(
+        EdgeClass.GROWTH, "P3_100_growth", sia_100,
+        kernel="K_100_grow",
+        meta={"process": "P3", "note": "<100>_n + I_1 -> <100>_{n+1}"}))
+    rag.add_edge(Edge(
+        EdgeClass.SHRINKAGE, "P3_100_shrink", sia_100,
+        kernel="K_100_shrink",
+        meta={"process": "P3", "note": "<100>_n + V_1 -> <100>_{n-1}"}))
+    rag.add_edge(Edge(
+        EdgeClass.DISSOCIATION, "P5_100_emission", sia_100,
+        kernel="eps_100_emit",
+        meta={"process": "P5", "note": "<100>_n -> <100>_{n-1} + I_1"}))
+    rag.add_edge(Edge(
+        EdgeClass.SINK, "P4_100_sink", sia_100,
+        kernel="D_100_sink",
+        meta={"process": "P4", "note": "sessile <100>: D=0 (no fixed-sink loss)"}))
+    # Vacancy-cluster annihilation of sessile ⟨100⟩ loops (primary = vacancy).
+    rag.add_edge(Edge(
+        EdgeClass.ANNIHILATION, "VI_annihilation_100", vac_bulk,
+        kernel="K_vi_annih_100", partner_population=sia_100,
+        meta={"note": "V_m + <100>_n -> survivor of size |m-n|"}))
 
     # ── P7 / P8 — gas-pressure-driven and solute-detrapping edges ────────────
     # These two edges complete the EUROFER-97 RAG *structurally* per the
@@ -449,7 +547,8 @@ def build_eurofer_rag(input_data, reaction_rates, *,
         # One ODE per size: SIA ladder 1..I, vacancy ladder 1..V.  Each
         # discrete block carries meta['population'] so the GraphWalker can
         # map (polarity, name) -> block.
-        layout.add_discrete("SIA", I, population=sia_bulk)
+        layout.add_discrete("SIA", I, population=sia_111)
+        layout.add_discrete("SIA100", I, population=sia_100)
         layout.add_discrete("VAC", V, population=vac_bulk)
         n_vac_classes = V
     else:
@@ -464,11 +563,20 @@ def build_eurofer_rag(input_data, reaction_rates, *,
         shape = str(input_data.shape_function)
 
         sia_red = BinMomentReduction(I, i_discrete, I_bin, shape)
+        sia100_red = BinMomentReduction(I, i_discrete, I_bin, shape)
         vac_red = BinMomentReduction(V, v_discrete, V_bin, shape)
         layout.add_bin_moment(
             "SIA", sia_red.n_discrete, sia_red.n_bins,
             sia_red.moments_per_bin,
-            population=sia_bulk, reduction=sia_red, n_max=I)
+            population=sia_111, reduction=sia_red, n_max=I)
+        # Sessile ⟨100⟩ loops share the SIA size grid/reduction.  The
+        # conversion edges couple the two SIA bin-moment systems; the
+        # reduction wrapper / C++ handle the reconstruct→transfer→project
+        # (the discrete reference walker uses the discrete layout above).
+        layout.add_bin_moment(
+            "SIA100", sia100_red.n_discrete, sia100_red.n_bins,
+            sia100_red.moments_per_bin,
+            population=sia_100, reduction=sia100_red, n_max=I)
         layout.add_bin_moment(
             "VAC", vac_red.n_discrete, vac_red.n_bins,
             vac_red.moments_per_bin,

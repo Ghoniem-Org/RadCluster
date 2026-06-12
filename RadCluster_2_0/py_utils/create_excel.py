@@ -246,7 +246,7 @@ REACTIONS = [
     ('Grouping transition',     'n_group',     50,     '−',      'Eq. 190'),
 
     ('Loop 1/2<111> -> <100> Conversion (Marian 2002 + Dudarev 2008)', None, None, None, None),
-    ('Unary direct-rotation barrier','E_a0_conv', 2.5,    'eV',  'single-loop 1/2<111>-><100> direct rotation (Marian >2 eV); sets f111(T) crossover ~350 C'),
+    ('Unary direct-rotation barrier','E_a0_conv', 2.0,    'eV',  'single-loop 1/2<111>-><100> direct rotation (Marian >2 eV); sets f111(T) crossover ~350 C; calibrate to dose'),
     ('Two-step fwd barrier dH2',  'dH2_conv',     1.0,    'eV',  'Marian Fig.3: 1/2<110>-><100> (junction/absorption success prob)'),
     ('Two-step rev barrier dHrev','dH_rev_conv',  0.30,   'eV',  'Marian Fig.3: 1/2<110>->1/2<111> reversion; P_success=ef/(ef+eb)'),
     ('Unary barrier size slope',  'gamma_a_conv', 0.03,   'eV',  'per perimeter-segment; calibrate to Arakawa onset + size window'),

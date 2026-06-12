@@ -21,7 +21,7 @@ from py_utils.input_data import InputData
 from py_utils.reaction_rates import ReactionRates
 
 DEFAULTS = {
-    "E_a0_conv": 2.5, "gamma_a_conv": 0.03, "nu0_conv": 1.0e13,
+    "E_a0_conv": 2.0, "gamma_a_conv": 0.03, "nu0_conv": 1.0e13,
     "T_star_conv_C": 450.0, "n_ref_conv": 50, "phi_max_junc": 0.5,
     "sigma_s_junc": 0.35, "n_j_min_junc": 30, "n_loop_min": 4,
 }

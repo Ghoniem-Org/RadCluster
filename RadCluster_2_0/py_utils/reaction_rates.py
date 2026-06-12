@@ -47,9 +47,10 @@ This ensures: dC [at.frac/s] = K [s^-1 per at.frac] · C_A · C_B.
 
 import numpy as np
 from .binding_energies import (
-    E_b_void, E_b_loop_i, E_b_loop_v, E_b_bubble, ell_max,
+    E_b_void, E_b_loop_i, E_b_loop_100, E_b_loop_v, E_b_bubble, ell_max,
     Gamma_TM, Gamma_res, atomic_radius
 )
+from .loop_energetics import LoopEnergetics
 
 _kB   = 8.617333262e-5    # eV K^-1
 _J_eV = 6.241509074e18    # J → eV
@@ -390,6 +391,75 @@ class ReactionRates:
         # Geometric prefactor for coalescence: A_sph / Ω^{2/3}
         self.A_sph_inv_O23 = A_sph * inv_Omega23
         self.A_loop_inv_O23 = A_loop * inv_Omega23
+
+        # ── Phase-3: ½⟨111⟩ → ⟨100⟩ loop-conversion kernels ──────────────────
+        # See docs/design_notes/loop_111_to_100_conversion.md.  These are the
+        # 1-D ingredients owned by ReactionRates; the 2-D junction / absorption
+        # coalescence kernels are assembled from D_SIA_eff + phi_junc in the
+        # EUROFER declaration layer (build_eurofer_rag).
+        le = LoopEnergetics(a=a_m * 1.0e10, Omega=Omega * 1.0e30,
+                            T_star_C=float(re.get('T_star_conv_C', 450.0)),
+                            n_ref=float(re.get('n_ref_conv', 50.0)))
+        self.loop_energetics = le
+
+        # (1) Unary (Dudarev) conversion rate Γ_uni(n) at the operating T:
+        #       Γ_uni(n) = ν₀·exp(−E_a(n)/kT)·max(0, 1 − exp(−ΔF(n,T)/kT)),
+        #       E_a(n)   = E_a0 + γ_a·P_111(n)/b_111   (size-dependent barrier).
+        #     Nonzero only where ΔF(n,T) > 0 (small-loop biased — see note).
+        n_loop_min = int(re.get('n_loop_min', 4))         # ⟨100⟩ loop-onset floor
+        E_a0     = float(re.get('E_a0_conv',    0.8))     # eV  (barrier offset)
+        gamma_a  = float(re.get('gamma_a_conv', 0.03))    # eV per perimeter-segment
+        nu0_conv = float(re.get('nu0_conv',     1.0e13))  # s⁻¹ attempt frequency
+        dF   = le.driving_force_array(T, I)               # eV over n = 1..I
+        P111 = np.asarray(le.perimeter(ns, 111), dtype=float)   # Å
+        E_a  = E_a0 + gamma_a * P111 / le.b_111           # eV
+        # Driving-force gate, evaluated only on the ΔF>0 support to avoid exp
+        # overflow on the large-loop (ΔF≪0) tail that np.where would discard.
+        gate = np.zeros(I)
+        pos  = dF > 0.0
+        gate[pos] = 1.0 - np.exp(-dF[pos] / kBT)
+        Gamma_uni = nu0_conv * np.exp(-E_a / kBT) * gate
+        # No ⟨100⟩ loop exists below the loop-onset floor → no unary conversion.
+        Gamma_uni[:max(n_loop_min - 1, 0)] = 0.0
+        self.Gamma_uni     = Gamma_uni
+        self.conversion_dF = dF                           # diagnostic
+
+        # (2) Marian junction branching φ_junc[n−1, n′−1] (size comparability):
+        #       φ = φ_max·exp(−(ln(n/n′))²/2σ_s²)·Θ(min(n,n′) ≥ n_j_min).
+        phi_max = float(re.get('phi_max_junc',  0.5))
+        sigma_s = float(re.get('sigma_s_junc',  0.35))
+        n_j_min = float(re.get('n_j_min_junc',  30.0))
+        ni = ns[:, None]
+        nj = ns[None, :]
+        with np.errstate(divide='ignore', invalid='ignore'):
+            log_ratio = np.log(ni / nj)
+        phi = phi_max * np.exp(-(log_ratio ** 2) / (2.0 * sigma_s ** 2))
+        phi = phi * (np.minimum(ni, nj) >= n_j_min)
+        self.phi_junc = phi                               # [I, I] in [0, φ_max]
+
+        # (3) Sessile ⟨100⟩ point-defect kernels — loop geometry, immobile loop;
+        #     the migrating monomer's diffusivity sets the capture rate.  ⟨100⟩
+        #     loops do not migrate, so there is no fixed-sink loss (k2_100 = 0).
+        K100_grow   = np.zeros(I)
+        K100_shrink = np.zeros(I)
+        G100        = np.zeros(I)
+        for n in range(1, I + 1):
+            if n >= n_loop_min:
+                rt = float(n) ** 0.5
+                K100_grow[n - 1]   = A_loop * rt * Z_i_loop * Di_eff * inv_Omega23
+                K100_shrink[n - 1] = A_loop * rt * Dv_eff * inv_Omega23
+            if n >= 2:
+                Eb100 = E_b_loop_100(n, A_100=A_100, B_100=B_100,
+                                     n_tr=n_tr, sigma_tr=sigma_tr,
+                                     E_f_i=E_f_i, G_shear=mu_Pa, b_100=a_m,
+                                     nu=nu_pois, gamma_sf=gamma_sf, Omega=Omega)
+                G100[n - 1] = (A_loop * max(n - 1.0, 0.0) ** 0.5 * Di_eff
+                               * np.exp(-Eb100 / kBT) * inv_Omega23)
+        self.K_100_grow   = K100_grow
+        self.K_100_shrink = K100_shrink
+        self.G_100        = G100
+        self.k2_100       = np.zeros(I)   # sessile: no fixed-sink loss
+        self.n_loop_min   = n_loop_min
 
         # Scalar physics
         self.B_rot  = B_rot

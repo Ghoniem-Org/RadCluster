@@ -439,10 +439,16 @@ Files to touch are listed per step (all paths under `RadCluster_2_0/`).
      dormant `A_100=0.7160, B_100=0.3581`)
    - Finding: crossover T increases with size ⇒ small-loop-biased unary support
      (see §3.2). C++ port (Phase 7) must mirror this.
-3. **Kernels** — `K_111to100` (§3.2), `φ_junc` → `K_111_junction` + the
-   `(1−φ)·𝒦ⁱⁱ` self-coal split (§3.3), `K_100_absorb` (§3.4), ⟨100⟩ sessile
-   capture/emission/sink arrays (§3.5).
-   - `py_utils/reaction_rates.py`
+3. **Kernels** — ✅ **DONE (2026-06-11)**. 1-D ingredients in
+   `py_utils/reaction_rates.py`: `Gamma_uni[n]` (§3.2, uses `LoopEnergetics` +
+   size-dependent barrier, floored at `n_loop_min`), `phi_junc[n,n']` (§3.3),
+   sessile ⟨100⟩ `K_100_grow/K_100_shrink/G_100/k2_100` (§3.5, `G_100` via
+   `E_b_loop_100`). 18/18 tests pass
+   (`codes/Python_Testing/check_loop_conversion_kernels.py`).
+   Params read from `inp.reactions` with defaults (Excel rows added in Phase 5).
+   - The 2-D `K_111_junction = φ·𝒦ⁱⁱ`, `(1−φ)·𝒦ⁱⁱ` self-coal split, and
+     `K_100_absorb` are assembled in `declaration.py` (Phase 4) from `phi_junc`
+     + `D_SIA_eff`, matching the existing 2-D-in-declaration architecture.
 4. **Layer-2 declaration** — two SIA populations, edges 1–9, monomer wiring,
    `add_discrete("SIA100", …)`.
    - `py_utils/materials/eurofer97/declaration.py` (realize the FUTURE HOOK at line 205)

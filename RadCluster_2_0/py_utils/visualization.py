@@ -482,53 +482,88 @@ def _log_snapshot_indices(dose, n_times=10):
     return [int(np.argmin(np.abs(d - t))) for t in targets]
 
 
+def _b_100(results, input_data, b_111):
+    """⟨100⟩ Burgers vector (= lattice parameter a) [m]."""
+    return results.get('b_100',
+                       input_data.derived.get('a_m', b_111 * 2.0 / np.sqrt(3.0)))
+
+
+def _loop_dist_evolution(c_src, b, Omega, dose, n_times, char, title):
+    """Shared SIA-loop size-distribution-evolution figure.
+
+    c_src : [I, n_t] loop densities in at.frac; b : Burgers vector [m];
+    char  : population label for titles/axes (e.g. '1/2<111>', '<100>').
+    """
+    inv_O   = 1.0 / Omega
+    N       = c_src.shape[0]
+    ns      = np.arange(1, N + 1)
+    d_loop  = 2.0 * np.sqrt(ns * Omega / (np.pi * b)) * 1e9   # nm
+    indices = _log_snapshot_indices(dose, n_times)
+    cmap    = plt.cm.viridis(np.linspace(0.15, 0.95, len(indices)))
+
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 9))
+    for idx, color in zip(indices, cmap):
+        c_n = np.maximum(c_src[:, idx], 0.0) * inv_O
+        ax1.semilogy(ns, c_n + 1e-10, color=color, label=f'{dose[idx]:.2e} dpa')
+        ax2.plot(d_loop, c_n, color=color, label=f'{dose[idx]:.2e} dpa')
+
+    ax1.set_xlabel(f'{char} cluster size n')
+    ax1.set_ylabel(_CONC_LABEL)
+    ax1.set_title(f'{char} Size Distribution {title}')
+    ax1.legend(ncol=2, title='Dose', loc='best', fontsize=_INTERIOR_LEGEND_FONTSIZE)
+    ax1.grid(True, which='both', alpha=0.3)
+
+    ax2.set_xlabel(f'{char} loop diameter (nm)')
+    ax2.set_ylabel(_CONC_LABEL)
+    ax2.set_title(f'{char} Loop Size Distribution {title}')
+    ax2.legend(ncol=2, title='Dose', loc='best', fontsize=_INTERIOR_LEGEND_FONTSIZE)
+    ax2.grid(True, alpha=0.3)
+
+    _apply_axis_config_to_fig(fig, 'size_dist')
+    fig.tight_layout()
+    return fig
+
+
 def plot_sia_distribution_evolution(results, input_data, n_times=10,
                                     out_path=None, title=''):
     """
-    SIA cluster size distribution c_n(n) at n_times log-spaced dose snapshots.
+    ½⟨111⟩ SIA cluster size distribution c_n(n) at n_times log-spaced snapshots.
 
     Top panel: log-scale concentration vs cluster size n.
-    Bottom panel: linear-scale concentration vs SIA loop diameter (nm).
+    Bottom panel: linear-scale concentration vs loop diameter (nm).
     """
     _check_mpl()
     N     = input_data.I
     Omega = results.get('Omega', input_data.derived['Omega'])
     b_111 = results.get('b_111', input_data.derived['b_111'])
     y, dose = _align_dose_to_y(results)
-
     if y.shape[0] < N:
         print("plot_sia_distribution_evolution: skipped (bin-moment mode).")
         return None
+    char = '1/2<111>' if _has_conversion(results) else 'SIA'
+    fig = _loop_dist_evolution(y[:N, :], b_111, Omega, dose, n_times, char, title)
+    if out_path:
+        fig.savefig(out_path, dpi=150)
+    return fig
 
-    inv_O   = 1.0 / Omega
-    ns      = np.arange(1, N + 1)
-    d_loop  = 2.0 * np.sqrt(ns * Omega / (np.pi * b_111)) * 1e9  # nm
-    indices = _log_snapshot_indices(dose, n_times)
-    cmap    = plt.cm.viridis(np.linspace(0.15, 0.95, len(indices)))
 
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 9))
-
-    for idx, color in zip(indices, cmap):
-        c_n = np.maximum(y[:N, idx], 0.0) * inv_O
-        ax1.semilogy(ns, c_n + 1e-10, color=color,
-                     label=f'{dose[idx]:.2e} dpa')
-        ax2.plot(d_loop, c_n, color=color,
-                 label=f'{dose[idx]:.2e} dpa')
-
-    ax1.set_xlabel('SIA cluster size n')
-    ax1.set_ylabel(_CONC_LABEL)
-    ax1.set_title(f'SIA Size Distribution {title}')
-    ax1.legend(ncol=2, title='Dose', loc='best', fontsize=_INTERIOR_LEGEND_FONTSIZE)
-    ax1.grid(True, which='both', alpha=0.3)
-
-    ax2.set_xlabel('SIA loop diameter (nm)')
-    ax2.set_ylabel(_CONC_LABEL)
-    ax2.set_title(f'SIA Loop Size Distribution {title}')
-    ax2.legend(ncol=2, title='Dose', loc='best', fontsize=_INTERIOR_LEGEND_FONTSIZE)
-    ax2.grid(True, alpha=0.3)
-
-    _apply_axis_config_to_fig(fig, 'size_dist')
-    fig.tight_layout()
+def plot_100_distribution_evolution(results, input_data, n_times=10,
+                                    out_path=None, title=''):
+    """
+    ⟨100⟩ loop size distribution c_n(n) at n_times log-spaced snapshots
+    (loop conversion).  Mirrors plot_sia_distribution_evolution for the sessile
+    ⟨100⟩ population; returns None when conversion is off.
+    """
+    _check_mpl()
+    y100 = results.get('y_sia100')
+    if y100 is None or not np.asarray(y100).size or not _has_conversion(results):
+        return None
+    Omega = results.get('Omega', input_data.derived['Omega'])
+    b_111 = results.get('b_111', input_data.derived['b_111'])
+    c100 = np.asarray(y100, dtype=float)          # [I, n_t], same grid as results
+    dose = np.asarray(results['dose'])[:c100.shape[1]]
+    fig = _loop_dist_evolution(c100, _b_100(results, input_data, b_111),
+                               Omega, dose, n_times, '<100>', title)
     if out_path:
         fig.savefig(out_path, dpi=150)
     return fig
@@ -681,16 +716,32 @@ def plot_number_densities_tem(results, input_data, rate_eq_obj,
     mask_i = np.arange(1, N + 1) >= _N_MIN_TEM
     mask_v = np.arange(1, M + 1) >= _N_MIN_TEM
 
-    N_loops_all = np.sum(c_n_all[1:, :], axis=0)   # n ≥ 2
+    N_loops_all = np.sum(c_n_all[1:, :], axis=0)   # n ≥ 2  (½⟨111⟩ when conv.)
     N_loops_tem = np.sum(c_n_all[mask_i, :], axis=0)
     N_voids_all = np.sum(c_v_all[1:, :], axis=0)
     N_voids_tem = np.sum(c_v_all[mask_v, :], axis=0)
 
     fig, ax = plt.subplots(figsize=(8, 5))
-    ax.loglog(dose, np.maximum(N_loops_all, 1), color='steelblue',
-              alpha=0.3, ls=':', label=r'SIA loops (all $n\geq2$)')
-    ax.loglog(dose, np.maximum(N_loops_tem, 1), color='steelblue',
-              lw=2, label=rf'SIA loops (TEM, $n\geq{_N_MIN_TEM}$)')
+    if _has_conversion(results):
+        # ½⟨111⟩ = c_n_all (the SIA block); ⟨100⟩ from y_sia100 [I, n_t] at.frac.
+        inv_O = 1.0 / results.get('Omega', input_data.derived['Omega'])
+        c100  = np.maximum(np.asarray(results['y_sia100'], dtype=float), 0.0) * inv_O
+        m100  = np.arange(1, c100.shape[0] + 1) >= _N_MIN_TEM
+        N100_all = np.sum(c100[1:, :], axis=0)
+        N100_tem = np.sum(c100[m100, :], axis=0)
+        ax.loglog(dose, np.maximum(N_loops_all, 1), color=_C_111,
+                  alpha=0.3, ls=':', label=r'$\frac{1}{2}\langle111\rangle$ (all $n\geq2$)')
+        ax.loglog(dose, np.maximum(N_loops_tem, 1), color=_C_111, lw=2,
+                  label=rf'$\frac{{1}}{{2}}\langle111\rangle$ (TEM, $n\geq{_N_MIN_TEM}$)')
+        ax.loglog(dose, np.maximum(N100_all, 1), color=_C_100,
+                  alpha=0.3, ls=':', label=r'$\langle100\rangle$ (all $n\geq2$)')
+        ax.loglog(dose, np.maximum(N100_tem, 1), color=_C_100, lw=2,
+                  label=rf'$\langle100\rangle$ (TEM, $n\geq{_N_MIN_TEM}$)')
+    else:
+        ax.loglog(dose, np.maximum(N_loops_all, 1), color=_C_111,
+                  alpha=0.3, ls=':', label=r'SIA loops (all $n\geq2$)')
+        ax.loglog(dose, np.maximum(N_loops_tem, 1), color=_C_111,
+                  lw=2, label=rf'SIA loops (TEM, $n\geq{_N_MIN_TEM}$)')
     ax.loglog(dose, np.maximum(N_voids_all, 1), color='tomato',
               alpha=0.3, ls=':', label=r'Voids (all $m\geq2$)')
     ax.loglog(dose, np.maximum(N_voids_tem, 1), color='tomato',
@@ -751,8 +802,25 @@ def plot_mean_sizes_tem(results, input_data, rate_eq_obj,
     fig, ax = plt.subplots(figsize=(8, 6))
     full_dose = results['dose']
 
-    ax.plot(dose, d_i_nm, color='steelblue', lw=2,
-            label=rf'SIA loops ($n\geq{_N_MIN_TEM}$)')
+    if _has_conversion(results):
+        # ⟨100⟩ TEM mean diameter (uses b_100); ½⟨111⟩ is d_i_nm above.
+        b_100 = _b_100(results, input_data, b_111)
+        c100  = np.maximum(np.asarray(results['y_sia100'], dtype=float), 0.0)
+        m100  = np.arange(1, c100.shape[0] + 1, dtype=float)
+        mk100 = m100 >= _N_MIN_TEM
+        d_100_nm = np.zeros(n_t)
+        for j in range(n_t):
+            c_eff = np.maximum(c100[mk100.astype(bool), j] - C_floor, 0.0)
+            cnt = np.sum(c_eff)
+            mean100 = np.dot(m100[mk100.astype(bool)], c_eff) / cnt if cnt > 0 else 0.0
+            d_100_nm[j] = 2 * np.sqrt(mean100 * Omega / (np.pi * b_100)) * 1e9
+        ax.plot(dose, d_i_nm, color=_C_111, lw=2,
+                label=rf'$\frac{{1}}{{2}}\langle111\rangle$ ($n\geq{_N_MIN_TEM}$)')
+        ax.plot(dose, d_100_nm, color=_C_100, lw=2,
+                label=rf'$\langle100\rangle$ ($n\geq{_N_MIN_TEM}$)')
+    else:
+        ax.plot(dose, d_i_nm, color=_C_111, lw=2,
+                label=rf'SIA loops ($n\geq{_N_MIN_TEM}$)')
     ax.plot(dose, d_v_nm, color='tomato', lw=2,
             label=rf'Voids ($m\geq{_N_MIN_TEM}$)')
     ax.set_xlabel('Dose (dpa)')
@@ -1434,6 +1502,8 @@ def save_all_plots(results, input_data, out_dir, label='',
         ('loop_fraction.png',       plot_loop_fraction,               (results,)),
         ('size_distributions.png',  plot_size_distribution,           (results, input_data)),
         ('sia_dist_evolution.png',  plot_sia_distribution_evolution,  (results, input_data)),
+        # ⟨100⟩ loop distribution evolution (loop conversion; auto-skips if off)
+        ('loop100_dist_evolution.png', plot_100_distribution_evolution, (results, input_data)),
         ('void_dist_evolution.png', plot_void_distribution_evolution, (results, input_data)),
         # Per-cluster time-series (full_CD modes only; skipped for bin_moment)
         ('sia_small.png',           plot_sia_clusters,                (results, input_data)),

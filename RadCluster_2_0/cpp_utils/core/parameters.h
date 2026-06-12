@@ -156,6 +156,8 @@ struct Parameters {
     // conservation offsets are unchanged and the OFF path is byte-identical.
     int loop_conversion = 0;          // 0 = off (no SIA100 block), 1 = on
     int sia100_off      = 0;          // state offset of the appended c_i100 block
+    int cons_off        = 0;          // start of the 5 conservation ODEs (stable
+                                      // under the SIA100 append; = N_eq-5 when off)
     int conv_n_loop_min = 4;          // ⟨100⟩ loop-onset size (bulk-100 n_min)
     int conv_n_j_min    = 30;         // junction minimum size
     double conv_phi_max = 0.5;        // junction peak yield at n = n'
@@ -497,6 +499,7 @@ inline Parameters build_parameters(const std::map<std::string, double>& p) {
     // Appended AFTER both N_eq computations (discrete + bin-moment) and the
     // conservation block, so the existing offsets are untouched when OFF.
     // (Discrete only for now; bin-moment ⟨100⟩ reduction is a later step.)
+    P.cons_off = P.N_eq - 5;            // conservation ODEs keep this position
     P.loop_conversion = static_cast<int>(optional_param(p, "loop_conversion", 0.0));
     if (P.loop_conversion) {
         P.sia100_off = P.N_eq;          // append at the end of the state vector

@@ -198,6 +198,26 @@ static inline double K_vi_coal(const Parameters& P, int n, int mp) {
 // OpenMP is enabled at compile time via CD_HAVE_OPENMP; thread count is taken
 // from the OpenMP runtime (OMP_NUM_THREADS env var if set, otherwise the
 // machine maximum).  Falls back to serial when CD_HAVE_OPENMP is not defined.
+// ── ½⟨111⟩ → ⟨100⟩ loop-conversion helpers (only used when P.loop_conversion) ─
+// Marian size-comparability junction branching φ(a,b): peaks at a=b, zero below
+// n_j_min (symmetric in a,b; a,b are 1-indexed sizes).
+static inline double conv_phi_junc(const Parameters& P, int a, int b) {
+    if (std::min(a, b) < P.conv_n_j_min) return 0.0;
+    const double lr = std::log(static_cast<double>(a) / static_cast<double>(b));
+    return P.conv_phi_max
+         * std::exp(-(lr * lr) / (2.0 * P.conv_sigma_s * P.conv_sigma_s));
+}
+// Marian absorption kernel for ⟨100⟩_m + ½⟨111⟩_n → ⟨100⟩_{m+n}:
+//   8π(ξ_m + ξ_n)·D^{111}_n / Ω^{2/3}   (sessile ⟨100⟩ contributes D=0, so only
+//   the mobile ½⟨111⟩ partner drives the capture).  m, n are 1-indexed.
+static inline double K_100_absorb(const Parameters& P, int m, int n) {
+    static const double PI = 3.14159265358979323846;
+    const double A_8pi = P.A_sph_inv_O23 * (8.0 * PI / P.A_sph);
+    const double xi_m  = std::cbrt(3.0 * static_cast<double>(m) / (8.0 * PI));
+    const double xi_n  = std::cbrt(3.0 * static_cast<double>(n) / (8.0 * PI));
+    return A_8pi * (xi_m + xi_n) * P.D_SIA_eff[n - 1];
+}
+
 static int rhs_case2(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
                       const Parameters& P,
                       int x_hi_i_win, int x_hi_v_win) {
@@ -522,6 +542,84 @@ static int rhs_case2(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
         }
     }
 
+    // ── ½⟨111⟩ → ⟨100⟩ loop conversion (optional; full_system validated) ─────
+    // Appended c_i100 block.  All terms conserve signed-defect content q=χn:
+    // unary/junction relabel ½⟨111⟩→⟨100⟩ at fixed size (or product size); the
+    // sessile ⟨100⟩ ladders exchange monomers with the ½⟨111⟩ pool (growth/
+    // emission) or annihilate a vacancy monomer (shrink, a Frenkel pair).
+    if (P.loop_conversion) {
+        const double* c_i100 = y    + P.sia100_off;
+        double*       dci100 = dydt + P.sia100_off;
+        const int nlm = P.conv_n_loop_min;
+        const int nhi = std::min(I, x_hi_i_win + 1);   // ½⟨111⟩ size frontier
+
+        // (1) Unary transformation ½⟨111⟩_n → ⟨100⟩_n (size-fixed, one-way).
+        for (int n = nlm; n <= nhi; ++n) {
+            const double rate = P.Gamma_uni[n - 1] * std::max(c_i[n - 1], 0.0);
+            dci[n - 1]    -= rate;
+            dci100[n - 1] += rate;
+        }
+
+        // (2) Marian junction: redirect a fraction φ of the ½⟨111⟩ coalescence
+        // GAIN into ⟨100⟩ (reactant losses stay on ½⟨111⟩; single-D convention).
+        for (int sn = 2; sn <= nhi; ++sn) {            // product size
+            double moved = 0.0;
+            for (int np = 1; np <= std::min(sn - 1, P.i_mobile); ++np) {
+                const int npp = sn - np;
+                if (npp < 1 || npp > I) continue;
+                const double ph = conv_phi_junc(P, np, npp);
+                if (ph <= 0.0) continue;
+                moved += ph * K_ii_coal(P, npp, np)
+                       * std::max(c_i[np  - 1], 0.0)
+                       * std::max(c_i[npp - 1], 0.0);
+            }
+            dci[sn - 1]    -= moved;
+            dci100[sn - 1] += moved;
+        }
+
+        // (3) Marian absorption growth: ⟨100⟩_m + ½⟨111⟩_n → ⟨100⟩_{m+n}.
+        for (int m = nlm; m <= I; ++m) {
+            const double cm100 = std::max(c_i100[m - 1], 0.0);
+            if (cm100 < 1e-300) continue;
+            for (int n = 1; n <= P.i_mobile && m + n <= I; ++n) {
+                const double rate = K_100_absorb(P, m, n)
+                                  * cm100 * std::max(c_i[n - 1], 0.0);
+                dci100[m - 1]     -= rate;          // ⟨100⟩_m consumed
+                dci[n - 1]        -= rate;          // ½⟨111⟩_n absorbed
+                dci100[m + n - 1] += rate;          // ⟨100⟩_{m+n}
+            }
+        }
+
+        // (4) Sessile ⟨100⟩ point-defect ladders (monomer-coupled to ½⟨111⟩).
+        for (int n = nlm; n <= I; ++n) {
+            const double cn100 = std::max(c_i100[n - 1], 0.0);
+            if (cn100 < 1e-300) continue;
+            // Growth ⟨100⟩_n + I_1 → ⟨100⟩_{n+1}  (SIA monomer from ½⟨111⟩ pool)
+            if (n < I) {
+                const double g = P.K_100_grow[n - 1] * cn100 * ci1;
+                dci100[n - 1] -= g;
+                dci100[n]     += g;
+                dci[0]        -= g;
+            }
+            // Shrink ⟨100⟩_n + V_1 → ⟨100⟩_{n-1}  (vacancy monomer annihilated)
+            {
+                const double s = P.K_100_shrink[n - 1] * cn100 * cv1;
+                dci100[n - 1] -= s;
+                if (n - 1 >= nlm)      dci100[n - 2] += s;   // stays ⟨100⟩
+                else if (n >= 2)       dci[n - 2]    += s;   // dissolves to ½⟨111⟩
+                dcv[0]        -= s;
+            }
+            // Emission ⟨100⟩_n → ⟨100⟩_{n-1} + I_1  (SIA monomer to ½⟨111⟩ pool)
+            {
+                const double e = P.G_100[n - 1] * cn100;
+                dci100[n - 1] -= e;
+                if (n - 1 >= nlm)      dci100[n - 2] += e;
+                else if (n >= 2)       dci[n - 2]    += e;
+                dci[0]        += e;
+            }
+        }
+    }
+
     // ── Q_tot equation (total He in voids) ───────────────────────────────────
     double He_uptake = 0.0;
     for (int m = 0; m < V; ++m)
@@ -547,7 +645,7 @@ static int rhs_case2(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
         double sia_fixed = 0.0;
         for (int n = 0; n < I; ++n)
             sia_fixed += static_cast<double>(n + 1) * P.k2_SIA[n] * std::max(c_i[n], 0.0);
-        dydt[P.N_eq - 5] = sia_fixed;
+        dydt[P.cons_off + 0] = sia_fixed;
     }
 
     // J_SIA_mutual: ALL SIA content lost to SIA-vacancy annihilation.
@@ -582,7 +680,7 @@ static int rhs_case2(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
                 mutual += std::min(mp, sn) * K_s * c_mp * cn;
             }
         }
-        dydt[P.N_eq - 4] = mutual;
+        dydt[P.cons_off + 1] = mutual;
     }
 
     // J_VAC_fixed: VAC content lost to fixed sinks
@@ -590,7 +688,7 @@ static int rhs_case2(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
         double vac_fixed = 0.0;
         for (int m = 0; m < std::min(P.v_mobile, P.V); ++m)
             vac_fixed += static_cast<double>(m + 1) * P.k2_disl_v * std::max(c_v[m], 0.0);
-        dydt[P.N_eq - 3] = vac_fixed;
+        dydt[P.cons_off + 2] = vac_fixed;
     }
 
     // J_VAC_mutual: VAC content lost to mutual annihilation.
@@ -598,7 +696,7 @@ static int rhs_case2(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
     // reaction equals min(m', n) — the same as the SIA content destroyed.
     // When V_{m'} hits I_n with m'>n, the vacancy cluster shrinks to
     // V_{m'-n}, losing only n vacancies (not m').
-    dydt[P.N_eq - 2] = dydt[P.N_eq - 4];  // J_VAC_mutual = J_SIA_mutual
+    dydt[P.cons_off + 3] = dydt[P.cons_off + 1];  // J_VAC_mutual = J_SIA_mutual
 
     // J_He_sink: He lost to sinks
     {
@@ -610,7 +708,7 @@ static int rhs_case2(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
                 he_sink += P.k2_disl_v * ell_m * std::max(c_v[m], 0.0);
             }
         }
-        dydt[P.N_eq - 1] = he_sink;
+        dydt[P.cons_off + 4] = he_sink;
     }
 
     return 0;
@@ -921,7 +1019,7 @@ static int rhs_case1(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
         double sia_fixed = 0.0;
         for (int n = 0; n < I; ++n)
             sia_fixed += static_cast<double>(n + 1) * P.k2_SIA[n] * std::max(c_i[n], 0.0);
-        dydt[P.N_eq - 5] = sia_fixed;
+        dydt[P.cons_off + 0] = sia_fixed;
     }
 
     // J_SIA_mutual: ALL SIA content lost to SIA-vacancy annihilation.
@@ -956,7 +1054,7 @@ static int rhs_case1(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
                 mutual += std::min(mp, sn) * K_s * c_mp * cn;
             }
         }
-        dydt[P.N_eq - 4] = mutual;
+        dydt[P.cons_off + 1] = mutual;
     }
 
     // J_VAC_fixed: VAC content lost to fixed sinks
@@ -964,28 +1062,24 @@ static int rhs_case1(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
         double vac_fixed = 0.0;
         for (int m = 0; m < std::min(P.v_mobile, P.V); ++m)
             vac_fixed += static_cast<double>(m + 1) * P.k2_disl_v * std::max(c_v[m], 0.0);
-        dydt[P.N_eq - 3] = vac_fixed;
+        dydt[P.cons_off + 2] = vac_fixed;
     }
 
     // J_VAC_mutual: VAC content lost to mutual annihilation.
     // Vacancy content destroyed per reaction = min(m', n) = SIA content destroyed.
-    dydt[P.N_eq - 2] = dydt[P.N_eq - 4];  // J_VAC_mutual = J_SIA_mutual
+    dydt[P.cons_off + 3] = dydt[P.cons_off + 1];  // J_VAC_mutual = J_SIA_mutual
 
-    // J_He_sink: He lost to sinks
+    // J_He_sink: He lost to sinks.  Must mirror the EXACT state losses so
+    // the conservation identity c_h + ΣQ_m + J_He_sink = ∫G_He holds to
+    // solver tolerance: free He at fixed sinks (k2_disl_He·c_h) plus the
+    // −k2_disl_v·Q_m terms applied to mobile classes in dQ above.  (The
+    // previous ℓ̄·m^{2/3} allocation formula was the Case-2 expression and
+    // does not equal the per-class Q_m actually removed from the state.)
     {
-        double C_vac_tot = 0.0;
-        for (int m = 0; m < V; ++m) C_vac_tot += std::max(c_v[m], 0.0);
-        double Q_tot_loc = 0.0;
-        for (int m = 0; m < V; ++m) Q_tot_loc += std::max(Q_m[m], 0.0);
         double he_sink = P.k2_disl_He * c_h;
-        if (C_vac_tot > 1e-300 && Q_tot_loc > 0.0) {
-            double ell_bar_loc = Q_tot_loc / C_vac_tot;
-            for (int m = 0; m < std::min(P.v_mobile, P.V); ++m) {
-                double ell_m = ell_bar_loc * std::pow(static_cast<double>(m + 1), 2.0/3.0);
-                he_sink += P.k2_disl_v * ell_m * std::max(c_v[m], 0.0);
-            }
-        }
-        dydt[P.N_eq - 1] = he_sink;
+        for (int m = 0; m < std::min(P.v_mobile, P.V); ++m)
+            he_sink += P.k2_disl_v * std::max(Q_m[m], 0.0);
+        dydt[P.cons_off + 4] = he_sink;
     }
 
     return 0;
@@ -1698,6 +1792,10 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
     }
 
     // ── He equations ─────────────────────────────────────────────────────────
+    // Accumulates the EXACT He sink losses applied to the Q state below, so
+    // the J_He_sink ledger mirrors the state and the conservation identity
+    // c_h + Q + J_He_sink = ∫G_He holds to solver tolerance.
+    double He_sink_state = 0.0;
     if (P.he_mode != 1) {
         // Case 2: scalar Q_tot
         double He_up = 0.0;
@@ -1710,6 +1808,7 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
             const double ell_m = ell_bar * std::pow(static_cast<double>(m + 1), 2.0/3.0);
             He_sink_2 += P.k2_disl_v * ell_m * std::max(c_v[m], 0.0);
         }
+        He_sink_state = He_sink_2;
         dydt[i_Q_base] = He_up - He_emit - He_sink_2;
         if (!qss)
             dydt[i_He_idx] = P.G_He - He_up - P.k2_disl_He * c_h + He_emit;
@@ -1731,8 +1830,10 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
                     const double q_approx = ell_k * cm;
                     const double he_emit  = P.beta_He * q_approx;
                     dqk += he_cap - he_emit;
-                    if (m <= P.v_mobile)   // only mobile voids
+                    if (m <= P.v_mobile) {  // only mobile voids
                         dqk -= P.k2_disl_v * q_approx;
+                        He_sink_state += P.k2_disl_v * q_approx;
+                    }
                     He_cap_total  += he_cap;
                     He_emit_total += he_emit;
                 }
@@ -1745,8 +1846,10 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
                 const double he_cap_m  = P.KHeV[m] * c_h * cm;
                 const double he_emit_m = P.beta_He * qm;
                 dydt[i_Q_base + m] += he_cap_m - he_emit_m;
-                if (m + 1 <= P.v_mobile)   // only mobile voids
+                if (m + 1 <= P.v_mobile) {  // only mobile voids
                     dydt[i_Q_base + m] -= P.k2_disl_v * qm;
+                    He_sink_state += P.k2_disl_v * qm;
+                }
                 He_cap_total  += he_cap_m;
                 He_emit_total += he_emit_m;
             }
@@ -1761,7 +1864,7 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
         double sia_fixed = 0.0;
         for (int n = 0; n < I; ++n)
             sia_fixed += static_cast<double>(n + 1) * P.k2_SIA[n] * std::max(c_n[n], 0.0);
-        dydt[P.N_eq - 5] = sia_fixed;
+        dydt[P.cons_off + 0] = sia_fixed;
     }
 
     // J_SIA_mutual: ALL SIA content lost to SIA-vacancy annihilation (bin_moment).
@@ -1795,7 +1898,7 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
                 mutual += std::min(mp, sn) * K_s * c_mp * cn_val;
             }
         }
-        dydt[P.N_eq - 4] = mutual;
+        dydt[P.cons_off + 1] = mutual;
     }
 
     // J_VAC_fixed: VAC content lost to fixed sinks
@@ -1803,7 +1906,7 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
         double vac_fixed = 0.0;
         for (int m = 0; m < std::min(P.v_mobile, P.V); ++m)
             vac_fixed += static_cast<double>(m + 1) * P.k2_disl_v * std::max(c_v[m], 0.0);
-        dydt[P.N_eq - 3] = vac_fixed;
+        dydt[P.cons_off + 2] = vac_fixed;
     }
 
     // J_VAC_mutual: VAC content lost to mutual annihilation.
@@ -1811,20 +1914,13 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
     // reaction equals min(m', n) — the same as the SIA content destroyed.
     // When V_{m'} hits I_n with m'>n, the vacancy cluster shrinks to
     // V_{m'-n}, losing only n vacancies (not m').
-    dydt[P.N_eq - 2] = dydt[P.N_eq - 4];  // J_VAC_mutual = J_SIA_mutual
+    dydt[P.cons_off + 3] = dydt[P.cons_off + 1];  // J_VAC_mutual = J_SIA_mutual
 
-    // J_He_sink: He lost to sinks
-    {
-        double he_sink = P.k2_disl_He * c_h;
-        if (C_vac_tot > 1e-300 && Q_tot > 0.0) {
-            double ell_bar_loc = Q_tot / C_vac_tot;
-            for (int m = 0; m < std::min(P.v_mobile, P.V); ++m) {
-                double ell_m = ell_bar_loc * std::pow(static_cast<double>(m + 1), 2.0/3.0);
-                he_sink += P.k2_disl_v * ell_m * std::max(c_v[m], 0.0);
-            }
-        }
-        dydt[P.N_eq - 1] = he_sink;
-    }
+    // J_He_sink: He lost to sinks.  He_sink_state is the EXACT trapped-He
+    // loss applied to the Q state above (Case-2 allocation formula or the
+    // per-class/per-bin Q sink terms for Case 1), so the ledger mirrors
+    // the state by construction.
+    dydt[P.cons_off + 4] = P.k2_disl_He * c_h + He_sink_state;
 
     // ── Sliding-window masking for bin_moment mode ───────────────────────────
     // For the bin_moment RHS the outer cluster loops are not restructured here

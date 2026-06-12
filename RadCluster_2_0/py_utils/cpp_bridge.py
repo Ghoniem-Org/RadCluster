@@ -181,12 +181,48 @@ def write_param_file(sim, solver_config, path, y0_override=None):
     Z_ii = float(inp.reactions.get('Z_ii', 1.0))
     lines.append(f"Z_ii={Z_ii:.17e}")
 
+    # ── ½⟨111⟩ → ⟨100⟩ loop conversion (optional; appended SIA100 block) ──────
+    # Enabled via solver_config['loop_conversion'] or reactions['loop_conversion'].
+    # The C++ appends a c_i100 block of length I at the end of the state vector
+    # (N_eq += I) and computes the 2-D junction/absorption kernels on the fly.
+    loop_conv = int(solver_config.get(
+        'loop_conversion', inp.reactions.get('loop_conversion', 0)))
+    lines.append(f"loop_conversion={loop_conv}")
+    if loop_conv:
+        lines.append(f"n_loop_min={int(getattr(rr, 'n_loop_min', 4))}")
+        lines.append(f"n_j_min_junc={int(inp.reactions.get('n_j_min_junc', 30))}")
+        lines.append(f"phi_max_junc={float(inp.reactions.get('phi_max_junc', 0.5)):.17e}")
+        lines.append(f"sigma_s_junc={float(inp.reactions.get('sigma_s_junc', 0.35)):.17e}")
+        for k, v in enumerate(rr.Gamma_uni):
+            lines.append(f"Gamma_uni_{k}={v:.17e}")
+        for k, v in enumerate(rr.K_100_grow):
+            lines.append(f"K_100_grow_{k}={v:.17e}")
+        for k, v in enumerate(rr.K_100_shrink):
+            lines.append(f"K_100_shrink_{k}={v:.17e}")
+        for k, v in enumerate(rr.G_100):
+            lines.append(f"G_100_{k}={v:.17e}")
+
     # ── Scalar physics ────────────────────────────────────────────────────────
     kBT = float(d['kBT'])
     nu_h = float(inp.energetics.get('nu_h', 3.0e12))
     E_m_h = float(inp.energetics.get('E_m_h', 0.06))
     E_b_hV1 = float(inp.energetics.get('E_b_hV_1', 2.30))
     beta_He = nu_h * np.exp(-(E_b_hV1 + E_m_h) / kBT)
+
+    # He-pressure correction to vacancy emission (GVV_eff in rate_kernels.cpp).
+    # The kernel multiplies GVV by exp(−δ·β·(ℓ/m)^β / kBT), i.e. the binding
+    # energy gains ΔE_b = δ·β·(ℓ/m)^β.  Fit (δ, β) so this power law matches
+    # the virial-EOS pressure work P_He·Ω (the +P·Ω term of E_b_bubble in
+    # binding_energies.py) at the run temperature, over the physical loading
+    # range ℓ/m ∈ [0.05, 2].  δ > 0 ⟹ He suppresses vacancy emission and
+    # stabilizes bubbles, consistent with the Python kernels.
+    from .binding_energies import _B2, _B3
+    Omega = float(d['Omega'])
+    _x = np.geomspace(0.05, 2.0, 40)                       # ℓ/m grid
+    _PdV = _x * kBT * (1.0 + _B2 * _x / Omega + _B3 * (_x / Omega) ** 2)  # eV
+    _slope, _icept = np.polyfit(np.log(_x), np.log(_PdV), 1)
+    beta_He_exp = float(_slope)
+    delta_He = float(np.exp(_icept) / beta_He_exp)
 
     lines.extend([
         f"G_He={re_obj.G_He:.17e}",
@@ -195,8 +231,8 @@ def write_param_file(sim, solver_config, path, y0_override=None):
         f"k2_disl_He={rr.k2_He_scalar:.17e}",
         f"Cv_eq={d['Cv_eq']:.17e}",
         f"beta_He={beta_He:.17e}",
-        f"delta_He=-0.80000000000000000e+00",    # He pressure coeff [eV]
-        f"beta_He_exp=0.70000000000000000e+00",  # He pressure exponent
+        f"delta_He={delta_He:.17e}",        # He pressure coeff [eV], fit to virial P·Ω
+        f"beta_He_exp={beta_He_exp:.17e}",  # He pressure power-law exponent
         f"kBT={kBT:.17e}",
         f"K_iv={rr.K_iv:.17e}",
         f"K_3D_cav_pref={rr.K_3D_cav_pref:.17e}",
@@ -493,6 +529,14 @@ def run_cpp_solver(sim, solver_config, base_dir=None, progress_callback=None,
     bin_path = param_path[:-4] + '.bin'
     re_obj   = sim.rate_equations
     N_tot    = re_obj.N_eq
+    # Loop conversion appends a c_i100 block of length I at the end of the C++
+    # state vector, so the solver emits N_eq + I columns.  Parse the wider rows
+    # and split the appended block off before post-processing (which expects the
+    # original [SIA | VAC | He | conservation] layout).
+    _loop_conv = int(solver_config.get(
+        'loop_conversion', sim.input_data.reactions.get('loop_conversion', 0)))
+    _n_sia100 = int(sim.input_data.I) if _loop_conv else 0
+    N_tot   += _n_sia100
 
     proc = None
     try:
@@ -645,8 +689,17 @@ def run_cpp_solver(sim, solver_config, base_dir=None, progress_callback=None,
         t = sol_arr[:, 0]
         y = sol_arr[:, 1:].T   # (N_tot, n_pts)
 
+        # Split off the appended ⟨100⟩ SIA block so downstream post-processing
+        # sees the original [SIA | VAC | He | conservation] layout unchanged.
+        y_sia100 = None
+        if _n_sia100:
+            y_sia100 = y[-_n_sia100:, :]
+            y        = y[:-_n_sia100, :]
+
         results = calculate_derived_quantities(t, y, sim.input_data, re_obj)
         results['y'] = y   # raw ODE state [N_eq, n_pts] in atom fraction
+        if y_sia100 is not None:
+            results['y_sia100'] = y_sia100   # ⟨100⟩ loop densities [I, n_pts]
 
         # ── Window-bounds sidecar (active_window mode tracks expansion) ───
         # The C++ solver writes <bin_path>.window.csv with one row per output

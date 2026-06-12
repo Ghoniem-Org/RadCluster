@@ -482,9 +482,16 @@ Files to touch are listed per step (all paths under `RadCluster_2_0/`).
    - 7a ✅ (2026-06-12) — `cpp_utils/core/parameters.h`: flag, `sia100_off`,
      conversion kernels/scalars, `N_eq += I` when ON, parsing. Builds clean;
      OFF verified byte-identical (N_eq=406 small case runs unchanged).
-   - 7b 🔄 — `cpp_bridge.py` writes flag + kernels; `rate_kernels.cpp` adds the
-     conversion RHS (unary, junction split, absorption, sessile ⟨100⟩ ladders).
-   - 7c — Jacobian/preconditioner for the SIA100 block + coupling.
+   - 7b ✅ (2026-06-12) — conversion RHS in `rate_kernels.cpp` (unary, junction
+     redirect, absorption, sessile ⟨100⟩ ladders; 2-D kernels computed on the
+     fly via `conv_phi_junc`/`K_100_absorb`); `cons_off` refactor so the
+     conservation ODEs stay put under the append; `cpp_bridge.py` writes the
+     flag + 1-D kernels and splits the appended block into `results['y_sia100']`.
+     OFF byte-identical (N_eq=406, SIA content 2.810121e-9 unchanged); ON forms
+     ⟨100⟩ (validated `full_system` + `linsol=dense`). **Limitation:** ON needs
+     a dense/FD Jacobian for now — the analytic sparse Jacobian + Woodbury
+     preconditioner don't yet include the SIA100 coupling (7c).
+   - 7c — analytic sparse Jacobian + Woodbury for the SIA100 block + coupling.
    - 7d — bin-moment ⟨100⟩ (reconstruct→transfer→project).
    - 7e — end-to-end conservation test with conversion ON.
 

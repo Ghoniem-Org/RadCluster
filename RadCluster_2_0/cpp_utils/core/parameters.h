@@ -150,6 +150,21 @@ struct Parameters {
     std::vector<int> vac_bin_hi;   // [V_bin]
 
     // ── Initial conditions ─────────────────────────────────────────────────────
+    // ── ½⟨111⟩ → ⟨100⟩ loop conversion (optional; default OFF) ───────────────
+    // When ON, an appended c_i100 block of length I is kept at the END of the
+    // state vector (after the conservation ODEs), so all c_v / Q_tot / c_h /
+    // conservation offsets are unchanged and the OFF path is byte-identical.
+    int loop_conversion = 0;          // 0 = off (no SIA100 block), 1 = on
+    int sia100_off      = 0;          // state offset of the appended c_i100 block
+    int conv_n_loop_min = 4;          // ⟨100⟩ loop-onset size (bulk-100 n_min)
+    int conv_n_j_min    = 30;         // junction minimum size
+    double conv_phi_max = 0.5;        // junction peak yield at n = n'
+    double conv_sigma_s = 0.35;       // junction log-size tolerance
+    std::vector<double> Gamma_uni;    // [I] unary ½⟨111⟩→⟨100⟩ conversion rate
+    std::vector<double> K_100_grow;   // [I] ⟨100⟩ + I_1 capture (sessile)
+    std::vector<double> K_100_shrink; // [I] ⟨100⟩ + V_1 capture (sessile)
+    std::vector<double> G_100;        // [I] ⟨100⟩ thermal SIA emission
+
     std::vector<double> y0;   // [N_eq]
 
     // ── Concentration floor ────────────────────────────────────────────────────
@@ -476,6 +491,31 @@ inline Parameters build_parameters(const std::map<std::string, double>& p) {
             n_he = qss ? 1       : 2;             // Q_tot scalar
         P.N_eq = n_sia + n_vac + n_he + 5;  // +5 for conservation accounting
         P.y0.resize(P.N_eq);
+    }
+
+    // ── Optional appended ⟨100⟩ SIA block (loop conversion) ──────────────────
+    // Appended AFTER both N_eq computations (discrete + bin-moment) and the
+    // conservation block, so the existing offsets are untouched when OFF.
+    // (Discrete only for now; bin-moment ⟨100⟩ reduction is a later step.)
+    P.loop_conversion = static_cast<int>(optional_param(p, "loop_conversion", 0.0));
+    if (P.loop_conversion) {
+        P.sia100_off = P.N_eq;          // append at the end of the state vector
+        P.N_eq      += P.I;             // c_i100 block of length I
+        P.y0.resize(P.N_eq);            // re-extend; entries default in the loop below
+        P.conv_n_loop_min = static_cast<int>(optional_param(p, "n_loop_min",   4.0));
+        P.conv_n_j_min    = static_cast<int>(optional_param(p, "n_j_min_junc", 30.0));
+        P.conv_phi_max    = optional_param(p, "phi_max_junc", 0.5);
+        P.conv_sigma_s    = optional_param(p, "sigma_s_junc", 0.35);
+        P.Gamma_uni.assign(P.I, 0.0);
+        P.K_100_grow.assign(P.I, 0.0);
+        P.K_100_shrink.assign(P.I, 0.0);
+        P.G_100.assign(P.I, 0.0);
+        for (int k = 0; k < P.I; ++k) {
+            P.Gamma_uni[k]    = optional_param(p, "Gamma_uni_"    + std::to_string(k), 0.0);
+            P.K_100_grow[k]   = optional_param(p, "K_100_grow_"   + std::to_string(k), 0.0);
+            P.K_100_shrink[k] = optional_param(p, "K_100_shrink_" + std::to_string(k), 0.0);
+            P.G_100[k]        = optional_param(p, "G_100_"        + std::to_string(k), 0.0);
+        }
     }
 
     // Initial conditions

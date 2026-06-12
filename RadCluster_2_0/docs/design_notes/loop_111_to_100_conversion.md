@@ -473,8 +473,20 @@ Files to touch are listed per step (all paths under `RadCluster_2_0/`).
    `f₁₁₁(T)` / `f₁₁₁(dose)` trend from `loop_burgers_fraction.py`; calibrate the
    six §3.6 knobs here.
    - **new** `codes/Python_Testing/check_loop_conversion.py`
-7. **C++ mirror** last, gated on the Python reference (§6).
-   - `cpp_utils/parameters.h`, `cpp_utils/rate_equations.{cpp,h}`, `py_utils/cpp_bridge.py`
+7. **C++ mirror** — 🔄 **IN PROGRESS**. Design: **feature flag** `loop_conversion`
+   (default OFF → byte-identical baseline) + the ⟨100⟩ block **appended at the
+   end** of the state vector (after the conservation ODEs), so existing
+   `c_v`/`Q_tot`/`c_h`/conservation offsets are untouched. 2-D junction/absorption
+   kernels are **computed on the fly** in C++ (like `K_ii_coal`) from the 1-D
+   `D_SIA_eff` + scalars — not passed as I×I arrays.
+   - 7a ✅ (2026-06-12) — `cpp_utils/core/parameters.h`: flag, `sia100_off`,
+     conversion kernels/scalars, `N_eq += I` when ON, parsing. Builds clean;
+     OFF verified byte-identical (N_eq=406 small case runs unchanged).
+   - 7b 🔄 — `cpp_bridge.py` writes flag + kernels; `rate_kernels.cpp` adds the
+     conversion RHS (unary, junction split, absorption, sessile ⟨100⟩ ladders).
+   - 7c — Jacobian/preconditioner for the SIA100 block + coupling.
+   - 7d — bin-moment ⟨100⟩ (reconstruct→transfer→project).
+   - 7e — end-to-end conservation test with conversion ON.
 
 ---
 

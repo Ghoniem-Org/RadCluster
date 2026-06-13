@@ -533,6 +533,12 @@ class RadClusterSimulation:
             if not re_new.qss_He and c_h is not None:
                 y0[re_new.i_He] = c_h
 
+            # Carry the 5 conservation accounting integrals (J_SIA_fixed,
+            # J_SIA_mutual, J_VAC_fixed, J_VAC_mutual, J_He_sink — last 5
+            # state entries) across the doubling; resetting them to C_floor
+            # corrupts delta_FP / delta_He for the remainder of the run.
+            y0[-5:] = yj[-5:]
+
             return y0
 
         else:
@@ -562,6 +568,10 @@ class RadClusterSimulation:
                 y0[re_new.i_Q:re_new.i_Q + V_old] = Q_m_old
             if not re_new.qss_He and c_h is not None:
                 y0[re_new.i_He] = c_h
+
+            # Carry the 5 conservation accounting integrals across the
+            # doubling (see bin-moment branch above).
+            y0[-5:] = yj[-5:]
 
             return y0
 

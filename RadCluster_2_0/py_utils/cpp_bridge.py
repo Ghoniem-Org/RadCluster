@@ -532,13 +532,26 @@ def run_cpp_solver(sim, solver_config, base_dir=None, progress_callback=None,
     bin_path = param_path[:-4] + '.bin'
     re_obj   = sim.rate_equations
     N_tot    = re_obj.N_eq
-    # Loop conversion appends a c_i100 block of length I at the end of the C++
-    # state vector, so the solver emits N_eq + I columns.  Parse the wider rows
-    # and split the appended block off before post-processing (which expects the
+    # Loop conversion appends a ⟨100⟩ SIA block at the end of the C++ state
+    # vector, so the solver emits N_eq + len(⟨100⟩) columns.  The ⟨100⟩ block
+    # carries the SAME size reduction as the ½⟨111⟩ population: full per-size
+    # (length I) in discrete modes, and the discrete-prefix + bin-moment vector
+    # (i_discrete + n_mom·I_bin) in bin_moment modes.  Parse the wider rows and
+    # split the appended block off before post-processing (which expects the
     # original [SIA | VAC | He | conservation] layout).
     _loop_conv = int(solver_config.get(
         'loop_conversion', sim.input_data.reactions.get('loop_conversion', 0)))
-    _n_sia100 = int(sim.input_data.I) if _loop_conv else 0
+    _is_bin = hasattr(re_obj, 'bins')   # BinMomentRateEquations
+    if _loop_conv:
+        if _is_bin:
+            _i_d   = int(getattr(re_obj, 'i_discrete', 0))
+            _n_mom = int(getattr(re_obj, 'n_mom', 2))
+            _I_bin = int(getattr(re_obj, 'I_bin', len(getattr(re_obj, 'bins', []))))
+            _n_sia100 = _i_d + _n_mom * _I_bin
+        else:
+            _n_sia100 = int(sim.input_data.I)
+    else:
+        _n_sia100 = 0
     N_tot   += _n_sia100
 
     proc = None
@@ -698,6 +711,36 @@ def run_cpp_solver(sim, solver_config, base_dir=None, progress_callback=None,
         if _n_sia100:
             y_sia100 = y[-_n_sia100:, :]
             y        = y[:-_n_sia100, :]
+            # In bin_moment modes the ⟨100⟩ block is the discrete-prefix +
+            # bin-moment vector (length i_discrete + n_mom·I_bin).  Reconstruct
+            # it to a full per-size [I, n_pts] distribution so post-processing
+            # (which weights by size n) sees the SAME shape as the discrete
+            # path — the ½⟨111⟩ block is reconstructed identically inside
+            # calculate_derived_quantities.
+            if _is_bin:
+                from .bin_moment_rates import reconstruct_distribution
+                _i_d   = int(getattr(re_obj, 'i_discrete', 0))
+                _Pm    = int(getattr(re_obj, 'n_mom', 2))
+                _sf    = getattr(re_obj, 'shape_function', 'linear')
+                _bins  = re_obj.bins
+                _Ibin  = len(_bins)
+                _Ifull = int(sim.input_data.I)
+                _npts  = y_sia100.shape[1]
+                _c100  = np.zeros((_Ifull, _npts))
+                for _j in range(_npts):
+                    _col = np.maximum(y_sia100[:, _j], 0.0)
+                    _c = np.zeros(_Ifull)
+                    _c[:_i_d] = _col[:_i_d]
+                    if _Ibin > 0:
+                        _mom = _col[_i_d:_i_d + _Pm * _Ibin]
+                        _mu0 = _mom[0::_Pm][:_Ibin]
+                        _mu1 = _mom[1::_Pm][:_Ibin] if _Pm >= 2 else None
+                        _mu2 = _mom[2::_Pm][:_Ibin] if _Pm >= 3 else None
+                        _rec = reconstruct_distribution(_sf, _mu0, _mu1, _mu2,
+                                                        _bins, _Ifull)
+                        _c[_i_d:] = _rec[_i_d:]
+                    _c100[:, _j] = _c
+                y_sia100 = _c100
 
         results = calculate_derived_quantities(t, y, sim.input_data, re_obj,
                                                y_sia100=y_sia100)

@@ -156,6 +156,10 @@ struct Parameters {
     // conservation offsets are unchanged and the OFF path is byte-identical.
     int loop_conversion = 0;          // 0 = off (no SIA100 block), 1 = on
     int sia100_off      = 0;          // state offset of the appended c_i100 block
+    int sia100_len      = 0;          // length of the appended ⟨100⟩ block:
+                                      //   discrete modes  -> I (full per-size)
+                                      //   bin_moment modes-> i_discrete + n_mom*I_bin
+                                      //                      (same reduction as ½⟨111⟩)
     int cons_off        = 0;          // start of the 5 conservation ODEs (stable
                                       // under the SIA100 append; = N_eq-5 when off)
     int conv_n_loop_min = 4;          // ⟨100⟩ loop-onset size (bulk-100 n_min)
@@ -500,12 +504,18 @@ inline Parameters build_parameters(const std::map<std::string, double>& p) {
     // ── Optional appended ⟨100⟩ SIA block (loop conversion) ──────────────────
     // Appended AFTER both N_eq computations (discrete + bin-moment) and the
     // conservation block, so the existing offsets are untouched when OFF.
-    // (Discrete only for now; bin-moment ⟨100⟩ reduction is a later step.)
+    // The block carries the SAME size reduction as the ½⟨111⟩ population:
+    // full per-size (length I) in discrete modes, and the discrete-prefix +
+    // logarithmic-bin moment vector (i_discrete + n_mom*I_bin) in bin_moment
+    // modes — so "bin-moment for both SIA loop characters" is honoured.
     P.cons_off = P.N_eq - 5;            // conservation ODEs keep this position
     P.loop_conversion = static_cast<int>(optional_param(p, "loop_conversion", 0.0));
     if (P.loop_conversion) {
         P.sia100_off = P.N_eq;          // append at the end of the state vector
-        P.N_eq      += P.I;             // c_i100 block of length I
+        P.sia100_len = (P.physics_option >= 2)
+                       ? (P.i_discrete + P.n_mom * P.I_bin)   // bin-moment ⟨100⟩
+                       : P.I;                                  // discrete ⟨100⟩
+        P.N_eq      += P.sia100_len;    // c_i100 block (per-size or bin-moment)
         P.y0.resize(P.N_eq);            // re-extend; entries default in the loop below
         P.conv_n_loop_min = static_cast<int>(optional_param(p, "n_loop_min",   4.0));
         P.conv_n_j_min    = static_cast<int>(optional_param(p, "n_j_min_junc", 30.0));

@@ -1,0 +1,844 @@
+% =====================================================================
+%  simulation_methodology.tex
+%  Replacement for the "Computer Simulation Methodology" section.
+%  Updated for RadCluster_2_0: the SIA master equation is split into two
+%  coupled loop-character populations — glissile c^{(111)}_n and sessile
+%  c^{(100)}_n — consistent with the production C++ solver (rhs_case2 /
+%  rhs_bin_moment) and the ½⟨111⟩→⟨100⟩ conversion edges (P9).
+%
+%  Requires: amsmath, amssymb, booktabs, natbib (or compatible \citep/\cite).
+%  Macros assumed from the parent paper: \popset, \Vset, \Eset, \RAG.
+%  \input this file in place of the old section.
+% =====================================================================
+
+\section{Computer Simulation Methodology}
+\label{sec:simulations}
+
+For \textsc{EUROFER-97} under neutron irradiation, the only resolved
+trapped solute is helium:
+\begin{equation}
+   N_g = 1, \qquad g_1 = \mathrm{He}, \qquad
+   \boldsymbol{\ell} = (\ell),
+   \label{eq:eurofer_gas_list}
+\end{equation}
+so the gas reservoir $c^g_1(t)\equiv c_h(t)$ and the composition
+vector reduce to the scalar helium occupancy $\ell\in\mathbb{Z}_{\geq 0}$.
+
+\paragraph{Active populations}
+\textsc{EUROFER-97} carries two self-interstitial (SIA) loop populations of
+distinct Burgers-vector character on the positive polarity, together with a
+single vacancy population on the negative polarity:
+\begin{align}
+   \popset_{-}^{\textsc{Eur}} &= \{\,\mathrm{bulk}\,\},
+   \quad N_P^V = 1,
+   \label{eq:eurofer_vac_pop}\\
+   \popset_{+}^{\textsc{Eur}} &= \{\,\mathrm{bulk\text{-}111},\;\mathrm{bulk\text{-}100}\,\},
+   \quad N_P^I = 2.
+   \label{eq:eurofer_sia_pop}
+\end{align}
+The positive polarity resolves two distinct SIA loop characters as separate
+populations: the glissile $\tfrac{1}{2}\langle 111\rangle$ loops
+($\mathrm{bulk\text{-}111}$), which are 3D-mobile clusters for $n<4$ and
+1D-glissile prismatic loops for $n\geq 4$, and the sessile $\langle 100\rangle$
+loops ($\mathrm{bulk\text{-}100}$), which form during microstructural evolution
+and act as essentially immobile sinks. Within each loop population the 3D/1D
+mobility distinction is encoded in size-dependent rate kernels; the two
+characters, by contrast, are tracked as separate population labels and are
+coupled by the $\tfrac{1}{2}\langle 111\rangle\!\to\!\langle 100\rangle$
+conversion edges introduced below. Grain boundaries, the dislocation network,
+and MX/M$_{23}$C$_6$ precipitates are treated as fixed unresolved sinks.
+On the negative polarity a single vacancy population is retained and its label
+is suppressed, while on the positive polarity the loop-character label is kept
+explicit:
+\begin{equation}
+   c^I_{n,\alpha}(t) \;\rightarrow\; c^{(111)}_n(t),\,c^{(100)}_n(t),
+   \quad
+   c^V_{m,(\ell),\beta}(t) \;\rightarrow\; c_{m,\ell}(t),
+   \quad
+   c^g_1(t) \;\rightarrow\; c_h(t).
+   \label{eq:eurofer_variable_reduction}
+\end{equation}
+
+\paragraph{Admissible vertex set}
+\begin{align}
+   \Vset_{-}^{\textsc{Eur}}
+   &= \bigl\{\,(-1,m,\mathrm{bulk},(\ell))\,:\,
+              1\leq m\leq N_V,\;0\leq\ell\leq\ell_{\max}(m)\,\bigr\},
+   \label{eq:eurofer_vset_minus}\\[2pt]
+   \Vset_{+}^{\textsc{Eur}}
+   &= \bigl\{\,(+1,n,p,\mathbf{0})\,:\,
+              p\in\{\mathrm{bulk\text{-}111},\mathrm{bulk\text{-}100}\},\;1\leq n\leq N_I\,\bigr\},
+   \label{eq:eurofer_vset_plus}\\[2pt]
+   \Vset_{0}^{\textsc{Eur}}
+   &= \{\,g_1=\mathrm{He}\,\},
+   \label{eq:eurofer_vset_zero}
+\end{align}
+comprising the size-resolved glissile $\tfrac{1}{2}\langle 111\rangle$ and
+sessile $\langle 100\rangle$ SIA loop populations, size-resolved voids
+($\ell=0$) and helium bubbles ($\ell\geq 1$), and the single matrix He
+reservoir. The sessile $\langle 100\rangle$ vertices are admissible only for
+$n\geq n_{\mathrm{conv}}$ (the conversion onset size, Eq.~\eqref{eq:driving-force}).
+The maximum helium content obeys the saturation rule
+\begin{equation}
+   \ell_{\max}(m) \;=\; \bigl\lfloor \alpha_{\mathrm{He}}\,m^{2/3}\bigr\rfloor,
+   \qquad \alpha_{\mathrm{He}} \in [1.5,2.0].
+   \label{eq:ellmax_eurofer}
+\end{equation}
+
+\paragraph{Primary populations}
+Equations~\eqref{eq:eurofer_vset_minus}--\eqref{eq:eurofer_vset_zero}
+yield three defect classes evolved by the master equations, with the SIA class
+resolved into two coupled loop-character populations:
+(1a)~\textbf{$\tfrac{1}{2}\langle 111\rangle$ SIA loops} $c^{(111)}_n(t)$,
+$n=1,\ldots,N_I$: glissile prismatic loops for $n\geq 4$ and 3D-mobile clusters
+for $n=1,2,3$, fed by the cascade source and carrying no helium;
+(1b)~\textbf{$\langle 100\rangle$ SIA loops} $c^{(100)}_n(t)$,
+$n\geq n_{\mathrm{conv}}$: sessile prismatic loops generated \emph{only} by
+$\tfrac{1}{2}\langle 111\rangle\!\to\!\langle 100\rangle$ conversion (no cascade
+source, no self-coalescence), carrying no helium;
+(2)~\textbf{vacancy clusters / cavities} $c_{m,\ell}(t)$,
+$m=1,\ldots,N_V$, $\ell=0,\ldots,\ell_{\max}(m)$: spherical cavities, pure
+voids when $\ell=0$ and helium bubbles when $\ell\geq 1$;
+(3)~\textbf{free helium} $c_h(t)$, the single gas-reservoir variable.
+The signed lattice-defect contents of both SIA characters are positive,
+\begin{equation}
+   q\bigl(I^{(111)}_n\bigr) = +n,
+   \qquad
+   q\bigl(I^{(100)}_n\bigr) = +n,
+   \qquad
+   q(V_m\mathrm{He}_\ell) = -m,
+   \qquad
+   q(\mathrm{He}) = 0,
+   \label{eq:q_eurofer}
+\end{equation}
+as required by the conservation law of Section~\ref{sec:FP_balance}; the
+conversion edges relabel SIA content between the two positive populations and
+therefore leave the total interstitial inventory unchanged.
+
+All pairwise reaction rate constants are obtained from the Smoluchowski
+capture model in atomic-fraction units. For a mobile point defect $\alpha$
+absorbed by an immobile spherical cluster of $m$ defects the diffusion-limited
+form reduces to
+\begin{equation}
+   \mathcal{K}^{\mathrm{3D}}_{\alpha,m}
+   = 8\pi\,\xi(m)\,\omega_\alpha \;[\mathrm{s}^{-1}],
+\end{equation}
+with the void, dislocation-loop, recombination, and mixed 1D/3D-glide capture
+constants ($\mathcal{K}^{\mathrm{void}}$, $\mathcal{K}^{\mathrm{loop}}_{i,n}$,
+$\mathcal{K}_{iv}$, $\mathcal{K}^{\mathrm{mixed}}_{n,m}$), the 1D-glide reaction
+frequencies $\omega^{\mathrm{1D}}_n$, and the correlated 1D versus 3D
+sink-strength limits derived in detail in Section~\ref{sec:reactions}. Thermal
+emission of species $\alpha$ from a size-$n$ cluster is fixed by detailed
+balance against the capture rate,
+\begin{equation}
+   \mathcal{E}_\alpha(n)
+   = \mathcal{K}_{\alpha}(n-1)\,
+     \frac{1}{\Omega}\exp\!\left(-\frac{E_b^\alpha(n)}{k_BT}\right),
+\end{equation}
+with the corresponding loop-emission, vacancy/helium bubble-emission, and
+trap-mutation expressions also collected in Section~\ref{sec:reactions}, where
+Table~\ref{tab:rate_params} lists the rate-constant prefactors, sink
+parameters, and state-space controls used throughout.
+
+\paragraph{Process classes P1--P9}
+The admissible edges of $\RAG^{\textsc{Eur}}$
+($\chi_{ab\rightarrow c}=1,\ \&\ \chi_{a\rightarrow b}=1$) partition into nine
+process classes, each mapped to an abstract edge class in
+Section~\ref{sec:reaction_class}. Because the SIA class comprises two
+loop-character populations, the inter-population transfer edge (P9) is active
+and carries the $\tfrac{1}{2}\langle 111\rangle\!\to\!\langle 100\rangle$
+conversion (Dudarev unary reorientation, Marian junction nucleation, and Marian
+absorption growth); the defect production edge is treated as a source term that
+feeds the $\tfrac12\langle111\rangle$ population alone.
+\begin{center}
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Process} & \textbf{Abstract edge class} & \textbf{Rate kernel} \\
+\midrule
+P1: V--SIA recombination & cross-polarity (recombination) & $\mathcal{K}_{iv}$ \\
+P2: cavity absorption of mono-$\alpha$ & growth / shrinkage & $\mathcal{K}^{\mathrm{cav}}_{\alpha,m}$ \\
+P3: loop absorption of mono-$\alpha$ & growth / shrinkage & $\mathcal{K}^{\mathrm{loop}}_{\alpha,n}$ \\
+P4: absorption at fixed sink & sink edge & $\mathcal{D}_\alpha$ \\
+P5: thermal monomer emission & dissociation & $\varepsilon_\alpha$ \\
+P6: 1D-gliding SIA cluster $\to$ cavity & cross-polarity & $\mathcal{K}^{\mathrm{eff}}_{n,m}$ \\
+P7: trap mutation & gas-pressure-driven & $\Gamma_{\mathrm{TM}}(m,\ell)$ \\
+P8: radiation re-solution & solute detrapping & $\Gamma_{\mathrm{res}}(m,\ell)$ \\
+P9: $\tfrac{1}{2}\langle 111\rangle\!\to\!\langle 100\rangle$ conversion & inter-population transfer & $\Gamma_{\mathrm{uni}},\,\varphi_{\rm junc},\,K^{\rm abs}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph*{Mobility cutoffs}
+Mobile clusters are bounded by size limits from Table~\ref{tab:rate_params}:
+$\tfrac12\langle111\rangle$ SIA clusters are mobile (3D or 1D) for
+$1\leq n\leq i_{\rm mobile}$; larger $\tfrac12\langle111\rangle$ clusters are
+sessile dislocation loops acting only as fixed sinks. The $\langle100\rangle$
+loops are sessile at every size ($D^{100}_n\equiv 0$) and grow or shrink only
+through single-monomer exchange. Vacancy clusters are 3D mobile for
+$1\leq m\leq v_{\rm mobile}$; larger cavities grow or shrink only through
+single-monomer absorption or emission. Under the mono-defect simplification
+($i_{\rm mobile}=v_{\rm mobile}=1$), the coalescence rate constants reduce to
+\begin{align}
+    \mathcal{K}_{n,1}^{ii}\big|_{n'=1}
+    &= \mathcal{K}^{\mathrm{loop}}_{i,n}
+     = A_{\mathrm{loop}}\,n^{1/2}\,Z_i^{\mathrm{loop}}\,\omega_i^{\mathrm{eff}},
+    \label{eq:monodef_i}\\[4pt]
+    \mathcal{K}_{m,1}^{vv}\big|_{m'=1}
+    &= \mathcal{K}^{\mathrm{cav}}_{v,m}
+     = A_{\mathrm{sph}}\,m^{1/3}\,\omega_v^{\mathrm{eff}},
+    \label{eq:monodef_v}\\[4pt]
+    \mathcal{K}_{m=1,n=1}^{vi}
+    &= \mathcal{K}_{iv}
+     = 4\sqrt{3}\,\pi\,(\omega_i^{\mathrm{eff}}+\omega_v^{\mathrm{eff}}).
+    \label{eq:monodef_iv}
+\end{align}
+
+%===================================================================
+\paragraph{Reaction Processes (general coalescence formulation)}
+\label{sec:reaction_class}
+%===================================================================
+The most complete description allows any two mobile clusters to react. The
+intra- and cross-polarity channels are $\tfrac12\langle111\rangle$ SIA--SIA
+coalescence ($I_n + I_{n'} \to I_{n+n'}$), vacancy--vacancy coalescence
+($V_m + V_{m'} \to V_{m+m'}$), and V--I annihilation
+($V_m + I_n \to V_{m-n},\,I_{n-m}$, or $\varnothing$). All three share the
+diffusion-limited two-mobile-cluster form
+\begin{equation}\label{eq:K_ii}
+   \mathcal{K}_{a,b}
+   = 8\pi\,(\xi_a + \xi_b)\,
+     (\omega_a^{\mathrm{eff}} + \omega_b^{\mathrm{eff}}),
+   \qquad \xi_a = (3a/8\pi)^{1/3},
+\end{equation}
+restricted to mobile sizes ($\leq i_{\rm mobile}$, $v_{\rm mobile}$); the
+channel-specific constants and size restrictions are given in
+Section~\ref{sec:reactions}. He--He coalescence is excluded because the
+interstitial He--He binding energy in bcc Fe is negligible ($\lesssim 0.05$~eV).
+
+The abstract master equation is assembled algorithmically by looping over every
+admissible edge $r\in\Eset^{\textsc{Eur}}$, computing the flux $J_r$, and
+accumulating the signed contribution $S_{ar}J_r$ into each affected population
+$a$. Table~\ref{tab:gw_assembly} lists every edge class, its reaction, its flux,
+and its non-zero stoichiometric contributions to the four EUROFER-97 population
+equations $\dot{c}^{(111)}_n$, $\dot{c}^{(100)}_n$, $\dot{c}_{m,\ell}$, and
+$\dot{c}_h$. Where a process connects adjacent nodes on a ladder (e.g.\ cavity
+or sessile-loop growth/shrinkage), the gain term at $a$ and the loss term at $a$
+appear on separate rows; the net effect is the tridiagonal ladder operator
+visible in the boxed equations. Figure~\ref{fig:fm_network} shows the full
+EUROFER-97 reaction network as a directed graph, with the nine process classes
+color-coded on the arrows and the graph-walker formula annotated in the upper
+center.
+
+Define the total cavity concentration at vacancy size $m$ and the combined
+fixed-sink rate:
+\begin{equation}\label{eq:cbar}
+    \bar{c}_m(t) \equiv \sum_{\ell=0}^{\ell_{\max}(m)} c_{m,\ell}(t),
+    \qquad
+    \mathcal{D}_\alpha
+    = \mathcal{D}_\alpha^d + \mathcal{D}_\alpha^{gb}
+    + \mathcal{D}_\alpha^p.
+\end{equation}
+The equations below are written in the general (coalescence) form; the
+mono-defect simplification is recovered by setting
+$i_{\rm mobile}=v_{\rm mobile}=1$ (Eqs.~\ref{eq:monodef_i}--\ref{eq:monodef_iv}).
+
+%-------------------------------------------------------------------
+\paragraph{Defect Class 1a: glissile $\tfrac12\langle111\rangle$ SIA loops $c^{(111)}_n$}
+\label{sec:ME_SIA}
+%-------------------------------------------------------------------
+The glissile population obeys the full SIA master equation, augmented by the
+$\tfrac12\langle111\rangle\!\to\!\langle100\rangle$ coupling (P9). Cascades feed
+this population alone, $G_n\equiv G_n^{(111)}$. The junction reaction of two
+comparable $\tfrac12\langle111\rangle$ loops removes both reactants from this
+population (ordinary coalescence loss) but \emph{redirects} a size-comparability
+fraction $\varphi_{\rm junc}$ of the coalescence \emph{product} into the
+$\langle100\rangle$ population; the surviving fraction $(1-\varphi_{\rm junc})$
+stays glissile. Hence the coalescence gain below carries the
+$(1-\varphi_{\rm junc})$ weight, with the complementary product appearing in
+Eq.~\eqref{eq:ME_SIA100}.
+\begin{equation}\label{eq:ME_SIA}
+\begin{split}
+\frac{dc^{(111)}_n}{dt} = {} &
+  \underbrace{G_n}_{\text{production}}
+  + \underbrace{
+     \frac{1}{2}\!\!\sum_{n'=1}^{\min(n-1,\,i_{\rm mobile})}\!\!
+     \bigl[1-\varphi_{\rm junc}(n',n{-}n')\bigr]\,
+     \mathcal{K}_{n',n-n'}^{ii}\,c^{(111)}_{n'}\,c^{(111)}_{n-n'}
+     }_{\text{SIA--SIA coalescence gain, glissile product}}
+  \\[2pt]
+  &- \underbrace{
+     c^{(111)}_n\!\sum_{n'=1}^{i_{\rm mobile}}
+     \mathcal{K}_{n,n'}^{ii}\,c^{(111)}_{n'}
+     }_{\text{SIA--SIA coalescence loss } (I_n+I_{n'}\to I_{n+n'})}
+  + \underbrace{
+     \varepsilon_i(n{+}1)\,c^{(111)}_{n+1}
+   - \varepsilon_i(n)\,c^{(111)}_n\,\delta_{n \geq 2}
+     }_{\text{thermal emission (SIA from loops, P5)}}
+  \\[2pt]
+  &+ \underbrace{
+     \sum_{m'=1}^{v_{\rm mobile}}
+     \mathcal{K}_{m',n+m'}^{vi}\,c_{m',0}\,c^{(111)}_{n+m'}
+     }_{\text{V--I annihilation gain } (V_{m'}+I_{n+m'}\to I_n)}
+  - \underbrace{
+     \sum_{m'=1}^{v_{\rm mobile}}
+     \mathcal{K}_{m',n}^{vi}\,c_{m',0}\,c^{(111)}_n
+     }_{\text{V--I annihilation loss } (V_{m'}+I_n\to I_{n-m'})}
+  \\[2pt]
+  &- \underbrace{
+     \sum_{m=1}^{N_V}
+     \mathcal{K}_{n,m}^{(\mathrm{cav})}\,c^{(111)}_n\,\bar{c}_m
+     }_{\text{SIA cluster $\to$ cavity absorption (P2/P6)}}
+  - \underbrace{
+     \mathcal{D}_i(n)\,c^{(111)}_n
+     }_{\text{fixed-sink loss (mobile clusters only, P4)}}
+  \\[2pt]
+  &+ \underbrace{
+     \delta_{n=1}\sum_{m=1}^{N_V}\sum_{\ell=1}^{\ell_{\max}(m)}
+     \Gamma_{\mathrm{TM}}(m,\ell)\,c_{m,\ell}
+     }_{\text{trap-mutation SIA source at }n{=}1\text{ (P7)}}
+  \;+\; \left.\frac{dc^{(111)}_n}{dt}\right|_{\mathrm{conv}}^{\!\!\!(\mathrm{P9})},
+\end{split}
+\end{equation}
+where the cavity rate constant $\mathcal{K}^{(\mathrm{cav})}_{n,m}$ is
+\begin{equation}\label{eq:K_cav}
+    \mathcal{K}_{n,m}^{(\mathrm{cav})} =
+    \begin{cases}
+        A_{\mathrm{sph}}\,m^{1/3}\,\omega_i^{\mathrm{eff}},
+        & 1 \leq n \leq 3\;\text{(3D, P2),} \\[5pt]
+        \displaystyle
+        \frac{A_{\mathrm{sph}}\,m^{1/3}\,\omega_n^{1D}}
+             {1 + B_{\mathrm{rot}}\,\hat{L}^2\,m^{-1/3}},
+        & 4 \leq n \leq i_{\rm mobile}\;\text{(1D/3D, P6),} \\[5pt]
+        0, & n > i_{\rm mobile}\;\text{(sessile)},
+    \end{cases}
+\end{equation}
+and the glissile-side conversion coupling collects the unary depletion, the
+$\langle100\rangle$ absorption capture, and the monomer exchange with the
+sessile ladders (growth consumes a $\tfrac12\langle111\rangle$ monomer; shrink
+of sub-onset loops and thermal emission return one):
+\begin{equation}\label{eq:conv_111}
+\begin{split}
+\left.\frac{dc^{(111)}_n}{dt}\right|_{\mathrm{conv}}^{\!\!\!(\mathrm{P9})}
+   = {} & -\,\underbrace{\Gamma_{\rm uni}(n)\,c^{(111)}_n}_{\text{unary reorientation}}
+   \;-\; \underbrace{c^{(111)}_n\!\sum_{m\geq n_{\rm conv}} K^{\rm abs}_{m,n}\,c^{(100)}_m}_{\text{absorbed by sessile }\langle100\rangle}
+   \\[2pt]
+   & +\,\delta_{n=1}\!\sum_{n'\geq n_{\rm conv}}\!\Bigl[
+       \varepsilon^{100}(n')\,c^{(100)}_{n'}
+     - \mathcal{K}^{100}_{g}(n')\,c^{(100)}_{n'}\,c^{(111)}_{1}\Bigr]
+   \;+\; \underbrace{\mathcal{K}^{100}_{s}(n_{\rm conv})\,c^{(100)}_{n_{\rm conv}}\,c_{1,0}\,\delta_{n=n_{\rm conv}-1}}_{\text{shrink dissolves to }\tfrac12\langle111\rangle}.
+\end{split}
+\end{equation}
+
+%-------------------------------------------------------------------
+\paragraph{Defect Class 1b: sessile $\langle100\rangle$ SIA loops $c^{(100)}_n$}
+\label{sec:ME_SIA100}
+%-------------------------------------------------------------------
+The $\langle100\rangle$ population has no cascade source and no self-coalescence
+(its loops are immobile, $D^{100}_n\equiv0$). It is created by the three
+conversion channels (P9) and subsequently grows or shrinks only by exchanging
+single point defects with the matrix --- absorbing $\tfrac12\langle111\rangle$
+SIA monomers ($\mathcal{K}^{100}_g$), absorbing vacancy monomers
+($\mathcal{K}^{100}_s$, an SIA--vacancy annihilation that shrinks the loop), and
+emitting SIA monomers back into the $\tfrac12\langle111\rangle$ pool
+($\varepsilon^{100}$):
+\begin{equation}\label{eq:ME_SIA100}
+\begin{split}
+\frac{dc^{(100)}_n}{dt} = {} &
+  \underbrace{\Gamma_{\rm uni}(n)\,c^{(111)}_n}_{\text{unary }\tfrac12\langle111\rangle_n\to\langle100\rangle_n\ (\text{A})}
+  + \underbrace{
+     \frac{1}{2}\!\!\sum_{n'+n''=n}\!\!
+     \varphi_{\rm junc}(n',n'')\,\mathcal{K}_{n',n''}^{ii}\,
+     c^{(111)}_{n'}\,c^{(111)}_{n''}
+     }_{\text{junction nucleation }(\text{B})}
+  \\[2pt]
+  &+ \underbrace{
+     \sum_{n'=1}^{i_{\rm mobile}}
+     K^{\rm abs}_{n-n',\,n'}\,c^{(100)}_{n-n'}\,c^{(111)}_{n'}
+     }_{\text{absorption growth gain }(\langle100\rangle_{n-n'}+I^{(111)}_{n'}\to\langle100\rangle_n)}
+  - \underbrace{
+     c^{(100)}_n\!\sum_{n'=1}^{i_{\rm mobile}}
+     K^{\rm abs}_{n,\,n'}\,c^{(111)}_{n'}
+     }_{\text{absorption growth loss}}
+  \\[2pt]
+  &+ \underbrace{
+     \mathcal{K}^{100}_{g}(n{-}1)\,c^{(100)}_{n-1}\,c^{(111)}_1
+   - \mathcal{K}^{100}_{g}(n)\,c^{(100)}_n\,c^{(111)}_1
+     }_{\text{SIA-monomer capture growth }(\langle100\rangle_n+I^{(111)}_1\to\langle100\rangle_{n+1})}
+  \\[2pt]
+  &+ \underbrace{
+     \mathcal{K}^{100}_{s}(n{+}1)\,c^{(100)}_{n+1}\,c_{1,0}
+   - \mathcal{K}^{100}_{s}(n)\,c^{(100)}_n\,c_{1,0}
+     }_{\text{vacancy-monomer capture shrinkage }(\langle100\rangle_n+V_1\to\langle100\rangle_{n-1})}
+  \\[2pt]
+  &+ \underbrace{
+     \varepsilon^{100}(n{+}1)\,c^{(100)}_{n+1}
+   - \varepsilon^{100}(n)\,c^{(100)}_n
+     }_{\text{thermal SIA emission (P5)}},
+   \qquad n \geq n_{\rm conv}.
+\end{split}
+\end{equation}
+The boundary fluxes are handled so that SIA content is conserved across the
+onset: an SIA monomer emitted or a vacancy captured at $n=n_{\rm conv}$ returns
+the loop to the $\tfrac12\langle111\rangle$ population
+[the $\delta$-terms in Eq.~\eqref{eq:conv_111}], and the corresponding vacancy
+monomer consumed by shrinkage is debited from $\dot c_{1,0}$ in
+Eq.~\eqref{eq:ME_vac}. Because $\langle100\rangle$ loops are immobile they
+contribute no $\mathcal{D}_i$ fixed-sink loss and act \emph{as} biased sinks for
+the mobile $\tfrac12\langle111\rangle$ flux.
+
+%-------------------------------------------------------------------
+\paragraph{$\tfrac12\langle111\rangle\!\to\!\langle100\rangle$ loop conversion (P9)}
+\label{sec:loop-conversion}
+Irradiated bcc Fe and F/M steels develop prismatic interstitial loops of two
+characters: glissile $\tfrac12\langle111\rangle$ loops, mobile to large sizes,
+and sessile square $\langle100\rangle$ loops
+\citep{Masters1965,EyreBartlett1965}. Elasticity favours the smaller
+$\tfrac12\langle111\rangle$ vector and cascades inject almost exclusively
+$\tfrac12\langle111\rangle$ clusters \citep{Marian2002}, yet $\langle100\rangle$
+loops dominate at elevated temperature and must therefore be \emph{generated}
+in situ. We model this with two additive channels feeding
+Eqs.~\eqref{eq:ME_SIA}--\eqref{eq:ME_SIA100}: a thermodynamic single-loop
+transformation (Channel~A) carrying the temperature trend \citep{Dudarev2008},
+and a kinetic junction route (Channel~B) carrying the dose- and
+size-dependence \citep{Marian2002,Arakawa2006}.
+
+\textbf{Loop free energies.}
+\label{sec:loop-energies}
+The free energy of a loop of $n$ SIAs and character $X\in\{111,100\}$ follows
+the anisotropic-elasticity form of \cite{Dudarev2008},
+\begin{equation}
+  E_l^{X}(n,T) = P_X(n)\!\left[\,
+    \hat F_X(T)\,\ln\!\frac{4R^\ast_X(n)}{e\,\delta}
+    + F_\delta^{X}(T) + F_c^{X}\,\right],
+  \label{eq:loop-energy}
+\end{equation}
+with $P_X$ the perimeter, $R^\ast_X$ the equivalent-circle radius, $\delta$ the
+core cutoff, $\hat F_X$ the prelogarithmic energy factor, and core constants in
+Table~\ref{tab:core-constants}. The geometry follows from the platelet area
+$A=n\Omega/b_X$,
+\begin{equation}
+  R^\ast_X(n)=\sqrt{A/\pi},\quad
+  P_{111}(n)=6\sqrt{\tfrac{2A}{3\sqrt3}}\ \text{(hexagon)},\quad
+  P_{100}(n)=4\sqrt{A}\ \text{(square)},
+  \label{eq:loop-geometry}
+\end{equation}
+and the pure-edge $\langle100\rangle[100]$ prelogarithmic factor is analytic and
+\emph{vanishes} as the shear constant $c'=\tfrac12(c_{11}-c_{12})$ softens:
+\begin{equation}
+  \hat F_{001}([100]) = \frac{a^2}{4\pi}(c_{11}{+}c_{12})
+  \!\left[\frac{c_{44}(c_{11}{-}c_{12})}{c_{11}(c_{11}{+}c_{12}{+}2c_{44})}\right]^{1/2}
+  \;\xrightarrow{\;c'\to0\;}\;0.
+  \label{eq:F100}
+\end{equation}
+The softening is driven by spin fluctuations approaching the $\alpha$--$\gamma$
+transition,
+\begin{equation}
+  c'(T)\simeq 56.8\,(1-T/T_c)^{1/2}\ \text{GPa},\qquad T_c=1185\ \text{K},
+  \label{eq:cprime}
+\end{equation}
+so the $\langle100\rangle$ elastic self-energy collapses at high $T$ while the
+$\tfrac12\langle111\rangle$ energy does not.
+
+\textbf{Channel A: single-loop thermodynamic transformation.}
+\label{sec:channel-A}
+A loop of size $n$ reorients once $\langle100\rangle$ is lower in energy, with
+per-loop driving force
+\begin{equation}
+  \Delta F(n,T) = E_l^{111}(n,T) - E_l^{100}(n,T) = P(n)\,\Delta f(T),
+  \label{eq:driving-force}
+\end{equation}
+parametrised through a per-length difference in which only the
+$\langle100\rangle$ prelogarithmic part softens, with exponent fixed at $1/4$ by
+$\hat F_{001}\propto(1-T/T_c)^{1/4}$ from Eq.~\eqref{eq:F100}:
+\begin{equation}
+  \boxed{\;f_{100}(T)=f_{100}^{\rm core}+f_{100}^{\rm pre}\,(1-T/T_c)^{1/4},
+  \qquad \Delta f(T) = f_{111} - f_{100}(T)\;}
+  \label{eq:delta-f}
+\end{equation}
+The single fit quantity is the crossover temperature $T^\ast$ (where
+$\Delta f=0$), chosen so conversion turns on near $350\,^\circ$C and is strongly
+favoured by $550\,^\circ$C, reproducing the three stability regions of
+\cite{Dudarev2008}; conversion is admissible for $T>T^\ast$, and the onset size
+$n_{\rm conv}$ is the smallest $n$ with $\Delta F(n,T)>0$. The transformation is
+thermally activated and one-way; propagating segment-by-segment
+\citep{Marian2002}, its barrier scales with the perimeter,
+\begin{equation}
+  \boxed{\;\Gamma_{\rm uni}(n,T) = \nu_0\,
+    \exp\!\left[-\frac{E_a^{\rm uni}(n)}{k_BT}\right]
+    \max\!\left[0,\;1-\exp\!\left(-\frac{\Delta F(n,T)}{k_BT}\right)\right],\qquad
+    E_a^{\rm uni}(n) = E_a^{0} + \gamma_a\,\frac{P(n)}{b_{111}}\;}
+  \label{eq:gamma-uni}
+\end{equation}
+so the gating factor favours large loops while the size-dependent barrier
+suppresses them, giving a preferred conversion-size window that reproduces the
+spontaneous transformation of \emph{small} loops on heating \citep{Arakawa2006}
+and leaves large loops to convert via Channel~B.
+
+\textbf{Channel B: junction nucleation and absorption growth.}
+\label{sec:channel-B}
+Two comparable mobile $\tfrac12\langle111\rangle$ loops that collide can react
+through the junction \citep{EyreBullough1965,Marian2002}
+\begin{equation}
+  \tfrac12[111] + \tfrac12[1\bar1\bar1] \rightarrow [100],
+  \label{eq:junction}
+\end{equation}
+forming a single $\langle100\rangle$ loop; this occurs only for similar-size
+partners (otherwise the smaller simply rotates into the larger, i.e.\ ordinary
+coalescence). We branch the same-polarity kernel $\mathcal{K}^{ii}$
+(Eq.~\ref{eq:Kii}) with a size-comparability fraction
+\begin{equation}
+  \boxed{\;\varphi_{\rm junc}(n,n') = \varphi_{\max}\,P_{\rm s}(T)\,
+  \exp\!\left[-\frac{\big(\ln(n/n')\big)^2}{2\sigma_s^2}\right]
+  \Theta\!\big(\min(n,n')\ge n_{j,\min}\big)\;}
+  \label{eq:phi-junc}
+\end{equation}
+so that the product fraction $\varphi_{\rm junc}$ enters the $\langle100\rangle$
+population [Eq.~\eqref{eq:ME_SIA100}] and the complement $(1-\varphi_{\rm junc})$
+remains glissile [Eq.~\eqref{eq:ME_SIA}], with $P_{\rm s}(T)$ the Marian
+two-step success probability and
+\begin{equation}
+  \mathcal K^{ii}_{n,n'} = \frac{8\pi}{\Omega^{2/3}}
+  \big(\xi_n+\xi_{n'}\big)\big(D^{111}_n+D^{111}_{n'}\big),\qquad
+  \xi_n=\Big(\tfrac{3n}{8\pi}\Big)^{1/3}.
+  \label{eq:Kii}
+\end{equation}
+Once formed, $\langle100\rangle$ loops are stationary and act as biased sinks
+for mobile $\tfrac12\langle111\rangle$ clusters \citep{Marian2002},
+\begin{equation}
+  [100]_m + \tfrac12\langle111\rangle_n \rightarrow [100]_{m+n},
+  \label{eq:absorption}
+\end{equation}
+the dominant route to TEM-visible $\langle100\rangle$ loops, with cross-character
+capture kernel driven by the mobile $\tfrac12\langle111\rangle$ partner
+($D^{100}_m\approx0$),
+\begin{equation}
+  \boxed{\;K^{\rm abs}_{m,n} = \frac{8\pi}{\Omega^{2/3}}
+  \big(\xi_m+\xi_n\big)\big(D^{100}_m+D^{111}_n\big)
+  \approx \frac{8\pi}{\Omega^{2/3}}\big(\xi_m+\xi_n\big)D^{111}_n\;}.
+  \label{eq:Kabs}
+\end{equation}
+The sessile point-defect kernels of Eq.~\eqref{eq:ME_SIA100} are the
+loop-absorption forms specialised to a $\langle100\rangle$ target:
+$\mathcal{K}^{100}_g(n)=A_{\rm loop}n^{1/2}Z_i^{\rm loop}\omega_i^{\rm eff}$
+(SIA-monomer capture), $\mathcal{K}^{100}_s(n)=A_{\rm loop}n^{1/2}\omega_v^{\rm eff}$
+(vacancy-monomer capture), and $\varepsilon^{100}(n)$ the detailed-balance
+emission rate against $\mathcal{K}^{100}_g$ with $\langle100\rangle$ binding
+energy $E_b^{100}(n)=A_{100}\,n^{-B_{100}}$.
+
+\textbf{Conservation of SIA content.}
+Every term in Eqs.~\eqref{eq:conv_111}--\eqref{eq:ME_SIA100} conserves the total
+SIA inventory $\sum_n n\,(c^{(111)}_n + c^{(100)}_n)$: the unary and junction
+channels relabel content at fixed (or summed) size, the absorption channel
+carries the summed size into the product, and the growth/emission ladders only
+exchange single SIA monomers between the two populations. The only net SIA loss
+from the $\langle100\rangle$ population is the vacancy-capture shrinkage, which
+is a Frenkel-pair annihilation accounted for symmetrically in $\dot c_{1,0}$.
+The Frenkel-pair diagnostic of Section~\ref{sec:FP_balance} is therefore
+unaffected by the split, provided $S_I$ sums over both characters
+[Eq.~\eqref{eq:SI_S}].
+
+\textbf{Input data and parameters.}
+\label{sec:loop-conversion-data}
+\begin{table}[ht]
+\centering
+\caption{Zero-temperature core constants for the loop free
+energy~\eqref{eq:loop-energy}, after \cite{Dudarev2008} (eV/\AA).}
+\label{tab:core-constants}
+\begin{tabular}{lcccc}
+\toprule
+term & $111[11\bar2]$ & $111[\bar110]$ & $001[100]$ & $001[110]$ \\
+\midrule
+$F_c$ (nonlinear core)   & 0.46 & 0.47 & 0.33 & --- \\
+$F_\delta$ (core-traction) & 0.345 & 0.349 & 0.387 & 0.390 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[ht]
+\centering
+\caption{Conversion-model parameters. Values marked ``cal.'' are calibrated
+against the measured $\tfrac12\langle111\rangle$ fraction $f_{111}(T,\text{dose})$.}
+\label{tab:conversion-params}
+\begin{tabular}{llll}
+\toprule
+symbol & meaning & first-cut value & source \\
+\midrule
+$T_c$            & $\alpha$--$\gamma$ softening temperature & 1185 K & \cite{Dudarev2008} \\
+$c'(T)$          & shear softening law & $56.8(1{-}T/T_c)^{1/2}$ GPa & \cite{Dudarev2008} \\
+$\delta$         & dislocation core cutoff & $0.4$ nm & \cite{Dudarev2008} \\
+$f_{111},f_{100}^{0}$ & per-length loop energies & $0.3$--$0.5$ eV/\AA & Tab.~\ref{tab:core-constants} \\
+softening exp.   & exponent in $\Delta f(T)$ & $1/4$ (fixed) & \cite{Dudarev2008}, Eq.~\eqref{eq:F100} \\
+$T^\ast$         & conversion crossover temperature & cal.\ ($\in[350,550]\,^\circ$C) & \cite{Dudarev2008} \\
+$\nu_0$          & attempt frequency & $10^{13}\,\mathrm{s}^{-1}$ & Debye \\
+$E_a^{0}$        & unary barrier offset & $0.5$--$2.0$ eV & \cite{Marian2002} \\
+$\gamma_a$       & unary barrier size slope & cal. & \cite{Arakawa2006} \\
+$\varphi_{\max}$ & peak junction yield ($n{=}n'$) & $0.5$--$1.0$ & \cite{Marian2002} \\
+$\sigma_s$       & log-size tolerance & $0.3$--$0.5$ & \cite{Marian2002} \\
+$n_{j,\min}$     & minimum junction size & $\mathcal O(10)$ SIAs & \cite{Marian2002} \\
+$A_{100},B_{100}$& $\langle100\rangle$ binding-energy fit & $0.716,\ 0.358$ & Table~18 (DFT) \\
+$n_{\rm conv}$   & $\langle100\rangle$ onset size & \emph{derived} ($\Delta F{>}0$) & Eq.~\eqref{eq:driving-force} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%-------------------------------------------------------------------
+\paragraph{Defect Class 2: Vacancy clusters $c_{m,\ell}$}
+\label{sec:ME_vac}
+%-------------------------------------------------------------------
+Voids ($\ell=0$) and bubbles ($\ell\geq 1$) share a unified $(m,\ell)$ grid.
+Spherical cavities are unbiased ($Z_i^{\mathrm{cav}}=Z_v^{\mathrm{cav}}=1$). The
+v--v coalescence terms are active only for $m\leq v_{\rm mobile}$; SIA-induced
+shrinkage spans all mobile $\tfrac12\langle111\rangle$ SIA sizes through
+$\mathcal{K}^{(\mathrm{cav})}_{n,m}$. The vacancy monomer additionally feeds the
+sessile $\langle100\rangle$ shrinkage ladder of Eq.~\eqref{eq:ME_SIA100}; that
+loss is the last term below.
+\begin{equation}\label{eq:ME_vac}
+\begin{split}
+\frac{dc_{m,\ell}}{dt} = {} &
+  \underbrace{G_{m,\ell}}_{\text{production}}
+  + \underbrace{
+     \frac{1}{2}\sum_{m'=1}^{\min(m-1,\,v_{\rm mobile})}
+     \mathcal{K}_{m',m-m'}^{vv}\,c_{m',0}\,c_{m-m',\ell}\,
+     \delta_{m \leq 2\,v_{\rm mobile}}
+     }_{\text{V--V coalescence gain } (V_{m'}+V_{m-m'}\to V_m)}
+  \\[2pt]
+  &- \underbrace{
+     c_{m,\ell}\sum_{m'=1}^{v_{\rm mobile}}
+     \mathcal{K}_{m,m'}^{vv}\,c_{m',0}
+     }_{\text{V--V coalescence loss } (V_m+V_{m'}\to V_{m+m'})}
+  + \underbrace{
+     \varepsilon_v(m{+}1,\ell)\,c_{m+1,\ell}
+   - \varepsilon_v(m,\ell)\,c_{m,\ell}
+     }_{\text{thermal emission (vacancy from cavities, P5)}}
+  \\[2pt]
+  &+ \underbrace{
+     \sum_{n=1}^{\min(i_{\rm mobile},\,N_V-m)}
+     \mathcal{K}_{n,m+n}^{(\mathrm{cav})}\,c^{(111)}_n\,c_{m+n,\ell}
+     }_{\text{SIA-induced shrinkage gain } (I_n + V_{m+n}\to V_m)}
+  - \underbrace{
+     \sum_{n=1}^{i_{\rm mobile}}
+     \mathcal{K}_{n,m}^{(\mathrm{cav})}\,c^{(111)}_n\,c_{m,\ell}
+     }_{\text{SIA-induced shrinkage loss } (I_n + V_m\to V_{m-n})}
+  \\[2pt]
+  &+ \underbrace{
+     A_{\mathrm{sph}}\,m^{1/3}\,\omega_h^{\mathrm{eff}}\,
+     c_h\,c_{m,\ell-1}\,\delta_{\ell \geq 1}
+   - A_{\mathrm{sph}}\,m^{1/3}\,\omega_h^{\mathrm{eff}}\,
+     c_h\,c_{m,\ell}\,\delta_{\ell < \ell_{\max}}
+     }_{\text{He absorption by cavities (P2, He-side)}}
+  \\[2pt]
+  &+ \underbrace{
+     \varepsilon_h(m,\ell{+}1)\,c_{m,\ell+1}
+   - \varepsilon_h(m,\ell)\,c_{m,\ell}\,\delta_{\ell \geq 1}
+     }_{\text{He emission from cavities (P5, He-side)}}
+  + \underbrace{
+     \Gamma_{\mathrm{TM}}(m{-}1,\ell)\,c_{m-1,\ell}
+   - \Gamma_{\mathrm{TM}}(m,\ell)\,c_{m,\ell}
+     }_{\text{trap mutation (P7)}}
+  \\[2pt]
+  &+ \underbrace{
+     b_0\,\dot{\phi}\,(\ell{+}1)\,c_{m,\ell+1}
+   - b_0\,\dot{\phi}\,\ell\,c_{m,\ell}
+     }_{\text{radiation re-solution (P8)}}
+  - \underbrace{
+     \mathcal{D}_v\,c_{m,\ell}\,\delta_{m \leq v_{\rm mobile}}
+     }_{\text{fixed-sink loss (mobile cavities only, P4)}}
+  \\[2pt]
+  &- \underbrace{
+     \delta_{m=1}\,\delta_{\ell=0}\,c_{1,0}\!
+     \sum_{n\geq n_{\rm conv}} \mathcal{K}^{100}_{s}(n)\,c^{(100)}_n
+     }_{\text{vacancy monomer consumed by }\langle100\rangle\text{ shrinkage (P9)}}.
+\end{split}
+\end{equation}
+
+%-------------------------------------------------------------------
+\paragraph{Free helium $c_h$}
+\label{sec:ME_He}
+%-------------------------------------------------------------------
+He--He coalescence is excluded, and helium interacts with the vacancy-cluster
+grid only through mono-He trapping and emission; the $\langle100\rangle$
+population carries no helium and does not appear here.
+\begin{equation}\label{eq:ME_He}
+\begin{split}
+\frac{dc_h}{dt} = {} &
+  \underbrace{G_{\mathrm{He}}}_{\text{production}}
+  - \underbrace{
+     \sum_{m=1}^{N_V}
+     A_{\mathrm{sph}}\,m^{1/3}\,\omega_h^{\mathrm{eff}}\,c_h
+     \sum_{\ell=0}^{\ell_{\max}(m)-1} c_{m,\ell}
+     }_{\text{He absorption by cavities (P2)}}
+  \\[2pt]
+  &- \underbrace{
+     \mathcal{D}_h\,c_h
+     }_{\text{fixed-sink loss (P4)}}
+  + \underbrace{
+     \sum_{m=1}^{N_V}\sum_{\ell=1}^{\ell_{\max}(m)}
+     \varepsilon_h(m,\ell)\,c_{m,\ell}
+     }_{\text{He emission (P5)}}
+  + \underbrace{
+     \sum_{m=1}^{N_V}\sum_{\ell=1}^{\ell_{\max}(m)}
+     b_0\,\dot{\phi}\,\ell\,c_{m,\ell}
+     }_{\text{radiation re-solution (P8)}}.
+\end{split}
+\end{equation}
+
+%-------------------------------------------------------------------
+\paragraph{Exact conservation identities}
+%-------------------------------------------------------------------
+The master equations~\eqref{eq:ME_SIA}--\eqref{eq:ME_He} satisfy two exact
+conservation identities. Their derivation rests on three facts built into the
+\textsc{RadCluster} code:
+\begin{enumerate}
+  \item[(i)] cascade production deposits SIA and vacancy atoms in a balanced
+        Frenkel-pair ratio (and feeds only the $\tfrac12\langle111\rangle$
+        character),
+        $\sum_{n=1}^{N_I} n\,P_n^{(i)}
+         = \sum_{m=1}^{N_V} m\,P_m^{(v)} = \eta G$;
+  \item[(ii)] every mutual reaction destroys $\min(n,m)$ SIA atoms \emph{and}
+        $\min(n,m)$ vacancy atoms with the residual fragment surviving in its
+        population; this holds for the mobile $\tfrac12\langle111\rangle$--vacancy
+        annihilations \emph{and} for the sessile $\langle100\rangle$
+        vacancy-capture shrinkage (each event removes one SIA from
+        $c^{(100)}$ and one vacancy from $c_{1,0}$), so the two destruction
+        sums cancel identically in $d(S_I-S)/dt$; the
+        $\tfrac12\langle111\rangle\!\leftrightarrow\!\langle100\rangle$
+        conversion edges only relabel SIA content and drop out;
+  \item[(iii)] only mobile clusters with $n \le i_{\rm mobile}$ (glissile SIAs)
+        or $m \le v_{\rm mobile}$ (vacancies) reach fixed sinks. The sessile
+        $\langle100\rangle$ loops are sinks, not sink-bound species, and carry no
+        $\mathcal{D}_i$ term; the rate-equation losses are summed over the full
+        mobile range, not the monomer alone.
+\end{enumerate}
+
+\paragraph{Cumulative loss to fixed sinks}
+The total fixed-sink rate for species $\alpha\in\{i,v,h\}$ collects all three
+sink channels,
+$\mathcal{D}_\alpha(n) = \mathcal{D}_\alpha^d(n) +
+ \mathcal{D}_\alpha^{gb}(n) + \mathcal{D}_\alpha^p(n)$, and vanishes outside the
+mobile range. Define the cumulative atomic content delivered to fixed sinks
+(only the glissile SIAs are mobile):
+\begin{align}
+    \Delta J_i^{\mathrm{fix}}(t)
+    &\equiv \int_0^t \sum_{n=1}^{i_{\rm mobile}}
+        n\,\mathcal{D}_i(n)\,c^{(111)}_n(t')\,dt' \;\ge\; 0,
+    \label{eq:DeltaJi_fix}\\[3pt]
+    \Delta J_v^{\mathrm{fix}}(t)
+    &\equiv \int_0^t \sum_{m=1}^{v_{\rm mobile}}
+        m\,\mathcal{D}_v\,\bar{c}_m(t')\,dt' \;\ge\; 0,
+    \label{eq:DeltaJv_fix}\\[3pt]
+    \Delta J_h^{\mathrm{fix}}(t)
+    &\equiv \int_0^t\!\!\left[
+        \mathcal{D}_h\,c_h
+        + \mathcal{D}_v
+          \sum_{m=1}^{v_{\rm mobile}}\sum_{\ell}\ell\,c_{m,\ell}
+      \right]\!dt' \;\ge\; 0.
+    \label{eq:DeltaJh_fix}
+\end{align}
+These three integrals are appended to the state vector and evolved as auxiliary
+ODEs, so that they share the integrator's local error control with the physical
+concentrations.
+
+\paragraph{Frenkel-pair balance}
+\label{sec:FP_balance}
+With total inventories summed over \emph{both} SIA characters,
+\begin{equation}\label{eq:SI_S}
+    S_I(t) \equiv \sum_{n=1}^{N_I} n\,\bigl[c^{(111)}_n(t)+c^{(100)}_n(t)\bigr],
+    \qquad
+    S(t)   \equiv \sum_{m=1}^{N_V} m\,\bar{c}_m(t),
+\end{equation}
+facts (i)--(iii) combine into the exact Frenkel-pair conservation law
+\begin{equation}\label{eq:mass_FP}
+  S(t) - S_I(t)
+  \;-\; \Delta J_i^{\mathrm{fix}}(t)
+  \;+\; \Delta J_v^{\mathrm{fix}}(t)
+  \;=\; S(0) - S_I(0)
+  \;=\; \mathrm{const.}
+\end{equation}
+For a defect-free initial condition, this is the \emph{swelling identity}
+\begin{equation}\label{eq:swelling_identity}
+    S(t) \;=\; S_I(t)
+          \;+\; \Delta J_i^{\mathrm{fix}}(t)
+          \;-\; \Delta J_v^{\mathrm{fix}}(t),
+\end{equation}
+i.e.\ the total vacancy content of all cavities equals the SIA inventory in
+loops (both characters) plus the \emph{net} atomic flux delivered to fixed
+sinks. Differentiating gives the rate form
+\begin{equation}\label{eq:dSdt}
+    \frac{dS}{dt}
+    \;=\; \frac{dS_I}{dt}
+    \;+\; \sum_{n=1}^{i_{\rm mobile}} n\,\mathcal{D}_i(n)\,c^{(111)}_n
+    \;-\; \sum_{m=1}^{v_{\rm mobile}} m\,\mathcal{D}_v\,\bar{c}_m.
+\end{equation}
+Once loops saturate ($dS_I/dt \approx 0$), swelling grows at the rate at which
+the biased dislocation channel ($Z_i^d \neq Z_v^d$) drains the surplus SIA
+inventory faster than the vacancy inventory; the unbiased grain-boundary and
+precipitate channels contribute equally to both sums and cancel in
+$dS/dt - dS_I/dt$ only insofar as the mobile SIA and vacancy populations are
+equal.
+
+\paragraph{Helium conservation}
+The total helium inventory is the sum of free and trapped helium,
+\begin{equation}
+    S_{\mathrm{He}}(t)
+    \;\equiv\; c_h(t)
+    \;+\; \sum_{m=1}^{N_V}\sum_{\ell=1}^{\ell_{\max}(m)}
+              \ell\,c_{m,\ell}(t).
+\end{equation}
+Trap mutation (P7), radiation re-solution (P8), and thermal He emission (P5h)
+only redistribute helium between $c_h$ and the trapped pool, so their
+contributions to $dS_{\mathrm{He}}/dt$ cancel pairwise. The only net helium
+sinks are free helium captured at fixed sinks ($\mathcal{D}_h\,c_h$) and helium
+carried to fixed sinks by mobile cavities ($m \le v_{\rm mobile}$); immobile
+bubbles retain their helium. Hence
+\begin{equation}\label{eq:mass_He}
+    \frac{dS_{\mathrm{He}}}{dt}
+    \;=\; G_{\mathrm{He}}
+    \;-\; \mathcal{D}_h\,c_h
+    \;-\; \mathcal{D}_v
+          \sum_{m=1}^{v_{\rm mobile}}\sum_{\ell} \ell\,c_{m,\ell},
+\end{equation}
+i.e.\ $dS_{\mathrm{He}}/dt = G_{\mathrm{He}} - d\Delta J_h^{\mathrm{fix}}/dt$.
+In particular, $S_{\mathrm{He}}$ is \emph{not} conserved against
+$\int G_{\mathrm{He}}\,dt'$ alone --- the fixed-sink loss must be tracked
+explicitly. Both loss terms are typically small (mobile clusters carry little
+He) but they are non-zero and must appear in the diagnostic below for it to
+converge to zero.
+
+\paragraph{Numerical accuracy diagnostics}
+\label{sec:conservation_check}
+The swelling identity~\eqref{eq:swelling_identity} and the helium
+balance~\eqref{eq:mass_He} provide two inexpensive a-posteriori checks, neither
+of which requires post-processing because the auxiliary
+integrals~\eqref{eq:DeltaJi_fix}--\eqref{eq:DeltaJh_fix} are already state
+variables:
+\begin{equation}\label{eq:delta_FP}
+    \delta_{\mathrm{FP}}(t)
+    = \frac{\bigl|\,S(t) - S_I(t)
+            - \Delta J_i^{\mathrm{fix}}(t)
+            + \Delta J_v^{\mathrm{fix}}(t)\,\bigr|}
+           {S(t) + S_I(t)
+            + \Delta J_i^{\mathrm{fix}}(t)
+            + \Delta J_v^{\mathrm{fix}}(t)},
+\end{equation}
+\begin{equation}\label{eq:delta_He}
+    \delta_{\mathrm{He}}(t)
+    = \frac{\Bigl|\,
+        S_{\mathrm{He}}(t)
+        + \Delta J_h^{\mathrm{fix}}(t)
+        - \displaystyle\int_0^t G_{\mathrm{He}}\,dt'
+        - S_{\mathrm{He}}(0)\,\Bigr|}{
+        S_{\mathrm{He}}(t)
+        + \Delta J_h^{\mathrm{fix}}(t)
+        + \displaystyle\int_0^t G_{\mathrm{He}}\,dt'}.
+\end{equation}
+Both should remain below $\sim 10^{-6}$ in a correctly implemented code; values
+above $10^{-3}$ almost always signal a coding error, missing or incorrect
+reactions, or an overly loose integrator tolerance. We have verified that the
+two-population split preserves these bounds: with the
+$\tfrac12\langle111\rangle\!\to\!\langle100\rangle$ conversion active,
+$\delta_{\mathrm{FP}}$ remains at the $10^{-7}$ level in the bin-moment
+representation (and at the round-off level $\sim10^{-14}$ in the fully discrete
+representation), confirming that the conversion edges and the sessile
+$\langle100\rangle$ ladders are SIA-content conserving by construction. Despite
+the importance of these conservation identities, they have seldom been discussed
+or tested in the cluster dynamics literature.

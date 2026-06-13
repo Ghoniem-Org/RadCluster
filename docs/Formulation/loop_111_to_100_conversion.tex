@@ -89,17 +89,22 @@ driving force is the per-loop free-energy difference
   \Delta F(n,T) = E_l^{111}(n,T) - E_l^{100}(n,T) = P(n)\,\Delta f(T),
   \label{eq:driving-force}
 \end{equation}
-which we parametrise through a per-unit-length difference $\Delta f(T)$ tied to
-the same softening law~\eqref{eq:cprime},
+which we parametrise by retaining the physics that only the $\langle100\rangle$
+\emph{prelogarithmic} part softens, with the exponent fixed at $1/4$ by the
+analytic scaling $\hat F_{001}([100])\propto\sqrt{c_{11}-c_{12}}\propto
+(1-T/T_c)^{1/4}$ of Eq.~\eqref{eq:F100}:
 \begin{equation}
-  \boxed{\;\Delta f(T) = f_{111} - f_{100}^{0}\,(1-T/T_c)^{p}\;}
+  \boxed{\;f_{100}(T) = f_{100}^{\rm core} + f_{100}^{\rm pre}\,(1-T/T_c)^{1/4},
+  \qquad \Delta f(T) = f_{111} - f_{100}(T)\;}
   \label{eq:delta-f}
 \end{equation}
-with $f_{111},f_{100}^{0}$ the (near-zero-$T$) per-length energies of the two
-characters and the exponent $p$ fixed so that $\Delta f$ changes sign near
-$350\,^\circ$C and is strongly positive by $550\,^\circ$C, reproducing the three
-stability regions of \citet{Dudarev2008}.  Conversion is thermodynamically
-admissible for $T>T^\ast$, where $f_{111}=f_{100}^{0}(1-T^\ast/T_c)^{p}$.
+where $f_{100}^{\rm core}=(F_\delta+F_c)_{100}$ is the temperature-independent
+core energy and $f_{100}^{\rm pre}=\hat F_{001}\ln(4R^\ast/e\delta)$ the softening
+prelogarithmic part (constants from Table~\ref{tab:core-constants}).  The single
+fit quantity is the crossover temperature $T^\ast$ (where $\Delta f=0$), chosen
+so that conversion turns on near $350\,^\circ$C and is strongly favoured by
+$550\,^\circ$C, reproducing the three stability regions of \citet{Dudarev2008}.
+Conversion is thermodynamically admissible for $T>T^\ast$.
 
 The transformation is a thermally activated, one-way process.  Because the
 reorientation propagates segment-by-segment along the loop
@@ -241,14 +246,15 @@ $T_c$            & $\alpha$--$\gamma$ softening temperature & 1185 K & \citet{Du
 $c'(T)$          & shear softening law & $56.8(1{-}T/T_c)^{1/2}$ GPa & \citet{Dudarev2008} \\
 $\delta$         & dislocation core cutoff & $0.4$ nm & \citet{Dudarev2008} \\
 $f_{111},f_{100}^{0}$ & per-length loop energies & $0.3$--$0.5$ eV/\AA & Tab.~\ref{tab:core-constants} \\
-$p$              & softening exponent in $\Delta f(T)$ & cal.\ ($\Delta f{=}0$ near $350\,^\circ$C) & \citet{Dudarev2008} \\
+softening exp.   & exponent in $\Delta f(T)$ & $1/4$ (fixed) & \citet{Dudarev2008}, Eq.~\eqref{eq:F100} \\
+$T^\ast$         & conversion crossover temperature & cal.\ ($\in[350,550]\,^\circ$C) & \citet{Dudarev2008} \\
 $\nu_0$          & attempt frequency & $10^{13}\,\mathrm{s}^{-1}$ & Debye \\
 $E_a^{0}$        & unary barrier offset & $0.5$--$1.0$ eV & \citet{Marian2002} \\
 $\gamma_a$       & unary barrier size slope & cal. & \citet{Arakawa2006} \\
 $\varphi_{\max}$ & peak junction yield ($n{=}n'$) & $0.5$--$1.0$ & \citet{Marian2002} \\
 $\sigma_s$       & log-size tolerance & $0.3$--$0.5$ & \citet{Marian2002} \\
 $n_{j,\min}$     & minimum junction size & $\mathcal O(10)$ SIAs & \citet{Marian2002} \\
-$A_{100},B_{100}$& $\langle100\rangle$ binding-energy fit & from Eq.~\eqref{eq:loop-energy} & this work \\
+$A_{100},B_{100}$& $\langle100\rangle$ binding-energy fit & $0.7160,\ 0.3581$ & Table~18 (DFT) \\
 $n_{\rm conv}$   & $\langle100\rangle$ onset size & \emph{derived} ($\Delta F{>}0$) & Eq.~\eqref{eq:driving-force} \\
 \bottomrule
 \end{tabular}

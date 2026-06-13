@@ -110,7 +110,14 @@ def E_b_bubble(m, ell, E_f_v, gamma_s, Omega, T):
 
     Capillary model with He-pressure correction (Eqs. 70-73):
       E_b_bub(m, ℓ) = E_f_v − A_cap·[m^{2/3}−(m−1)^{2/3}]
-                       − P_He(m,ℓ)·Ω  [He pressure work term]
+                       + P_He(m,ℓ)·Ω  [He pressure work term]
+
+    The pressure term is POSITIVE: removing a vacancy from a gas-filled
+    cavity compresses the gas, costing work +P·Ω, so He raises the
+    vacancy binding energy and stabilizes bubbles against thermal
+    dissociation (equivalently c_v^eq(surface) ∝ exp[(2γ/r − P)Ω/kT]).
+    This term creates the stable-bubble branch and critical radius r*
+    of critical-bubble theory (Mansur & Coghlan).
 
     Parameters
     ----------
@@ -131,7 +138,7 @@ def E_b_bubble(m, ell, E_f_v, gamma_s, Omega, T):
     capillary = A_cap * (m_f**(2.0/3.0) - max(m_f - 1.0, 0.0)**(2.0/3.0))
     P     = He_pressure(m, ell, Omega, T)
     dE_P  = P * Omega * _J_eV   # Pa·m³ → eV
-    return E_f_v - capillary - dE_P
+    return E_f_v - capillary + dE_P
 
 
 # ── 3.  He binding energy to bubbles ─────────────────────────────────────────

@@ -299,7 +299,12 @@ System size: $N + 2M + 1$.
 Track only $\bar{c}_m$ and scalar $\ell_{\rm tot} = \sum_m \ell(m)\,\bar{c}_m$.
 He-corrected effective vacancy binding energy (Eq. Ebv\_eff):
 
-$$E_b^{v,\rm eff}(m) = E_f^v + \frac{2\gamma_s\,\Omega}{r_m} - \frac{\ell(m)\,k_{\rm B}T}{m}$$
+$$E_b^{v,\rm eff}(m) = E_f^v - \frac{2\gamma_s\,\Omega}{r_m} + \frac{\ell(m)\,k_{\rm B}T}{m}$$
+
+(The capillary term **lowers** the binding of small cavities; the He gas-pressure
+work $P\,\Omega \approx \ell k_{\rm B}T/m$ **raises** it, stabilizing bubbles
+against thermal dissociation — this sign creates the stable-bubble branch and
+critical radius $r^*$ of critical-bubble theory.)
 
 He allocation proportional to capture rate (Eq. allocation):
 
@@ -511,7 +516,8 @@ $$E_b^v(m) = E_f^v - A_{\rm void}\bigl[m^{2/3} - (m-1)^{2/3}\bigr],
 
 Bubble vacancy binding (Eq. EbV\_bubble):
 
-$$E_b^v(m,\ell) = E_b^v(m) + \text{He gas-pressure correction via virial EOS}$$
+$$E_b^v(m,\ell) = E_b^v(m) + P_{\rm He}(m,\ell)\,\Omega \qquad
+  \text{(virial-EOS gas pressure; positive — He stabilizes bubbles)}$$
 
 He virial EOS (Eqs. 64–65):
 

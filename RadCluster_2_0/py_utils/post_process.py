@@ -270,23 +270,27 @@ def calculate_derived_quantities(t, y, input_data, rate_eq_obj,
     mean_n_100  = np.zeros(n_t)
     f_111_loop  = np.ones(n_t)           # ½⟨111⟩ loop fraction (content-weighted)
     if y_sia100 is not None and np.asarray(y_sia100).size:
+        # y_sia100 is per-size [I, n_t] in BOTH discrete and bin_moment modes
+        # (the bridge reconstructs the bin-moment ⟨100⟩ block before this point).
+        # The ½⟨111⟩ content is C_SIA_tot as accumulated above (BEFORE the ⟨100⟩
+        # contribution is folded in) — exact from the tracked μ₁ moments in
+        # bin-moment mode, and Σ n·c_n in discrete mode — and the ½⟨111⟩ loop
+        # density is N_loops_111.  Using these makes the split mode-agnostic.
+        cont111 = C_SIA_tot.copy()                           # ½⟨111⟩ content
+        cnt111  = N_loops_111                                # ½⟨111⟩ density
         c100    = np.maximum(np.asarray(y_sia100, dtype=float), 0.0)   # [I, n_t]
         cont100 = ns @ c100                                  # ⟨100⟩ content [at.frac]
         N_loops_100 = np.sum(c100[1:, :], axis=0)            # ⟨100⟩ density
         C_SIA_tot   = C_SIA_tot + cont100                    # full SIA inventory
-        if not is_bin:
-            c111    = np.maximum(y[:I, :], 0.0)              # [I, n_t]
-            cnt111  = np.sum(c111[1:, :], axis=0)
-            cont111 = ns @ c111
-            cnt100  = N_loops_100
-            mean_n_100 = np.divide(cont100, cnt100,
-                                   out=np.zeros(n_t), where=cnt100 > 0)
-            tot = cont111 + cont100
-            f_111_loop = np.divide(cont111, tot,
-                                   out=np.ones(n_t), where=tot > 0)
-            cnt_tot  = cnt111 + cnt100
-            mean_n_i = np.divide(cont111 + cont100, cnt_tot,
-                                 out=mean_n_i.copy(), where=cnt_tot > 0)
+        cnt100  = N_loops_100
+        mean_n_100 = np.divide(cont100, cnt100,
+                               out=np.zeros(n_t), where=cnt100 > 0)
+        tot = cont111 + cont100
+        f_111_loop = np.divide(cont111, tot,
+                               out=np.ones(n_t), where=tot > 0)
+        cnt_tot  = cnt111 + cnt100
+        mean_n_i = np.divide(cont111 + cont100, cnt_tot,
+                             out=mean_n_i.copy(), where=cnt_tot > 0)
         N_loops = N_loops_111 + N_loops_100                  # combined density
 
     # Dose axis [dpa]
@@ -330,18 +334,22 @@ def calculate_derived_quantities(t, y, input_data, rate_eq_obj,
                + J_SIA_fixed[j] + J_VAC_fixed[j])
         delta_FP[j] = num / den if den > 1e-300 else 0.0
 
-        prod = eta * G * t[j]
+        # Production referenced to the first sample t[0] (see δ_He note below):
+        # defects and the cumulative-flux integrals both start from 0 at t[0],
+        # so the FP production balance must use ∫_{t0}^t = η·G·(t−t0).
+        prod = eta * G * (t[j] - t[0])
         if prod > 1e-300:
+            sia0 = C_SIA_tot[0] + J_SIA_fixed[0] + J_SIA_mutual[0]
+            vac0 = C_VAC_tot[0] + J_VAC_fixed[0] + J_VAC_mutual[0]
             delta_FP_sia[j] = abs(
-                prod - C_SIA_tot[j] - J_SIA_fixed[j] - J_SIA_mutual[j]) / prod
+                prod - (C_SIA_tot[j] + J_SIA_fixed[j] + J_SIA_mutual[j] - sia0)) / prod
             delta_FP_vac[j] = abs(
-                prod - C_VAC_tot[j] - J_VAC_fixed[j] - J_VAC_mutual[j]) / prod
+                prod - (C_VAC_tot[j] + J_VAC_fixed[j] + J_VAC_mutual[j] - vac0)) / prod
         else:
             delta_FP_sia[j] = delta_FP_vac[j] = 0.0
 
     # He conservation diagnostic (Eq. 97):
-    #   δ_He = |S_He + J_He_sink - ∫G_He dt - S_He(0)|
-    #          / (S_He + J_He_sink + ∫G_He dt)
+    #   δ_He = |ΔS_He + ΔJ_He_sink - ∫G_He dt'| / (S_He + J_He_sink + ∫G_He dt')
     # The fixed-sink loss J_He_sink must be tracked explicitly; S_He is NOT
     # conserved against ∫G_He dt alone.
     #
@@ -353,10 +361,18 @@ def calculate_derived_quantities(t, y, input_data, rate_eq_obj,
     #             and the conserved combination is S_He = Q alone.  Including
     #             the algebraic c_h would book the entire instantaneous
     #             free-He concentration as an apparent conservation error.
+    #
+    # Production and the accounting integrals are referenced to the FIRST
+    # sample t[0], not absolute t=0: CVODE applies the IC at t[0]=t_span[0]
+    # (e.g. 1e-6 s) and the cumulative-flux state variables start from 0
+    # there.  Using ∫G_He = G_He·t[j] (from 0) while the inventory only
+    # accumulates from t[0] leaves a constant G_He·t[0] offset that reads as
+    # a spurious ~1e-2 early-time imbalance decaying as t[0]/t.  Differencing
+    # against the t[0] baseline removes it and is exact for a constant G_He.
     He_bal = (C_He_tot - C_He_free) if qss_He else C_He_tot
-    S_He0 = He_bal[0]   # balance inventory at t[0] (≈0 for defect-free IC)
+    S_He0 = He_bal[0] + J_He_sink[0]   # conserved combination at t[0]
     for j in range(n_t):
-        he_prod = G_He * t[j]   # ∫₀ᵗ G_He dt' (constant G_He)
+        he_prod = G_He * (t[j] - t[0])   # ∫_{t0}^t G_He dt' (constant G_He)
         num = abs(He_bal[j] + J_He_sink[j] - he_prod - S_He0)
         den = He_bal[j] + J_He_sink[j] + he_prod
         delta_He[j] = num / den if den > 1e-300 else 0.0

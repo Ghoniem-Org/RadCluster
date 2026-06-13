@@ -101,16 +101,24 @@ static inline double c_h_qss_case2(const Parameters& P,
 
 /**
  * QSS free He concentration from dc_h/dt = 0 (Case 1):
- *   c_h = (G_He + beta_He · Σ Q_m) / (Σ KHeV[m] · c_v[m] + k2_He)
+ *   c_h = (G_He + beta_He · Σ Q) / (Σ KHeV[m] · c_v[m] + k2_He)
+ *
+ * The sink runs over all V vacancy SIZE classes (KHeV and c_v are per-size).
+ * The He emission runs over the Q array, whose length n_Q differs by mode:
+ * full-CD Case 1 stores Q per size (n_Q = V), but the bin-moment kernel
+ * stores Q per BIN (n_Q = Kv = V_bin << V).  Passing n_Q explicitly avoids
+ * over-reading the Q block into c_h / the conservation integrals / past the
+ * end of the state vector (the prior fixed V-length loop did exactly that in
+ * bin-moment mode, corrupting c_h and zeroing the trapped-He inventory).
  */
-static inline double c_h_qss_case1(const Parameters& P,
-                                    const double* c_v, const double* Q_m) {
-    double sink    = P.k2_disl_He;
+static inline double c_h_qss_case1(const Parameters& P, const double* c_v,
+                                    const double* Q, int n_Q) {
+    double sink = P.k2_disl_He;
+    for (int m = 0; m < P.V; ++m)
+        sink += P.KHeV[m] * std::max(c_v[m], 0.0);
     double He_emit = 0.0;
-    for (int m = 0; m < P.V; ++m) {
-        sink    += P.KHeV[m] * std::max(c_v[m], 0.0);
-        He_emit += P.beta_He * std::max(Q_m[m], 0.0);
-    }
+    for (int k = 0; k < n_Q; ++k)
+        He_emit += P.beta_He * std::max(Q[k], 0.0);
     double source = P.G_He + He_emit;
     return source / (sink > 1e-300 ? sink : 1e-300);
 }
@@ -744,7 +752,7 @@ static int rhs_case1(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
     const double* c_v = y + I;
     const double* Q_m = y + I + V;
 
-    const double c_h = qss ? c_h_qss_case1(P, c_v, Q_m)
+    const double c_h = qss ? c_h_qss_case1(P, c_v, Q_m, V)
                            : std::max(y[I + 2*V], 0.0);
 
     const double ci1 = std::max(c_i[0], 0.0);
@@ -1387,17 +1395,18 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
     double Q_tot    = 0.0;
     const int i_Q_base = i_VAC + v_d + PM * Kv;  // after discrete VAC + binned VAC moments
 
+    // Q length: per-bin (Kv) when vacancies are binned, else per-size (V).
+    const int n_Q_case1 = (Kv > 0) ? Kv : V;
     if (P.he_mode == 1) {
-        int n_Q = Kv;  // Q_k per vacancy bin
-        for (int k = 0; k < n_Q; ++k) Q_tot += std::max(y[i_Q_base + k], 0.0);
-        i_He_idx = qss ? -1 : i_Q_base + n_Q;
+        for (int k = 0; k < n_Q_case1; ++k) Q_tot += std::max(y[i_Q_base + k], 0.0);
+        i_He_idx = qss ? -1 : i_Q_base + n_Q_case1;
     } else {
         Q_tot    = std::max(y[i_Q_base], 0.0);
         i_He_idx = qss ? -1 : i_Q_base + 1;
     }
 
     const double c_h = qss
-        ? (P.he_mode == 1 ? c_h_qss_case1(P, c_v, y + i_Q_base)
+        ? (P.he_mode == 1 ? c_h_qss_case1(P, c_v, y + i_Q_base, n_Q_case1)
                           : c_h_qss_case2(P, c_v, Q_tot))
         : std::max(y[i_He_idx], 0.0);
 
@@ -1803,6 +1812,209 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
         }
     }
 
+    // ── ½⟨111⟩ → ⟨100⟩ loop conversion (bin-moment) ──────────────────────────
+    // The appended ⟨100⟩ block at P.sia100_off carries the SAME discrete-prefix
+    // + logarithmic-bin reduction as the ½⟨111⟩ block, so BOTH SIA loop
+    // characters are bin-moment-reduced.  Procedure (identical philosophy to the
+    // ½⟨111⟩/vacancy reductions): reconstruct ⟨100⟩ per-size, evaluate the EXACT
+    // per-size conversion rates (same arithmetic as rhs_case2 — unary relabel,
+    // Marian junction & absorption, sessile point-defect ladders), then project
+    // the per-size deltas back onto the tracked moments.  Because the moment
+    // projection is linear, the ½⟨111⟩ losses are ADDED onto the already-set
+    // SIA moment derivatives and the vacancy-monomer derivative; the ⟨100⟩ block
+    // (which evolves ONLY through conversion) is set directly.
+    std::vector<double> c_n100;          // reconstructed ⟨100⟩ per-size (empty=off)
+    if (P.loop_conversion) {
+        c_n100.assign(I, 0.0);
+        const double* src = y + P.sia100_off;
+        // Reconstruct ⟨100⟩ per-size from its moment block (closure mirrors c_n).
+        for (int n = 0; n < i_d; ++n)
+            c_n100[n] = std::max(src[n], 0.0);
+        for (int k = 0; k < Ib; ++k) {
+            const double mu0_k = std::max(src[i_d + PM*k], 0.0);
+            double mu1_k = (PM >= 2) ? src[i_d + PM*k + 1] : 0.0;
+            double mu2_k = (PM >= 3) ? src[i_d + PM*k + 2] : 0.0;
+            const double bw = static_cast<double>(n_hi[k] - n_lo[k]);
+            if (bw <= 0 || mu0_k <= 0.0) continue;
+            if (bw == 1.0) {
+                int ni = n_lo[k] - 1;
+                if (ni >= 0 && ni < I) c_n100[ni] = mu0_k;
+                continue;
+            }
+            {   // moment-consistency guard (clamp n_bar into the bin)
+                const double n_lo_f = static_cast<double>(n_lo[k]);
+                const double n_hi_f = static_cast<double>(n_hi[k] - 1);
+                double n_bar = mu1_k / std::max(mu0_k, 1e-300);
+                if (n_bar < n_lo_f) mu1_k = mu0_k * n_lo_f;
+                else if (n_bar > n_hi_f) mu1_k = mu0_k * n_hi_f;
+                if (PM >= 3) {
+                    double n2_min = mu1_k * mu1_k / std::max(mu0_k, 1e-300) * 1.01;
+                    if (mu2_k < n2_min) mu2_k = n2_min;
+                }
+            }
+            bool use_lognormal = false;
+            if (P.shape_function == 2 && PM >= 3) {
+                const double n_bar  = mu1_k / std::max(mu0_k, 1e-300);
+                const double n2_bar = mu2_k / std::max(mu0_k, 1e-300);
+                const double ratio  = n2_bar / std::max(n_bar * n_bar, 1e-300);
+                if (ratio > 1.5) {
+                    use_lognormal = true;
+                    const double sig2 = std::log(ratio);
+                    const double m_k  = std::log(std::max(n_bar, 1e-300)) - 0.5 * sig2;
+                    double f_sum = 0.0, max_log_f = -1e300;
+                    std::vector<double> log_f_arr(static_cast<int>(bw));
+                    for (int n = n_lo[k]; n < n_hi[k]; ++n) {
+                        double ln_n = std::log(static_cast<double>(n));
+                        double lf = std::max(-(ln_n - m_k) * (ln_n - m_k) / (2.0 * sig2), -500.0) - ln_n;
+                        log_f_arr[n - n_lo[k]] = lf;
+                        if (lf > max_log_f) max_log_f = lf;
+                    }
+                    for (int j = 0; j < static_cast<int>(bw); ++j) {
+                        log_f_arr[j] -= max_log_f;
+                        f_sum += std::exp(log_f_arr[j]);
+                    }
+                    if (f_sum < 1e-300) {
+                        use_lognormal = false;
+                    } else {
+                        for (int n = n_lo[k]; n < n_hi[k]; ++n)
+                            if (n - 1 >= 0 && n - 1 < I)
+                                c_n100[n - 1] = std::max(
+                                    mu0_k * std::exp(log_f_arr[n - n_lo[k]]) / f_sum, 0.0);
+                    }
+                }
+            }
+            if (!use_lognormal) {
+                if (P.shape_function == 0) {
+                    const double val = mu0_k / bw;
+                    for (int n = n_lo[k]; n < n_hi[k]; ++n)
+                        if (n - 1 >= 0 && n - 1 < I) c_n100[n - 1] = val;
+                } else {
+                    double S1 = 0.0, S2 = 0.0;
+                    for (int n = n_lo[k]; n < n_hi[k]; ++n) {
+                        double nf = static_cast<double>(n);
+                        S1 += nf; S2 += nf * nf;
+                    }
+                    double det = bw * S2 - S1 * S1;
+                    if (std::abs(det) < 1e-30) {
+                        double val = mu0_k / bw;
+                        for (int n = n_lo[k]; n < n_hi[k]; ++n)
+                            if (n - 1 >= 0 && n - 1 < I) c_n100[n - 1] = val;
+                    } else {
+                        for (int n = n_lo[k]; n < n_hi[k]; ++n) {
+                            if (n - 1 < 0 || n - 1 >= I) continue;
+                            double nf = static_cast<double>(n);
+                            double phi0 = (S2 - S1 * nf) / det;
+                            double phi1 = (bw * nf - S1) / det;
+                            c_n100[n - 1] = softplus(phi0 * mu0_k + phi1 * mu1_k);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Per-size conversion deltas (mirror rhs_case2 arithmetic exactly).
+        std::vector<double> d111(I, 0.0), d100(I, 0.0);
+        double dv1 = 0.0;
+        const int nlm = P.conv_n_loop_min;
+
+        // (1) Unary ½⟨111⟩_n → ⟨100⟩_n (size-fixed relabel).
+        for (int n = nlm; n <= I; ++n) {
+            const double rate = P.Gamma_uni[n - 1] * std::max(c_n[n - 1], 0.0);
+            d111[n - 1] -= rate;
+            d100[n - 1] += rate;
+        }
+        // (2) Marian junction: fraction φ of ½⟨111⟩ coalescence GAIN → ⟨100⟩.
+        for (int sn = 2; sn <= I; ++sn) {
+            double moved = 0.0;
+            for (int np = 1; np <= std::min(sn - 1, P.i_mobile); ++np) {
+                const int npp = sn - np;
+                if (npp < 1 || npp > I) continue;
+                const double ph = conv_phi_junc(P, np, npp);
+                if (ph <= 0.0) continue;
+                moved += ph * K_ii_coal(P, npp, np)
+                       * std::max(c_n[np  - 1], 0.0)
+                       * std::max(c_n[npp - 1], 0.0);
+            }
+            d111[sn - 1] -= moved;
+            d100[sn - 1] += moved;
+        }
+        // (3) Marian absorption growth: ⟨100⟩_m + ½⟨111⟩_n → ⟨100⟩_{m+n}.
+        for (int m = nlm; m <= I; ++m) {
+            const double cm100 = std::max(c_n100[m - 1], 0.0);
+            if (cm100 < 1e-300) continue;
+            for (int n = 1; n <= P.i_mobile && m + n <= I; ++n) {
+                const double rate = K_100_absorb(P, m, n)
+                                  * cm100 * std::max(c_n[n - 1], 0.0);
+                d100[m - 1]     -= rate;
+                d111[n - 1]     -= rate;
+                d100[m + n - 1] += rate;
+            }
+        }
+        // (4) Sessile ⟨100⟩ point-defect ladders (monomer-coupled to ½⟨111⟩).
+        for (int n = nlm; n <= I; ++n) {
+            const double cn100 = std::max(c_n100[n - 1], 0.0);
+            if (cn100 < 1e-300) continue;
+            if (n < I) {                                    // growth + I_1
+                const double g = P.K_100_grow[n - 1] * cn100 * ci1;
+                d100[n - 1] -= g;
+                d100[n]     += g;
+                d111[0]     -= g;
+            }
+            {                                               // shrink + V_1
+                const double s = P.K_100_shrink[n - 1] * cn100 * cv1;
+                d100[n - 1] -= s;
+                if (n - 1 >= nlm)      d100[n - 2] += s;
+                else if (n >= 2)       d111[n - 2] += s;
+                dv1 -= s;
+            }
+            {                                               // emission → I_1
+                const double e = P.G_100[n - 1] * cn100;
+                d100[n - 1] -= e;
+                if (n - 1 >= nlm)      d100[n - 2] += e;
+                else if (n >= 2)       d111[n - 2] += e;
+                d111[0]     += e;
+            }
+        }
+
+        // Project d111 onto the ½⟨111⟩ moments and ADD (projection is linear).
+        for (int n = 0; n < i_d; ++n) dydt[n] += d111[n];
+        for (int k = 0; k < Ib; ++k) {
+            double dmu0 = 0.0, dmu1 = 0.0, dmu2 = 0.0;
+            for (int n = n_lo[k]; n < n_hi[k]; ++n) {
+                if (n - 1 >= 0 && n - 1 < I) {
+                    const double nf = static_cast<double>(n);
+                    dmu0 += d111[n - 1];
+                    if (PM >= 2) dmu1 += nf * d111[n - 1];
+                    if (PM >= 3) dmu2 += nf * nf * d111[n - 1];
+                }
+            }
+            dydt[i_d + PM*k] += dmu0;
+            if (PM >= 2) dydt[i_d + PM*k + 1] += dmu1;
+            if (PM >= 3) dydt[i_d + PM*k + 2] += dmu2;
+        }
+        // Vacancy monomer (m=1 is always in the discrete prefix at i_VAC).
+        dydt[i_VAC + 0] += dv1;
+
+        // Project d100 onto the ⟨100⟩ moments and SET (this block evolves only
+        // through conversion; the whole dydt was zeroed at function entry).
+        const int s100 = P.sia100_off;
+        for (int n = 0; n < i_d; ++n) dydt[s100 + n] = d100[n];
+        for (int k = 0; k < Ib; ++k) {
+            double dmu0 = 0.0, dmu1 = 0.0, dmu2 = 0.0;
+            for (int n = n_lo[k]; n < n_hi[k]; ++n) {
+                if (n - 1 >= 0 && n - 1 < I) {
+                    const double nf = static_cast<double>(n);
+                    dmu0 += d100[n - 1];
+                    if (PM >= 2) dmu1 += nf * d100[n - 1];
+                    if (PM >= 3) dmu2 += nf * nf * d100[n - 1];
+                }
+            }
+            dydt[s100 + i_d + PM*k] = dmu0;
+            if (PM >= 2) dydt[s100 + i_d + PM*k + 1] = dmu1;
+            if (PM >= 3) dydt[s100 + i_d + PM*k + 2] = dmu2;
+        }
+    }
+
     // ── He equations ─────────────────────────────────────────────────────────
     // Accumulates the EXACT He sink losses applied to the Q state below, so
     // the J_He_sink ledger mirrors the state and the conservation identity
@@ -1934,6 +2146,18 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
     // the state by construction.
     dydt[P.cons_off + 4] = P.k2_disl_He * c_h + He_sink_state;
 
+    // Loop conversion: each ⟨100⟩ shrink (⟨100⟩_n + V_1 → ⟨100⟩_{n-1}) annihilates
+    // one SIA and one vacancy, so it enters the mutual-annihilation flux for both
+    // species (keeps δ_FP_sia / δ_FP_vac exact with conversion on) — mirrors the
+    // discrete rhs_case2 accounting.
+    if (P.loop_conversion && !c_n100.empty()) {
+        double s100_mut = 0.0;
+        for (int n = P.conv_n_loop_min; n <= I; ++n)
+            s100_mut += P.K_100_shrink[n - 1] * std::max(c_n100[n - 1], 0.0) * cv1;
+        dydt[P.cons_off + 1] += s100_mut;   // J_SIA_mutual
+        dydt[P.cons_off + 3] += s100_mut;   // J_VAC_mutual
+    }
+
     // ── Sliding-window masking for bin_moment mode ───────────────────────────
     // For the bin_moment RHS the outer cluster loops are not restructured here
     // (they are governed by discrete index + bin index, not a simple 0..N range).
@@ -1951,6 +2175,12 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
         // Zero VAC state derivatives beyond the VAC window
         const int hi_v = std::min(ud->x_hi_v, n_vac - 1);
         for (int k = hi_v + 1; k < n_vac; ++k) dydt[i_VAC + k] = 0.0;
+
+        // Zero ⟨100⟩ block derivatives beyond the SIA window (same reduction
+        // length as ½⟨111⟩, so the SIA frontier hi_i applies).
+        if (P.loop_conversion)
+            for (int k = hi_i + 1; k < P.sia100_len; ++k)
+                dydt[P.sia100_off + k] = 0.0;
     }
 
     return 0;

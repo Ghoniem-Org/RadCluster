@@ -654,14 +654,11 @@ class RateEquations:
                 vac_mutual += (mp - n) * K_s * c_mp * cn
         dydt[self.i_J_VAC_mutual] = vac_mutual
 
-        # (4) He to sinks
-        C_vac_tot = np.sum(c_v)
-        Q_tot_loc = np.sum(Q_m)
+        # (4) He to sinks — must mirror the EXACT state losses applied to dQ
+        # above (−k2·Q_m for mobile classes), not the Case-2 ℓ̄·m^{2/3}
+        # allocation, so that c_h + ΣQ_m + J_He_sink − ∫G_He is conserved.
         he_sink_acc = rr.k2_He_scalar * c_h
-        if C_vac_tot > 1e-300 and Q_tot_loc > 0:
-            ell_bar_loc = Q_tot_loc / C_vac_tot
-            ell_m_mob = ell_bar_loc * ms_mob ** (2.0 / 3.0)
-            he_sink_acc += rr.k2_vac_scalar * np.dot(ell_m_mob, c_v[:vm])
+        he_sink_acc += rr.k2_vac_scalar * np.sum(np.maximum(Q_m[:vm], 0.0))
         dydt[self.i_J_He_sink] = he_sink_acc
 
         return dydt

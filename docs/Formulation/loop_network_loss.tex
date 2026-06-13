@@ -6,247 +6,367 @@
 \usepackage[round,authoryear]{natbib}
 \usepackage{hyperref}
 
-\title{Geometric--Elastic Loss of SIA Loops to the\\Network-Dislocation Reservoir}
-\author{RadCluster\_1\_0 formulation note}
+\title{Loss of SIA Loops to the Network-Dislocation Reservoir:\\
+A Network-Only, Operator-Split Formulation for RadCluster\_2\_0}
+\author{RadCluster\_2\_0 formulation note}
 \date{}
 
 \begin{document}
 \maketitle
 
-\section*{Introduction}
+\begin{abstract}
+\noindent
+This note specifies the loop\,$\to$\,network loss channel that RadCluster\_2\_0
+presently lacks, in a form that is (i)~physically correct for the
+\emph{large, sessile} loops that actually feed the network, (ii)~non-redundant
+with the SIA--SIA coalescence and Marian junction kernels already in the
+model, and (iii)~implementable \emph{without} disturbing the constant-kernel
+structure on which the C++ solver and its Woodbury preconditioner depend.
+The key design commitment is operator splitting: the network density
+$\rho_{\rm net}$ is held piecewise-constant within each integration segment
+and refreshed between segments, so the Jacobian and preconditioner are never
+re-derived.  The companion mass balances make the transfer exactly conservative
+under the existing Frenkel-pair diagnostic.
+\end{abstract}
+
+\section{Introduction}
 
 The absorption of irradiation-induced self-interstitial atom (SIA) loops
-into the network dislocation structure, together with the coalescence of
-loops with one another, are two of the central processes that govern the
-long-time dose dependence of swelling, hardening, and embrittlement in
-body-centred-cubic (BCC) metals and ferritic--martensitic steels.  In
-the rate-theory tradition initiated by Brailsford and
-Bullough~\citep{Brailsford1972} and extended by Bullough, Eyre, and
-Krishan~\citep{Bullough1975} and Mansur~\citep{Mansur1993}, both
-processes are folded into effective sink strengths $k_d^2$ and
-$k_\ell^2$ that enter linearly in the loss term $D_n k^2 c_n$ of every
-diffusing-species balance.  The same construction underlies essentially
-all production cluster-dynamics codes for ferritic alloys and pure
-iron~\citep{GhoniemCho1979,HardouinDuparc2002,StollerGolubov2008,%
-BarashevGolubov2009,KohnertWirth2018}: the network density
-$\rho_{\rm net}$ enters as a static, mean-field absorber whose biases
-for SIAs and vacancies are set once at the start of the simulation.
+into the network dislocation structure is one of the central processes that
+govern the long-time dose dependence of swelling, hardening, and
+embrittlement in body-centred-cubic (BCC) metals and ferritic--martensitic
+steels.  In the rate-theory tradition of Brailsford and
+Bullough~\citep{Brailsford1972}, extended by Bullough, Eyre, and
+Krishan~\citep{Bullough1975} and Mansur~\citep{Mansur1993}, the network is
+folded into an effective sink strength $k_d^2$ that enters linearly in the
+loss term $D_\alpha k_d^2 c$ of every diffusing-species balance.  The same
+construction underlies essentially all production cluster-dynamics codes for
+ferritic alloys and pure iron~\citep{GhoniemCho1979,HardouinDuparc2002,%
+StollerGolubov2008,BarashevGolubov2009,KohnertWirth2018}: the network density
+$\rho_{\rm net}$ enters as a \emph{static}, mean-field absorber whose biases
+are set once at the start of the simulation.
 
-Two limitations of this picture become apparent in regimes where
-loop--network and loop--loop encounters dominate the microstructural
-evolution.  First, a constant sink strength does not distinguish between
-a small mobile cluster, whose elastic field is weak and short ranged,
-and a large prismatic loop, whose strain field extends over distances
-comparable with the inter-sink spacing itself.  Atomic-scale simulations
-of loop--dislocation~\citep{BaconOsetsky2009,Terentyev2010} and
-loop--loop~\citep{Marian2002} interactions in $\alpha$-iron show clearly
-that absorption is driven by the overlap of the strain fields of the
-participants, rather than by simple geometric capture cross-sections,
-and that the relevant length scales depend on loop size and character.
-Second, loop coalescence in the standard treatment is governed by
-3-D diffusion encounter kinetics, whereas the dominant
-$\tfrac{1}{2}\langle 111\rangle$ loop family in BCC iron migrates by
-1-D glide along its Burgers vector and reorients only
-intermittently~\citep{TrinkausSingh1992,SinghForemanTrinkaus1997},
-producing encounter statistics that depart strongly from the mean-field
-$D_n k^2$ result.
+RadCluster\_2\_0 inherits exactly this limitation.  The dislocation density
+\texttt{rho\_d} is read once and enters only the fixed P4 sink
+$\mathcal{D}_\alpha^d=Z_\alpha\,\rho_{\rm net}\,a^2\,\omega_\alpha^{\rm eff}$;
+it never responds to the evolving loop population, and there is no channel
+that removes loops \emph{from} the discrete population and adds them \emph{to}
+the network.  Two consequences follow.  First, the model has no mechanism for
+the experimentally robust \emph{saturation} of loop number density at high
+dose, which physically arises when growing loops are swept into, or unfault
+onto, the network.  Second, the largest loops---those past the SIA mobility
+cutoff, and the entire sessile $\langle 100\rangle$ family---accumulate
+without bound because they neither coalesce (no mobile partner) nor feel the
+mobile-only fixed sink.
 
-Several refinements have been proposed to address these limitations,
-ranging from spatially-resolved cluster dynamics in which the network
-density is treated as a field~\citep{KohnertWirth2018}, to dislocation-
-dynamics simulations that absorb loops explicitly~\citep{Arsenlis2004},
-and elastic-interaction-based capture cross-sections derived from
-anisotropic-elasticity calculations~\citep{Dudarev2003}.  The model
-developed below remains in the mean-field cluster-dynamics framework
-but introduces the two geometrical scales that govern loop transfer to
-the network---the mean inter-loop spacing $L_{\ell\ell}$ and the mean
-loop--network spacing $L_{\ell d}$---explicitly, together with a
-size-dependent elastic interaction radius $R_{\rm int}(n)$ and a smooth
-probability function that interpolates between the dilute and dense-
-sink limits.  The resulting closed-form loss term
-$\Lambda_n^{\rm net}c_n$ preserves the simplicity of rate theory while
-responding directly to the evolving geometry of the simulated
-microstructure.
+This note adds that missing channel.  Section~\ref{sec:design} states the
+design constraints imposed by the existing solver.  Section~\ref{sec:physics}
+gives the reframed, network-only loss term and its companion mass balances.
+Section~\ref{sec:conservation} shows the transfer is exactly conservative under
+the code's Frenkel-pair diagnostic.  Section~\ref{sec:impl} specifies the
+operator-split implementation that avoids any Jacobian/preconditioner rework,
+together with a phased plan and test gates.
 
-\section*{Comparison of the two formulations}
+\section{Design constraints from the existing solver}
+\label{sec:design}
 
-The attached formulation and an earlier proposal share the same overall
-architecture: (i)~length scales for inter-loop and loop--network
-proximity, (ii)~a size-dependent elastic interaction radius, and
-(iii)~independent-channel union of capture probabilities driven by a
-diffusive encounter frequency.  The differences are confined to
-modelling choices, summarised in Table~\ref{tab:diffs}.
+Three properties of the current code shape every modelling choice below.
 
-\begin{table}[h]
-\centering
-\small
-\begin{tabular}{lll}
-\toprule
-Element & Adopted (canonical) & Earlier alternative \\
-\midrule
-Size variable                & diameter $d_n$              & radius $r_n$ \\
-Distance metric              & edge-to-edge $s_{\ell\ell},s_{\ell d}$ & centre-to-centre \\
-Mean inter-loop spacing      & $N_\ell^{-1/3}$             & $(3/4\pi N_L)^{1/3}$ \\
-Mean loop--network spacing   & $\rho_{\rm net}^{-1/2}$     & $1/(2\sqrt{\rho_d})$ \\
-Elastic zone                 & $R_{\rm int}=\chi d_n$       & $r_n+\xi b\sqrt{n\mu\Omega/k_BT}$ \\
-Smoother                     & $\tanh$, width $\Delta$     & Poisson exponential / Hill \\
-Channel union                & $1-(1-P_{\ell\ell})(1-P_{\ell d})$ & identical \\
-Encounter frequency          & $D_n^{\rm eff}/L_{\rm eff}^2$ & identical \\
-\bottomrule
-\end{tabular}
-\caption{Modelling choices in the two formulations.}
-\label{tab:diffs}
-\end{table}
+\begin{enumerate}\itemsep2pt
+  \item \textbf{Kernels are precomputed constants.}  Every reaction kernel is
+        a \texttt{numpy} array built once and registered into the reaction
+        admissibility graph (RAG); the C++ right-hand side treats sink
+        coefficients as compile-time-constant per size.  A loss rate that
+        depends on live aggregates ($N_\ell$, $\bar d_\ell$, $\rho_{\rm net}$)
+        must therefore be recomputed at RHS-assembly time, and---crucially---%
+        any feedback of $\rho_{\rm net}$ into the P4 sink diagonal must
+        \emph{not} be made implicit, or the banded-plus-low-rank structure
+        assumed by the Woodbury preconditioner is destroyed.
+  \item \textbf{Two SIA loop characters, both with sessile populations.}  The
+        glissile $\tfrac12\langle111\rangle$ family is mobile only up to
+        \texttt{i\_mobile}; above it $D_n^{\rm eff}=0$.  The
+        $\langle100\rangle$ family is sessile at all sizes.  The loss channel
+        must remain \emph{nonzero for $D_n^{\rm eff}=0$}, because these are the
+        loops that dominate network incorporation.
+  \item \textbf{A live Frenkel-pair ledger.}  The diagnostic
+        $\delta_{\rm FP}=|C_V-C_I-J^{\rm fix}_{I}+J^{\rm fix}_{V}|/(\cdots)$
+        reads CVODE-integrated cumulative-sink state variables.  Any SIA
+        content removed from the explicit loop inventory must be deposited in
+        the cumulative fixed-sink integral $J^{\rm fix}_{I}$, or the diagnostic
+        will report a spurious violation.
+\end{enumerate}
 
-The attached choices are simpler and more transparent and are retained
-as the canonical form below.  Three refinements are incorporated:
-(R1)~distance non-negativity, (R2)~elimination of self-coupling in
-$P_{\ell\ell}$, and (R3)~an optional thermal-escape extension of
-$R_{\rm int}$ for very small loops.  A companion mass-balance equation
-for $\rho_{\rm net}$ is added so that the transfer is consistent with
-SIA-number and dislocation-line conservation.
+\section{Network-only loss term}
+\label{sec:physics}
 
-\section*{Loss of large loops to the network-dislocation reservoir}
+\subsection*{Scope: why this is network-only}
 
-Large irradiation-induced SIA loops are progressively incorporated into
-the network dislocation structure when their elastic interaction zones
-overlap with neighbouring loops or with pre-existing dislocation lines.
-This is represented by an additional loss term in the SIA-loop
-population equation,
-\begin{equation}
-  \left.\frac{dc_n}{dt}\right|_{\rm net}=-\Lambda_n^{\rm net}\,c_n,
-  \label{eq:loop_network_loss}
-\end{equation}
-where $\Lambda_n^{\rm net}$ is the size-dependent transfer rate from the
-discrete loop population to the network-dislocation reservoir.
+The earlier draft of this note carried \emph{two} channels: loop--loop
+($P_{\ell\ell}$) and loop--network ($P_{\ell d}$).  The loop--loop channel is
+dropped here, deliberately.  RadCluster\_2\_0 already represents loop--loop
+encounters through (a)~the same-character SIA--SIA coalescence kernel
+$\mathcal{K}^{ii}$ and (b)~the Marian junction
+$\tfrac12\langle111\rangle+\tfrac12\langle111\rangle\!\to\!\langle100\rangle$.
+Adding a separate $P_{\ell\ell}$ loss would double-count those events.  This
+note therefore models \emph{only} the transfer of loops to the pre-existing
+network, $\Lambda_n^{\rm net}$, and leaves all loop--loop physics to the
+coalescence/junction kernels.
 
 \subsection*{Geometric length scales}
 
-For a circular prismatic loop containing $n$ SIAs, the loop diameter is
+For a circular prismatic loop of $n$ SIAs of character $c\in\{111,100\}$ with
+Burgers-vector magnitude $b_c$, the platelet area is $n\Omega/b_c$, so the
+loop diameter is
 \begin{equation}
-  d_n=2\!\left(\frac{n\,\Omega}{\pi b_\ell}\right)^{1/2},
+  d_n^{(c)}=2\!\left(\frac{n\,\Omega}{\pi\,b_c}\right)^{1/2}.
   \label{eq:loop_diameter_from_n}
 \end{equation}
-with $\Omega$ the atomic volume and $b_\ell$ the loop Burgers-vector
-magnitude.  The mean centre-to-centre interloop spacing is
-\begin{equation}
-  L_{\ell\ell}=N_\ell^{-1/3},\qquad
-  N_\ell=\!\sum_{n\ge n_{\rm loop}}\!c_n,\qquad
-  \bar d_\ell=\frac{\sum_n d_n c_n}{\sum_n c_n}.
-  \label{eq:interloop_spacing}
-\end{equation}
-The edge-to-edge spacing experienced by a loop of size $n$ uses the
-self-excluded partner density $N_\ell-c_n$ and is clamped from below to
-prevent unphysical negative gaps:
-\begin{equation}
-  s_{\ell\ell}(n)=\max\!\left[\,b_\ell\,,\;
-  (N_\ell-c_n)^{-1/3}-\frac{d_n+\bar d_\ell}{2}\right]\!.
-  \label{eq:loop_loop_spacing}
-\end{equation}
-Similarly, with $\rho_{\rm net}$ the network-dislocation density,
+The \emph{per-character} Burgers vector must be used; this is also the diameter
+convention used by the TEM-diameter post-processing, and the two must agree.
+The mean loop--network spacing is
 \begin{equation}
   L_{\ell d}=\rho_{\rm net}^{-1/2},\qquad
-  s_{\ell d}(n)=\max\!\left[\,b_\ell\,,\;
-  L_{\ell d}-\frac{d_n}{2}\right]\!.
+  s_{\ell d}(n)=\max\!\left[\,b_c\,,\;L_{\ell d}-\tfrac12 d_n^{(c)}\right],
   \label{eq:loop_network_spacing}
 \end{equation}
+the edge-to-edge gap between a loop and the nearest network line, clamped from
+below to prevent unphysical negative gaps.
 
 \subsection*{Elastic interaction zone}
 
-The elastic interaction range of a loop of size $n$ is taken to be
+The elastic interaction range of a loop of size $n$ is
 \begin{equation}
-  R_{\rm int}(n)=\chi\,d_n
-  \;+\;\underbrace{\xi\,b_\ell\sqrt{\dfrac{\mu\,\Omega\,n}{k_B T}}}_{\text{optional thermal-escape term}},
+  R_{\rm int}(n)=\chi\,d_n^{(c)}
+  \;+\;\underbrace{\xi\,b_c\sqrt{\dfrac{\mu\,\Omega\,n}{k_B T}}}_{\text{optional, small-$n$ floor}},
   \label{eq:elastic_interaction_zone}
 \end{equation}
-where $\chi=\mathcal O(1)$ is the dimensionless geometric range
-parameter, $\mu$ is the shear modulus, and $T$ is the temperature.
-The optional second term provides a non-vanishing lower bound at small
-$n$ where $d_n\!\to\!0$ but the elastic strain field remains finite;
-setting $\xi=0$ recovers the original $R_{\rm int}(n)=\chi d_n$.
+with $\chi=\mathcal{O}(1)$ the dimensionless geometric range parameter, $\mu$
+the shear modulus, and $T$ temperature.  The optional second term keeps
+$R_{\rm int}$ finite as $d_n\!\to\!0$; setting $\xi=0$ recovers
+$R_{\rm int}=\chi d_n^{(c)}$.  \textbf{Recommended default:} $\xi=0$.  The
+small-$n$ loops do not control saturation, and (see
+\S\ref{sec:impl}) the extra parameter is not identifiable from
+loop-density-versus-dose data.
 
-\subsection*{Capture probability and transfer rate}
+\subsection*{Capture switch}
 
-The probability that a loop of size $n$ interacts with another loop or
-with the network dislocation population is modelled by smooth threshold
-functions,
-\begin{align}
-  P_{\ell\ell}(n)
-  &=\tfrac{1}{2}\!\left[1+\tanh\!\left(\dfrac{R_{\rm int}(n)-s_{\ell\ell}(n)}{\Delta_{\ell\ell}}\right)\right],
-  \label{eq:P_loop_loop}\\[2pt]
+A smooth threshold gates the transfer on the geometric proximity of the loop
+to the network,
+\begin{equation}
   P_{\ell d}(n)
-  &=\tfrac{1}{2}\!\left[1+\tanh\!\left(\dfrac{R_{\rm int}(n)-s_{\ell d}(n)}{\Delta_{\ell d}}\right)\right],
+  =\tfrac12\!\left[1+\tanh\!\left(\frac{R_{\rm int}(n)-s_{\ell d}(n)}{\Delta_{\ell d}}\right)\right],
+  \qquad \Delta_{\ell d}\sim b_c,
   \label{eq:P_loop_dislocation}
-\end{align}
-with widths $\Delta_{\ell\ell},\Delta_{\ell d}\sim b_\ell$.  Treating
-the two channels as independent, the total transfer probability is
-\begin{equation}
-  P_n^{\rm net}
-  =1-\bigl[1-P_{\ell\ell}(n)\bigr]\bigl[1-P_{\ell d}(n)\bigr],
-  \label{eq:P_network_total}
 \end{equation}
-which guarantees $0\le P_n^{\rm net}\le 1$ and saturates at unity when
-either the inter-loop or the loop--network spacing falls below the
-elastic interaction range.
+so $P_{\ell d}\!\to\!0$ in the dilute limit ($L_{\ell d}\!\gg\!R_{\rm int}$)
+and $P_{\ell d}\!\to\!1$ once the loop's elastic zone reaches the mean network
+spacing.
 
-The transfer rate combines $P_n^{\rm net}$ with a diffusive encounter
-frequency,
+\subsection*{Transfer frequency that survives sessile loops}
+
+This is the central correction to the earlier draft.  The transfer rate is
+\emph{not} tied to the loop's own diffusivity---if it were, it would vanish for
+exactly the large/sessile loops that dominate incorporation (design constraint
+2).  Loop incorporation proceeds by the network sweeping or climbing past a
+stationary loop, so the relevant kinetics are set by the \emph{network}, not
+the loop.  We write
 \begin{equation}
-  \Lambda_n^{\rm net}=\nu_n^{\rm eff}\,P_n^{\rm net},\qquad
-  \nu_n^{\rm eff}=\frac{D_n^{\rm eff}}{L_{\rm eff}^2},\qquad
-  L_{\rm eff}=\min(L_{\ell\ell},L_{\ell d}),
+  \Lambda_n^{\rm net}=\nu^{\rm net}\,P_{\ell d}(n),\qquad
+  \nu^{\rm net}=v_{\rm net}\,\rho_{\rm net}\,w_c,
   \label{eq:Lambda_network}
 \end{equation}
-where $D_n^{\rm eff}$ is the effective loop mobility (1-D glide for
-glissile $\tfrac{1}{2}\langle 111\rangle$ loops, climb-controlled for
-sessile loops; $D_n^{\rm eff}\!=\!0$ disables this channel for that
-size).
+where $v_{\rm net}$ is the effective network climb/glide velocity, $\rho_{\rm
+net}$ the network line density, and $w_c=\mathcal{O}(b_c)$ a capture width.
+The product $v_{\rm net}\rho_{\rm net}$ is the area swept by the network per
+unit volume per unit time; $w_c$ converts it to a capture probability per loop.
+The climb velocity is itself irradiation-driven,
+\begin{equation}
+  v_{\rm net}=\frac{\Omega}{b\,}\,
+  \bigl(Z_i\,\omega_i^{\rm eff}c_i-Z_v\,\omega_v^{\rm eff}c_v\bigr),
+  \label{eq:vnet}
+\end{equation}
+i.e. proportional to the net biased point-defect flux already computed for the
+P4 sink---so no new transport physics is introduced.  Because
+Eq.~\eqref{eq:Lambda_network} contains \emph{no} factor of $D_n^{\rm eff}$, the
+channel is active for sessile loops, as required.  A glissile-loop enhancement
+may be added later as a separate, clearly-labelled term; it is not needed for
+the saturation behaviour and is omitted here to keep the parameter set minimal.
+
+\subsection*{Loss term}
+
+The loop population loses members to the network at
+\begin{equation}
+  \left.\frac{dc_n}{dt}\right|_{\rm net}=-\,\Lambda_n^{\rm net}\,c_n,
+  \label{eq:loop_network_loss}
+\end{equation}
+applied to both the $\tfrac12\langle111\rangle$ and $\langle100\rangle$
+populations, for $n\ge n_{\rm inc}$ (an incorporation-onset size; loops below
+$n_{\rm inc}$ are too small to register on the network and are excluded).
 
 \subsection*{Companion mass balance for the network reservoir}
 
-Each loop of size $n$ absorbed into the network injects $n$ SIAs and,
-to a good approximation, adds one loop circumference of dislocation
-line.  Conservation of SIA number and of dislocation line length per
-unit volume therefore require, in addition to
-Eq.~\eqref{eq:loop_network_loss},
+Each absorbed loop injects $n$ SIAs into the network and adds approximately one
+loop circumference of dislocation line.  In atom-fraction variables (the code's
+internal unit), number density is $c_n/\Omega$, so line-length and SIA-content
+conservation require
 \begin{align}
-  \left.\frac{dN_{\rm SIA}^{\rm net}}{dt}\right|_{\rm gain}
-  &=\sum_{n}n\,\Lambda_n^{\rm net}\,c_n,
-  \label{eq:N_sia_balance}\\[2pt]
-  \left.\frac{d\rho_{\rm net}}{dt}\right|_{\rm gain}
-  &=\pi\sum_{n}d_n\,\Lambda_n^{\rm net}\,c_n,
+  \left.\frac{dN_{I}^{\rm net}}{dt}\right|_{\rm gain}
+  &=\sum_{c}\sum_{n\ge n_{\rm inc}} n\,\Lambda_n^{\rm net}\,c_n^{(c)},
+  \label{eq:N_sia_balance}\\[4pt]
+  \frac{d\rho_{\rm net}}{dt}
+  &=\frac{\pi}{\Omega}\sum_{c}\sum_{n\ge n_{\rm inc}} d_n^{(c)}\,\Lambda_n^{\rm net}\,c_n^{(c)}
+  \;-\;\underbrace{K_{\rm rec}\,\rho_{\rm net}^{3/2}}_{\text{recovery}}.
   \label{eq:rho_net_balance}
 \end{align}
-which feed the rate equation governing $\rho_{\rm net}$ (and any
-companion equation tracking SIAs absorbed by the network).
+The explicit $1/\Omega$ in Eq.~\eqref{eq:rho_net_balance} corrects a unit error
+in the earlier draft: without it $\rho_{\rm net}$ is wrong by the factor
+$\Omega\!\approx\!10^{-29}\,\mathrm{m^3}$.  The recovery sink
+$K_{\rm rec}\rho_{\rm net}^{3/2}$ is \emph{mandatory}: with a gain term alone,
+$\rho_{\rm net}$ grows without bound and the model merely relocates the
+non-saturation problem from loops to the network.  $K_{\rm rec}$ sets the
+steady-state network density and is the second of the two primary calibration
+parameters.
 
-\subsection*{Limits and consistency}
+\section{Conservation under the existing diagnostic}
+\label{sec:conservation}
 
-\begin{itemize}\itemsep1pt
-  \item \emph{Dilute limit} $\rho_{\rm net},N_\ell\!\to\!0$: both
-        spacings diverge, $P_n^{\rm net}\!\to\!0$, and the loss term
-        vanishes.
-  \item \emph{Dense-sink limit} $L_{\ell\ell}$ or
-        $L_{\ell d}\!\lesssim\!R_{\rm int}$: $P_n^{\rm net}\!\to\!1$
-        and $\Lambda_n^{\rm net}\!\to\!D_n^{\rm eff}/L_{\rm eff}^{2}$,
-        the diffusion-transit-limited rate.
-  \item \emph{Sub-threshold regime} $R_{\rm int}\!\ll\!s$: linearising
-        the $\tanh$ recovers a classical Bullough-form
-        $D_n^{\rm eff}\,Z(\chi,\Delta)\,\rho_{\rm sink}\,c_n$ with an
-        effective bias factor $Z(\chi,\Delta)$.
-  \item \emph{Sessile loops} ($D_n^{\rm eff}\!=\!0$): channel switched
-        off, as required physically.
+The Frenkel-pair diagnostic subtracts the cumulative SIA content lost to fixed
+sinks, $J^{\rm fix}_{I}$.  The network \emph{is} a fixed sink, so the SIAs
+carried away by absorbed loops, Eq.~\eqref{eq:N_sia_balance}, are routed into
+the \emph{same} integral:
+\begin{equation}
+  \frac{dJ^{\rm fix}_{I}}{dt}\;\mathrel{+}=\;
+  \sum_{c}\sum_{n\ge n_{\rm inc}} n\,\Lambda_n^{\rm net}\,c_n^{(c)}.
+  \label{eq:ledger}
+\end{equation}
+With Eq.~\eqref{eq:ledger} in place, the swelling-identity diagnostic
+$\delta_{\rm FP}$ is unchanged in form and remains below its $10^{-6}$ target:
+every SIA leaving the explicit inventory $S_I=C_I$ reappears in $J^{\rm
+fix}_{I}$, so $d(S_I+J^{\rm fix}_{I})/dt$ is untouched by the new channel.  No
+modification to the $\delta_{\rm FP}$ formula is required---only the
+accumulator feed.
+
+\section{Implementation strategy}
+\label{sec:impl}
+
+\subsection*{The central commitment: operator-split, piecewise-constant
+$\rho_{\rm net}$}
+
+The hard part of this feature is \emph{not} the loss term---it is the feedback
+of a now-dynamic $\rho_{\rm net}$ into the P4 sink.  Making $\rho_{\rm net}$ a
+fully implicit state variable would make the P4 sink diagonal state-dependent
+and break the banded-plus-low-rank Jacobian structure the Woodbury
+preconditioner relies on, forcing a preconditioner/Jacobian rewrite.
+
+\textbf{We avoid this entirely.}  $\rho_{\rm net}$ evolves on the dose
+timescale---orders of magnitude slower than the point-defect relaxation that
+sets solver stiffness---so it is held \emph{piecewise-constant within each
+integration segment} and refreshed \emph{between} segments by operator
+splitting:
+\begin{enumerate}\itemsep2pt
+  \item integrate the stiff cluster system over a segment with $\rho_{\rm net}$
+        frozen, accumulating the gain integral
+        $\int\!\frac{\pi}{\Omega}\sum d_n\Lambda_n c_n\,dt$ as an ordinary
+        (non-stiff) quadrature;
+  \item between segments, advance Eq.~\eqref{eq:rho_net_balance} explicitly
+        (gain $-$ recovery) to update $\rho_{\rm net}$;
+  \item call \texttt{rebuild\_rates()} so the P4 sink picks up the new
+        $\rho_{\rm net}$ for the next segment.
+\end{enumerate}
+Within a segment all kernels remain constant; the Jacobian sparsity, the band
+structure, and the Woodbury low-rank update are \emph{identical to today's}.
+The adaptive driver \texttt{run\_adaptive} already segments the integration and
+already calls \texttt{rebuild\_rates}, so the splitting reuses existing
+machinery.  Only if a stiffness or accuracy problem is later demonstrated would
+$\rho_{\rm net}$ be promoted to an implicit variable---and that decision is
+deferred, not assumed.
+
+The loss term itself, Eq.~\eqref{eq:loop_network_loss}, \emph{is} integrated
+implicitly inside the segment.  Its coefficient $\Lambda_n^{\rm net}$ depends on
+$\rho_{\rm net}$ (frozen within the segment) and on the live aggregates
+$N_\ell,\bar d_\ell$ through $P_{\ell d}$.  This makes it a diagonal,
+state-dependent loss on the SIA ladders---structurally identical to the
+existing mobile P4 sink, and therefore \emph{inside} the band already; it adds
+no new Jacobian coupling and no low-rank structure.
+
+\subsection*{Combination with other sinks}
+
+The network channel combines with the existing fixed sinks by the standard
+additive-sink-strength rule (not the discontinuous $\min$ of length scales used
+in the earlier draft): the total loss diagonal is the sum of the P4 fixed-sink
+rate and $\Lambda_n^{\rm net}$.  This is smooth in the state and consistent with
+how P4d/P4gb/P4p are already summed.
+
+\subsection*{Phased plan and test gates}
+
+\begin{description}
+  \item[Phase 0 — physics freeze (this note).] Network-only; sweep-frequency
+        $\nu^{\rm net}$ independent of $D_n^{\rm eff}$; additive sinks; recovery
+        term; $1/\Omega$ units; per-character $b_c$.  Minimal parameter set
+        $\{\chi,\;K_{\rm rec}\}$ with $\xi=0$, $n_{\rm inc}$ fixed.
+  \item[Phase 1 — Python reference, $\rho_{\rm net}$ frozen.] Add
+        $\Lambda_n^{\rm net}$ as a new SINK-class edge on \texttt{bulk-111} and
+        \texttt{bulk-100}, kernel recomputed each RHS from current state in the
+        GraphWalker; feed Eq.~\eqref{eq:ledger}.
+        \emph{Gate:} $\chi\!\to\!0$ reproduces the current run; $\chi>0$ keeps
+        $\delta_{\rm FP}<10^{-6}$.
+  \item[Phase 2 — operator-split $\rho_{\rm net}$.] Implement the
+        freeze/quadrature/\texttt{rebuild\_rates} cycle of
+        \S\ref{sec:impl}.  \emph{Gate:} dislocation-line conservation holds to
+        quadrature tolerance; loop number density now saturates with dose;
+        Woodbury/Jacobian code unchanged.
+  \item[Phase 3 — C++ mirror.] Replicate the RHS block in
+        \texttt{rate\_kernels.cpp}; expose parameters in \texttt{parameters.h};
+        wire \texttt{cpp\_bridge}.  \emph{Gate:} C++ and Python agree on the
+        im5vm2-scale case to solver tolerance.
+  \item[Phase 4 — bin-moment projection.] Project $\Lambda_n^{\rm net}c_n$ onto
+        the bin moments using the active shape-function closure, mirroring the
+        existing size-resolved sink projection.
+  \item[Phase 5 — calibration.] Fit $\{\chi,K_{\rm rec}\}$ to the loop-density
+        saturation in
+        \texttt{docs/Database/FerriticSteels\_RadiationDatabase\_Combined.xlsx}.
+\end{description}
+
+\subsection*{Parameter identifiability}
+
+A single loop-density-versus-dose saturation curve constrains roughly two
+numbers: the \emph{onset dose} of saturation and the \emph{saturation level}.
+These map naturally onto $\chi$ (when the geometric switch turns on) and
+$K_{\rm rec}$ (the steady-state $\rho_{\rm net}$, hence the asymptotic sink
+strength).  Introducing $\xi$, independent $\Delta_{\ell d}$, and a free
+$w_c$ simultaneously would make the fit degenerate.  The model therefore ships
+with $\xi=0$, $\Delta_{\ell d}=b_c$, $w_c=b_c$, $n_{\rm inc}$ fixed at the
+mobility cutoff, and \emph{only} $\{\chi,K_{\rm rec}\}$ exposed for calibration;
+the remaining knobs are promoted to free parameters only if a specific dataset
+demands them.
+
+\subsection*{New parameters}
+
+The calibration parameters $\chi$ and $K_{\rm rec}$, and the fixed-but-tunable
+$\xi,\Delta_{\ell d}/b_c,w_c/b_c,n_{\rm inc}$, are placed in the
+\texttt{Model\_Parameters} sheet of \texttt{input\_parameters.xlsx} alongside
+the existing $Z$-factors and capture radii, behind a master
+\texttt{LOOP\_NETWORK\_LOSS} flag (default off) so the legacy behaviour is bit-for-bit
+preserved when the channel is disabled.
+
+\section{Limits and consistency}
+
+\begin{itemize}\itemsep2pt
+  \item \emph{Dilute limit} $\rho_{\rm net}\!\to\!0$: $L_{\ell d}\!\to\!\infty$,
+        $P_{\ell d}\!\to\!0$, and both the loss term and the gain term vanish.
+  \item \emph{Dense-network limit} $L_{\ell d}\!\lesssim\!R_{\rm int}$:
+        $P_{\ell d}\!\to\!1$, $\Lambda_n^{\rm net}\!\to\!v_{\rm net}\rho_{\rm
+        net}w_c$, the network-sweep-limited rate.
+  \item \emph{Sessile loops} ($D_n^{\rm eff}=0$): channel remains active, by
+        construction---this is the correction to the earlier draft.
+  \item \emph{Channel disabled} (\texttt{LOOP\_NETWORK\_LOSS} off or $\chi=0$):
+        $\Lambda_n^{\rm net}\equiv 0$, $\rho_{\rm net}$ static, and every
+        equation reduces to the current model.
+  \item \emph{Conservation}: SIAs removed from loops are accounted in
+        $J^{\rm fix}_{I}$, Eq.~\eqref{eq:ledger}, so $\delta_{\rm FP}$ is
+        preserved; dislocation line length is conserved through
+        Eq.~\eqref{eq:rho_net_balance}.
 \end{itemize}
-
-\subsection*{Model parameters}
-
-The new dimensionless parameters are
-\[
-  \chi,\quad\xi\;\text{(optional)},\quad\Delta_{\ell\ell}/b_\ell,\quad\Delta_{\ell d}/b_\ell,
-\]
-all of order unity and naturally placed in the
-\texttt{Model\_Parameters} sheet of \texttt{input\_parameters.xlsx}
-alongside the existing $Z$-factors and capture radii.
 
 \bibliographystyle{plainnat}
 \bibliography{loop_network_loss}

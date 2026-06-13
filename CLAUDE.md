@@ -6,11 +6,14 @@ Physics-based simulation suite for **EUROFER97 / ferritic-martensitic steel** be
 
 ```
 RadCluster/
-├── RadCluster_1_0/     # Cluster dynamics — current research code (active)
-├── Monomer_CD/         # Cluster dynamics scaling reference (active)
+├── RadCluster_2_1/     # Active development — adds dislocation evolution + RIS (clone of 2_0)
+├── RadCluster_2_0/     # Graph-based cluster dynamics — stable baseline / reference
 ├── archive/            # Archived modules (read-only, kept for reproducibility)
 │   ├── Eurofer/            # Archived earlier microstructure work
-│   └── Eurofer_CD/         # Archived 2026-05-02 — superseded by RadCluster_1_0
+│   ├── Eurofer_CD/         # Archived 2026-05-02 — superseded by RadCluster_1_0
+│   ├── RadCluster_1_0/     # Archived 2026-06-13 — superseded by RadCluster_2_0
+│   ├── Monomer_CD/         # Archived 2026-06-13 — cluster dynamics scaling reference
+│   └── Zr_RadCluster_1_0/  # Archived 2026-06-13 — zirconium cluster-dynamics variant
 ├── docs/               # Shared documentation, literature, databases
 │   ├── Database/           # Experimental microstructure databases (xlsx)
 │   ├── Formulation/        # Rate-equation derivations and code notes (PDF)
@@ -22,9 +25,12 @@ RadCluster/
 
 | Module | Status | Description |
 |---|---|---|
-| `RadCluster_1_0/` | **Active** | Generalized cluster dynamics (Ghoniem 2026) — current research code. Notebooks: `RadCluster_1_0.ipynb` (simulation driver) and `EuroferExperiments.ipynb` (experimental-database analysis). |
-| `Monomer_CD/` | **Active** | Monomer-mobility cluster dynamics scaling reference (Ghoniem & Cho 1979, no He) |
-| `archive/Eurofer/` | Archived | Earlier EUROFER microstructure notebooks |
+| `RadCluster_2_1/` | **Active (dev)** | Clone of `RadCluster_2_0` adding two capabilities: **(a)** a dislocation-evolution / loop→network loss edge that saturates loop density, and **(b)** Radiation-Induced Segregation (RIS) + solute precipitation. Plans: [`docs/Formulation/loop_network_loss.tex`](docs/Formulation/loop_network_loss.tex) and [`docs/Formulation/radcluster_2_1_RIS_plan.tex`](docs/Formulation/radcluster_2_1_RIS_plan.tex). See `RadCluster_2_1/CLAUDE.md` §0. |
+| `RadCluster_2_0/` | **Active (baseline)** | Generalized graph-based cluster dynamics (Ghoniem 2026). Two-layer RAG architecture (abstract core + EUROFER-97 host declaration). Stable reference for the 2_1 work. Notebooks: `RadCluster_2_0.ipynb` (simulation driver) and `EuroferExperiments.ipynb`. |
+| `archive/RadCluster_1_0/` | Archived 2026-06-13 | Superseded by `RadCluster_2_0/`. Earlier (non-graph) generalized cluster dynamics. |
+| `archive/Monomer_CD/` | Archived 2026-06-13 | Monomer-mobility cluster dynamics scaling reference (Ghoniem & Cho 1979, no He). |
+| `archive/Zr_RadCluster_1_0/` | Archived 2026-06-13 | Zirconium cluster-dynamics variant of `RadCluster_1_0`. |
+| `archive/Eurofer/` | Archived | Earlier EUROFER microstructure notebooks. |
 | `archive/Eurofer_CD/` | Archived 2026-05-02 | Superseded by `RadCluster_1_0/`. Last active state at git tag `eurofer_cd-final`. |
 
 ## Conventions (mirror Fluor_Zr)

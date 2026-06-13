@@ -1,0 +1,965 @@
+
+========================================================================
+  CASE D-WB: equations='discrete'  linsol='gmres'  prec='Woodbury'
+========================================================================
+
+Launching solver_mode='full_system' …
+C++ solver: solver.exe  N_eq=20006  solver_mode='full_system'  physics='full_CD_fission'
+[OpenMP] OMP_NUM_THREADS=24 honored — using 24 threads
+[OpenMP_threads] 24
+RadCluster_1_0 solver: N_eq=20006  physics_option=0  he_mode=0  he_kinetics=quasi_steady_state  C_floor=1e-25  window_mode=0
+[cvode] pt=1/200  t=1.12267e-06  steps=7  rhs=10  nlcf=0  etf=0  h=9.83577e-08  ret=0
+[cvode] pt=2/200  t=1.26038e-06  steps=8  rhs=11  nlcf=0  etf=0  h=2.06438e-07  ret=0
+[cvode] pt=3/200  t=1.41499e-06  steps=9  rhs=12  nlcf=0  etf=0  h=3.93014e-07  ret=0
+[cvode] pt=4/200  t=1.58857e-06  steps=9  rhs=12  nlcf=0  etf=0  h=3.93014e-07  ret=0
+[cvode] pt=5/200  t=1.78343e-06  steps=10  rhs=13  nlcf=0  etf=0  h=7.15019e-07  ret=0
+[cvode] pt=6/200  t=2.0022e-06  steps=10  rhs=13  nlcf=0  etf=0  h=7.15019e-07  ret=0
+[cvode] pt=7/200  t=2.24781e-06  steps=10  rhs=13  nlcf=0  etf=0  h=7.15019e-07  ret=0
+[cvode] pt=8/200  t=2.52354e-06  steps=11  rhs=14  nlcf=0  etf=0  h=1.31443e-06  ret=0
+[cvode] pt=9/200  t=2.8331e-06  steps=11  rhs=14  nlcf=0  etf=0  h=1.31443e-06  ret=0
+[cvode] pt=10/200  t=3.18063e-06  steps=11  rhs=14  nlcf=0  etf=0  h=1.31443e-06  ret=0
+[cvode] pt=11/200  t=3.57079e-06  steps=11  rhs=14  nlcf=0  etf=0  h=1.31443e-06  ret=0
+[cvode] pt=12/200  t=4.00881e-06  steps=12  rhs=16  nlcf=0  etf=0  h=3.34922e-06  ret=0
+[cvode] pt=13/200  t=4.50056e-06  steps=12  rhs=16  nlcf=0  etf=0  h=3.34922e-06  ret=0
+[cvode] pt=14/200  t=5.05263e-06  steps=12  rhs=16  nlcf=0  etf=0  h=3.34922e-06  ret=0
+[cvode] pt=15/200  t=5.67243e-06  steps=12  rhs=16  nlcf=0  etf=0  h=3.34922e-06  ret=0
+[cvode] pt=16/200  t=6.36825e-06  steps=12  rhs=16  nlcf=0  etf=0  h=3.34922e-06  ret=0
+[cvode] pt=17/200  t=7.14943e-06  steps=13  rhs=18  nlcf=0  etf=0  h=3.34922e-06  ret=0
+[cvode] pt=18/200  t=8.02643e-06  steps=13  rhs=18  nlcf=0  etf=0  h=3.34922e-06  ret=0
+[cvode] pt=19/200  t=9.01102e-06  steps=13  rhs=18  nlcf=0  etf=0  h=3.34922e-06  ret=0
+[cvode] pt=20/200  t=1.01164e-05  steps=13  rhs=18  nlcf=0  etf=0  h=3.34922e-06  ret=0
+[cvode] pt=21/200  t=1.13573e-05  steps=14  rhs=19  nlcf=0  etf=0  h=3.34922e-06  ret=0
+[cvode] pt=22/200  t=1.27505e-05  steps=14  rhs=19  nlcf=0  etf=0  h=3.34922e-06  ret=0
+[cvode] pt=23/200  t=1.43146e-05  steps=15  rhs=20  nlcf=0  etf=0  h=3.34922e-06  ret=0
+[cvode] pt=24/200  t=1.60705e-05  steps=15  rhs=20  nlcf=0  etf=0  h=3.34922e-06  ret=0
+[cvode] pt=25/200  t=1.80419e-05  steps=16  rhs=22  nlcf=0  etf=0  h=6.42895e-06  ret=0
+[cvode] pt=26/200  t=2.0255e-05  steps=16  rhs=22  nlcf=0  etf=0  h=6.42895e-06  ret=0
+[cvode] pt=27/200  t=2.27397e-05  steps=16  rhs=22  nlcf=0  etf=0  h=6.42895e-06  ret=0
+[cvode] pt=28/200  t=2.55291e-05  steps=17  rhs=23  nlcf=0  etf=0  h=6.42895e-06  ret=0
+[cvode] pt=29/200  t=2.86607e-05  steps=17  rhs=23  nlcf=0  etf=0  h=6.42895e-06  ret=0
+[cvode] pt=30/200  t=3.21764e-05  steps=18  rhs=24  nlcf=0  etf=0  h=6.42895e-06  ret=0
+[cvode] pt=31/200  t=3.61234e-05  steps=18  rhs=24  nlcf=0  etf=0  h=6.42895e-06  ret=0
+[cvode] pt=32/200  t=4.05546e-05  steps=19  rhs=25  nlcf=0  etf=0  h=6.42895e-06  ret=0
+[cvode] pt=33/200  t=4.55294e-05  steps=20  rhs=26  nlcf=0  etf=0  h=1.29503e-05  ret=0
+[cvode] pt=34/200  t=5.11143e-05  steps=20  rhs=26  nlcf=0  etf=0  h=1.29503e-05  ret=0
+[cvode] pt=35/200  t=5.73844e-05  steps=21  rhs=27  nlcf=0  etf=0  h=2.11968e-05  ret=0
+[cvode] pt=36/200  t=6.44236e-05  steps=21  rhs=27  nlcf=0  etf=0  h=2.11968e-05  ret=0
+[cvode] pt=37/200  t=7.23263e-05  steps=21  rhs=27  nlcf=0  etf=0  h=2.11968e-05  ret=0
+[cvode] pt=38/200  t=8.11984e-05  steps=22  rhs=29  nlcf=0  etf=0  h=4.10452e-05  ret=0
+[cvode] pt=39/200  t=9.11589e-05  steps=22  rhs=29  nlcf=0  etf=0  h=4.10452e-05  ret=0
+[cvode] pt=40/200  t=0.000102341  steps=22  rhs=29  nlcf=0  etf=0  h=4.10452e-05  ret=0
+[cvode] pt=41/200  t=0.000114895  steps=22  rhs=29  nlcf=0  etf=0  h=4.10452e-05  ret=0
+[cvode] pt=42/200  t=0.000128989  steps=23  rhs=31  nlcf=0  etf=0  h=4.10452e-05  ret=0
+[cvode] pt=43/200  t=0.000144812  steps=23  rhs=31  nlcf=0  etf=0  h=4.10452e-05  ret=0
+[cvode] pt=44/200  t=0.000162576  steps=24  rhs=32  nlcf=0  etf=0  h=4.10452e-05  ret=0
+[cvode] pt=45/200  t=0.000182518  steps=24  rhs=32  nlcf=0  etf=0  h=4.10452e-05  ret=0
+[cvode] pt=46/200  t=0.000204907  steps=25  rhs=33  nlcf=0  etf=0  h=4.10452e-05  ret=0
+[cvode] pt=47/200  t=0.000230043  steps=25  rhs=33  nlcf=0  etf=0  h=4.10452e-05  ret=0
+[cvode] pt=48/200  t=0.000258262  steps=26  rhs=34  nlcf=0  etf=0  h=4.10452e-05  ret=0
+[cvode] pt=49/200  t=0.000289942  steps=27  rhs=35  nlcf=0  etf=0  h=7.25899e-05  ret=0
+[cvode] pt=50/200  t=0.000325509  steps=27  rhs=35  nlcf=0  etf=0  h=7.25899e-05  ret=0
+[cvode] pt=51/200  t=0.000365438  steps=28  rhs=37  nlcf=0  etf=0  h=7.25899e-05  ret=0
+[cvode] pt=52/200  t=0.000410266  steps=28  rhs=37  nlcf=0  etf=0  h=7.25899e-05  ret=0
+[cvode] pt=53/200  t=0.000460592  steps=29  rhs=39  nlcf=0  etf=0  h=0.000127256  ret=0
+[cvode] pt=54/200  t=0.000517092  steps=29  rhs=39  nlcf=0  etf=0  h=0.000127256  ret=0
+[cvode] pt=55/200  t=0.000580523  steps=30  rhs=43  nlcf=0  etf=1  h=9.4083e-05  ret=0
+[cvode] pt=56/200  t=0.000651734  steps=31  rhs=44  nlcf=0  etf=1  h=9.4083e-05  ret=0
+[cvode] pt=57/200  t=0.000731681  steps=31  rhs=44  nlcf=0  etf=1  h=9.4083e-05  ret=0
+[cvode] pt=58/200  t=0.000821434  steps=32  rhs=45  nlcf=0  etf=1  h=9.4083e-05  ret=0
+[cvode] pt=59/200  t=0.000922198  steps=33  rhs=46  nlcf=0  etf=1  h=9.4083e-05  ret=0
+[cvode] pt=60/200  t=0.00103532  steps=35  rhs=49  nlcf=0  etf=1  h=0.000191732  ret=0
+[cvode] pt=61/200  t=0.00116232  steps=35  rhs=49  nlcf=0  etf=1  h=0.000191732  ret=0
+[cvode] pt=62/200  t=0.0013049  steps=36  rhs=50  nlcf=0  etf=1  h=0.000191732  ret=0
+[cvode] pt=63/200  t=0.00146497  steps=37  rhs=51  nlcf=0  etf=1  h=0.000191732  ret=0
+[cvode] pt=64/200  t=0.00164468  steps=38  rhs=52  nlcf=0  etf=1  h=0.000191732  ret=0
+[cvode] pt=65/200  t=0.00184642  steps=39  rhs=53  nlcf=0  etf=1  h=0.000191732  ret=0
+[cvode] pt=66/200  t=0.00207292  steps=40  rhs=54  nlcf=0  etf=1  h=0.000191732  ret=0
+[cvode] pt=67/200  t=0.0023272  steps=41  rhs=55  nlcf=0  etf=1  h=0.000191732  ret=0
+[cvode] pt=68/200  t=0.00261268  steps=42  rhs=56  nlcf=0  etf=1  h=0.000302971  ret=0
+[cvode] pt=69/200  t=0.00293317  steps=43  rhs=58  nlcf=0  etf=1  h=0.000547746  ret=0
+[cvode] pt=70/200  t=0.00329297  steps=44  rhs=62  nlcf=0  etf=2  h=0.000405864  ret=0
+[cvode] pt=71/200  t=0.00369691  steps=45  rhs=63  nlcf=0  etf=2  h=0.000405864  ret=0
+[cvode] pt=72/200  t=0.0041504  steps=46  rhs=64  nlcf=0  etf=2  h=0.000405864  ret=0
+[cvode] pt=73/200  t=0.00465953  steps=47  rhs=65  nlcf=0  etf=2  h=0.000405864  ret=0
+[cvode] pt=74/200  t=0.0052311  steps=48  rhs=67  nlcf=0  etf=2  h=0.000890626  ret=0
+[cvode] pt=75/200  t=0.00587279  steps=49  rhs=71  nlcf=0  etf=3  h=0.000541898  ret=0
+[cvode] pt=76/200  t=0.00659319  steps=50  rhs=72  nlcf=0  etf=3  h=0.000541898  ret=0
+[cvode] pt=77/200  t=0.00740196  steps=52  rhs=74  nlcf=0  etf=3  h=0.000541898  ret=0
+[cvode] pt=78/200  t=0.00830994  steps=53  rhs=75  nlcf=0  etf=3  h=0.000541898  ret=0
+[cvode] pt=79/200  t=0.0093293  steps=55  rhs=77  nlcf=0  etf=3  h=0.000541898  ret=0
+[cvode] pt=80/200  t=0.0104737  steps=57  rhs=81  nlcf=0  etf=3  h=0.000833089  ret=0
+[cvode] pt=81/200  t=0.0117585  steps=58  rhs=82  nlcf=0  etf=3  h=0.000833089  ret=0
+[cvode] pt=82/200  t=0.0132009  steps=60  rhs=84  nlcf=0  etf=3  h=0.000833089  ret=0
+[cvode] pt=83/200  t=0.0148202  steps=62  rhs=87  nlcf=0  etf=3  h=0.00133161  ret=0
+[cvode] pt=84/200  t=0.0166382  steps=63  rhs=88  nlcf=0  etf=3  h=0.00133161  ret=0
+[cvode] pt=85/200  t=0.0186791  steps=65  rhs=90  nlcf=0  etf=3  h=0.00133161  ret=0
+[cvode] pt=86/200  t=0.0209705  steps=66  rhs=91  nlcf=0  etf=3  h=0.00133161  ret=0
+[cvode] pt=87/200  t=0.0235429  steps=68  rhs=93  nlcf=0  etf=3  h=0.00133161  ret=0
+[cvode] pt=88/200  t=0.0264308  steps=70  rhs=95  nlcf=0  etf=3  h=0.0020379  ret=0
+[cvode] pt=89/200  t=0.029673  steps=72  rhs=98  nlcf=0  etf=3  h=0.0020379  ret=0
+[cvode] pt=90/200  t=0.0333129  steps=73  rhs=99  nlcf=0  etf=3  h=0.0020379  ret=0
+[cvode] pt=91/200  t=0.0373994  steps=75  rhs=102  nlcf=0  etf=3  h=0.00339119  ret=0
+[cvode] pt=92/200  t=0.0419871  steps=76  rhs=103  nlcf=0  etf=3  h=0.00339119  ret=0
+[cvode] pt=93/200  t=0.0471375  steps=78  rhs=105  nlcf=0  etf=3  h=0.00339119  ret=0
+[cvode] pt=94/200  t=0.0529198  steps=79  rhs=106  nlcf=0  etf=3  h=0.00510726  ret=0
+[cvode] pt=95/200  t=0.0594113  steps=80  rhs=107  nlcf=0  etf=3  h=0.00510726  ret=0
+[cvode] pt=96/200  t=0.0666992  steps=82  rhs=109  nlcf=0  etf=3  h=0.00510726  ret=0
+[cvode] pt=97/200  t=0.074881  steps=83  rhs=110  nlcf=0  etf=3  h=0.00797752  ret=0
+[cvode] pt=98/200  t=0.0840665  steps=84  rhs=112  nlcf=0  etf=3  h=0.00797752  ret=0
+[cvode] pt=99/200  t=0.0943788  steps=85  rhs=113  nlcf=0  etf=3  h=0.00797752  ret=0
+[cvode] pt=100/200  t=0.105956  steps=87  rhs=115  nlcf=0  etf=3  h=0.00797752  ret=0
+[cvode] pt=101/200  t=0.118953  steps=89  rhs=117  nlcf=0  etf=3  h=0.0119699  ret=0
+[cvode] pt=102/200  t=0.133545  steps=90  rhs=119  nlcf=0  etf=3  h=0.0119699  ret=0
+[cvode] pt=103/200  t=0.149927  steps=91  rhs=120  nlcf=0  etf=3  h=0.0119699  ret=0
+[cvode] pt=104/200  t=0.168318  steps=93  rhs=122  nlcf=0  etf=3  h=0.0119699  ret=0
+[cvode] pt=105/200  t=0.188965  steps=94  rhs=123  nlcf=0  etf=3  h=0.0119699  ret=0
+[cvode] pt=106/200  t=0.212145  steps=96  rhs=125  nlcf=0  etf=3  h=0.0119699  ret=0
+[cvode] pt=107/200  t=0.238169  steps=98  rhs=127  nlcf=0  etf=3  h=0.0119699  ret=0
+[cvode] pt=108/200  t=0.267384  steps=100  rhs=129  nlcf=0  etf=3  h=0.0201016  ret=0
+[cvode] pt=109/200  t=0.300184  steps=102  rhs=131  nlcf=0  etf=3  h=0.0201016  ret=0
+[cvode] pt=110/200  t=0.337006  steps=103  rhs=132  nlcf=0  etf=3  h=0.0201016  ret=0
+[cvode] pt=111/200  t=0.378346  steps=105  rhs=134  nlcf=0  etf=3  h=0.0201016  ret=0
+[cvode] pt=112/200  t=0.424757  steps=107  rhs=137  nlcf=0  etf=3  h=0.0315234  ret=0
+[cvode] pt=113/200  t=0.476861  steps=109  rhs=139  nlcf=0  etf=3  h=0.0315234  ret=0
+[cvode] pt=114/200  t=0.535357  steps=110  rhs=140  nlcf=0  etf=3  h=0.0315234  ret=0
+[cvode] pt=115/200  t=0.601028  steps=113  rhs=143  nlcf=0  etf=3  h=0.0315234  ret=0
+[cvode] pt=116/200  t=0.674754  steps=114  rhs=144  nlcf=0  etf=3  h=0.0506242  ret=0
+[cvode] pt=117/200  t=0.757525  steps=116  rhs=146  nlcf=0  etf=3  h=0.0506242  ret=0
+[cvode] pt=118/200  t=0.850449  steps=118  rhs=148  nlcf=0  etf=3  h=0.0506242  ret=0
+[cvode] pt=119/200  t=0.954772  steps=120  rhs=150  nlcf=0  etf=3  h=0.0506242  ret=0
+[cvode] pt=120/200  t=1.07189  steps=122  rhs=152  nlcf=0  etf=3  h=0.0776788  ret=0
+[cvode] pt=121/200  t=1.20338  steps=123  rhs=153  nlcf=0  etf=3  h=0.0776788  ret=0
+[cvode] pt=122/200  t=1.35099  steps=125  rhs=155  nlcf=0  etf=3  h=0.0776788  ret=0
+[cvode] pt=123/200  t=1.51672  steps=127  rhs=157  nlcf=0  etf=3  h=0.0776788  ret=0
+[cvode] pt=124/200  t=1.70277  steps=130  rhs=160  nlcf=0  etf=3  h=0.0776788  ret=0
+[cvode] pt=125/200  t=1.91164  steps=132  rhs=162  nlcf=0  etf=3  h=0.118897  ret=0
+[cvode] pt=126/200  t=2.14614  steps=134  rhs=164  nlcf=0  etf=3  h=0.118897  ret=0
+[cvode] pt=127/200  t=2.4094  steps=136  rhs=166  nlcf=0  etf=3  h=0.118897  ret=0
+[cvode] pt=128/200  t=2.70496  steps=138  rhs=168  nlcf=0  etf=3  h=0.118897  ret=0
+[cvode] pt=129/200  t=3.03677  steps=140  rhs=171  nlcf=0  etf=3  h=0.186453  ret=0
+[cvode] pt=130/200  t=3.40929  steps=142  rhs=173  nlcf=0  etf=3  h=0.186453  ret=0
+[cvode] pt=131/200  t=3.82749  steps=144  rhs=175  nlcf=0  etf=3  h=0.186453  ret=0
+[cvode] pt=132/200  t=4.297  steps=147  rhs=178  nlcf=0  etf=3  h=0.186453  ret=0
+[cvode] pt=133/200  t=4.82411  steps=150  rhs=181  nlcf=0  etf=3  h=0.186453  ret=0
+[cvode] pt=134/200  t=5.41587  steps=153  rhs=184  nlcf=0  etf=3  h=0.186453  ret=0
+[cvode] pt=135/200  t=6.08022  steps=157  rhs=188  nlcf=0  etf=3  h=0.186453  ret=0
+[cvode] pt=136/200  t=6.82607  steps=161  rhs=193  nlcf=0  etf=3  h=0.186453  ret=0
+[cvode] pt=137/200  t=7.66341  steps=165  rhs=198  nlcf=0  etf=3  h=0.186453  ret=0
+[cvode] pt=138/200  t=8.60346  steps=189  rhs=240  nlcf=4  etf=5  h=0.0234516  ret=0
+[cvode] pt=139/200  t=9.65883  steps=243  rhs=298  nlcf=5  etf=5  h=0.0181622  ret=0
+[cvode] pt=140/200  t=10.8437  steps=269  rhs=325  nlcf=5  etf=5  h=0.0476332  ret=0
+[cvode] pt=141/200  t=12.1738  steps=297  rhs=356  nlcf=5  etf=5  h=0.0760395  ret=0
+[cvode] pt=142/200  t=13.6672  steps=316  rhs=375  nlcf=5  etf=5  h=0.0760395  ret=0
+[cvode] pt=143/200  t=15.3437  steps=338  rhs=404  nlcf=5  etf=5  h=0.0760395  ret=0
+[cvode] pt=144/200  t=17.2259  steps=369  rhs=447  nlcf=8  etf=5  h=0.0817684  ret=0
+[cvode] pt=145/200  t=19.3389  steps=400  rhs=498  nlcf=11  etf=5  h=0.0611454  ret=0
+[cvode] pt=146/200  t=21.7112  steps=439  rhs=546  nlcf=11  etf=5  h=0.0611454  ret=0
+[cvode] pt=147/200  t=24.3744  steps=479  rhs=595  nlcf=13  etf=5  h=0.103417  ret=0
+[cvode] pt=148/200  t=27.3644  steps=508  rhs=626  nlcf=13  etf=5  h=0.103417  ret=0
+[cvode] pt=149/200  t=30.7211  steps=546  rhs=673  nlcf=15  etf=5  h=0.0647865  ret=0
+[cvode] pt=150/200  t=34.4896  steps=594  rhs=731  nlcf=17  etf=5  h=0.0945392  ret=0
+[cvode] pt=151/200  t=38.7204  steps=637  rhs=783  nlcf=18  etf=5  h=0.156244  ret=0
+[cvode] pt=152/200  t=43.4701  steps=667  rhs=814  nlcf=18  etf=5  h=0.156244  ret=0
+[cvode] pt=153/200  t=48.8025  steps=703  rhs=863  nlcf=21  etf=5  h=0.179789  ret=0
+[cvode] pt=154/200  t=54.789  steps=736  rhs=897  nlcf=21  etf=5  h=0.179789  ret=0
+[cvode] pt=155/200  t=61.5099  steps=778  rhs=951  nlcf=23  etf=5  h=0.190741  ret=0
+[cvode] pt=156/200  t=69.0551  steps=815  rhs=1002  nlcf=23  etf=6  h=0.271748  ret=0
+[cvode] pt=157/200  t=77.526  steps=875  rhs=1084  nlcf=27  etf=6  h=0.174906  ret=0
+[cvode] pt=158/200  t=87.0359  steps=936  rhs=1166  nlcf=30  etf=6  h=0.126935  ret=0
+[cvode] pt=159/200  t=97.7124  steps=994  rhs=1230  nlcf=31  etf=6  h=0.202274  ret=0
+[cvode] pt=160/200  t=109.699  steps=1054  rhs=1304  nlcf=34  etf=6  h=0.233669  ret=0
+[cvode] pt=161/200  t=123.155  steps=1112  rhs=1366  nlcf=34  etf=6  h=0.233669  ret=0
+[cvode] pt=162/200  t=138.262  steps=1193  rhs=1480  nlcf=39  etf=6  h=0.355928  ret=0
+[cvode] pt=163/200  t=155.223  steps=1251  rhs=1550  nlcf=41  etf=6  h=0.282371  ret=0
+[cvode] pt=164/200  t=174.263  steps=1334  rhs=1689  nlcf=52  etf=6  h=0.279092  ret=0
+[cvode] pt=165/200  t=195.64  steps=1449  rhs=1847  nlcf=57  etf=7  h=0.284342  ret=0
+[cvode] pt=166/200  t=219.639  steps=1559  rhs=2009  nlcf=64  etf=7  h=0.229624  ret=0
+[cvode] pt=167/200  t=246.581  steps=1662  rhs=2132  nlcf=65  etf=8  h=0.355494  ret=0
+[cvode] pt=168/200  t=276.829  steps=1796  rhs=2298  nlcf=71  etf=8  h=0.222462  ret=0
+[cvode] pt=169/200  t=310.787  steps=1960  rhs=2521  nlcf=78  etf=9  h=1.03006  ret=0
+[cvode] pt=170/200  t=348.91  steps=2053  rhs=2670  nlcf=89  etf=9  h=1.26368  ret=0
+[cvode] pt=171/200  t=391.71  steps=2166  rhs=2862  nlcf=108  etf=9  h=0.381998  ret=0
+[cvode] pt=172/200  t=439.76  steps=2262  rhs=2984  nlcf=114  etf=9  h=0.311113  ret=0
+[cvode] pt=173/200  t=493.705  steps=2370  rhs=3115  nlcf=116  etf=9  h=0.387635  ret=0
+[cvode] pt=174/200  t=554.266  steps=2506  rhs=3314  nlcf=130  etf=9  h=0.318091  ret=0
+[cvode] pt=175/200  t=622.257  steps=2620  rhs=3495  nlcf=145  etf=9  h=0.381839  ret=0
+[cvode] pt=176/200  t=698.588  steps=2846  rhs=3790  nlcf=152  etf=10  h=1.03492  ret=0
+[cvode] pt=177/200  t=784.282  steps=2999  rhs=4058  nlcf=174  etf=10  h=0.660751  ret=0
+[cvode] pt=178/200  t=880.488  steps=3147  rhs=4356  nlcf=213  etf=10  h=2.1322  ret=0
+[cvode] pt=179/200  t=988.496  steps=3286  rhs=4635  nlcf=248  etf=10  h=1.51022  ret=0
+[cvode] pt=180/200  t=1109.75  steps=3464  rhs=4985  nlcf=288  etf=10  h=0.839246  ret=0
+[cvode] pt=181/200  t=1245.88  steps=3631  rhs=5263  nlcf=313  etf=10  h=1.42614  ret=0
+[cvode] pt=182/200  t=1398.71  steps=3840  rhs=5716  nlcf=370  etf=10  h=0.916545  ret=0
+C++ solver hit 3000.0s timeout -- asking it to finalize gracefully...
+    Solver did not finalize within 60s -- forcing kill.
+Reading bin file: C:\Users\Owner\AppData\Local\Temp\expanded_cd_h454zv3l.bin (29290248 bytes)
+  parsed 3661281 doubles -> 183 rows x 20007 cols
+C++ solver partial -- 183 time points
+Results processing complete.
+  -> status=timeout  wall=3076.34 s  n_pts=183  t_final=1.399e+03
+
+========================================================================
+  CASE D-JC: equations='discrete'  linsol='gmres'  prec='Jacobi'
+========================================================================
+
+Launching solver_mode='full_system' …
+C++ solver: solver.exe  N_eq=20006  solver_mode='full_system'  physics='full_CD_fission'
+[OpenMP] OMP_NUM_THREADS=24 honored — using 24 threads
+[OpenMP_threads] 24
+RadCluster_1_0 solver: N_eq=20006  physics_option=0  he_mode=0  he_kinetics=quasi_steady_state  C_floor=1e-25  window_mode=0
+[cvode] pt=1/200  t=1.12267e-06  steps=7  rhs=10  nlcf=0  etf=0  h=9.83577e-08  ret=0
+[cvode] pt=2/200  t=1.26038e-06  steps=8  rhs=11  nlcf=0  etf=0  h=2.06438e-07  ret=0
+[cvode] pt=3/200  t=1.41499e-06  steps=9  rhs=12  nlcf=0  etf=0  h=3.93014e-07  ret=0
+[cvode] pt=4/200  t=1.58857e-06  steps=9  rhs=12  nlcf=0  etf=0  h=3.93014e-07  ret=0
+[cvode] pt=5/200  t=1.78343e-06  steps=10  rhs=13  nlcf=0  etf=0  h=7.15019e-07  ret=0
+[cvode] pt=6/200  t=2.0022e-06  steps=10  rhs=13  nlcf=0  etf=0  h=7.15019e-07  ret=0
+[cvode] pt=7/200  t=2.24781e-06  steps=10  rhs=13  nlcf=0  etf=0  h=7.15019e-07  ret=0
+[cvode] pt=8/200  t=2.52354e-06  steps=11  rhs=14  nlcf=0  etf=0  h=1.31443e-06  ret=0
+[cvode] pt=9/200  t=2.8331e-06  steps=11  rhs=14  nlcf=0  etf=0  h=1.31443e-06  ret=0
+[cvode] pt=10/200  t=3.18063e-06  steps=11  rhs=14  nlcf=0  etf=0  h=1.31443e-06  ret=0
+[cvode] pt=11/200  t=3.57079e-06  steps=11  rhs=14  nlcf=0  etf=0  h=1.31443e-06  ret=0
+[cvode] pt=12/200  t=4.00881e-06  steps=12  rhs=16  nlcf=0  etf=0  h=3.34922e-06  ret=0
+[cvode] pt=13/200  t=4.50056e-06  steps=12  rhs=16  nlcf=0  etf=0  h=3.34922e-06  ret=0
+[cvode] pt=14/200  t=5.05263e-06  steps=12  rhs=16  nlcf=0  etf=0  h=3.34922e-06  ret=0
+[cvode] pt=15/200  t=5.67243e-06  steps=12  rhs=16  nlcf=0  etf=0  h=3.34922e-06  ret=0
+[cvode] pt=16/200  t=6.36825e-06  steps=12  rhs=16  nlcf=0  etf=0  h=3.34922e-06  ret=0
+[cvode] pt=17/200  t=7.14943e-06  steps=13  rhs=18  nlcf=0  etf=0  h=3.34922e-06  ret=0
+[cvode] pt=18/200  t=8.02643e-06  steps=13  rhs=18  nlcf=0  etf=0  h=3.34922e-06  ret=0
+[cvode] pt=19/200  t=9.01102e-06  steps=13  rhs=18  nlcf=0  etf=0  h=3.34922e-06  ret=0
+[cvode] pt=20/200  t=1.01164e-05  steps=13  rhs=18  nlcf=0  etf=0  h=3.34922e-06  ret=0
+[cvode] pt=21/200  t=1.13573e-05  steps=14  rhs=19  nlcf=0  etf=0  h=3.34922e-06  ret=0
+[cvode] pt=22/200  t=1.27505e-05  steps=14  rhs=19  nlcf=0  etf=0  h=3.34922e-06  ret=0
+[cvode] pt=23/200  t=1.43146e-05  steps=15  rhs=20  nlcf=0  etf=0  h=3.34922e-06  ret=0
+[cvode] pt=24/200  t=1.60705e-05  steps=15  rhs=20  nlcf=0  etf=0  h=3.34922e-06  ret=0
+[cvode] pt=25/200  t=1.80419e-05  steps=16  rhs=22  nlcf=0  etf=0  h=6.42895e-06  ret=0
+[cvode] pt=26/200  t=2.0255e-05  steps=16  rhs=22  nlcf=0  etf=0  h=6.42895e-06  ret=0
+[cvode] pt=27/200  t=2.27397e-05  steps=16  rhs=22  nlcf=0  etf=0  h=6.42895e-06  ret=0
+[cvode] pt=28/200  t=2.55291e-05  steps=17  rhs=23  nlcf=0  etf=0  h=6.42895e-06  ret=0
+[cvode] pt=29/200  t=2.86607e-05  steps=17  rhs=23  nlcf=0  etf=0  h=6.42895e-06  ret=0
+[cvode] pt=30/200  t=3.21764e-05  steps=18  rhs=24  nlcf=0  etf=0  h=6.42895e-06  ret=0
+[cvode] pt=31/200  t=3.61234e-05  steps=18  rhs=24  nlcf=0  etf=0  h=6.42895e-06  ret=0
+[cvode] pt=32/200  t=4.05546e-05  steps=19  rhs=25  nlcf=0  etf=0  h=6.42895e-06  ret=0
+[cvode] pt=33/200  t=4.55294e-05  steps=20  rhs=26  nlcf=0  etf=0  h=1.29503e-05  ret=0
+[cvode] pt=34/200  t=5.11143e-05  steps=20  rhs=26  nlcf=0  etf=0  h=1.29503e-05  ret=0
+[cvode] pt=35/200  t=5.73844e-05  steps=21  rhs=27  nlcf=0  etf=0  h=2.11968e-05  ret=0
+[cvode] pt=36/200  t=6.44236e-05  steps=21  rhs=27  nlcf=0  etf=0  h=2.11968e-05  ret=0
+[cvode] pt=37/200  t=7.23263e-05  steps=21  rhs=27  nlcf=0  etf=0  h=2.11968e-05  ret=0
+[cvode] pt=38/200  t=8.11984e-05  steps=22  rhs=29  nlcf=0  etf=0  h=4.10452e-05  ret=0
+[cvode] pt=39/200  t=9.11589e-05  steps=22  rhs=29  nlcf=0  etf=0  h=4.10452e-05  ret=0
+[cvode] pt=40/200  t=0.000102341  steps=22  rhs=29  nlcf=0  etf=0  h=4.10452e-05  ret=0
+[cvode] pt=41/200  t=0.000114895  steps=22  rhs=29  nlcf=0  etf=0  h=4.10452e-05  ret=0
+[cvode] pt=42/200  t=0.000128989  steps=23  rhs=31  nlcf=0  etf=0  h=4.10452e-05  ret=0
+[cvode] pt=43/200  t=0.000144812  steps=23  rhs=31  nlcf=0  etf=0  h=4.10452e-05  ret=0
+[cvode] pt=44/200  t=0.000162576  steps=24  rhs=32  nlcf=0  etf=0  h=4.10452e-05  ret=0
+[cvode] pt=45/200  t=0.000182518  steps=24  rhs=32  nlcf=0  etf=0  h=4.10452e-05  ret=0
+[cvode] pt=46/200  t=0.000204907  steps=25  rhs=33  nlcf=0  etf=0  h=4.10452e-05  ret=0
+[cvode] pt=47/200  t=0.000230043  steps=25  rhs=33  nlcf=0  etf=0  h=4.10452e-05  ret=0
+[cvode] pt=48/200  t=0.000258262  steps=26  rhs=34  nlcf=0  etf=0  h=4.10452e-05  ret=0
+[cvode] pt=49/200  t=0.000289942  steps=27  rhs=35  nlcf=0  etf=0  h=7.25899e-05  ret=0
+[cvode] pt=50/200  t=0.000325509  steps=27  rhs=35  nlcf=0  etf=0  h=7.25899e-05  ret=0
+[cvode] pt=51/200  t=0.000365438  steps=28  rhs=37  nlcf=0  etf=0  h=7.25899e-05  ret=0
+[cvode] pt=52/200  t=0.000410266  steps=28  rhs=37  nlcf=0  etf=0  h=7.25899e-05  ret=0
+[cvode] pt=53/200  t=0.000460592  steps=29  rhs=39  nlcf=0  etf=0  h=0.000127256  ret=0
+[cvode] pt=54/200  t=0.000517092  steps=29  rhs=39  nlcf=0  etf=0  h=0.000127256  ret=0
+[cvode] pt=55/200  t=0.000580523  steps=30  rhs=43  nlcf=0  etf=1  h=9.4083e-05  ret=0
+[cvode] pt=56/200  t=0.000651734  steps=31  rhs=44  nlcf=0  etf=1  h=9.4083e-05  ret=0
+[cvode] pt=57/200  t=0.000731681  steps=31  rhs=44  nlcf=0  etf=1  h=9.4083e-05  ret=0
+[cvode] pt=58/200  t=0.000821434  steps=32  rhs=45  nlcf=0  etf=1  h=9.4083e-05  ret=0
+[cvode] pt=59/200  t=0.000922198  steps=33  rhs=46  nlcf=0  etf=1  h=9.4083e-05  ret=0
+[cvode] pt=60/200  t=0.00103532  steps=35  rhs=49  nlcf=0  etf=1  h=0.000191732  ret=0
+[cvode] pt=61/200  t=0.00116232  steps=35  rhs=49  nlcf=0  etf=1  h=0.000191732  ret=0
+[cvode] pt=62/200  t=0.0013049  steps=36  rhs=50  nlcf=0  etf=1  h=0.000191732  ret=0
+[cvode] pt=63/200  t=0.00146497  steps=37  rhs=51  nlcf=0  etf=1  h=0.000191732  ret=0
+[cvode] pt=64/200  t=0.00164468  steps=38  rhs=52  nlcf=0  etf=1  h=0.000191732  ret=0
+[cvode] pt=65/200  t=0.00184642  steps=39  rhs=53  nlcf=0  etf=1  h=0.000191732  ret=0
+[cvode] pt=66/200  t=0.00207292  steps=40  rhs=54  nlcf=0  etf=1  h=0.000191732  ret=0
+[cvode] pt=67/200  t=0.0023272  steps=41  rhs=55  nlcf=0  etf=1  h=0.000191732  ret=0
+[cvode] pt=68/200  t=0.00261268  steps=42  rhs=56  nlcf=0  etf=1  h=0.000302971  ret=0
+[cvode] pt=69/200  t=0.00293317  steps=43  rhs=58  nlcf=0  etf=1  h=0.000547746  ret=0
+[cvode] pt=70/200  t=0.00329297  steps=44  rhs=62  nlcf=0  etf=2  h=0.000405864  ret=0
+[cvode] pt=71/200  t=0.00369691  steps=45  rhs=63  nlcf=0  etf=2  h=0.000405864  ret=0
+[cvode] pt=72/200  t=0.0041504  steps=46  rhs=64  nlcf=0  etf=2  h=0.000405864  ret=0
+[cvode] pt=73/200  t=0.00465953  steps=47  rhs=65  nlcf=0  etf=2  h=0.000405864  ret=0
+[cvode] pt=74/200  t=0.0052311  steps=48  rhs=67  nlcf=0  etf=2  h=0.000890626  ret=0
+[cvode] pt=75/200  t=0.00587279  steps=49  rhs=71  nlcf=0  etf=3  h=0.000541898  ret=0
+[cvode] pt=76/200  t=0.00659319  steps=50  rhs=72  nlcf=0  etf=3  h=0.000541898  ret=0
+[cvode] pt=77/200  t=0.00740196  steps=52  rhs=74  nlcf=0  etf=3  h=0.000541898  ret=0
+[cvode] pt=78/200  t=0.00830994  steps=53  rhs=75  nlcf=0  etf=3  h=0.000541898  ret=0
+[cvode] pt=79/200  t=0.0093293  steps=55  rhs=77  nlcf=0  etf=3  h=0.000541898  ret=0
+[cvode] pt=80/200  t=0.0104737  steps=57  rhs=81  nlcf=0  etf=3  h=0.000833089  ret=0
+[cvode] pt=81/200  t=0.0117585  steps=58  rhs=82  nlcf=0  etf=3  h=0.000833089  ret=0
+[cvode] pt=82/200  t=0.0132009  steps=60  rhs=84  nlcf=0  etf=3  h=0.000833089  ret=0
+[cvode] pt=83/200  t=0.0148202  steps=62  rhs=87  nlcf=0  etf=3  h=0.00130815  ret=0
+[cvode] pt=84/200  t=0.0166382  steps=63  rhs=88  nlcf=0  etf=3  h=0.00130815  ret=0
+[cvode] pt=85/200  t=0.0186791  steps=65  rhs=90  nlcf=0  etf=3  h=0.00130815  ret=0
+[cvode] pt=86/200  t=0.0209705  steps=66  rhs=92  nlcf=0  etf=3  h=0.00196873  ret=0
+[cvode] pt=87/200  t=0.0235429  steps=67  rhs=93  nlcf=0  etf=3  h=0.00196873  ret=0
+[cvode] pt=88/200  t=0.0264308  steps=69  rhs=95  nlcf=0  etf=3  h=0.00196873  ret=0
+[cvode] pt=89/200  t=0.029673  steps=71  rhs=97  nlcf=0  etf=3  h=0.00318858  ret=0
+[cvode] pt=90/200  t=0.0333129  steps=72  rhs=98  nlcf=0  etf=3  h=0.00318858  ret=0
+[cvode] pt=91/200  t=0.0373994  steps=73  rhs=99  nlcf=0  etf=3  h=0.00318858  ret=0
+[cvode] pt=92/200  t=0.0419871  steps=74  rhs=100  nlcf=0  etf=3  h=0.00318858  ret=0
+[cvode] pt=93/200  t=0.0471375  steps=76  rhs=103  nlcf=0  etf=3  h=0.00529412  ret=0
+[cvode] pt=94/200  t=0.0529198  steps=77  rhs=104  nlcf=0  etf=3  h=0.00529412  ret=0
+[cvode] pt=95/200  t=0.0594113  steps=78  rhs=105  nlcf=0  etf=3  h=0.00529412  ret=0
+[cvode] pt=96/200  t=0.0666992  steps=79  rhs=106  nlcf=0  etf=3  h=0.00529412  ret=0
+[cvode] pt=97/200  t=0.074881  steps=81  rhs=108  nlcf=0  etf=3  h=0.00529412  ret=0
+[cvode] pt=98/200  t=0.0840665  steps=83  rhs=110  nlcf=0  etf=3  h=0.00797074  ret=0
+[cvode] pt=99/200  t=0.0943788  steps=84  rhs=112  nlcf=0  etf=3  h=0.00797074  ret=0
+[cvode] pt=100/200  t=0.105956  steps=85  rhs=113  nlcf=0  etf=3  h=0.00797074  ret=0
+[cvode] pt=101/200  t=0.118953  steps=87  rhs=115  nlcf=0  etf=3  h=0.00797074  ret=0
+[cvode] pt=102/200  t=0.133545  steps=88  rhs=116  nlcf=0  etf=3  h=0.0132316  ret=0
+[cvode] pt=103/200  t=0.149927  steps=90  rhs=119  nlcf=0  etf=3  h=0.0132316  ret=0
+[cvode] pt=104/200  t=0.168318  steps=91  rhs=120  nlcf=0  etf=3  h=0.0132316  ret=0
+[cvode] pt=105/200  t=0.188965  steps=93  rhs=122  nlcf=0  etf=3  h=0.0132316  ret=0
+[cvode] pt=106/200  t=0.212145  steps=94  rhs=123  nlcf=0  etf=3  h=0.0132316  ret=0
+[cvode] pt=107/200  t=0.238169  steps=96  rhs=126  nlcf=0  etf=3  h=0.0203033  ret=0
+[cvode] pt=108/200  t=0.267384  steps=97  rhs=127  nlcf=0  etf=3  h=0.0203033  ret=0
+[cvode] pt=109/200  t=0.300184  steps=99  rhs=129  nlcf=0  etf=3  h=0.0203033  ret=0
+[cvode] pt=110/200  t=0.337006  steps=101  rhs=131  nlcf=0  etf=3  h=0.0203033  ret=0
+[cvode] pt=111/200  t=0.378346  steps=103  rhs=133  nlcf=0  etf=3  h=0.0203033  ret=0
+[cvode] pt=112/200  t=0.424757  steps=105  rhs=135  nlcf=0  etf=3  h=0.0311673  ret=0
+[cvode] pt=113/200  t=0.476861  steps=106  rhs=136  nlcf=0  etf=3  h=0.0311673  ret=0
+[cvode] pt=114/200  t=0.535357  steps=108  rhs=138  nlcf=0  etf=3  h=0.0311673  ret=0
+[cvode] pt=115/200  t=0.601028  steps=110  rhs=140  nlcf=0  etf=3  h=0.0311673  ret=0
+[cvode] pt=116/200  t=0.674754  steps=113  rhs=143  nlcf=0  etf=3  h=0.046775  ret=0
+[cvode] pt=117/200  t=0.757525  steps=114  rhs=144  nlcf=0  etf=3  h=0.046775  ret=0
+[cvode] pt=118/200  t=0.850449  steps=116  rhs=146  nlcf=0  etf=3  h=0.046775  ret=0
+[cvode] pt=119/200  t=0.954772  steps=119  rhs=149  nlcf=0  etf=3  h=0.046775  ret=0
+[cvode] pt=120/200  t=1.07189  steps=121  rhs=151  nlcf=0  etf=3  h=0.046775  ret=0
+[cvode] pt=121/200  t=1.20338  steps=123  rhs=154  nlcf=0  etf=3  h=0.0713667  ret=0
+[cvode] pt=122/200  t=1.35099  steps=125  rhs=156  nlcf=0  etf=3  h=0.0713667  ret=0
+[cvode] pt=123/200  t=1.51672  steps=128  rhs=159  nlcf=0  etf=3  h=0.0713667  ret=0
+[cvode] pt=124/200  t=1.70277  steps=130  rhs=161  nlcf=0  etf=3  h=0.0713667  ret=0
+[cvode] pt=125/200  t=1.91164  steps=133  rhs=164  nlcf=0  etf=3  h=0.0713667  ret=0
+[cvode] pt=126/200  t=2.14614  steps=136  rhs=167  nlcf=0  etf=3  h=0.0713667  ret=0
+[cvode] pt=127/200  t=2.4094  steps=140  rhs=171  nlcf=0  etf=3  h=0.0713667  ret=0
+[cvode] pt=128/200  t=2.70496  steps=144  rhs=176  nlcf=0  etf=3  h=0.0713667  ret=0
+[cvode] pt=129/200  t=3.03677  steps=149  rhs=181  nlcf=0  etf=3  h=0.0713667  ret=0
+[cvode] pt=130/200  t=3.40929  steps=154  rhs=186  nlcf=0  etf=3  h=0.0713667  ret=0
+[cvode] pt=131/200  t=3.82749  steps=160  rhs=192  nlcf=0  etf=3  h=0.0713667  ret=0
+[cvode] pt=132/200  t=4.297  steps=166  rhs=199  nlcf=0  etf=3  h=0.0713667  ret=0
+[cvode] pt=133/200  t=4.82411  steps=174  rhs=207  nlcf=0  etf=3  h=0.0713667  ret=0
+[cvode] pt=134/200  t=5.41587  steps=182  rhs=216  nlcf=0  etf=3  h=0.0713667  ret=0
+[cvode] pt=135/200  t=6.08022  steps=191  rhs=225  nlcf=0  etf=3  h=0.0713667  ret=0
+[cvode] pt=136/200  t=6.82607  steps=202  rhs=237  nlcf=0  etf=3  h=0.0713667  ret=0
+[cvode] pt=137/200  t=7.66341  steps=214  rhs=249  nlcf=0  etf=3  h=0.0713667  ret=0
+[cvode] pt=138/200  t=8.60346  steps=227  rhs=263  nlcf=0  etf=3  h=0.0713667  ret=0
+[cvode] pt=139/200  t=9.65883  steps=242  rhs=279  nlcf=0  etf=3  h=0.0713667  ret=0
+[cvode] pt=140/200  t=10.8437  steps=258  rhs=295  nlcf=0  etf=3  h=0.0713667  ret=0
+[cvode] pt=141/200  t=12.1738  steps=277  rhs=315  nlcf=0  etf=3  h=0.0713667  ret=0
+[cvode] pt=142/200  t=13.6672  steps=298  rhs=337  nlcf=0  etf=3  h=0.0713667  ret=0
+[cvode] pt=143/200  t=15.3437  steps=321  rhs=361  nlcf=0  etf=3  h=0.0713667  ret=0
+[cvode] pt=144/200  t=17.2259  steps=348  rhs=390  nlcf=0  etf=3  h=0.0713667  ret=0
+[cvode] pt=145/200  t=19.3389  steps=377  rhs=420  nlcf=0  etf=3  h=0.0713667  ret=0
+[cvode] pt=146/200  t=21.7112  steps=410  rhs=455  nlcf=0  etf=3  h=0.0713667  ret=0
+[cvode] pt=147/200  t=24.3744  steps=448  rhs=495  nlcf=0  etf=3  h=0.0713667  ret=0
+[cvode] pt=148/200  t=27.3644  steps=490  rhs=539  nlcf=0  etf=3  h=0.0713667  ret=0
+[cvode] pt=149/200  t=30.7211  steps=537  rhs=588  nlcf=0  etf=3  h=0.0713667  ret=0
+[cvode] pt=150/200  t=34.4896  steps=590  rhs=644  nlcf=0  etf=3  h=0.0713667  ret=0
+[cvode] pt=151/200  t=38.7204  steps=649  rhs=706  nlcf=0  etf=3  h=0.0713667  ret=0
+[cvode] pt=152/200  t=43.4701  steps=715  rhs=775  nlcf=0  etf=3  h=0.0713667  ret=0
+[cvode] pt=153/200  t=48.8025  steps=790  rhs=852  nlcf=0  etf=3  h=0.0713667  ret=0
+[cvode] pt=154/200  t=54.789  steps=874  rhs=936  nlcf=0  etf=3  h=0.0713667  ret=0
+[cvode] pt=155/200  t=61.5099  steps=968  rhs=1030  nlcf=0  etf=3  h=0.0713667  ret=0
+[cvode] pt=156/200  t=69.0551  steps=1074  rhs=1136  nlcf=0  etf=3  h=0.0713667  ret=0
+[cvode] pt=157/200  t=77.526  steps=1193  rhs=1255  nlcf=0  etf=3  h=0.0713667  ret=0
+[cvode] pt=158/200  t=87.0359  steps=1292  rhs=1358  nlcf=0  etf=3  h=0.108863  ret=0
+[cvode] pt=159/200  t=97.7124  steps=1390  rhs=1461  nlcf=0  etf=3  h=0.108863  ret=0
+[cvode] pt=160/200  t=109.699  steps=1469  rhs=1544  nlcf=0  etf=3  h=0.167193  ret=0
+[cvode] pt=161/200  t=123.155  steps=1550  rhs=1629  nlcf=0  etf=3  h=0.167193  ret=0
+[cvode] pt=162/200  t=138.262  steps=1610  rhs=1697  nlcf=0  etf=3  h=0.258245  ret=0
+[cvode] pt=163/200  t=155.223  steps=1676  rhs=1771  nlcf=0  etf=3  h=0.258245  ret=0
+[cvode] pt=164/200  t=174.263  steps=1750  rhs=1850  nlcf=0  etf=3  h=0.258245  ret=0
+[cvode] pt=165/200  t=195.64  steps=1832  rhs=1936  nlcf=0  etf=3  h=0.258245  ret=0
+[cvode] pt=166/200  t=219.639  steps=1910  rhs=2026  nlcf=0  etf=3  h=0.390734  ret=0
+[cvode] pt=167/200  t=246.581  steps=1979  rhs=2117  nlcf=0  etf=3  h=0.390734  ret=0
+[cvode] pt=168/200  t=276.829  steps=2057  rhs=2214  nlcf=0  etf=3  h=0.390734  ret=0
+[cvode] pt=169/200  t=310.787  steps=2144  rhs=2321  nlcf=0  etf=3  h=0.390734  ret=0
+[cvode] pt=170/200  t=348.91  steps=2241  rhs=2432  nlcf=0  etf=3  h=0.390734  ret=0
+[cvode] pt=171/200  t=391.71  steps=2351  rhs=2552  nlcf=0  etf=3  h=0.390734  ret=0
+[cvode] pt=172/200  t=439.76  steps=2457  rhs=2675  nlcf=0  etf=3  h=0.594883  ret=0
+[cvode] pt=173/200  t=493.705  steps=2548  rhs=2787  nlcf=0  etf=3  h=0.594883  ret=0
+[cvode] pt=174/200  t=554.266  steps=2649  rhs=2902  nlcf=0  etf=3  h=0.594883  ret=0
+[cvode] pt=175/200  t=622.257  steps=2764  rhs=3027  nlcf=0  etf=3  h=0.594883  ret=0
+[cvode] pt=176/200  t=698.588  steps=2892  rhs=3166  nlcf=0  etf=3  h=0.594883  ret=0
+[cvode] pt=177/200  t=784.282  steps=3036  rhs=3317  nlcf=0  etf=3  h=0.594883  ret=0
+[cvode] pt=178/200  t=880.488  steps=3080  rhs=3368  nlcf=0  etf=3  h=2.992  ret=0
+[cvode] pt=179/200  t=988.496  steps=3116  rhs=3418  nlcf=0  etf=3  h=2.992  ret=0
+[cvode] pt=180/200  t=1109.75  steps=3157  rhs=3477  nlcf=0  etf=3  h=2.992  ret=0
+[cvode] pt=181/200  t=1245.88  steps=3202  rhs=3543  nlcf=0  etf=3  h=2.992  ret=0
+[cvode] pt=182/200  t=1398.71  steps=3253  rhs=3619  nlcf=0  etf=3  h=2.992  ret=0
+[cvode] pt=183/200  t=1570.29  steps=3311  rhs=3704  nlcf=0  etf=3  h=2.992  ret=0
+[cvode] pt=184/200  t=1762.91  steps=3375  rhs=3793  nlcf=0  etf=3  h=2.992  ret=0
+[cvode] pt=185/200  t=1979.17  steps=3447  rhs=3892  nlcf=0  etf=3  h=2.992  ret=0
+[cvode] pt=186/200  t=2221.95  steps=3634  rhs=4100  nlcf=2  etf=3  h=1.14166  ret=0
+[cvode] pt=187/200  t=2494.51  steps=3872  rhs=4350  nlcf=2  etf=3  h=1.14166  ret=0
+[cvode] pt=188/200  t=2800.5  steps=4140  rhs=4631  nlcf=2  etf=3  h=1.14166  ret=0
+[cvode] pt=189/200  t=3144.04  steps=4385  rhs=4894  nlcf=2  etf=3  h=1.82416  ret=0
+[cvode] pt=190/200  t=3529.71  steps=4597  rhs=5127  nlcf=2  etf=3  h=1.82416  ret=0
+[cvode] pt=191/200  t=3962.69  steps=4834  rhs=5380  nlcf=2  etf=3  h=1.82416  ret=0
+C++ solver hit 3000.0s timeout -- asking it to finalize gracefully...
+    Solver did not finalize within 60s -- forcing kill.
+Reading bin file: C:\Users\Owner\AppData\Local\Temp\expanded_cd_5u10ru3o.bin (30730752 bytes)
+  parsed 3841344 doubles -> 192 rows x 20007 cols
+C++ solver partial -- 192 time points
+Results processing complete.
+  -> status=timeout  wall=3098.30 s  n_pts=192  t_final=3.963e+03
+
+========================================================================
+  CASE D-KLU: equations='discrete'  linsol='klu'  prec=None
+========================================================================
+
+Launching solver_mode='full_system' …
+C++ solver: solver.exe  N_eq=20006  solver_mode='full_system'  physics='full_CD_fission'
+[OpenMP] OMP_NUM_THREADS=24 honored — using 24 threads
+[OpenMP_threads] 24
+RadCluster_1_0 solver: N_eq=20006  physics_option=0  he_mode=0  he_kinetics=quasi_steady_state  C_floor=1e-25  window_mode=0
+[cvode] pt=1/200  t=1.12267e-06  steps=7  rhs=10  nlcf=0  etf=0  h=9.83571e-08  ret=0
+[cvode] pt=2/200  t=1.26038e-06  steps=8  rhs=11  nlcf=0  etf=0  h=2.06438e-07  ret=0
+[cvode] pt=3/200  t=1.41499e-06  steps=9  rhs=12  nlcf=0  etf=0  h=3.93023e-07  ret=0
+[cvode] pt=4/200  t=1.58857e-06  steps=9  rhs=12  nlcf=0  etf=0  h=3.93023e-07  ret=0
+[cvode] pt=5/200  t=1.78343e-06  steps=10  rhs=13  nlcf=0  etf=0  h=7.15058e-07  ret=0
+[cvode] pt=6/200  t=2.0022e-06  steps=10  rhs=13  nlcf=0  etf=0  h=7.15058e-07  ret=0
+[cvode] pt=7/200  t=2.24781e-06  steps=10  rhs=13  nlcf=0  etf=0  h=7.15058e-07  ret=0
+[cvode] pt=8/200  t=2.52354e-06  steps=11  rhs=14  nlcf=0  etf=0  h=1.31457e-06  ret=0
+[cvode] pt=9/200  t=2.8331e-06  steps=11  rhs=14  nlcf=0  etf=0  h=1.31457e-06  ret=0
+[cvode] pt=10/200  t=3.18063e-06  steps=11  rhs=14  nlcf=0  etf=0  h=1.31457e-06  ret=0
+[cvode] pt=11/200  t=3.57079e-06  steps=11  rhs=14  nlcf=0  etf=0  h=1.31457e-06  ret=0
+[cvode] pt=12/200  t=4.00881e-06  steps=12  rhs=16  nlcf=0  etf=0  h=3.35165e-06  ret=0
+[cvode] pt=13/200  t=4.50056e-06  steps=12  rhs=16  nlcf=0  etf=0  h=3.35165e-06  ret=0
+[cvode] pt=14/200  t=5.05263e-06  steps=12  rhs=16  nlcf=0  etf=0  h=3.35165e-06  ret=0
+[cvode] pt=15/200  t=5.67243e-06  steps=12  rhs=16  nlcf=0  etf=0  h=3.35165e-06  ret=0
+[cvode] pt=16/200  t=6.36825e-06  steps=12  rhs=16  nlcf=0  etf=0  h=3.35165e-06  ret=0
+[cvode] pt=17/200  t=7.14943e-06  steps=13  rhs=18  nlcf=0  etf=0  h=3.35165e-06  ret=0
+[cvode] pt=18/200  t=8.02643e-06  steps=13  rhs=18  nlcf=0  etf=0  h=3.35165e-06  ret=0
+[cvode] pt=19/200  t=9.01102e-06  steps=13  rhs=18  nlcf=0  etf=0  h=3.35165e-06  ret=0
+[cvode] pt=20/200  t=1.01164e-05  steps=13  rhs=18  nlcf=0  etf=0  h=3.35165e-06  ret=0
+[cvode] pt=21/200  t=1.13573e-05  steps=14  rhs=19  nlcf=0  etf=0  h=3.35165e-06  ret=0
+[cvode] pt=22/200  t=1.27505e-05  steps=14  rhs=19  nlcf=0  etf=0  h=3.35165e-06  ret=0
+[cvode] pt=23/200  t=1.43146e-05  steps=15  rhs=20  nlcf=0  etf=0  h=3.35165e-06  ret=0
+[cvode] pt=24/200  t=1.60705e-05  steps=15  rhs=20  nlcf=0  etf=0  h=3.35165e-06  ret=0
+[cvode] pt=25/200  t=1.80419e-05  steps=16  rhs=22  nlcf=0  etf=0  h=6.5474e-06  ret=0
+[cvode] pt=26/200  t=2.0255e-05  steps=16  rhs=22  nlcf=0  etf=0  h=6.5474e-06  ret=0
+[cvode] pt=27/200  t=2.27397e-05  steps=16  rhs=22  nlcf=0  etf=0  h=6.5474e-06  ret=0
+[cvode] pt=28/200  t=2.55291e-05  steps=17  rhs=23  nlcf=0  etf=0  h=6.5474e-06  ret=0
+[cvode] pt=29/200  t=2.86607e-05  steps=17  rhs=23  nlcf=0  etf=0  h=6.5474e-06  ret=0
+[cvode] pt=30/200  t=3.21764e-05  steps=18  rhs=24  nlcf=0  etf=0  h=6.5474e-06  ret=0
+[cvode] pt=31/200  t=3.61234e-05  steps=18  rhs=24  nlcf=0  etf=0  h=6.5474e-06  ret=0
+[cvode] pt=32/200  t=4.05546e-05  steps=19  rhs=25  nlcf=0  etf=0  h=6.5474e-06  ret=0
+[cvode] pt=33/200  t=4.55294e-05  steps=20  rhs=26  nlcf=0  etf=0  h=1.2881e-05  ret=0
+[cvode] pt=34/200  t=5.11143e-05  steps=20  rhs=26  nlcf=0  etf=0  h=1.2881e-05  ret=0
+[cvode] pt=35/200  t=5.73844e-05  steps=21  rhs=27  nlcf=0  etf=0  h=2.15242e-05  ret=0
+[cvode] pt=36/200  t=6.44236e-05  steps=21  rhs=27  nlcf=0  etf=0  h=2.15242e-05  ret=0
+[cvode] pt=37/200  t=7.23263e-05  steps=21  rhs=27  nlcf=0  etf=0  h=2.15242e-05  ret=0
+[cvode] pt=38/200  t=8.11984e-05  steps=22  rhs=29  nlcf=0  etf=0  h=4.56902e-05  ret=0
+[cvode] pt=39/200  t=9.11589e-05  steps=22  rhs=29  nlcf=0  etf=0  h=4.56902e-05  ret=0
+[cvode] pt=40/200  t=0.000102341  steps=22  rhs=29  nlcf=0  etf=0  h=4.56902e-05  ret=0
+[cvode] pt=41/200  t=0.000114895  steps=22  rhs=29  nlcf=0  etf=0  h=4.56902e-05  ret=0
+[cvode] pt=42/200  t=0.000128989  steps=23  rhs=31  nlcf=0  etf=0  h=4.56902e-05  ret=0
+[cvode] pt=43/200  t=0.000144812  steps=23  rhs=31  nlcf=0  etf=0  h=4.56902e-05  ret=0
+[cvode] pt=44/200  t=0.000162576  steps=23  rhs=31  nlcf=0  etf=0  h=4.56902e-05  ret=0
+[cvode] pt=45/200  t=0.000182518  steps=24  rhs=32  nlcf=0  etf=0  h=4.56902e-05  ret=0
+[cvode] pt=46/200  t=0.000204907  steps=24  rhs=32  nlcf=0  etf=0  h=4.56902e-05  ret=0
+[cvode] pt=47/200  t=0.000230043  steps=25  rhs=33  nlcf=0  etf=0  h=4.56902e-05  ret=0
+[cvode] pt=48/200  t=0.000258262  steps=25  rhs=33  nlcf=0  etf=0  h=4.56902e-05  ret=0
+[cvode] pt=49/200  t=0.000289942  steps=26  rhs=34  nlcf=0  etf=0  h=4.56902e-05  ret=0
+[cvode] pt=50/200  t=0.000325509  steps=27  rhs=36  nlcf=0  etf=0  h=8.5251e-05  ret=0
+[cvode] pt=51/200  t=0.000365438  steps=27  rhs=36  nlcf=0  etf=0  h=8.5251e-05  ret=0
+[cvode] pt=52/200  t=0.000410266  steps=28  rhs=37  nlcf=0  etf=0  h=8.5251e-05  ret=0
+[cvode] pt=53/200  t=0.000460592  steps=28  rhs=37  nlcf=0  etf=0  h=8.5251e-05  ret=0
+[cvode] pt=54/200  t=0.000517092  steps=29  rhs=38  nlcf=0  etf=0  h=8.5251e-05  ret=0
+[cvode] pt=55/200  t=0.000580523  steps=30  rhs=39  nlcf=0  etf=0  h=8.5251e-05  ret=0
+[cvode] pt=56/200  t=0.000651734  steps=31  rhs=40  nlcf=0  etf=0  h=8.5251e-05  ret=0
+[cvode] pt=57/200  t=0.000731681  steps=31  rhs=40  nlcf=0  etf=0  h=8.5251e-05  ret=0
+[cvode] pt=58/200  t=0.000821434  steps=33  rhs=42  nlcf=0  etf=0  h=0.000136581  ret=0
+[cvode] pt=59/200  t=0.000922198  steps=33  rhs=42  nlcf=0  etf=0  h=0.000136581  ret=0
+[cvode] pt=60/200  t=0.00103532  steps=34  rhs=44  nlcf=0  etf=0  h=0.000136581  ret=0
+[cvode] pt=61/200  t=0.00116232  steps=35  rhs=45  nlcf=0  etf=0  h=0.000136581  ret=0
+[cvode] pt=62/200  t=0.0013049  steps=36  rhs=46  nlcf=0  etf=0  h=0.000136581  ret=0
+[cvode] pt=63/200  t=0.00146497  steps=37  rhs=47  nlcf=0  etf=0  h=0.000136581  ret=0
+[cvode] pt=64/200  t=0.00164468  steps=38  rhs=48  nlcf=0  etf=0  h=0.000206585  ret=0
+[cvode] pt=65/200  t=0.00184642  steps=39  rhs=49  nlcf=0  etf=0  h=0.000206585  ret=0
+[cvode] pt=66/200  t=0.00207292  steps=40  rhs=50  nlcf=0  etf=0  h=0.000206585  ret=0
+[cvode] pt=67/200  t=0.0023272  steps=42  rhs=52  nlcf=0  etf=0  h=0.000206585  ret=0
+[cvode] pt=68/200  t=0.00261268  steps=43  rhs=53  nlcf=0  etf=0  h=0.000318257  ret=0
+[cvode] pt=69/200  t=0.00293317  steps=44  rhs=54  nlcf=0  etf=0  h=0.000318257  ret=0
+[cvode] pt=70/200  t=0.00329297  steps=45  rhs=55  nlcf=0  etf=0  h=0.000318257  ret=0
+[cvode] pt=71/200  t=0.00369691  steps=46  rhs=56  nlcf=0  etf=0  h=0.000318257  ret=0
+[cvode] pt=72/200  t=0.0041504  steps=48  rhs=58  nlcf=0  etf=0  h=0.000318257  ret=0
+[cvode] pt=73/200  t=0.00465953  steps=49  rhs=59  nlcf=0  etf=0  h=0.000491571  ret=0
+[cvode] pt=74/200  t=0.0052311  steps=50  rhs=61  nlcf=0  etf=0  h=0.000491571  ret=0
+[cvode] pt=75/200  t=0.00587279  steps=51  rhs=62  nlcf=0  etf=0  h=0.000491571  ret=0
+[cvode] pt=76/200  t=0.00659319  steps=53  rhs=64  nlcf=0  etf=0  h=0.000491571  ret=0
+[cvode] pt=77/200  t=0.00740196  steps=55  rhs=67  nlcf=0  etf=0  h=0.000491571  ret=0
+[cvode] pt=78/200  t=0.00830994  steps=56  rhs=68  nlcf=0  etf=0  h=0.000491571  ret=0
+[cvode] pt=79/200  t=0.0093293  steps=58  rhs=70  nlcf=0  etf=0  h=0.000491571  ret=0
+[cvode] pt=80/200  t=0.0104737  steps=61  rhs=73  nlcf=0  etf=0  h=0.000491571  ret=0
+[cvode] pt=81/200  t=0.0117585  steps=63  rhs=76  nlcf=0  etf=0  h=0.000491571  ret=0
+[cvode] pt=82/200  t=0.0132009  steps=68  rhs=84  nlcf=1  etf=0  h=0.000429045  ret=0
+[cvode] pt=83/200  t=0.0148202  steps=71  rhs=87  nlcf=1  etf=0  h=0.000429045  ret=0
+[cvode] pt=84/200  t=0.0166382  steps=74  rhs=91  nlcf=1  etf=0  h=0.000652927  ret=0
+[cvode] pt=85/200  t=0.0186791  steps=77  rhs=94  nlcf=1  etf=0  h=0.000652927  ret=0
+[cvode] pt=86/200  t=0.0209705  steps=81  rhs=98  nlcf=1  etf=0  h=0.000652927  ret=0
+[cvode] pt=87/200  t=0.0235429  steps=85  rhs=103  nlcf=1  etf=0  h=0.000652927  ret=0
+[cvode] pt=88/200  t=0.0264308  steps=89  rhs=107  nlcf=1  etf=0  h=0.00197462  ret=0
+[cvode] pt=89/200  t=0.029673  steps=90  rhs=109  nlcf=1  etf=0  h=0.00197462  ret=0
+[cvode] pt=90/200  t=0.0333129  steps=97  rhs=123  nlcf=3  etf=0  h=0.000493654  ret=0
+C++ solver hit 3000.0s timeout -- asking it to finalize gracefully...
+    Solver did not finalize within 60s -- forcing kill.
+Reading bin file: C:\Users\Owner\AppData\Local\Temp\expanded_cd_i02jnj5n.bin (14565096 bytes)
+  parsed 1820637 doubles -> 91 rows x 20007 cols
+C++ solver partial -- 91 time points
+Results processing complete.
+  -> status=timeout  wall=3075.90 s  n_pts=91  t_final=3.331e-02
+
+========================================================================
+  CASE B-WB: equations='bin_moment'  linsol='gmres'  prec='Woodbury'
+========================================================================
+
+Launching solver_mode='full_system' …
+C++ solver: solver.exe  N_eq=190  solver_mode='full_system'  physics='bin_moment_CD_fission'
+[OpenMP] OMP_NUM_THREADS=24 honored — using 24 threads
+[OpenMP_threads] 24
+RadCluster_1_0 solver: N_eq=190  physics_option=2  he_mode=0  he_kinetics=quasi_steady_state  C_floor=1e-25  window_mode=0
+[cvode] pt=1/200  t=1.12267e-06  steps=7  rhs=10  nlcf=0  etf=0  h=9.28319e-08  ret=0
+[cvode] pt=2/200  t=1.26038e-06  steps=8  rhs=11  nlcf=0  etf=0  h=1.93971e-07  ret=0
+[cvode] pt=3/200  t=1.41499e-06  steps=9  rhs=12  nlcf=0  etf=0  h=3.71791e-07  ret=0
+[cvode] pt=4/200  t=1.58857e-06  steps=9  rhs=12  nlcf=0  etf=0  h=3.71791e-07  ret=0
+[cvode] pt=5/200  t=1.78343e-06  steps=10  rhs=13  nlcf=0  etf=0  h=7.16725e-07  ret=0
+[cvode] pt=6/200  t=2.0022e-06  steps=10  rhs=13  nlcf=0  etf=0  h=7.16725e-07  ret=0
+[cvode] pt=7/200  t=2.24781e-06  steps=10  rhs=13  nlcf=0  etf=0  h=7.16725e-07  ret=0
+[cvode] pt=8/200  t=2.52354e-06  steps=11  rhs=15  nlcf=0  etf=0  h=2.06074e-06  ret=0
+[cvode] pt=9/200  t=2.8331e-06  steps=11  rhs=15  nlcf=0  etf=0  h=2.06074e-06  ret=0
+[cvode] pt=10/200  t=3.18063e-06  steps=11  rhs=15  nlcf=0  etf=0  h=2.06074e-06  ret=0
+[cvode] pt=11/200  t=3.57079e-06  steps=11  rhs=15  nlcf=0  etf=0  h=2.06074e-06  ret=0
+[cvode] pt=12/200  t=4.00881e-06  steps=11  rhs=15  nlcf=0  etf=0  h=2.06074e-06  ret=0
+[cvode] pt=13/200  t=4.50056e-06  steps=12  rhs=19  nlcf=0  etf=1  h=1.08257e-06  ret=0
+[cvode] pt=14/200  t=5.05263e-06  steps=12  rhs=19  nlcf=0  etf=1  h=1.08257e-06  ret=0
+[cvode] pt=15/200  t=5.67243e-06  steps=13  rhs=20  nlcf=0  etf=1  h=1.08257e-06  ret=0
+[cvode] pt=16/200  t=6.36825e-06  steps=13  rhs=20  nlcf=0  etf=1  h=1.08257e-06  ret=0
+[cvode] pt=17/200  t=7.14943e-06  steps=14  rhs=21  nlcf=0  etf=1  h=1.08257e-06  ret=0
+[cvode] pt=18/200  t=8.02643e-06  steps=15  rhs=23  nlcf=0  etf=1  h=2.14297e-06  ret=0
+[cvode] pt=19/200  t=9.01102e-06  steps=15  rhs=23  nlcf=0  etf=1  h=2.14297e-06  ret=0
+[cvode] pt=20/200  t=1.01164e-05  steps=16  rhs=24  nlcf=0  etf=1  h=2.14297e-06  ret=0
+[cvode] pt=21/200  t=1.13573e-05  steps=16  rhs=24  nlcf=0  etf=1  h=2.14297e-06  ret=0
+[cvode] pt=22/200  t=1.27505e-05  steps=17  rhs=25  nlcf=0  etf=1  h=2.14297e-06  ret=0
+[cvode] pt=23/200  t=1.43146e-05  steps=18  rhs=26  nlcf=0  etf=1  h=2.14297e-06  ret=0
+[cvode] pt=24/200  t=1.60705e-05  steps=18  rhs=26  nlcf=0  etf=1  h=2.14297e-06  ret=0
+[cvode] pt=25/200  t=1.80419e-05  steps=19  rhs=27  nlcf=0  etf=1  h=3.66829e-06  ret=0
+[cvode] pt=26/200  t=2.0255e-05  steps=20  rhs=29  nlcf=0  etf=1  h=6.26128e-06  ret=0
+[cvode] pt=27/200  t=2.27397e-05  steps=20  rhs=29  nlcf=0  etf=1  h=6.26128e-06  ret=0
+[cvode] pt=28/200  t=2.55291e-05  steps=20  rhs=29  nlcf=0  etf=1  h=6.26128e-06  ret=0
+[cvode] pt=29/200  t=2.86607e-05  steps=21  rhs=31  nlcf=0  etf=1  h=1.08537e-05  ret=0
+[cvode] pt=30/200  t=3.21764e-05  steps=21  rhs=31  nlcf=0  etf=1  h=1.08537e-05  ret=0
+[cvode] pt=31/200  t=3.61234e-05  steps=21  rhs=31  nlcf=0  etf=1  h=1.08537e-05  ret=0
+[cvode] pt=32/200  t=4.05546e-05  steps=22  rhs=33  nlcf=0  etf=1  h=1.08537e-05  ret=0
+[cvode] pt=33/200  t=4.55294e-05  steps=22  rhs=33  nlcf=0  etf=1  h=1.08537e-05  ret=0
+[cvode] pt=34/200  t=5.11143e-05  steps=23  rhs=34  nlcf=0  etf=1  h=1.08537e-05  ret=0
+[cvode] pt=35/200  t=5.73844e-05  steps=23  rhs=34  nlcf=0  etf=1  h=1.08537e-05  ret=0
+[cvode] pt=36/200  t=6.44236e-05  steps=24  rhs=35  nlcf=0  etf=1  h=1.08537e-05  ret=0
+[cvode] pt=37/200  t=7.23263e-05  steps=25  rhs=36  nlcf=0  etf=1  h=1.08537e-05  ret=0
+[cvode] pt=38/200  t=8.11984e-05  steps=26  rhs=37  nlcf=0  etf=1  h=2.19667e-05  ret=0
+[cvode] pt=39/200  t=9.11589e-05  steps=26  rhs=37  nlcf=0  etf=1  h=2.19667e-05  ret=0
+[cvode] pt=40/200  t=0.000102341  steps=26  rhs=37  nlcf=0  etf=1  h=2.19667e-05  ret=0
+[cvode] pt=41/200  t=0.000114895  steps=27  rhs=38  nlcf=0  etf=1  h=2.19667e-05  ret=0
+[cvode] pt=42/200  t=0.000128989  steps=28  rhs=40  nlcf=0  etf=1  h=4.32485e-05  ret=0
+[cvode] pt=43/200  t=0.000144812  steps=28  rhs=40  nlcf=0  etf=1  h=4.32485e-05  ret=0
+[cvode] pt=44/200  t=0.000162576  steps=28  rhs=40  nlcf=0  etf=1  h=4.32485e-05  ret=0
+[cvode] pt=45/200  t=0.000182518  steps=29  rhs=42  nlcf=0  etf=1  h=4.32485e-05  ret=0
+[cvode] pt=46/200  t=0.000204907  steps=29  rhs=42  nlcf=0  etf=1  h=4.32485e-05  ret=0
+[cvode] pt=47/200  t=0.000230043  steps=30  rhs=43  nlcf=0  etf=1  h=4.32485e-05  ret=0
+[cvode] pt=48/200  t=0.000258262  steps=31  rhs=44  nlcf=0  etf=1  h=4.32485e-05  ret=0
+[cvode] pt=49/200  t=0.000289942  steps=31  rhs=44  nlcf=0  etf=1  h=4.32485e-05  ret=0
+[cvode] pt=50/200  t=0.000325509  steps=32  rhs=45  nlcf=0  etf=1  h=4.32485e-05  ret=0
+[cvode] pt=51/200  t=0.000365438  steps=33  rhs=46  nlcf=0  etf=1  h=4.32485e-05  ret=0
+[cvode] pt=52/200  t=0.000410266  steps=34  rhs=48  nlcf=0  etf=1  h=7.10162e-05  ret=0
+[cvode] pt=53/200  t=0.000460592  steps=35  rhs=49  nlcf=0  etf=1  h=7.10162e-05  ret=0
+[cvode] pt=54/200  t=0.000517092  steps=35  rhs=49  nlcf=0  etf=1  h=7.10162e-05  ret=0
+[cvode] pt=55/200  t=0.000580523  steps=36  rhs=50  nlcf=0  etf=1  h=7.10162e-05  ret=0
+[cvode] pt=56/200  t=0.000651734  steps=37  rhs=51  nlcf=0  etf=1  h=7.10162e-05  ret=0
+[cvode] pt=57/200  t=0.000731681  steps=38  rhs=52  nlcf=0  etf=1  h=7.10162e-05  ret=0
+[cvode] pt=58/200  t=0.000821434  steps=40  rhs=54  nlcf=0  etf=1  h=7.10162e-05  ret=0
+[cvode] pt=59/200  t=0.000922198  steps=41  rhs=55  nlcf=0  etf=1  h=7.10162e-05  ret=0
+[cvode] pt=60/200  t=0.00103532  steps=43  rhs=58  nlcf=0  etf=1  h=0.000128219  ret=0
+[cvode] pt=61/200  t=0.00116232  steps=44  rhs=60  nlcf=0  etf=1  h=0.000128219  ret=0
+[cvode] pt=62/200  t=0.0013049  steps=45  rhs=61  nlcf=0  etf=1  h=0.000128219  ret=0
+[cvode] pt=63/200  t=0.00146497  steps=46  rhs=62  nlcf=0  etf=1  h=0.000128219  ret=0
+[cvode] pt=64/200  t=0.00164468  steps=47  rhs=63  nlcf=0  etf=1  h=0.000128219  ret=0
+[cvode] pt=65/200  t=0.00184642  steps=49  rhs=65  nlcf=0  etf=1  h=0.000128219  ret=0
+[cvode] pt=66/200  t=0.00207292  steps=51  rhs=67  nlcf=0  etf=1  h=0.000282252  ret=0
+[cvode] pt=67/200  t=0.0023272  steps=51  rhs=67  nlcf=0  etf=1  h=0.000282252  ret=0
+[cvode] pt=68/200  t=0.00261268  steps=52  rhs=69  nlcf=0  etf=1  h=0.000282252  ret=0
+[cvode] pt=69/200  t=0.00293317  steps=54  rhs=72  nlcf=0  etf=1  h=0.000282252  ret=0
+[cvode] pt=70/200  t=0.00329297  steps=55  rhs=73  nlcf=0  etf=1  h=0.000282252  ret=0
+[cvode] pt=71/200  t=0.00369691  steps=56  rhs=74  nlcf=0  etf=1  h=0.000282252  ret=0
+[cvode] pt=72/200  t=0.0041504  steps=58  rhs=76  nlcf=0  etf=1  h=0.000282252  ret=0
+[cvode] pt=73/200  t=0.00465953  steps=60  rhs=78  nlcf=0  etf=1  h=0.000282252  ret=0
+[cvode] pt=74/200  t=0.0052311  steps=62  rhs=80  nlcf=0  etf=1  h=0.000282252  ret=0
+[cvode] pt=75/200  t=0.00587279  steps=64  rhs=82  nlcf=0  etf=1  h=0.000282252  ret=0
+[cvode] pt=76/200  t=0.00659319  steps=66  rhs=84  nlcf=0  etf=1  h=0.000427386  ret=0
+[cvode] pt=77/200  t=0.00740196  steps=68  rhs=87  nlcf=0  etf=1  h=0.000427386  ret=0
+[cvode] pt=78/200  t=0.00830994  steps=70  rhs=89  nlcf=0  etf=1  h=0.000427386  ret=0
+[cvode] pt=79/200  t=0.0093293  steps=72  rhs=91  nlcf=0  etf=1  h=0.000649613  ret=0
+[cvode] pt=80/200  t=0.0104737  steps=74  rhs=95  nlcf=0  etf=1  h=0.000649613  ret=0
+[cvode] pt=81/200  t=0.0117585  steps=76  rhs=97  nlcf=0  etf=1  h=0.000649613  ret=0
+[cvode] pt=82/200  t=0.0132009  steps=78  rhs=99  nlcf=0  etf=1  h=0.000649613  ret=0
+[cvode] pt=83/200  t=0.0148202  steps=81  rhs=102  nlcf=0  etf=1  h=0.00104867  ret=0
+[cvode] pt=84/200  t=0.0166382  steps=82  rhs=104  nlcf=0  etf=1  h=0.00104867  ret=0
+[cvode] pt=85/200  t=0.0186791  steps=84  rhs=106  nlcf=0  etf=1  h=0.00104867  ret=0
+[cvode] pt=86/200  t=0.0209705  steps=86  rhs=108  nlcf=0  etf=1  h=0.00104867  ret=0
+[cvode] pt=87/200  t=0.0235429  steps=88  rhs=110  nlcf=0  etf=1  h=0.00163539  ret=0
+[cvode] pt=88/200  t=0.0264308  steps=90  rhs=113  nlcf=0  etf=1  h=0.00163539  ret=0
+[cvode] pt=89/200  t=0.029673  steps=92  rhs=115  nlcf=0  etf=1  h=0.00163539  ret=0
+[cvode] pt=90/200  t=0.0333129  steps=94  rhs=117  nlcf=0  etf=1  h=0.00163539  ret=0
+[cvode] pt=91/200  t=0.0373994  steps=97  rhs=120  nlcf=0  etf=1  h=0.00257817  ret=0
+[cvode] pt=92/200  t=0.0419871  steps=98  rhs=122  nlcf=0  etf=1  h=0.00257817  ret=0
+[cvode] pt=93/200  t=0.0471375  steps=100  rhs=125  nlcf=0  etf=1  h=0.00388559  ret=0
+[cvode] pt=94/200  t=0.0529198  steps=102  rhs=127  nlcf=0  etf=1  h=0.00388559  ret=0
+[cvode] pt=95/200  t=0.0594113  steps=103  rhs=128  nlcf=0  etf=1  h=0.00388559  ret=0
+[cvode] pt=96/200  t=0.0666992  steps=105  rhs=130  nlcf=0  etf=1  h=0.00388559  ret=0
+[cvode] pt=97/200  t=0.074881  steps=107  rhs=132  nlcf=0  etf=1  h=0.00589165  ret=0
+[cvode] pt=98/200  t=0.0840665  steps=109  rhs=135  nlcf=0  etf=1  h=0.00589165  ret=0
+[cvode] pt=99/200  t=0.0943788  steps=110  rhs=136  nlcf=0  etf=1  h=0.00589165  ret=0
+[cvode] pt=100/200  t=0.105956  steps=112  rhs=138  nlcf=0  etf=1  h=0.00589165  ret=0
+[cvode] pt=101/200  t=0.118953  steps=114  rhs=140  nlcf=0  etf=1  h=0.00589165  ret=0
+[cvode] pt=102/200  t=0.133545  steps=117  rhs=143  nlcf=0  etf=1  h=0.00589165  ret=0
+[cvode] pt=103/200  t=0.149927  steps=119  rhs=145  nlcf=0  etf=1  h=0.00924108  ret=0
+[cvode] pt=104/200  t=0.168318  steps=121  rhs=148  nlcf=0  etf=1  h=0.00924108  ret=0
+[cvode] pt=105/200  t=0.188965  steps=123  rhs=150  nlcf=0  etf=1  h=0.00924108  ret=0
+[cvode] pt=106/200  t=0.212145  steps=125  rhs=153  nlcf=0  etf=1  h=0.0140212  ret=0
+[cvode] pt=107/200  t=0.238169  steps=127  rhs=155  nlcf=0  etf=1  h=0.0140212  ret=0
+[cvode] pt=108/200  t=0.267384  steps=129  rhs=157  nlcf=0  etf=1  h=0.0140212  ret=0
+[cvode] pt=109/200  t=0.300184  steps=131  rhs=159  nlcf=0  etf=1  h=0.0140212  ret=0
+[cvode] pt=110/200  t=0.337006  steps=134  rhs=162  nlcf=0  etf=1  h=0.0233672  ret=0
+[cvode] pt=111/200  t=0.378346  steps=135  rhs=163  nlcf=0  etf=1  h=0.0233672  ret=0
+[cvode] pt=112/200  t=0.424757  steps=137  rhs=166  nlcf=0  etf=1  h=0.0233672  ret=0
+[cvode] pt=113/200  t=0.476861  steps=140  rhs=169  nlcf=0  etf=1  h=0.0233672  ret=0
+[cvode] pt=114/200  t=0.535357  steps=142  rhs=171  nlcf=0  etf=1  h=0.0233672  ret=0
+[cvode] pt=115/200  t=0.601028  steps=145  rhs=174  nlcf=0  etf=1  h=0.0233672  ret=0
+[cvode] pt=116/200  t=0.674754  steps=147  rhs=176  nlcf=0  etf=1  h=0.036029  ret=0
+[cvode] pt=117/200  t=0.757525  steps=150  rhs=179  nlcf=0  etf=1  h=0.036029  ret=0
+[cvode] pt=118/200  t=0.850449  steps=152  rhs=181  nlcf=0  etf=1  h=0.036029  ret=0
+[cvode] pt=119/200  t=0.954772  steps=154  rhs=183  nlcf=0  etf=1  h=0.0550831  ret=0
+[cvode] pt=120/200  t=1.07189  steps=157  rhs=187  nlcf=0  etf=1  h=0.0550831  ret=0
+[cvode] pt=121/200  t=1.20338  steps=159  rhs=189  nlcf=0  etf=1  h=0.0550831  ret=0
+[cvode] pt=122/200  t=1.35099  steps=162  rhs=192  nlcf=0  etf=1  h=0.0550831  ret=0
+[cvode] pt=123/200  t=1.51672  steps=165  rhs=195  nlcf=0  etf=1  h=0.0550831  ret=0
+[cvode] pt=124/200  t=1.70277  steps=167  rhs=198  nlcf=0  etf=1  h=0.0867018  ret=0
+[cvode] pt=125/200  t=1.91164  steps=170  rhs=201  nlcf=0  etf=1  h=0.0867018  ret=0
+[cvode] pt=126/200  t=2.14614  steps=172  rhs=203  nlcf=0  etf=1  h=0.0867018  ret=0
+[cvode] pt=127/200  t=2.4094  steps=175  rhs=206  nlcf=0  etf=1  h=0.0867018  ret=0
+[cvode] pt=128/200  t=2.70496  steps=179  rhs=210  nlcf=0  etf=1  h=0.140861  ret=0
+[cvode] pt=129/200  t=3.03677  steps=181  rhs=213  nlcf=0  etf=1  h=0.140861  ret=0
+[cvode] pt=130/200  t=3.40929  steps=184  rhs=216  nlcf=0  etf=1  h=0.140861  ret=0
+[cvode] pt=131/200  t=3.82749  steps=187  rhs=219  nlcf=0  etf=1  h=0.140861  ret=0
+[cvode] pt=132/200  t=4.297  steps=190  rhs=222  nlcf=0  etf=1  h=0.140861  ret=0
+[cvode] pt=133/200  t=4.82411  steps=194  rhs=226  nlcf=0  etf=1  h=0.140861  ret=0
+[cvode] pt=134/200  t=5.41587  steps=197  rhs=230  nlcf=0  etf=1  h=0.211437  ret=0
+[cvode] pt=135/200  t=6.08022  steps=200  rhs=233  nlcf=0  etf=1  h=0.211437  ret=0
+[cvode] pt=136/200  t=6.82607  steps=204  rhs=237  nlcf=0  etf=1  h=0.211437  ret=0
+[cvode] pt=137/200  t=7.66341  steps=208  rhs=241  nlcf=0  etf=1  h=0.211437  ret=0
+[cvode] pt=138/200  t=8.60346  steps=212  rhs=245  nlcf=0  etf=1  h=0.211437  ret=0
+[cvode] pt=139/200  t=9.65883  steps=217  rhs=250  nlcf=0  etf=1  h=0.211437  ret=0
+[cvode] pt=140/200  t=10.8437  steps=221  rhs=254  nlcf=0  etf=1  h=0.319256  ret=0
+[cvode] pt=141/200  t=12.1738  steps=225  rhs=258  nlcf=0  etf=1  h=0.319256  ret=0
+[cvode] pt=142/200  t=13.6672  steps=230  rhs=264  nlcf=0  etf=1  h=0.479947  ret=0
+[cvode] pt=143/200  t=15.3437  steps=233  rhs=267  nlcf=0  etf=1  h=0.479947  ret=0
+[cvode] pt=144/200  t=17.2259  steps=239  rhs=282  nlcf=0  etf=4  h=0.13455  ret=0
+[cvode] pt=145/200  t=19.3389  steps=249  rhs=294  nlcf=0  etf=4  h=0.247126  ret=0
+[cvode] pt=146/200  t=21.7112  steps=256  rhs=301  nlcf=0  etf=4  h=0.559258  ret=0
+[cvode] pt=147/200  t=24.3744  steps=260  rhs=306  nlcf=0  etf=4  h=0.559258  ret=0
+[cvode] pt=148/200  t=27.3644  steps=266  rhs=313  nlcf=0  etf=4  h=0.861511  ret=0
+[cvode] pt=149/200  t=30.7211  steps=270  rhs=318  nlcf=0  etf=4  h=0.861511  ret=0
+[cvode] pt=150/200  t=34.4896  steps=274  rhs=322  nlcf=0  etf=4  h=0.861511  ret=0
+[cvode] pt=151/200  t=38.7204  steps=279  rhs=327  nlcf=0  etf=4  h=0.861511  ret=0
+[cvode] pt=152/200  t=43.4701  steps=283  rhs=331  nlcf=0  etf=4  h=1.30133  ret=0
+[cvode] pt=153/200  t=48.8025  steps=287  rhs=335  nlcf=0  etf=4  h=1.30133  ret=0
+[cvode] pt=154/200  t=54.789  steps=304  rhs=366  nlcf=0  etf=9  h=0.0668627  ret=0
+[cvode] pt=155/200  t=61.5099  steps=354  rhs=433  nlcf=0  etf=14  h=0.313927  ret=0
+[cvode] pt=156/200  t=69.0551  steps=375  rhs=455  nlcf=0  etf=14  h=0.759374  ret=0
+[cvode] pt=157/200  t=77.526  steps=383  rhs=465  nlcf=0  etf=14  h=1.14894  ret=0
+[cvode] pt=158/200  t=87.0359  steps=389  rhs=471  nlcf=0  etf=14  h=1.74038  ret=0
+[cvode] pt=159/200  t=97.7124  steps=395  rhs=477  nlcf=0  etf=14  h=1.74038  ret=0
+[cvode] pt=160/200  t=109.699  steps=402  rhs=484  nlcf=0  etf=14  h=1.74038  ret=0
+[cvode] pt=161/200  t=123.155  steps=423  rhs=519  nlcf=0  etf=19  h=0.0951273  ret=0
+[cvode] pt=162/200  t=138.262  steps=481  rhs=598  nlcf=0  etf=22  h=0.511771  ret=0
+[cvode] pt=163/200  t=155.223  steps=498  rhs=616  nlcf=0  etf=22  h=1.90271  ret=0
+[cvode] pt=164/200  t=174.263  steps=506  rhs=626  nlcf=0  etf=22  h=3.21218  ret=0
+[cvode] pt=165/200  t=195.64  steps=511  rhs=631  nlcf=0  etf=22  h=5.05389  ret=0
+[cvode] pt=166/200  t=219.639  steps=515  rhs=636  nlcf=0  etf=22  h=5.05389  ret=0
+[cvode] pt=167/200  t=246.581  steps=521  rhs=642  nlcf=0  etf=22  h=5.05389  ret=0
+[cvode] pt=168/200  t=276.829  steps=527  rhs=648  nlcf=0  etf=22  h=5.05389  ret=0
+[cvode] pt=169/200  t=310.787  steps=556  rhs=694  nlcf=0  etf=26  h=0.869422  ret=0
+[cvode] pt=170/200  t=348.91  steps=621  rhs=777  nlcf=0  etf=31  h=1.12874  ret=0
+[cvode] pt=171/200  t=391.71  steps=637  rhs=795  nlcf=0  etf=31  h=7.8983  ret=0
+[cvode] pt=172/200  t=439.76  steps=642  rhs=800  nlcf=0  etf=31  h=12.8419  ret=0
+[cvode] pt=173/200  t=493.705  steps=647  rhs=807  nlcf=0  etf=31  h=12.8419  ret=0
+[cvode] pt=174/200  t=554.266  steps=651  rhs=811  nlcf=0  etf=31  h=12.8419  ret=0
+[cvode] pt=175/200  t=622.257  steps=657  rhs=817  nlcf=0  etf=31  h=12.8419  ret=0
+[cvode] pt=176/200  t=698.588  steps=662  rhs=823  nlcf=0  etf=31  h=19.5169  ret=0
+[cvode] pt=177/200  t=784.282  steps=666  rhs=827  nlcf=0  etf=31  h=19.5169  ret=0
+[cvode] pt=178/200  t=880.488  steps=670  rhs=831  nlcf=0  etf=31  h=29.8863  ret=0
+[cvode] pt=179/200  t=988.496  steps=674  rhs=836  nlcf=0  etf=31  h=29.8863  ret=0
+[cvode] pt=180/200  t=1109.75  steps=678  rhs=840  nlcf=0  etf=31  h=29.8863  ret=0
+[cvode] pt=181/200  t=1245.88  steps=683  rhs=845  nlcf=0  etf=31  h=29.8863  ret=0
+[cvode] pt=182/200  t=1398.71  steps=688  rhs=853  nlcf=0  etf=32  h=20.4817  ret=0
+[cvode] pt=183/200  t=1570.29  steps=707  rhs=880  nlcf=0  etf=34  h=5.86069  ret=0
+[cvode] pt=184/200  t=1762.91  steps=720  rhs=908  nlcf=3  etf=34  h=28.0034  ret=0
+[cvode] pt=185/200  t=1979.17  steps=736  rhs=935  nlcf=3  etf=36  h=18.702  ret=0
+[cvode] pt=186/200  t=2221.95  steps=743  rhs=943  nlcf=3  etf=36  h=45.9837  ret=0
+[cvode] pt=187/200  t=2494.51  steps=749  rhs=954  nlcf=3  etf=36  h=45.9837  ret=0
+[cvode] pt=188/200  t=2800.5  steps=755  rhs=960  nlcf=3  etf=36  h=45.9837  ret=0
+[cvode] pt=189/200  t=3144.04  steps=764  rhs=978  nlcf=5  etf=36  h=19.172  ret=0
+[cvode] pt=190/200  t=3529.71  steps=783  rhs=1006  nlcf=5  etf=36  h=34.6893  ret=0
+[cvode] pt=191/200  t=3962.69  steps=794  rhs=1018  nlcf=5  etf=36  h=58.5276  ret=0
+[cvode] pt=192/200  t=4448.78  steps=801  rhs=1029  nlcf=5  etf=36  h=89.9578  ret=0
+[cvode] pt=193/200  t=4994.51  steps=821  rhs=1065  nlcf=7  etf=37  h=50.6885  ret=0
+[cvode] pt=194/200  t=5607.17  steps=829  rhs=1075  nlcf=7  etf=37  h=142.544  ret=0
+[cvode] pt=195/200  t=6294.99  steps=832  rhs=1079  nlcf=7  etf=37  h=241.112  ret=0
+[cvode] pt=196/200  t=7067.18  steps=836  rhs=1083  nlcf=7  etf=37  h=241.112  ret=0
+[cvode] pt=197/200  t=7934.1  steps=839  rhs=1086  nlcf=7  etf=37  h=241.112  ret=0
+[cvode] pt=198/200  t=8907.35  steps=842  rhs=1090  nlcf=7  etf=37  h=361.872  ret=0
+[cvode] pt=199/200  t=10000  steps=845  rhs=1093  nlcf=7  etf=37  h=361.872  ret=0
+[stats] steps=845 nfe=1093 nni=1090 nli=5948 nli_per_nni=5.46 npe=20 nps=6902 ncfn=7 netf=37 nlsetup=168 interrupted=0
+Done: 200 time points written.
+Reading bin file: C:\Users\Owner\AppData\Local\Temp\expanded_cd_3qaj0u5v.bin (305600 bytes)
+  parsed 38200 doubles -> 200 rows x 191 cols
+C++ solver completed -- 200 time points
+Results processing complete.
+  -> status=completed  wall=185.76 s  n_pts=200  t_final=1.000e+04
+
+========================================================================
+  CASE B-JC: equations='bin_moment'  linsol='gmres'  prec='Jacobi'
+========================================================================
+
+Launching solver_mode='full_system' …
+C++ solver: solver.exe  N_eq=190  solver_mode='full_system'  physics='bin_moment_CD_fission'
+[OpenMP] OMP_NUM_THREADS=24 honored — using 24 threads
+[OpenMP_threads] 24
+RadCluster_1_0 solver: N_eq=190  physics_option=2  he_mode=0  he_kinetics=quasi_steady_state  C_floor=1e-25  window_mode=0
+[cvode] pt=1/200  t=1.12267e-06  steps=7  rhs=10  nlcf=0  etf=0  h=9.28319e-08  ret=0
+[cvode] pt=2/200  t=1.26038e-06  steps=8  rhs=11  nlcf=0  etf=0  h=1.93971e-07  ret=0
+[cvode] pt=3/200  t=1.41499e-06  steps=9  rhs=12  nlcf=0  etf=0  h=3.71791e-07  ret=0
+[cvode] pt=4/200  t=1.58857e-06  steps=9  rhs=12  nlcf=0  etf=0  h=3.71791e-07  ret=0
+[cvode] pt=5/200  t=1.78343e-06  steps=10  rhs=13  nlcf=0  etf=0  h=7.16725e-07  ret=0
+[cvode] pt=6/200  t=2.0022e-06  steps=10  rhs=13  nlcf=0  etf=0  h=7.16725e-07  ret=0
+[cvode] pt=7/200  t=2.24781e-06  steps=10  rhs=13  nlcf=0  etf=0  h=7.16725e-07  ret=0
+[cvode] pt=8/200  t=2.52354e-06  steps=11  rhs=15  nlcf=0  etf=0  h=2.06074e-06  ret=0
+[cvode] pt=9/200  t=2.8331e-06  steps=11  rhs=15  nlcf=0  etf=0  h=2.06074e-06  ret=0
+[cvode] pt=10/200  t=3.18063e-06  steps=11  rhs=15  nlcf=0  etf=0  h=2.06074e-06  ret=0
+[cvode] pt=11/200  t=3.57079e-06  steps=11  rhs=15  nlcf=0  etf=0  h=2.06074e-06  ret=0
+[cvode] pt=12/200  t=4.00881e-06  steps=11  rhs=15  nlcf=0  etf=0  h=2.06074e-06  ret=0
+[cvode] pt=13/200  t=4.50056e-06  steps=12  rhs=19  nlcf=0  etf=1  h=1.08257e-06  ret=0
+[cvode] pt=14/200  t=5.05263e-06  steps=12  rhs=19  nlcf=0  etf=1  h=1.08257e-06  ret=0
+[cvode] pt=15/200  t=5.67243e-06  steps=13  rhs=20  nlcf=0  etf=1  h=1.08257e-06  ret=0
+[cvode] pt=16/200  t=6.36825e-06  steps=13  rhs=20  nlcf=0  etf=1  h=1.08257e-06  ret=0
+[cvode] pt=17/200  t=7.14943e-06  steps=14  rhs=21  nlcf=0  etf=1  h=1.08257e-06  ret=0
+[cvode] pt=18/200  t=8.02643e-06  steps=15  rhs=23  nlcf=0  etf=1  h=2.14297e-06  ret=0
+[cvode] pt=19/200  t=9.01102e-06  steps=15  rhs=23  nlcf=0  etf=1  h=2.14297e-06  ret=0
+[cvode] pt=20/200  t=1.01164e-05  steps=16  rhs=24  nlcf=0  etf=1  h=2.14297e-06  ret=0
+[cvode] pt=21/200  t=1.13573e-05  steps=16  rhs=24  nlcf=0  etf=1  h=2.14297e-06  ret=0
+[cvode] pt=22/200  t=1.27505e-05  steps=17  rhs=25  nlcf=0  etf=1  h=2.14297e-06  ret=0
+[cvode] pt=23/200  t=1.43146e-05  steps=18  rhs=26  nlcf=0  etf=1  h=2.14297e-06  ret=0
+[cvode] pt=24/200  t=1.60705e-05  steps=18  rhs=26  nlcf=0  etf=1  h=2.14297e-06  ret=0
+[cvode] pt=25/200  t=1.80419e-05  steps=19  rhs=27  nlcf=0  etf=1  h=3.66829e-06  ret=0
+[cvode] pt=26/200  t=2.0255e-05  steps=20  rhs=29  nlcf=0  etf=1  h=6.26128e-06  ret=0
+[cvode] pt=27/200  t=2.27397e-05  steps=20  rhs=29  nlcf=0  etf=1  h=6.26128e-06  ret=0
+[cvode] pt=28/200  t=2.55291e-05  steps=20  rhs=29  nlcf=0  etf=1  h=6.26128e-06  ret=0
+[cvode] pt=29/200  t=2.86607e-05  steps=21  rhs=31  nlcf=0  etf=1  h=1.08537e-05  ret=0
+[cvode] pt=30/200  t=3.21764e-05  steps=21  rhs=31  nlcf=0  etf=1  h=1.08537e-05  ret=0
+[cvode] pt=31/200  t=3.61234e-05  steps=21  rhs=31  nlcf=0  etf=1  h=1.08537e-05  ret=0
+[cvode] pt=32/200  t=4.05546e-05  steps=22  rhs=33  nlcf=0  etf=1  h=1.08537e-05  ret=0
+[cvode] pt=33/200  t=4.55294e-05  steps=22  rhs=33  nlcf=0  etf=1  h=1.08537e-05  ret=0
+[cvode] pt=34/200  t=5.11143e-05  steps=23  rhs=34  nlcf=0  etf=1  h=1.08537e-05  ret=0
+[cvode] pt=35/200  t=5.73844e-05  steps=23  rhs=34  nlcf=0  etf=1  h=1.08537e-05  ret=0
+[cvode] pt=36/200  t=6.44236e-05  steps=24  rhs=35  nlcf=0  etf=1  h=1.08537e-05  ret=0
+[cvode] pt=37/200  t=7.23263e-05  steps=25  rhs=36  nlcf=0  etf=1  h=1.08537e-05  ret=0
+[cvode] pt=38/200  t=8.11984e-05  steps=26  rhs=37  nlcf=0  etf=1  h=2.19667e-05  ret=0
+[cvode] pt=39/200  t=9.11589e-05  steps=26  rhs=37  nlcf=0  etf=1  h=2.19667e-05  ret=0
+[cvode] pt=40/200  t=0.000102341  steps=26  rhs=37  nlcf=0  etf=1  h=2.19667e-05  ret=0
+[cvode] pt=41/200  t=0.000114895  steps=27  rhs=38  nlcf=0  etf=1  h=2.19667e-05  ret=0
+[cvode] pt=42/200  t=0.000128989  steps=28  rhs=40  nlcf=0  etf=1  h=4.32485e-05  ret=0
+[cvode] pt=43/200  t=0.000144812  steps=28  rhs=40  nlcf=0  etf=1  h=4.32485e-05  ret=0
+[cvode] pt=44/200  t=0.000162576  steps=28  rhs=40  nlcf=0  etf=1  h=4.32485e-05  ret=0
+[cvode] pt=45/200  t=0.000182518  steps=29  rhs=42  nlcf=0  etf=1  h=4.32485e-05  ret=0
+[cvode] pt=46/200  t=0.000204907  steps=29  rhs=42  nlcf=0  etf=1  h=4.32485e-05  ret=0
+[cvode] pt=47/200  t=0.000230043  steps=30  rhs=43  nlcf=0  etf=1  h=4.32485e-05  ret=0
+[cvode] pt=48/200  t=0.000258262  steps=31  rhs=44  nlcf=0  etf=1  h=4.32485e-05  ret=0
+[cvode] pt=49/200  t=0.000289942  steps=31  rhs=44  nlcf=0  etf=1  h=4.32485e-05  ret=0
+[cvode] pt=50/200  t=0.000325509  steps=32  rhs=45  nlcf=0  etf=1  h=4.32485e-05  ret=0
+[cvode] pt=51/200  t=0.000365438  steps=33  rhs=46  nlcf=0  etf=1  h=4.32485e-05  ret=0
+[cvode] pt=52/200  t=0.000410266  steps=34  rhs=48  nlcf=0  etf=1  h=7.10162e-05  ret=0
+[cvode] pt=53/200  t=0.000460592  steps=35  rhs=49  nlcf=0  etf=1  h=7.10162e-05  ret=0
+[cvode] pt=54/200  t=0.000517092  steps=35  rhs=49  nlcf=0  etf=1  h=7.10162e-05  ret=0
+[cvode] pt=55/200  t=0.000580523  steps=36  rhs=50  nlcf=0  etf=1  h=7.10162e-05  ret=0
+[cvode] pt=56/200  t=0.000651734  steps=37  rhs=51  nlcf=0  etf=1  h=7.10162e-05  ret=0
+[cvode] pt=57/200  t=0.000731681  steps=38  rhs=52  nlcf=0  etf=1  h=7.10162e-05  ret=0
+[cvode] pt=58/200  t=0.000821434  steps=40  rhs=54  nlcf=0  etf=1  h=7.10162e-05  ret=0
+[cvode] pt=59/200  t=0.000922198  steps=41  rhs=55  nlcf=0  etf=1  h=7.10162e-05  ret=0
+[cvode] pt=60/200  t=0.00103532  steps=43  rhs=58  nlcf=0  etf=1  h=0.000128219  ret=0
+[cvode] pt=61/200  t=0.00116232  steps=44  rhs=60  nlcf=0  etf=1  h=0.000128219  ret=0
+[cvode] pt=62/200  t=0.0013049  steps=45  rhs=61  nlcf=0  etf=1  h=0.000128219  ret=0
+[cvode] pt=63/200  t=0.00146497  steps=46  rhs=62  nlcf=0  etf=1  h=0.000128219  ret=0
+[cvode] pt=64/200  t=0.00164468  steps=47  rhs=63  nlcf=0  etf=1  h=0.000128219  ret=0
+[cvode] pt=65/200  t=0.00184642  steps=49  rhs=65  nlcf=0  etf=1  h=0.000128219  ret=0
+[cvode] pt=66/200  t=0.00207292  steps=51  rhs=67  nlcf=0  etf=1  h=0.000282252  ret=0
+[cvode] pt=67/200  t=0.0023272  steps=51  rhs=67  nlcf=0  etf=1  h=0.000282252  ret=0
+[cvode] pt=68/200  t=0.00261268  steps=52  rhs=69  nlcf=0  etf=1  h=0.000282252  ret=0
+[cvode] pt=69/200  t=0.00293317  steps=54  rhs=72  nlcf=0  etf=1  h=0.000282252  ret=0
+[cvode] pt=70/200  t=0.00329297  steps=55  rhs=73  nlcf=0  etf=1  h=0.000282252  ret=0
+[cvode] pt=71/200  t=0.00369691  steps=56  rhs=74  nlcf=0  etf=1  h=0.000282252  ret=0
+[cvode] pt=72/200  t=0.0041504  steps=58  rhs=76  nlcf=0  etf=1  h=0.000282252  ret=0
+[cvode] pt=73/200  t=0.00465953  steps=60  rhs=78  nlcf=0  etf=1  h=0.000282252  ret=0
+[cvode] pt=74/200  t=0.0052311  steps=62  rhs=80  nlcf=0  etf=1  h=0.000282252  ret=0
+[cvode] pt=75/200  t=0.00587279  steps=64  rhs=82  nlcf=0  etf=1  h=0.000282252  ret=0
+[cvode] pt=76/200  t=0.00659319  steps=66  rhs=84  nlcf=0  etf=1  h=0.000427386  ret=0
+[cvode] pt=77/200  t=0.00740196  steps=68  rhs=87  nlcf=0  etf=1  h=0.000427386  ret=0
+[cvode] pt=78/200  t=0.00830994  steps=70  rhs=89  nlcf=0  etf=1  h=0.000427386  ret=0
+[cvode] pt=79/200  t=0.0093293  steps=72  rhs=92  nlcf=0  etf=1  h=0.00066479  ret=0
+[cvode] pt=80/200  t=0.0104737  steps=74  rhs=95  nlcf=0  etf=1  h=0.00066479  ret=0
+[cvode] pt=81/200  t=0.0117585  steps=76  rhs=97  nlcf=0  etf=1  h=0.00066479  ret=0
+[cvode] pt=82/200  t=0.0132009  steps=78  rhs=99  nlcf=0  etf=1  h=0.00066479  ret=0
+[cvode] pt=83/200  t=0.0148202  steps=80  rhs=101  nlcf=0  etf=1  h=0.00066479  ret=0
+[cvode] pt=84/200  t=0.0166382  steps=82  rhs=104  nlcf=0  etf=1  h=0.0010159  ret=0
+[cvode] pt=85/200  t=0.0186791  steps=84  rhs=106  nlcf=0  etf=1  h=0.0010159  ret=0
+[cvode] pt=86/200  t=0.0209705  steps=87  rhs=109  nlcf=0  etf=1  h=0.0010159  ret=0
+[cvode] pt=87/200  t=0.0235429  steps=88  rhs=111  nlcf=0  etf=1  h=0.00202376  ret=0
+[cvode] pt=88/200  t=0.0264308  steps=90  rhs=113  nlcf=0  etf=1  h=0.00202376  ret=0
+[cvode] pt=89/200  t=0.029673  steps=91  rhs=114  nlcf=0  etf=1  h=0.00202376  ret=0
+[cvode] pt=90/200  t=0.0333129  steps=93  rhs=116  nlcf=0  etf=1  h=0.00202376  ret=0
+[cvode] pt=91/200  t=0.0373994  steps=95  rhs=118  nlcf=0  etf=1  h=0.00202376  ret=0
+[cvode] pt=92/200  t=0.0419871  steps=97  rhs=121  nlcf=0  etf=1  h=0.00338836  ret=0
+[cvode] pt=93/200  t=0.0471375  steps=98  rhs=122  nlcf=0  etf=1  h=0.00338836  ret=0
+[cvode] pt=94/200  t=0.0529198  steps=100  rhs=124  nlcf=0  etf=1  h=0.00338836  ret=0
+[cvode] pt=95/200  t=0.0594113  steps=102  rhs=126  nlcf=0  etf=1  h=0.00338836  ret=0
+[cvode] pt=96/200  t=0.0666992  steps=104  rhs=128  nlcf=0  etf=1  h=0.00509565  ret=0
+[cvode] pt=97/200  t=0.074881  steps=105  rhs=130  nlcf=0  etf=1  h=0.00509565  ret=0
+[cvode] pt=98/200  t=0.0840665  steps=107  rhs=132  nlcf=0  etf=1  h=0.00509565  ret=0
+[cvode] pt=99/200  t=0.0943788  steps=109  rhs=134  nlcf=0  etf=1  h=0.00509565  ret=0
+[cvode] pt=100/200  t=0.105956  steps=111  rhs=136  nlcf=0  etf=1  h=0.00509565  ret=0
+[cvode] pt=101/200  t=0.118953  steps=114  rhs=139  nlcf=0  etf=1  h=0.00876184  ret=0
+[cvode] pt=102/200  t=0.133545  steps=115  rhs=141  nlcf=0  etf=1  h=0.00876184  ret=0
+[cvode] pt=103/200  t=0.149927  steps=117  rhs=143  nlcf=0  etf=1  h=0.00876184  ret=0
+[cvode] pt=104/200  t=0.168318  steps=119  rhs=145  nlcf=0  etf=1  h=0.00876184  ret=0
+[cvode] pt=105/200  t=0.188965  steps=122  rhs=148  nlcf=0  etf=1  h=0.00876184  ret=0
+[cvode] pt=106/200  t=0.212145  steps=124  rhs=150  nlcf=0  etf=1  h=0.00876184  ret=0
+[cvode] pt=107/200  t=0.238169  steps=127  rhs=153  nlcf=0  etf=1  h=0.0137381  ret=0
+[cvode] pt=108/200  t=0.267384  steps=129  rhs=155  nlcf=0  etf=1  h=0.0137381  ret=0
+[cvode] pt=109/200  t=0.300184  steps=132  rhs=158  nlcf=0  etf=1  h=0.0137381  ret=0
+[cvode] pt=110/200  t=0.337006  steps=134  rhs=160  nlcf=0  etf=1  h=0.0137381  ret=0
+[cvode] pt=111/200  t=0.378346  steps=136  rhs=162  nlcf=0  etf=1  h=0.0210395  ret=0
+[cvode] pt=112/200  t=0.424757  steps=139  rhs=165  nlcf=0  etf=1  h=0.0210395  ret=0
+[cvode] pt=113/200  t=0.476861  steps=141  rhs=167  nlcf=0  etf=1  h=0.0350083  ret=0
+[cvode] pt=114/200  t=0.535357  steps=142  rhs=169  nlcf=0  etf=1  h=0.0350083  ret=0
+[cvode] pt=115/200  t=0.601028  steps=144  rhs=171  nlcf=0  etf=1  h=0.0350083  ret=0
+[cvode] pt=116/200  t=0.674754  steps=146  rhs=173  nlcf=0  etf=1  h=0.0350083  ret=0
+[cvode] pt=117/200  t=0.757525  steps=149  rhs=176  nlcf=0  etf=1  h=0.0350083  ret=0
+[cvode] pt=118/200  t=0.850449  steps=151  rhs=178  nlcf=0  etf=1  h=0.0350083  ret=0
+[cvode] pt=119/200  t=0.954772  steps=154  rhs=181  nlcf=0  etf=1  h=0.0350083  ret=0
+[cvode] pt=120/200  t=1.07189  steps=158  rhs=185  nlcf=0  etf=1  h=0.0579637  ret=0
+[cvode] pt=121/200  t=1.20338  steps=160  rhs=188  nlcf=0  etf=1  h=0.0579637  ret=0
+[cvode] pt=122/200  t=1.35099  steps=162  rhs=190  nlcf=0  etf=1  h=0.0579637  ret=0
+[cvode] pt=123/200  t=1.51672  steps=165  rhs=193  nlcf=0  etf=1  h=0.0579637  ret=0
+[cvode] pt=124/200  t=1.70277  steps=168  rhs=196  nlcf=0  etf=1  h=0.0880253  ret=0
+[cvode] pt=125/200  t=1.91164  steps=171  rhs=200  nlcf=0  etf=1  h=0.0880253  ret=0
+[cvode] pt=126/200  t=2.14614  steps=173  rhs=202  nlcf=0  etf=1  h=0.0880253  ret=0
+[cvode] pt=127/200  t=2.4094  steps=176  rhs=205  nlcf=0  etf=1  h=0.0880253  ret=0
+[cvode] pt=128/200  t=2.70496  steps=180  rhs=209  nlcf=0  etf=1  h=0.0880253  ret=0
+[cvode] pt=129/200  t=3.03677  steps=182  rhs=212  nlcf=0  etf=1  h=0.140446  ret=0
+[cvode] pt=130/200  t=3.40929  steps=185  rhs=215  nlcf=0  etf=1  h=0.140446  ret=0
+[cvode] pt=131/200  t=3.82749  steps=188  rhs=218  nlcf=0  etf=1  h=0.140446  ret=0
+[cvode] pt=132/200  t=4.297  steps=191  rhs=221  nlcf=0  etf=1  h=0.140446  ret=0
+[cvode] pt=133/200  t=4.82411  steps=195  rhs=225  nlcf=0  etf=1  h=0.140446  ret=0
+[cvode] pt=134/200  t=5.41587  steps=198  rhs=229  nlcf=0  etf=1  h=0.22278  ret=0
+[cvode] pt=135/200  t=6.08022  steps=201  rhs=232  nlcf=0  etf=1  h=0.22278  ret=0
+[cvode] pt=136/200  t=6.82607  steps=204  rhs=235  nlcf=0  etf=1  h=0.22278  ret=0
+[cvode] pt=137/200  t=7.66341  steps=208  rhs=239  nlcf=0  etf=1  h=0.22278  ret=0
+[cvode] pt=138/200  t=8.60346  steps=212  rhs=243  nlcf=0  etf=1  h=0.22278  ret=0
+[cvode] pt=139/200  t=9.65883  steps=216  rhs=247  nlcf=0  etf=1  h=0.348925  ret=0
+[cvode] pt=140/200  t=10.8437  steps=220  rhs=252  nlcf=0  etf=1  h=0.348925  ret=0
+[cvode] pt=141/200  t=12.1738  steps=224  rhs=256  nlcf=0  etf=1  h=0.348925  ret=0
+[cvode] pt=142/200  t=13.6672  steps=228  rhs=260  nlcf=0  etf=1  h=0.348925  ret=0
+[cvode] pt=143/200  t=15.3437  steps=232  rhs=265  nlcf=0  etf=1  h=0.554812  ret=0
+[cvode] pt=144/200  t=17.2259  steps=237  rhs=276  nlcf=0  etf=3  h=0.190151  ret=0
+[cvode] pt=145/200  t=19.3389  steps=248  rhs=288  nlcf=0  etf=3  h=0.190151  ret=0
+[cvode] pt=146/200  t=21.7112  steps=256  rhs=296  nlcf=0  etf=3  h=0.536883  ret=0
+[cvode] pt=147/200  t=24.3744  steps=261  rhs=302  nlcf=0  etf=3  h=0.536883  ret=0
+[cvode] pt=148/200  t=27.3644  steps=267  rhs=309  nlcf=0  etf=3  h=0.900537  ret=0
+[cvode] pt=149/200  t=30.7211  steps=270  rhs=313  nlcf=0  etf=3  h=0.900537  ret=0
+[cvode] pt=150/200  t=34.4896  steps=275  rhs=318  nlcf=0  etf=3  h=0.900537  ret=0
+[cvode] pt=151/200  t=38.7204  steps=279  rhs=322  nlcf=0  etf=3  h=0.900537  ret=0
+[cvode] pt=152/200  t=43.4701  steps=283  rhs=327  nlcf=0  etf=3  h=1.39032  ret=0
+[cvode] pt=153/200  t=48.8025  steps=287  rhs=331  nlcf=0  etf=3  h=1.39032  ret=0
+[cvode] pt=154/200  t=54.789  steps=311  rhs=364  nlcf=0  etf=7  h=0.194529  ret=0
+[cvode] pt=155/200  t=61.5099  steps=354  rhs=425  nlcf=0  etf=12  h=0.227773  ret=0
+[cvode] pt=156/200  t=69.0551  steps=372  rhs=444  nlcf=0  etf=12  h=0.794101  ret=0
+[cvode] pt=157/200  t=77.526  steps=381  rhs=455  nlcf=0  etf=12  h=1.33674  ret=0
+[cvode] pt=158/200  t=87.0359  steps=387  rhs=461  nlcf=0  etf=12  h=2.17267  ret=0
+[cvode] pt=159/200  t=97.7124  steps=392  rhs=466  nlcf=0  etf=12  h=2.17267  ret=0
+[cvode] pt=160/200  t=109.699  steps=396  rhs=471  nlcf=0  etf=12  h=3.33333  ret=0
+[cvode] pt=161/200  t=123.155  steps=413  rhs=500  nlcf=0  etf=16  h=0.132926  ret=0
+[cvode] pt=162/200  t=138.262  steps=468  rhs=577  nlcf=0  etf=21  h=0.597217  ret=0
+[cvode] pt=163/200  t=155.223  steps=487  rhs=599  nlcf=0  etf=21  h=2.28294  ret=0
+[cvode] pt=164/200  t=174.263  steps=495  rhs=607  nlcf=0  etf=21  h=2.28294  ret=0
+[cvode] pt=165/200  t=195.64  steps=505  rhs=617  nlcf=0  etf=21  h=2.28294  ret=0
+[cvode] pt=166/200  t=219.639  steps=515  rhs=627  nlcf=0  etf=21  h=2.28294  ret=0
+[cvode] pt=167/200  t=246.581  steps=527  rhs=639  nlcf=0  etf=21  h=2.28294  ret=0
+[cvode] pt=168/200  t=276.829  steps=540  rhs=652  nlcf=0  etf=21  h=2.28294  ret=0
+[cvode] pt=169/200  t=310.787  steps=575  rhs=698  nlcf=0  etf=25  h=0.630396  ret=0
+[cvode] pt=170/200  t=348.91  steps=639  rhs=789  nlcf=0  etf=31  h=0.983116  ret=0
+[cvode] pt=171/200  t=391.71  steps=655  rhs=806  nlcf=0  etf=31  h=4.09923  ret=0
+[cvode] pt=172/200  t=439.76  steps=661  rhs=812  nlcf=0  etf=31  h=13.0926  ret=0
+[cvode] pt=173/200  t=493.705  steps=665  rhs=817  nlcf=0  etf=31  h=13.0926  ret=0
+[cvode] pt=174/200  t=554.266  steps=670  rhs=822  nlcf=0  etf=31  h=13.0926  ret=0
+[cvode] pt=175/200  t=622.257  steps=675  rhs=827  nlcf=0  etf=31  h=13.0926  ret=0
+[cvode] pt=176/200  t=698.588  steps=680  rhs=832  nlcf=0  etf=31  h=20.9361  ret=0
+[cvode] pt=177/200  t=784.282  steps=684  rhs=837  nlcf=0  etf=31  h=20.9361  ret=0
+[cvode] pt=178/200  t=880.488  steps=689  rhs=842  nlcf=0  etf=31  h=20.9361  ret=0
+[cvode] pt=179/200  t=988.496  steps=692  rhs=846  nlcf=0  etf=31  h=32.0274  ret=0
+[cvode] pt=180/200  t=1109.75  steps=696  rhs=850  nlcf=0  etf=31  h=32.0274  ret=0
+[cvode] pt=181/200  t=1245.88  steps=706  rhs=870  nlcf=0  etf=34  h=8.25193  ret=0
+[cvode] pt=182/200  t=1398.71  steps=718  rhs=884  nlcf=0  etf=34  h=26.28  ret=0
+[cvode] pt=183/200  t=1570.29  steps=725  rhs=891  nlcf=0  etf=34  h=26.28  ret=0
+[cvode] pt=184/200  t=1762.91  steps=732  rhs=898  nlcf=0  etf=34  h=26.28  ret=0
+[cvode] pt=185/200  t=1979.17  steps=737  rhs=903  nlcf=0  etf=34  h=40.7779  ret=0
+[cvode] pt=186/200  t=2221.95  steps=743  rhs=910  nlcf=0  etf=34  h=63.106  ret=0
+[cvode] pt=187/200  t=2494.51  steps=747  rhs=914  nlcf=0  etf=34  h=63.106  ret=0
+[cvode] pt=188/200  t=2800.5  steps=752  rhs=920  nlcf=0  etf=34  h=63.106  ret=0
+[cvode] pt=189/200  t=3144.04  steps=758  rhs=926  nlcf=0  etf=34  h=63.106  ret=0
+[cvode] pt=190/200  t=3529.71  steps=764  rhs=934  nlcf=0  etf=34  h=63.106  ret=0
+[cvode] pt=191/200  t=3962.69  steps=770  rhs=940  nlcf=0  etf=34  h=99.9273  ret=0
+[cvode] pt=192/200  t=4448.78  steps=775  rhs=946  nlcf=0  etf=34  h=99.9273  ret=0
+[cvode] pt=193/200  t=4994.51  steps=780  rhs=952  nlcf=0  etf=34  h=164.064  ret=0
+[cvode] pt=194/200  t=5607.17  steps=783  rhs=956  nlcf=0  etf=34  h=314.969  ret=0
+[cvode] pt=195/200  t=6294.99  steps=785  rhs=961  nlcf=0  etf=35  h=219.784  ret=0
+[cvode] pt=196/200  t=7067.18  steps=789  rhs=965  nlcf=0  etf=35  h=219.784  ret=0
+[cvode] pt=197/200  t=7934.1  steps=793  rhs=969  nlcf=0  etf=35  h=219.784  ret=0
+[cvode] pt=198/200  t=8907.35  steps=797  rhs=973  nlcf=0  etf=35  h=219.784  ret=0
+[cvode] pt=199/200  t=10000  steps=802  rhs=979  nlcf=0  etf=35  h=219.784  ret=0
+[stats] steps=802 nfe=979 nni=976 nli=10973 nli_per_nni=11.24 npe=151 nps=11818 ncfn=0 netf=35 nlsetup=151 interrupted=0
+Done: 200 time points written.
+Reading bin file: C:\Users\Owner\AppData\Local\Temp\expanded_cd_2nff069p.bin (305600 bytes)
+  parsed 38200 doubles -> 200 rows x 191 cols
+C++ solver completed -- 200 time points
+Results processing complete.
+  -> status=completed  wall=239.22 s  n_pts=200  t_final=1.000e+04
+
+========================================================================
+  CASE B-KLU: equations='bin_moment'  linsol='klu'  prec=None
+========================================================================
+
+Launching solver_mode='full_system' …
+C++ solver: solver.exe  N_eq=190  solver_mode='full_system'  physics='bin_moment_CD_fission'
+[OpenMP] OMP_NUM_THREADS=24 honored — using 24 threads
+[OpenMP_threads] 24
+RadCluster_1_0 solver: N_eq=190  physics_option=2  he_mode=0  he_kinetics=quasi_steady_state  C_floor=1e-25  window_mode=0
+[KLU] linsol=klu only supports full_CD modes (physics_option 0 or 1).  Use gmres for bin_moment.
+C++ solver failed (exit code 1)
+Reading bin file: C:\Users\Owner\AppData\Local\Temp\expanded_cd_imr9g8hn.bin (0 bytes)
+  parsed 0 doubles -> 0 rows x 191 cols
+C++ solver produced no parseable output
+  -> no results returned (6.3 s)
+
+Raw results -> C:\Users\Owner\Documents\Repos\RadCluster\RadCluster_1_0\codes\Python_Testing\compare_linsol_results.json
+Report      -> C:\Users\Owner\Documents\Repos\RadCluster\RadCluster_1_0\codes\Python_Testing\compare_linsol_report.md

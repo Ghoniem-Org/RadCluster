@@ -1405,10 +1405,32 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
         i_He_idx = qss ? -1 : i_Q_base + 1;
     }
 
-    const double c_h = qss
-        ? (P.he_mode == 1 ? c_h_qss_case1(P, c_v, y + i_Q_base, n_Q_case1)
-                          : c_h_qss_case2(P, c_v, Q_tot))
-        : std::max(y[i_He_idx], 0.0);
+    // QSS free He.  For bin-moment Case 1 the capture sink must be restricted
+    // to the BINNED void classes only: He is captured solely by binned voids
+    // (discrete small voids have no per-bin He slot), so summing KHeV over all
+    // sizes — as the generic helper does — would compute c_h against more
+    // capture than the Q update actually performs, breaking He conservation.
+    // (Case 2 and the Kv==0 per-size Case 1 both capture over all sizes, so
+    // the generic full-range helper is correct there.)
+    double c_h;
+    if (!qss) {
+        c_h = std::max(y[i_He_idx], 0.0);
+    } else if (P.he_mode == 1 && Kv > 0) {
+        double cap_sink = 0.0;
+        for (int k = 0; k < Kv; ++k)
+            for (int m = m_lo[k]; m < m_hi[k]; ++m) {
+                const int mi = m - 1;
+                if (mi >= 0 && mi < V)
+                    cap_sink += P.KHeV[mi] * std::max(c_v[mi], 0.0);
+            }
+        const double sink   = P.k2_disl_He + cap_sink;
+        const double source = P.G_He + P.beta_He * Q_tot;
+        c_h = source / (sink > 1e-300 ? sink : 1e-300);
+    } else if (P.he_mode == 1) {
+        c_h = c_h_qss_case1(P, c_v, y + i_Q_base, n_Q_case1);
+    } else {
+        c_h = c_h_qss_case2(P, c_v, Q_tot);
+    }
 
     const double ci1 = c_n.empty() ? 0.0 : std::max(c_n[0], 0.0);
     const double cv1 = std::max(c_v[0], 0.0);

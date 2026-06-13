@@ -1,0 +1,513 @@
+% =====================================================================
+%  radcluster_2_1_RIS_plan.tex
+%  Development plan for RadCluster_2_1: radiation-induced segregation (RIS)
+%  and solute precipitation as a solute-decorated population layer.
+%
+%  Standalone, compilable:  pdflatex -> bibtex -> pdflatex x2
+%  Requires: amsmath, amssymb, booktabs, natbib[round,authoryear], hyperref
+%  Bibliography: \bibliography{radcluster_2_1_RIS_plan}
+% =====================================================================
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage[round,authoryear]{natbib}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+\usepackage{enumitem}
+
+\newcommand{\cv}{c_{V}}
+\newcommand{\ci}{c_{I}}
+\newcommand{\Dv}{D_{V}}
+\newcommand{\Di}{D_{I}}
+\newcommand{\Cs}{C_{s}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{\textbf{RadCluster\_2\_1 Development Plan}\\[2pt]
+\large Radiation-Induced Segregation and Solute Precipitation\\
+as a Solute-Decorated Population Layer}
+\author{RadCluster project --- planning note}
+\date{June 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This note plans the next minor version of RadCluster, \textbf{RadCluster\_2\_1},
+which adds radiation-induced segregation (RIS) and irradiation-driven solute
+precipitation to the existing cluster-dynamics framework for EUROFER97 /
+ferritic--martensitic (F/M) steel. It (i) reviews a proposed design that
+introduces RIS as a solute-decorated population/edge layer, (ii) synthesises
+the RIS modelling literature and the data required, (iii) maps the model onto
+the existing reaction-admissibility-graph (RAG) architecture, (iv) specifies a
+tractable reduced model with conservation diagnostics, and (v) gives a phased
+implementation plan with calibration and validation targets. The central
+recommendation is endorsed --- RIS/precipitation should enter as graph
+vertices and edges, not as an empirical hardening correction --- with three
+substantive corrections: the RIS coupling coefficients must be grounded in
+offline-tabulated Onsager/partial-diffusion transport ratios rather than free
+fit parameters; the EUROFER97 calibration target must lead with Cr-rich
+$\alpha'$ (Mn--Ni--Si precipitation is weak in EUROFER97 because Ni and Si are
+deliberately minimised); and the C++ kernel-mirroring cost is the dominant
+implementation risk and must be scheduled explicitly.
+\end{abstract}
+
+\tableofcontents
+
+% =====================================================================
+\section{Purpose and scope}
+% =====================================================================
+RadCluster\_2\_0 solves the coupled point-defect and cluster master equations
+for SIA loops ($\tfrac12\langle111\rangle$ and $\langle100\rangle$), vacancy
+cavities, and helium, with full-CD and bin-moment representations and two
+helium-occupancy reductions \citep{Ghoniem2026}. Solutes (Cr, Mn, Si, W, C, N)
+enter only as \emph{fixed} dissolved concentrations that scale the effective
+jump frequencies $\omega^{\rm eff}_\alpha$ through the solute-trapping factor.
+
+RadCluster\_2\_1 makes selected solutes \emph{dynamic} so that the model can
+predict: (a) RIS --- the irradiation-driven enrichment/depletion of Cr, Mn,
+Si, Ni at dislocations, loops, grain boundaries (GBs), and lath boundaries;
+(b) the solute-rich nanofeatures that follow --- Cr-rich $\alpha'$ and
+Mn--Ni--Si (MNS / G-phase) clusters; and (c) the precipitate contribution to
+hardening. The design goal is to add this physics \emph{declaratively} ---
+new populations, vertices, edges, and rate kernels --- while reusing the
+existing solver, reductions, and conservation machinery.
+
+% =====================================================================
+\section{Review of the proposed design}
+% =====================================================================
+The proposed update introduces (1) bulk and sink-local solute reservoirs
+$C_s^{b}$, $C_s^{\ell}$; (2) solute-rich precipitate populations $\alpha'$,
+MNS (as a pseudo-species $G$), and loop-decorating clouds; (3) solute trapping,
+emission, nucleation, radiation re-solution, and inter-population edges;
+(4) per-solute conservation diagnostics; and (5) a dispersed-barrier hardening
+sum. It correctly proposes to start from a reduced model rather than a full
+$(n_{\rm Cr},n_{\rm Mn},n_{\rm Si},n_{\rm Ni})$ composition grid.
+
+\subsection{What is correct and should be kept}
+\begin{itemize}[leftmargin=1.4em]
+\item \textbf{Architectural strategy.} Adding RIS/precipitation as
+solute-decorated RAG vertices and edges is exactly how the framework is
+designed to be extended. The edge taxonomy already contains
+\code{SOLUTE\_TRAPPING}, \code{INTER\_POPULATION}, \code{SOURCE}, \code{SINK},
+\code{COALESCENCE}, and \code{DISSOCIATION}; the state layout already supports
+auxiliary scalar/array blocks (\code{add\_scalar}, \code{add\_aux}); and the
+conservation block is already an auxiliary cumulative-integral pattern. No
+solver change is required to add vertices and edges.
+\item \textbf{Two-reservoir (bulk $+$ sink-local) RIS.} This is precisely the
+0D-compatible reduction the literature recommends when a spatially resolved
+profile across the sink is not solved \citep{Hu2021,Oplinger2026}. It reuses
+the bulk $\cv,\ci$ and sink strengths RadCluster already computes each step.
+\item \textbf{Pseudo-species $G$ for Mn--Ni--Si.} Collapsing the MNS
+composition to a single coordinate avoids the multi-dimensional CD explosion
+and is consistent with the fixed G-phase stoichiometry $\mathrm{Mn_6Ni_{16}Si_7}$
+used in the benchmark CD studies \citep{Ke2018mns,Ke2018fm}.
+\item \textbf{Re-solution term.} The athermal ejection form
+$\Gamma_{\rm res}=b_0\,\dot\phi$ is the same mechanism already implemented as
+P8 for helium and is the standard ballistic-mixing closure
+\citep{NelsonHudsonMazey1972,Ke2019flux}.
+\item \textbf{Per-solute conservation diagnostics and reduced-first
+sequencing.} Direct analogues of $\delta_{\rm FP}$ and $\delta_{\rm He}$;
+essential for debugging.
+\end{itemize}
+
+\subsection{Corrections required before implementation}
+\label{sec:corrections}
+\begin{enumerate}[leftmargin=1.6em]
+\item \textbf{RIS coupling must come from transport coefficients, not free
+$\eta$'s.} The proposed effective coefficients $\eta_{sI}^{\ell},
+\eta_{sV}^{\ell}$ with hand-chosen signs hide the physics that sets both the
+sign and the temperature dependence of RIS. The enrichment/depletion direction
+is fixed by the \emph{ratio} of partial diffusion coefficients (equivalently
+Onsager $L$-coefficients) for solute vs.\ matrix via the two mechanisms
+\citep{WiedersichOkamotoLam1979,AllenWas1998,Messina2020,Oplinger2026}. These
+must be tabulated offline as $d_{sV}(T),d_{sI}(T)$ (or the ratios) from the
+\textsc{dft}{}+\textsc{scmf} dataset of \citet{Messina2014,Messina2020} and
+\emph{read in}, not fitted. This also reproduces the Cr enrichment$\to$depletion
+crossover automatically (Sec.~\ref{sec:ris-physics}).
+\item \textbf{EUROFER97 calibration must lead with $\alpha'$, not MNS.} The
+quoted target ($N\!\sim\!10^{24}\,\mathrm{m^{-3}}$, $d\!\sim\!3$--$5$~nm,
+$32$~dpa, $332\,^\circ$C) corresponds to Mn--Ni--Si precipitation in
+\emph{T91/RPV-type} steel \citep{Ke2018fm}. EUROFER97 deliberately minimises
+Ni ($\lesssim0.01$~wt\%) and Si ($\sim0.05$~wt\%) \citep{Lindau2002}, so its
+MNS driving force is weak. The dominant irradiation precipitate in high-Cr F/M
+steel is Cr-rich $\alpha'$ \citep{Mathon2003,Bachhav2014,Reese2018}. The
+primary EUROFER97 validation target should therefore be $\alpha'$
+($N\!\sim\!10^{23}$--$10^{24}\,\mathrm{m^{-3}}$, $d\!\sim\!2$--$5$~nm); MNS
+should be retained as a secondary, alloy-composition-gated channel and the
+T91 MNS dataset used as a separate validation case.
+\item \textbf{C++ kernel mirroring is the dominant cost.} The production RHS is
+the hand-written C++ solver; it does \emph{not} walk the graph. Every new
+population and edge must be mirrored by hand in
+\code{rate\_kernels.cpp} for each \code{physics\_option} and each He case.
+Adding RIS$+$precipitation roughly doubles the kernel surface. This is the main
+schedule risk and is addressed in Sec.~\ref{sec:plan} by a Python-walker-first
+strategy.
+\item \textbf{Cr double role.} Cr is currently a fixed parameter inside the
+solute-trapping factor that sets $\omega^{\rm eff}$. Once Cr is dynamic and
+partitions into $\alpha'$, the bulk Cr that feeds trapping changes. For v2.1 we
+recommend decoupling: keep the trapping factor on the (nearly constant) bulk Cr
+to first order, and track a separate partitioned-Cr inventory; revisit full
+self-consistency only if bulk Cr depletion exceeds a few percent.
+\item \textbf{General \code{SOLUTE\_TRAPPING} walker handler.} In the current
+graph walker the \code{SOLUTE\_TRAPPING} handler raises
+\code{NotImplementedError} (He is handled by its dedicated reduction). A
+general composition-changing handler (or a solute reduction analogous to the He
+Case-1 mean-field) must be implemented; this is real work the design understates.
+\end{enumerate}
+
+% =====================================================================
+\section{RIS physics background}
+\label{sec:ris-physics}
+% =====================================================================
+\subsection{Mechanisms and direction}
+RIS arises because irradiation drives persistent vacancy and interstitial
+fluxes to sinks; solutes couple to these fluxes
+\citep{WiedersichOkamotoLam1979,Marwick1978,Was2017,ArdellBellon2016}. Two mechanisms
+compete: the \emph{inverse-Kirkendall} (vacancy) mechanism, in which solutes
+that exchange faster with vacancies deplete at sinks; and the
+\emph{interstitial-association / drag} mechanism, in which solutes carried in
+mobile mixed dumbbells (or dragged by vacancies) enrich at sinks. In bcc Fe,
+\textsc{dft}+\textsc{scmf} transport theory predicts that P, Mn, and Cr diffuse
+preferentially as dumbbells (enrichment), while Cu, Ni, Si enrich mainly by
+vacancy drag \citep{Messina2020}; the fcc Ni-base austenitic surrogate behaves
+analogously but with several sign reversals \citep{Toijer2021}, and atomistic
+kinetic Monte Carlo for Fe--Cr reproduces the radiation-accelerated Cr diffusion
+and $\alpha'$ formation that follow \citep{Senninger2016,SoissonJourdan2016}.
+Cr is a fine balance with a crossover:
+\emph{enrichment below $\sim$543~K, depletion above}
+\citep{Messina2020}; experiments on F/M steel show Cr enrichment by the
+interstitial mechanism over a wide range with depletion only at the highest
+temperatures \citep{WharryWas2014,WharryWas2013}. RIS magnitude is bell-shaped
+in temperature and shifts to higher $T$ with dose rate; temperature largely
+sets the \emph{direction}, while dose rate, sink density, and grain size set the
+\emph{magnitude} \citep{Oplinger2026}.
+
+\subsection{Governing equations (the implementable core)}
+For a sink-normal coordinate the coupled balances are
+\citep{WiedersichOkamotoLam1979,AllenWas1998}
+\begin{align}
+\frac{\partial \Cs}{\partial t} &= -\nabla\!\cdot J_s, \\
+\frac{\partial \cv}{\partial t} &= -\nabla\!\cdot J_V + K_0 - R\,\cv\ci - k_V^2 \Dv(\cv-\cv^{\rm eq}),\\
+\frac{\partial \ci}{\partial t} &= -\nabla\!\cdot J_I + K_0 - R\,\cv\ci - k_I^2 \Di\,\ci,
+\end{align}
+with recombination $R=4\pi r_0(\Dv+\Di)/\Omega$ and sink strengths $k^2$. The
+solute flux that produces segregation is the difference of the vacancy and
+interstitial contributions,
+\begin{equation}
+\boxed{\,
+J_s = -\big(d_{sV}+d_{sI}\big)\nabla \Cs
+      \;-\;\Cs\big(d_{sV}\,\nabla\!\ln\cv \;-\; d_{sI}\,\nabla\!\ln\ci\big),
+\,}
+\label{eq:Js}
+\end{equation}
+where the partial diffusion coefficients factorise as
+$d_{sd}=\alpha_{sd}(T)\,c_d$ with
+$\alpha_{sd}=f_d\lambda^2 z\,\nu_{sd}\exp(-E_m^{sd}/k_BT)$
+(correlation factor $f_d$, jump distance $\lambda$, coordination $z$).
+The \emph{sign} of the bracket in Eq.~\eqref{eq:Js} --- set by the ratio
+$d_{sI}/d_{\rm Fe,I}$ vs.\ $d_{sV}/d_{\rm Fe,V}$ --- determines enrichment vs.\
+depletion. Modern practice replaces the empirical $d_{sd}$ by Onsager
+$L$-coefficients computed offline by \textsc{scmf}/\textsc{KineCluE}
+\citep{NastarSoisson2020,SchulerMessinaNastar2020}; the rate-theory form of
+\citet{Oplinger2026} writes the same physics with relative transport
+coefficients and shows two cascade biases that matter for a fusion/fission
+code: a \emph{production bias} (excess freely migrating vacancies because SIAs
+cluster into glissile loops --- already modelled here) and an
+\emph{absorption bias} ($Z_I>Z_V$).
+
+\subsection{0D reduction: the sink-local reservoir}
+\label{sec:0d-reduction}
+A pure 0D code cannot resolve the $\sim$5--20~nm GB profile. The tractable
+reduction lumps each sink class $\ell$ into a reservoir whose solute fraction
+relaxes under the net RIS current driven by the \emph{bulk} defect
+supersaturations RadCluster already computes:
+\begin{equation}
+\boxed{\;
+\frac{dC_s^{\ell}}{dt}
+= \frac{S_\ell}{w_\ell}\Big[
+   \underbrace{-\,d_{sV}\,\Dv(\cv-\cv^{\rm eq})}_{\text{IK back-flux}}
+   \;+\;\underbrace{d_{sI}\,\Di\,\ci}_{\text{drag}}
+   \;-\;\underbrace{k^{\rm back}_{s}\big(C_s^{\ell}-C_s^{b}\big)}_{\text{thermal back-diffusion}}
+  \Big],
+\;}
+\label{eq:reservoir}
+\end{equation}
+with $S_\ell$ the sink strength of class $\ell$, $w_\ell$ an effective
+segregation width ($\sim$5--10~nm), and $k^{\rm back}_s$ a relaxation rate. The
+two flux terms carry opposite signs for the two mechanisms; the back-diffusion
+term gives the high-$T$ roll-off. Eq.~\eqref{eq:reservoir} naturally produces
+the bell-shaped temperature response without a spatial mesh
+\citep{Hu2021,Oplinger2026}. The 1D PDE (MIK, Oplinger) is retained
+\emph{offline} only to calibrate $w_\ell$ and $k^{\rm back}_s$.
+
+\subsection{RIS-driven precipitation and re-solution}
+Local enrichment from Eq.~\eqref{eq:reservoir} raises the sink-local
+supersaturation above the bulk solubility and triggers heterogeneous
+nucleation that does not occur in the bulk. The benchmark MNS CD study shows
+this explicitly: without RIS, MNS clusters cannot grow past $\sim$70 atoms;
+RIS supplies the supersaturation for nucleation and growth on dislocations
+\citep{Ke2018mns,Ke2018fm}; atom-probe tomography confirms solute clouds
+decorating dislocation loops as the heterogeneous nucleation sites
+\citep{Davis2020}. The counter-term is ballistic re-solution: cascades
+eject solute back to the matrix, capping the size. We adopt the cluster-dynamics
+form already present for He,
+\begin{equation}
+\left.\frac{dC_n^{p}}{dt}\right|_{\rm res} = -\,b_0\,\dot\phi\,n\,C_n^{p}
+\quad(\text{gain at the monomer size}),
+\label{eq:resolution}
+\end{equation}
+with the modern calibration $b\!\approx\!50$ replacements per dpa over a
+relocation distance $R\!\approx\!0.25$~nm for solute precipitates
+\citep{Ke2019flux,SchwenAverback2016}.
+
+% =====================================================================
+\section{Required data}
+\label{sec:data}
+% =====================================================================
+Tables~\ref{tab:transport}--\ref{tab:thermo} collect the parameters needed for
+the reduced model, with primary sources. Values are dilute-limit
+\textsc{dft}+\textsc{scmf} unless noted; alloy-concentration corrections shift
+the Cr crossover and should be applied where available.
+
+\begin{table}[h]
+\centering\small
+\caption{bcc-Fe solute transport / RIS direction \citep{Messina2014,Messina2020}.
+$E_m$ are migration barriers; ``RIS'' is the predicted sink behaviour with
+crossover temperature where applicable.}
+\label{tab:transport}
+\begin{tabular}{lccccl}
+\toprule
+Solute & $E_m^{\rm vac}$ (eV) & $E_m^{\rm db}$ (eV) & $F_B^{\rm V}$ (eV) &
+  dominant mech. & RIS at sinks \\
+\midrule
+Cr & 0.65 & 0.22 & 0.124 & dumbbell/vac (balance) & enrich $<\!543$~K; deplete above \\
+Mn & 0.62 & 0.32 & 0.235 & dumbbell & enrich \\
+Si & 0.72 & 0.82 & 0.223 & vacancy drag & enrich \\
+Ni & 0.70 & 0.67 & $-0.008$ & vacancy drag & enrich ($<\!1089$~K) \\
+P  & 0.67 & 0.21 & 0.276 & dumbbell & enrich \\
+Cu & 0.69 & 0.88 & 0.205 & vacancy & enrich ($<\!1086$~K) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering\small
+\caption{Measured irradiation precipitate populations (calibration/validation
+targets).}
+\label{tab:ppt}
+\begin{tabular}{llllll}
+\toprule
+Phase & Alloy & $T$ & dose & $N$ (m$^{-3}$) & $d$ (nm) \\
+\midrule
+$\alpha'$ & Fe-15Cr & 320$^\circ$C & 7 dpa & $1.1\times10^{24}$ & $\sim$2.6 \citep{Reese2018}\\
+$\alpha'$ & Fe-9Cr  & 320$^\circ$C & 7 dpa & $1.2\times10^{23}$ & $\sim$4.0 \citep{Reese2018}\\
+$\alpha'$ & Fe-18Cr & 290$^\circ$C & 1.8 dpa & $\sim5\times10^{24}$ & small \citep{Bachhav2014}\\
+MNS/G    & T91     & 400$^\circ$C & $\sim$7 dpa & $1.3\times10^{23}$ & $\sim$3.2 \citep{Ke2018mns}\\
+MNS/G    & T91 (n) & $\sim$332$^\circ$C & $\sim$32 dpa & $\sim10^{24}$ & 3--5 \citep{Ke2018fm}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering\small
+\caption{Thermodynamic, interfacial, and re-solution data.}
+\label{tab:thermo}
+\begin{tabular}{lll}
+\toprule
+Quantity & Value & Source \\
+\midrule
+Cr solubility in $\alpha$-Fe (300$^\circ$C) & $\sim$9--10 at\% & \citep{Bonny2008,Mathon2003}\\
+$\alpha'$ composition & 80--96 at\% Cr & \citep{Reese2018}\\
+$\alpha'$ interfacial energy & 0.090 J\,m$^{-2}$ & \citep{Ke2019flux}\\
+G-phase interfacial energy & 0.19 J\,m$^{-2}$ & \citep{Ke2018mns}\\
+G-phase stoichiometry & $\mathrm{Mn_6Ni_{16}Si_7}$ (L2$_1$) & \citep{Ke2018mns}\\
+Ballistic mixing $b$ & 50 replacements/dpa & \citep{Ke2019flux}\\
+Relocation distance $R$ & 0.249 nm & \citep{Ke2019flux}\\
+Cascade survival $\xi$ & 0.33 (neutron/ion) & \citep{Ke2019flux}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent\textbf{EUROFER97 reservoir initial conditions} (nominal, Fe balance)
+\citep{Lindau2002}: Cr $\approx$ 8.9 wt\% ($\sim$9.5 at\%), Mn $\approx$ 0.42
+wt\%, W $\approx$ 1.1 wt\%, V $\approx$ 0.19 wt\%, Si $\approx$ 0.05 wt\%,
+Ni $\lesssim$ 0.01 wt\%, C $\approx$ 0.11 wt\%.
+
+\paragraph{Data gaps to close before calibration.}
+(i) The exact $N,d$ pair for the $32$~dpa / $332\,^\circ$C MNS case is in the
+paywalled \citet{Ke2018fm}; verify from the primary ATR-2 APT table.
+(ii) A self-consistent Fe--Cr regular-solution $\Omega$ / CALPHAD parameter set
+(Andersson--Sundman / SGTE) for the $\alpha'$ driving force.
+(iii) Mn engineering diffusivity ($D_0,E_a$) --- use \citet{Messina2020}
+Table values rather than the MNS-paper SI, which omits Mn.
+(iv) The DFT Cr crossover ($\sim$543~K) is below the experimental Cr-enrichment
+regime ($\lesssim$600$^\circ$C); apply alloy-concentration/SIA-flux corrections,
+not the dilute value alone.
+
+% =====================================================================
+\section{Integration into the RAG architecture}
+\label{sec:arch}
+% =====================================================================
+The model is declared in \code{py\_utils/materials/eurofer97/declaration.py}
+through the existing API; no change to \code{rag.py}, \code{state\_layout.py},
+or the integrator is needed to add vertices/edges.
+
+\subsection{New populations and reservoirs}
+\begin{itemize}[leftmargin=1.4em]
+\item Extend the decoration list:
+\code{ReactionAdmissibilityGraph("EUROFER-97", gas\_species=["He","Cr","Mn","Si","Ni"])}.
+\item Precipitate populations via \code{rag.add\_population(Population(...))}:
+\code{alpha\_prime} (vacancy-type, immobile, $n_{\min}\!\gtrsim\!2$),
+\code{MNS} (pseudo-species $G$, immobile), and \code{loop\_cloud}
+(decoration of the $\tfrac12\langle111\rangle$ population).
+\item Solute reservoirs as scalar aux blocks via \code{layout.add\_scalar}:
+one bulk reservoir $C_s^{b}$ per dynamic solute, and one sink-local reservoir
+$C_s^{\ell}$ per (solute, sink-class) pair to be tracked. Start with
+$\ell\in\{\rm disl,loop,GB\}$.
+\end{itemize}
+
+\subsection{New edge classes and kernels}
+All map onto existing \code{EdgeClass} values; kernels are precomputed arrays
+registered with \code{rag.register\_kernel}:
+\begin{itemize}[leftmargin=1.4em]
+\item \code{SOURCE}/\code{SINK} pair on the reservoirs implementing the RIS
+exchange of Eq.~\eqref{eq:reservoir} (``\code{RIS\_TRANSFER}'').
+\item \code{SOLUTE\_TRAPPING} (trap direction): precipitate growth by solute
+capture, $\beta_{n,s}=4\pi r_n Z\,D_s^{\rm irr}$ with
+$D_s^{\rm irr}=D_s^{\rm th}+D_s^{\rm RED}(\cv,\ci)$.
+\item \code{SOLUTE\_TRAPPING} (detrap direction): thermal emission set by
+detailed balance to the correct solubility; plus athermal re-solution
+Eq.~\eqref{eq:resolution}.
+\item \code{SOURCE} for nucleation ($\varnothing\!\to\!P_{n_*}$), rate gated by
+the sink-local supersaturation $(C_s^{\ell}-C_s^{\rm eq})_+$.
+\item \code{COALESCENCE} for precipitate coarsening and
+\code{INTER\_POPULATION}/\code{LOOP\_DECORATION} for loop-cloud formation
+proportional to loop density.
+\end{itemize}
+
+\subsection{State layout and reductions}
+Precipitate populations use the existing \code{add\_discrete} or
+\code{add\_bin\_moment} blocks (the bin-moment reduction applies unchanged ---
+solute clusters span decades in size). Reservoirs are scalar aux blocks. A new
+\code{conservation} aux entry per dynamic solute holds the cumulative
+source/loss integral. The required new \emph{reduction} work is a general
+\code{SOLUTE\_TRAPPING} graph-walker handler (Sec.~\ref{sec:corrections},
+item~5), modelled on the He Case-1 mean-field loading.
+
+\subsection{C++ mirror}
+Each new edge must be added to \code{cpp\_utils/materials/eurofer97/rate\_kernels.cpp}
+and the parameters serialised in \code{cpp\_bridge.py}. Because this is the bulk
+of the effort, v2.1 develops and validates the physics through the Python graph
+walker first (Sec.~\ref{sec:plan}).
+
+% =====================================================================
+\section{The RadCluster\_2\_1 reduced model}
+\label{sec:model}
+% =====================================================================
+\paragraph{State (minimal first cut).}
+Dynamic solutes $s\in\{\mathrm{Cr},\mathrm{Mn},\mathrm{Si},\mathrm{Ni}\}$ with
+bulk reservoirs $C_s^{b}$ and sink-local reservoirs $C_s^{\ell}$,
+$\ell\in\{\rm disl,loop,GB\}$; precipitate size distributions $C_n^{\alpha'}$,
+$C_n^{G}$, $C_n^{\rm cloud}$. This adds $\mathcal{O}(4{+}12)$ scalar reservoir
+ODEs plus three cluster ladders (each bin-moment-reduced) to the existing
+system.
+
+\paragraph{Governing equations.}
+Reservoirs evolve by Eq.~\eqref{eq:reservoir} (sink-local) and its bulk
+complement; precipitate distributions follow the standard RadCluster master
+form
+\begin{equation}
+\frac{dC_n^{p}}{dt}=G_n^{p}
+ +\sum_s\!\big[\beta_{n-1,s}^{p}C_{n-1}^{p}C_s^{\ell}-\beta_{n,s}^{p}C_n^{p}C_s^{\ell}\big]
+ +\sum_s\!\big[\alpha_{n+1,s}^{p}C_{n+1}^{p}-\alpha_{n,s}^{p}C_n^{p}\big]
+ -\Gamma_{\rm res}^{p}C_n^{p}-D_n^{p}C_n^{p},
+\end{equation}
+which is exactly $\dot c_a=G_a+\sum_r S_{ar}J_r-D_a c_a$ --- no solver change.
+$D_s^{\rm RED}$ in $\beta$ is tied to the $\cv,\ci$ already integrated.
+
+\paragraph{Coupling back to defects and hardening.}
+Precipitates add to the sink strength,
+$k_{\rm ppt}^2=\sum_{p,n}4\pi r_n^{p}Z_p\,C_n^{p}$, fed into the existing
+point-defect balance; and to hardening through a dispersed-barrier sum
+$\Delta\sigma_{\rm ppt}=M\mu b\,[\sum_{p,k}(\alpha_{p,k}^2 N_{p,k}d_{p,k})]^{1/2}$,
+combined in quadrature with the existing loop and cavity contributions.
+
+% =====================================================================
+\section{Conservation diagnostics}
+% =====================================================================
+For each dynamic solute $s$ define the total inventory
+\begin{equation}
+C_s^{\rm tot}=C_s^{b}+\sum_\ell C_s^{\ell}
+  +\sum_{p,n} n_s(n)\,C_n^{p},
+\end{equation}
+and require $dC_s^{\rm tot}/dt=0$ (no transmutation source/loss for these
+solutes). The diagnostic
+$\delta_s=|C_s^{\rm tot}(t)-C_s^{\rm tot}(0)|/C_s^{\rm tot}(0)$ is the direct
+analogue of $\delta_{\rm FP}$ and $\delta_{\rm He}$ and must stay
+$\lesssim10^{-6}$. As with helium, each sink/exchange flux removed from one
+reservoir must be added to its partner so the ledger closes by construction;
+the cumulative integrals live in the \code{conservation} aux block. This is the
+same discipline that exposed and fixed the helium balance bugs in v2.0 and is a
+hard acceptance gate for v2.1.
+
+% =====================================================================
+\section{Phased implementation plan}
+\label{sec:plan}
+% =====================================================================
+\begin{description}[leftmargin=0em,style=nextline]
+\item[Phase 0 --- Prerequisites.] Resolve the pre-existing $\mathcal{O}(I^2)$
+\code{phi\_junc} allocation so production sizes run; assemble the offline
+transport table $d_{sV}(T),d_{sI}(T)$ from \citet{Messina2014,Messina2020} and
+the $\alpha'$/G-phase thermodynamic set (Sec.~\ref{sec:data} gaps).
+\item[Phase 1 --- Dynamic solute reservoirs + RIS, Python walker.] Add bulk and
+sink-local reservoirs and the \code{RIS\_TRANSFER} edges
+(Eq.~\eqref{eq:reservoir}). Implement the general \code{SOLUTE\_TRAPPING}
+handler. \emph{Acceptance:} per-solute $\delta_s\!<\!10^{-6}$; reproduce the
+bell-shaped $T$ dependence and the Cr enrichment$\to$depletion crossover.
+\item[Phase 2 --- $\alpha'$ precipitation.] Add the \code{alpha\_prime}
+population with capture/emission (detailed balance to Fe--Cr solubility),
+nucleation gated by sink-local Cr, and re-solution Eq.~\eqref{eq:resolution}.
+\emph{Acceptance:} Cr conservation holds; calibrate to the Fe--(9--18)Cr
+$\alpha'$ data (Table~\ref{tab:ppt}).
+\item[Phase 3 --- MNS pseudo-species and loop clouds.] Add the $G$ population
+and \code{LOOP\_DECORATION}; gate strength on EUROFER97's low Ni/Si.
+\emph{Acceptance:} weak MNS in EUROFER97; quantitative match to the T91 MNS case
+as a separate validation.
+\item[Phase 4 --- Defect/hardening coupling.] Feed $k_{\rm ppt}^2$ into the
+point-defect balance and add $\Delta\sigma_{\rm ppt}$.
+\item[Phase 5 --- C++ mirror and performance.] Port the validated edges to
+\code{rate\_kernels.cpp} and \code{cpp\_bridge.py}; bit-for-bit cross-check
+against the Python walker on a small system before production runs.
+\end{description}
+
+\paragraph{Validation targets.} Cr-rich $\alpha'$ in Fe--(9--18)Cr
+\citep{Reese2018,Bachhav2014}; GB RIS magnitudes and the Cr crossover in F/M
+steel \citep{WharryWas2014}; and the T91 MNS case \citep{Ke2018fm}. Each phase
+gates on its conservation diagnostic.
+
+% =====================================================================
+\section{Risks and open decisions}
+% =====================================================================
+\begin{itemize}[leftmargin=1.4em]
+\item \textbf{C++ mirroring effort} (Sec.~\ref{sec:corrections}, item~3) ---
+mitigated by Python-walker-first development; decision needed on whether v2.1
+ships the Python walker as a supported solver path or treats it as reference
+only.
+\item \textbf{RIS reduction fidelity} --- the lumped reservoir
+(Eq.~\eqref{eq:reservoir}) cannot capture the GB profile width; calibrate
+$w_\ell,k^{\rm back}_s$ offline against a 1D MIK/Oplinger solve.
+\item \textbf{Cr self-consistency} (Sec.~\ref{sec:corrections}, item~4) ---
+decide the threshold bulk-Cr depletion at which the trapping factor must be
+recomputed self-consistently.
+\item \textbf{MNS in EUROFER97} --- confirm the modelled heat composition;
+EUROFER97's low Ni/Si may make MNS negligible, in which case Phase~3 is
+validation-only against T91.
+\item \textbf{Data provenance} --- close the four data gaps in
+Sec.~\ref{sec:data} before Phase~2 calibration.
+\end{itemize}
+
+\bibliographystyle{plainnat}
+\bibliography{radcluster_2_1_RIS_plan}
+
+\end{document}

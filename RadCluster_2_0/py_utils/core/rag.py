@@ -201,16 +201,31 @@ class ReactionAdmissibilityGraph:
         return tuple(e for e in self._edges if e.edge_class is edge_class)
 
     # ── kernel library k ──────────────────────────────────────────────────
-    def register_kernel(self, name: str, kernel: Callable) -> None:
-        """Bind a rate kernel (size-resolved rate provider) to a name."""
+    def register_kernel(self, name: str, kernel) -> None:
+        """Bind a rate kernel to a name.
+
+        ``kernel`` may be a precomputed array/scalar, or a zero-argument
+        callable that builds and returns the kernel on first use.  Lazy
+        callables let large O(N²) kernels (coalescence/annihilation, the
+        junction-branching split) be registered cheaply and materialised only
+        if the Python GraphWalker actually evaluates the edge; the C++ solver
+        path computes them on the fly and never requests them, so production
+        runs never pay the allocation.
+        """
         self._kernels[name] = kernel
 
-    def kernel(self, name: str) -> Callable:
+    def kernel(self, name: str):
         try:
-            return self._kernels[name]
+            k = self._kernels[name]
         except KeyError:
             raise KeyError(
                 f"RAG {self.name!r}: no kernel registered for {name!r}") from None
+        # Resolve and memoise a lazy builder on first request.  Arrays and
+        # scalars (the common case) are not callable and pass straight through.
+        if callable(k):
+            k = k()
+            self._kernels[name] = k
+        return k
 
     # ── validation ────────────────────────────────────────────────────────
     def validate(self) -> None:

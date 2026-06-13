@@ -287,13 +287,24 @@ def build_eurofer_rag(input_data, reaction_rates, *,
     #   K_111_self     = (1 - phi) * K_ii   ->  product stays in bulk-111
     #   K_111_junction =      phi  * K_ii   ->  product is a ⟨100⟩ loop
     # so the total ½⟨111⟩ collision rate is conserved (no double counting).
-    K_ii_full = _coalescence_kernel(np.asarray(rr.D_SIA_eff, float), A_8pi)
-    phi = np.asarray(rr.phi_junc, dtype=float)
-    rag.register_kernel("K_111_self",     (1.0 - phi) * K_ii_full)
-    rag.register_kernel("K_111_junction", phi * K_ii_full)
+    # These 2-D same-/cross-polarity kernels are O(I²).  They are consumed
+    # ONLY by the Python GraphWalker (reference RHS); the production C++ solver
+    # computes K_ii, K_vv, K_vi, and φ_junc on the fly per (n,n') pair and never
+    # reads them.  Register them as zero-argument lazy builders so the matrices
+    # are materialised only if the GraphWalker actually evaluates the edge —
+    # never on a C++ run, where materialising [I,I] at I~1e5 would need ~80 GB.
+    D_SIA_eff = np.asarray(rr.D_SIA_eff, dtype=float)
+    D_VAC_eff = np.asarray(rr.D_VAC_eff, dtype=float)
+    rag.register_kernel(
+        "K_111_self",
+        lambda: (1.0 - np.asarray(rr.phi_junc, dtype=float))
+                * _coalescence_kernel(D_SIA_eff, A_8pi))
+    rag.register_kernel(
+        "K_111_junction",
+        lambda: np.asarray(rr.phi_junc, dtype=float)
+                * _coalescence_kernel(D_SIA_eff, A_8pi))
     rag.register_kernel("K_vv_coal",
-                        _coalescence_kernel(np.asarray(rr.D_VAC_eff, float),
-                                            A_8pi))
+                        lambda: _coalescence_kernel(D_VAC_eff, A_8pi))
 
     # ── ½⟨111⟩ → ⟨100⟩ conversion + sessile-⟨100⟩ kernels (loop-conversion) ──
     # Unary (Dudarev) transformation rate Γ_uni(n) (1-D, INTER_POPULATION edge).
@@ -301,26 +312,25 @@ def build_eurofer_rag(input_data, reaction_rates, *,
     # Marian absorption  ⟨100⟩_m + ½⟨111⟩_n -> ⟨100⟩_{m+n}  (cross-character),
     # gated by the two-step success probability P_success(T) (Marian Fig. 3) —
     # the absorbed ½⟨111⟩ must rotate through the metastable ½⟨110⟩ to ⟨100⟩.
-    rag.register_kernel("K_100_absorb",
-                        float(rr.conv_psuccess)
-                        * _absorb_kernel(np.asarray(rr.D_SIA_eff, float), A_8pi))
+    rag.register_kernel(
+        "K_100_absorb",
+        lambda: float(rr.conv_psuccess) * _absorb_kernel(D_SIA_eff, A_8pi))
     # Sessile ⟨100⟩ point-defect ladders (loop geometry; monomer-driven).
     rag.register_kernel("K_100_grow",   np.asarray(rr.K_100_grow, dtype=float))
     rag.register_kernel("K_100_shrink", np.asarray(rr.K_100_shrink, dtype=float))
     rag.register_kernel("eps_100_emit", np.asarray(rr.G_100, dtype=float))
     rag.register_kernel("D_100_sink",   np.asarray(rr.k2_100, dtype=float))
     # Vacancy-cluster annihilation of sessile ⟨100⟩ loops (D^{100} = 0).
-    rag.register_kernel("K_vi_annih_100",
-                        _annihilation_kernel(np.asarray(rr.D_VAC_eff, float),
-                                             np.zeros(int(input_data.I)),
-                                             A_8pi))
+    I_size = int(input_data.I)
+    rag.register_kernel(
+        "K_vi_annih_100",
+        lambda: _annihilation_kernel(D_VAC_eff, np.zeros(I_size), A_8pi))
 
     # V-I cluster annihilation — cross-polarity 2-D kernel K[m-1, n-1]
     # (paper Eq. 81).  Vacancy axis primary, SIA axis partner.
-    rag.register_kernel("K_vi_annih",
-                        _annihilation_kernel(np.asarray(rr.D_VAC_eff, float),
-                                             np.asarray(rr.D_SIA_eff, float),
-                                             A_8pi))
+    rag.register_kernel(
+        "K_vi_annih",
+        lambda: _annihilation_kernel(D_VAC_eff, D_SIA_eff, A_8pi))
 
     # Cascade production sources (paper Eqs. 11-13).  production_rates
     # returns 1-indexed arrays; convert to 0-indexed size arrays.

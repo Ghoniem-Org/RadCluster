@@ -430,15 +430,15 @@ class ReactionRates:
 
         # (2) Marian junction branching φ_junc[n−1, n′−1] (size comparability):
         #       φ = φ_max·exp(−(ln(n/n′))²/2σ_s²)·Θ(min(n,n′) ≥ n_j_min).
+        # The dense [I, I] matrix is NOT built here: it is an O(I²) object that
+        # only the Python GraphWalker consumes (the C++ solver computes φ on the
+        # fly per (n,n') pair).  At production sizes (I ~ 1e5) materialising it
+        # would need ~80 GB.  We store the scalar parameters now and expose the
+        # matrix through the cached ``phi_junc`` property, so it is built only if
+        # the Python reference RHS actually asks for it (small-I runs/tests).
         phi_max = float(re.get('phi_max_junc',  0.5))
         sigma_s = float(re.get('sigma_s_junc',  0.35))
         n_j_min = float(re.get('n_j_min_junc',  30.0))
-        ni = ns[:, None]
-        nj = ns[None, :]
-        with np.errstate(divide='ignore', invalid='ignore'):
-            log_ratio = np.log(ni / nj)
-        phi = phi_max * np.exp(-(log_ratio ** 2) / (2.0 * sigma_s ** 2))
-        phi = phi * (np.minimum(ni, nj) >= n_j_min)
         # Marian two-step success probability (½⟨111⟩ → ½⟨110⟩ → ⟨100⟩, Fig. 3):
         # from the metastable ½⟨110⟩ intermediate the segment either rotates
         # FORWARD to ⟨100⟩ (barrier ΔH₂) or REVERTS to ½⟨111⟩ (reverse barrier
@@ -452,7 +452,10 @@ class ReactionRates:
         ef = np.exp(-dH2_conv / kBT)
         eb = np.exp(-dH_rev_conv / kBT)
         self.conv_psuccess = float(ef / (ef + eb))        # P_success(T) ∈ (0, 0.5)
-        self.phi_junc = phi * self.conv_psuccess          # [I, I] gated junction
+        # Parameters for the lazy φ_junc property (no dense allocation here).
+        self._phi_junc_params = (phi_max, sigma_s, n_j_min)
+        self._phi_junc_n      = int(ns.size)
+        self._phi_junc_cache  = None
 
         # (3) Sessile ⟨100⟩ point-defect kernels — loop geometry, immobile loop;
         #     the migrating monomer's diffusivity sets the capture rate.  ⟨100⟩
@@ -483,14 +486,47 @@ class ReactionRates:
         self.L_hat  = L_hat
         self.alpha_He = alpha_He
 
+    @property
+    def phi_junc(self):
+        """Marian junction-branching matrix φ_junc[n−1, n′−1], built lazily.
+
+        φ = P_success · φ_max · exp(−(ln(n/n'))² / 2σ_s²) · Θ(min(n,n') ≥ n_j_min).
+
+        This is a dense [I, I] array consumed only by the Python GraphWalker
+        (the reference RHS) and the loop-conversion unit tests.  The production
+        C++ solver computes the same branching on the fly per (n,n') pair, so
+        the matrix is built only on first access and never on a C++ run —
+        avoiding an ~O(I²) allocation that is infeasible at production sizes.
+        """
+        if self._phi_junc_cache is not None:
+            return self._phi_junc_cache
+        phi_max, sigma_s, n_j_min = self._phi_junc_params
+        n = np.arange(1, self._phi_junc_n + 1, dtype=float)
+        ni = n[:, None]
+        nj = n[None, :]
+        with np.errstate(divide='ignore', invalid='ignore'):
+            log_ratio = np.log(ni / nj)
+        phi = phi_max * np.exp(-(log_ratio ** 2) / (2.0 * sigma_s ** 2))
+        phi = phi * (np.minimum(ni, nj) >= n_j_min)
+        self._phi_junc_cache = phi * self.conv_psuccess
+        return self._phi_junc_cache
+
     def __getstate__(self):
         # Nested-function attributes from _precompute can't be pickled.
         # They are reconstructable but unused after unpickling (replot path
-        # only reads data arrays), so drop them.
+        # only reads data arrays), so drop them.  The lazily-built φ_junc
+        # cache is also dropped: it is large (O(I²)) and reconstructable.
         state = self.__dict__.copy()
-        for k in ('alpha_bubble_fn', 'alpha_He_emit_fn', 'K_1D_eff_fn'):
+        for k in ('alpha_bubble_fn', 'alpha_He_emit_fn', 'K_1D_eff_fn',
+                  '_phi_junc_cache'):
             state.pop(k, None)
         return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        # Restore the dropped lazy cache so the property can rebuild on demand.
+        if not hasattr(self, '_phi_junc_cache'):
+            self._phi_junc_cache = None
 
     def format_diagnostic(self, mean_n_i=None):
         """Return key rate constants as a formatted string.

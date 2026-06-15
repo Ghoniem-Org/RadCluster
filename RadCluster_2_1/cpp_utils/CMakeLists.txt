@@ -42,6 +42,26 @@ elseif(WIN32)
 else()
     list(PREPEND CMAKE_PREFIX_PATH "${LIBRARIES_DIR}/sundials-7.1.1")
 endif()
+
+# ── Prefer a vcpkg SUNDIALS built WITH KLU (sundials_sunlinsolklu) ────────────
+# A system SUNDIALS (e.g. C:/Program Files (x86)/SUNDIALS) is typically built
+# WITHOUT KLU, so linsol='klu' is unavailable.  The release-only vcpkg triplet
+# 'x64-windows-rel' ships SUNDIALS+KLU plus the SuiteSparse::KLU config that
+# SUNDIALSTargets.cmake pulls in via find_dependency(KLU).  Prepending the
+# whole vcpkg install prefix makes both resolve here — no toolchain file
+# required, so the notebook's plain `cmake` build cell gets KLU too.  Harmless
+# when the prefix is absent (the glob simply matches nothing).
+if(WIN32)
+    foreach(_vc_klu_prefix
+            "$ENV{VCPKG_ROOT}/installed/x64-windows-rel"
+            "C:/vcpkg/installed/x64-windows-rel")
+        if(EXISTS "${_vc_klu_prefix}/share/sundials/SUNDIALSConfig.cmake")
+            list(PREPEND CMAKE_PREFIX_PATH "${_vc_klu_prefix}")
+            message(STATUS "SUNDIALS: preferring vcpkg KLU build at ${_vc_klu_prefix}")
+            break()
+        endif()
+    endforeach()
+endif()
 find_package(SUNDIALS REQUIRED)
 
 # ── Solver executable ─────────────────────────────────────────────────────────
@@ -213,10 +233,69 @@ if(WIN32)
     set(_RUNTIME_DLLS "")
 
     # (1) SUNDIALS shared libraries — whole bin/ of the install tree we linked.
+    # Prefer the vendored Libraries/ tree, but fall back to wherever
+    # find_package(SUNDIALS) actually resolved (e.g. a system install at
+    # C:/Program Files (x86)/SUNDIALS, whose bin/ is SUNDIALS_DIR/../../../bin).
     set(_SUNDIALS_BIN "${LIBRARIES_DIR}/sundials-7.1.1/win_install/bin")
+    if(NOT EXISTS "${_SUNDIALS_BIN}" AND SUNDIALS_DIR)
+        # SUNDIALS_DIR is <prefix>/lib/cmake/sundials (system install, up 3) or
+        # <prefix>/share/sundials (vcpkg, up 2); the runtime DLLs live in
+        # <prefix>/bin.  Walk up both depths and take the bin/ that actually
+        # holds sundials_core.dll.  For the vcpkg tree this bin/ also contains
+        # the SuiteSparse::KLU DLLs (klu/btf/amd/colamd/suitesparseconfig), so
+        # the *.dll glob below deploys the whole KLU dependency chain too.
+        foreach(_up "../../.." "../..")
+            get_filename_component(_cand "${SUNDIALS_DIR}/${_up}/bin" ABSOLUTE)
+            if(EXISTS "${_cand}/sundials_core.dll")
+                set(_SUNDIALS_BIN "${_cand}")
+                break()
+            endif()
+        endforeach()
+    endif()
     if(EXISTS "${_SUNDIALS_BIN}")
         file(GLOB _SUN_DLLS "${_SUNDIALS_BIN}/*.dll")
         list(APPEND _RUNTIME_DLLS ${_SUN_DLLS})
+        message(STATUS "Runtime DLL deploy: SUNDIALS bin = ${_SUNDIALS_BIN}")
+    endif()
+
+    # (1b) Intel oneAPI MKL — when find_package(LAPACK) resolved to MKL (common
+    # on machines without vcpkg), the solver imports mkl_intel_thread + core and
+    # libiomp5md, and MKL dynamically loads its CPU-dispatch kernels
+    # (mkl_def / mkl_avx2 / mkl_avx512 / mkl_mc3) at runtime.  None are on PATH,
+    # so deploy them next to the exe.  Detected by scanning LAPACK_LIBRARIES for
+    # an mkl_*.lib entry and deriving the redist bin from its location.
+    if(LAPACK_LIBRARIES MATCHES "[Mm][Kk][Ll]")
+        set(_MKL_LIBDIR "")
+        foreach(_l ${LAPACK_LIBRARIES})
+            if(_l MATCHES "[Mm][Kk][Ll]" AND EXISTS "${_l}")
+                get_filename_component(_MKL_LIBDIR "${_l}" DIRECTORY)
+                break()
+            endif()
+        endforeach()
+        if(_MKL_LIBDIR)
+            # .../mkl/<ver>/lib  →  .../mkl/<ver>/bin
+            get_filename_component(_MKL_ROOT "${_MKL_LIBDIR}" DIRECTORY)
+            set(_MKL_BIN "${_MKL_ROOT}/bin")
+            if(EXISTS "${_MKL_BIN}")
+                file(GLOB _MKL_DLLS
+                    "${_MKL_BIN}/mkl_intel_thread.*.dll"
+                    "${_MKL_BIN}/mkl_core.*.dll"
+                    "${_MKL_BIN}/mkl_def.*.dll"
+                    "${_MKL_BIN}/mkl_avx2.*.dll"
+                    "${_MKL_BIN}/mkl_avx512.*.dll"
+                    "${_MKL_BIN}/mkl_mc3.*.dll")
+                list(APPEND _RUNTIME_DLLS ${_MKL_DLLS})
+                message(STATUS "Runtime DLL deploy: MKL bin = ${_MKL_BIN}")
+            endif()
+            # libiomp5md.dll lives in the sibling compiler redist.  _MKL_ROOT is
+            # .../oneAPI/mkl/<ver>, so the oneAPI root is two levels up and the
+            # OpenMP runtime is .../oneAPI/compiler/<ver>/bin/libiomp5md.dll.
+            get_filename_component(_ONEAPI_ROOT "${_MKL_ROOT}/../.." ABSOLUTE)
+            file(GLOB _IOMP_DLLS "${_ONEAPI_ROOT}/compiler/*/bin/libiomp5md.dll")
+            if(_IOMP_DLLS)
+                list(APPEND _RUNTIME_DLLS ${_IOMP_DLLS})
+            endif()
+        endif()
     endif()
 
     # (2) vcpkg runtime DLLs — OpenBLAS/LAPACK, SuiteSparse/KLU, and the MinGW

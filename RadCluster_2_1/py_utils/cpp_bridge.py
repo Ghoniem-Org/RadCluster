@@ -707,16 +707,22 @@ def run_cpp_solver(sim, solver_config, base_dir=None, progress_callback=None,
 
         # Split off the appended ⟨100⟩ SIA block so downstream post-processing
         # sees the original [SIA | VAC | He | conservation] layout unchanged.
-        y_sia100 = None
+        # Two views of the block are kept:
+        #   y_sia100_raw  — the block AS SOLVED (discrete: per-size; bin_moment:
+        #                   discrete-prefix + bin-moment vector). This goes to
+        #                   calculate_derived_quantities, which forms the ⟨100⟩
+        #                   mean size / density at the MOMENT level (subtracting
+        #                   the C_floor IC per bin), exactly as the main ½⟨111⟩
+        #                   population is handled.  Reconstructing to per-size
+        #                   first over-floors near-empty bins at large n and
+        #                   inflates the size-weighted mean during the transient.
+        #   y_sia100_full — the per-size [I, n_pts] reconstruction, kept only for
+        #                   the size-distribution plots (visualization.py).
+        y_sia100     = None   # raw block → moment-level scalars
+        y_sia100_full = None  # per-size reconstruction → plots/results
         if _n_sia100:
             y_sia100 = y[-_n_sia100:, :]
             y        = y[:-_n_sia100, :]
-            # In bin_moment modes the ⟨100⟩ block is the discrete-prefix +
-            # bin-moment vector (length i_discrete + n_mom·I_bin).  Reconstruct
-            # it to a full per-size [I, n_pts] distribution so post-processing
-            # (which weights by size n) sees the SAME shape as the discrete
-            # path — the ½⟨111⟩ block is reconstructed identically inside
-            # calculate_derived_quantities.
             if _is_bin:
                 from .bin_moment_rates import reconstruct_distribution
                 _i_d   = int(getattr(re_obj, 'i_discrete', 0))
@@ -740,13 +746,17 @@ def run_cpp_solver(sim, solver_config, base_dir=None, progress_callback=None,
                                                         _bins, _Ifull)
                         _c[_i_d:] = _rec[_i_d:]
                     _c100[:, _j] = _c
-                y_sia100 = _c100
+                y_sia100_full = _c100
+            else:
+                # Discrete mode: the block is already per-size, so the raw and
+                # reconstructed views coincide.
+                y_sia100_full = y_sia100
 
         results = calculate_derived_quantities(t, y, sim.input_data, re_obj,
                                                y_sia100=y_sia100)
         results['y'] = y   # raw ODE state [N_eq, n_pts] in atom fraction
-        if y_sia100 is not None:
-            results['y_sia100'] = y_sia100   # ⟨100⟩ loop densities [I, n_pts]
+        if y_sia100_full is not None:
+            results['y_sia100'] = y_sia100_full   # ⟨100⟩ per-size [I, n_pts]
 
         # ── Window-bounds sidecar (active_window mode tracks expansion) ───
         # The C++ solver writes <bin_path>.window.csv with one row per output

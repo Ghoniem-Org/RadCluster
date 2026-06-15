@@ -256,7 +256,8 @@ def calculate_derived_quantities(t, y, input_data, rate_eq_obj,
 
 
     # ── Loop-conversion: split SIA loops into ½⟨111⟩ and ⟨100⟩ populations ────
-    # y_sia100 [I, n_t] is the appended sessile ⟨100⟩ block (discrete); the
+    # y_sia100 is the appended sessile ⟨100⟩ block as solved (per-size in
+    # discrete mode, discrete-prefix + bin moments in bin-moment mode); the
     # ½⟨111⟩ block is y[0:I] (discrete when conversion is on).  We expose, per
     # population: number density (N_loops_111/100), mean size (mean_n_111/100),
     # and the content-weighted ½⟨111⟩ fraction f₁₁₁(t) — directly comparable to
@@ -270,22 +271,51 @@ def calculate_derived_quantities(t, y, input_data, rate_eq_obj,
     mean_n_100  = np.zeros(n_t)
     f_111_loop  = np.ones(n_t)           # ½⟨111⟩ loop fraction (content-weighted)
     if y_sia100 is not None and np.asarray(y_sia100).size:
-        # y_sia100 is per-size [I, n_t] in BOTH discrete and bin_moment modes
-        # (the bridge reconstructs the bin-moment ⟨100⟩ block before this point).
-        # The ½⟨111⟩ content is C_SIA_tot as accumulated above (BEFORE the ⟨100⟩
-        # contribution is folded in) — exact from the tracked μ₁ moments in
-        # bin-moment mode, and Σ n·c_n in discrete mode — and the ½⟨111⟩ loop
-        # density is N_loops_111.  Using these makes the split mode-agnostic.
+        # y_sia100 is the ⟨100⟩ block AS SOLVED: per-size [I, n_t] in discrete
+        # mode, and the discrete-prefix + bin-moment vector [i_d + P·I_bin, n_t]
+        # in bin-moment mode (the bridge no longer reconstructs it to per-size
+        # before this point).  The ½⟨111⟩ content is C_SIA_tot as accumulated
+        # above (BEFORE the ⟨100⟩ contribution is folded in) and its loop density
+        # is N_loops_111.
         cont111 = C_SIA_tot.copy()                           # ½⟨111⟩ content
         cnt111  = N_loops_111                                # ½⟨111⟩ density
-        # Subtract the uniform C_floor IC per size (same treatment as the main
-        # SIA/VAC mean-size calcs above).  Without this, the early transient —
-        # when the real ⟨100⟩ population is ~0 and the block is just the floor —
-        # yields mean_n_100 ≈ Σn·C_floor / Σ C_floor ≈ (I+1)/2 (the size-axis
-        # midpoint), a spurious ~few-thousand plateau rather than ≈0.
-        c100    = np.maximum(np.asarray(y_sia100, dtype=float) - C_floor, 0.0)  # [I, n_t]
-        cont100 = ns @ c100                                  # ⟨100⟩ content [at.frac]
-        N_loops_100 = np.sum(c100[1:, :], axis=0)            # ⟨100⟩ density
+        y100 = np.maximum(np.asarray(y_sia100, dtype=float), 0.0)
+        # The C_floor IC must be removed BEFORE forming the size-weighted content
+        # — the same treatment as the main SIA/VAC mean-size calcs above.  In
+        # bin-moment mode this MUST be done at the MOMENT level (per bin), not by
+        # reconstructing to per-size and subtracting C_floor afterwards: the
+        # linear closure spreads a near-empty bin's residual over its sizes and
+        # over-floors the bin-representative sizes, so a clamp at the per-size
+        # level leaves a positive, size-weighted tail at large n.  During the
+        # early transient (no real ⟨100⟩ population yet — it forms only by
+        # conversion from ½⟨111⟩) that tail dominates the content, giving a
+        # spurious mean_n_100 of ~10²–10³ over a vanishing density.  Subtracting
+        # at the moment level zeroes empty bins exactly (μ₀ − Δ·C_floor → 0).
+        if is_bin:
+            i_d   = getattr(rate_eq_obj, 'i_discrete', 0)
+            P     = getattr(rate_eq_obj, 'n_mom', 2)
+            bins_ = getattr(rate_eq_obj, 'bins', [])
+            ns_disc = np.arange(1, i_d + 1, dtype=float)
+            disc100 = np.maximum(y100[1:i_d, :] - C_floor, 0.0)   # [i_d-1, n_t]
+            N_loops_100 = np.sum(disc100, axis=0)
+            cont100     = ns_disc[1:] @ disc100
+            mom100 = y100[i_d:i_d + P * len(bins_), :]
+            mu0_100 = mom100[0::P, :]
+            mu1_100 = mom100[1::P, :] if P >= 2 else None
+            for kb, (nlo, nhi) in enumerate(bins_):
+                width = float(nhi - nlo)
+                sum_n = width * (nlo + nhi - 1) / 2.0
+                mu0_eff = np.maximum(mu0_100[kb, :] - width * C_floor, 0.0)
+                if P >= 2:
+                    mu1_eff = np.maximum(mu1_100[kb, :] - C_floor * sum_n, 0.0)
+                else:
+                    mu1_eff = mu0_eff * (nlo + nhi - 1) / 2.0
+                N_loops_100 = N_loops_100 + mu0_eff
+                cont100     = cont100 + mu1_eff
+        else:
+            c100    = np.maximum(y100 - C_floor, 0.0)             # [I, n_t]
+            cont100 = ns @ c100                                  # ⟨100⟩ content
+            N_loops_100 = np.sum(c100[1:, :], axis=0)            # ⟨100⟩ density
         C_SIA_tot   = C_SIA_tot + cont100                    # full SIA inventory
         cnt100  = N_loops_100
         mean_n_100 = np.divide(cont100, cnt100,

@@ -278,7 +278,12 @@ def calculate_derived_quantities(t, y, input_data, rate_eq_obj,
         # density is N_loops_111.  Using these makes the split mode-agnostic.
         cont111 = C_SIA_tot.copy()                           # ½⟨111⟩ content
         cnt111  = N_loops_111                                # ½⟨111⟩ density
-        c100    = np.maximum(np.asarray(y_sia100, dtype=float), 0.0)   # [I, n_t]
+        # Subtract the uniform C_floor IC per size (same treatment as the main
+        # SIA/VAC mean-size calcs above).  Without this, the early transient —
+        # when the real ⟨100⟩ population is ~0 and the block is just the floor —
+        # yields mean_n_100 ≈ Σn·C_floor / Σ C_floor ≈ (I+1)/2 (the size-axis
+        # midpoint), a spurious ~few-thousand plateau rather than ≈0.
+        c100    = np.maximum(np.asarray(y_sia100, dtype=float) - C_floor, 0.0)  # [I, n_t]
         cont100 = ns @ c100                                  # ⟨100⟩ content [at.frac]
         N_loops_100 = np.sum(c100[1:, :], axis=0)            # ⟨100⟩ density
         C_SIA_tot   = C_SIA_tot + cont100                    # full SIA inventory

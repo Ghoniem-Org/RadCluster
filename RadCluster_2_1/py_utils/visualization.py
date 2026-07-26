@@ -214,6 +214,38 @@ def plot_swelling(results, out_path=None, title=''):
     return fig
 
 
+def plot_network_density(results, out_path=None, title=''):
+    """Network dislocation density ρ_net vs. dose (loop_network_loss.tex).
+
+    With the LOOP_NETWORK_LOSS channel active, sessile loops are swept into the
+    pre-existing network, so ρ_net rises with dose and (with a calibrated
+    recovery sink) saturates — the feedback that bounds the loop density.  When
+    the channel is off the curve is flat at the static ρ_d, which is still a
+    valid reading of the network density.
+    """
+    _check_mpl()
+    fig, ax = plt.subplots(figsize=(7, 4))
+    dose = np.asarray(results['dose'], dtype=float)
+    rho_net = results.get('rho_net')
+    if rho_net is None:
+        return None   # nothing to plot (older run without the rho_net history)
+    rho_net = np.asarray(rho_net, dtype=float)
+    if rho_net.shape[0] != dose.shape[0]:        # align tail (post-doubling)
+        n = min(rho_net.shape[0], dose.shape[0])
+        rho_net, dose = rho_net[-n:], dose[-n:]
+    ax.semilogx(dose, rho_net, color='purple', lw=2)
+    ax.set_xlabel('Dose (dpa)')
+    ax.set_ylabel(r'Network density $\rho_{\rm net}$ (m$^{-2}$)')
+    ax.set_title(f'Network Dislocation Density {title}')
+    ax.grid(True, alpha=0.3)
+    ax.set_xlim(left=_dose_xlim(dose))
+    _apply_axis_config(ax, 'scalar')
+    fig.tight_layout()
+    if out_path:
+        fig.savefig(out_path, dpi=150)
+    return fig
+
+
 _LBL_111 = r'$\frac{1}{2}\langle 111\rangle$ loops'
 _LBL_100 = r'$\langle 100\rangle$ loops'
 _C_111   = 'steelblue'
@@ -1495,6 +1527,7 @@ def save_all_plots(results, input_data, out_dir, label='',
         ('point_defects.png',       plot_point_defects,               (results,)),
         ('totals.png',              plot_totals,                      (results,)),
         ('swelling.png',            plot_swelling,                    (results,)),
+        ('network_density.png',     plot_network_density,             (results,)),
         ('mean_sizes.png',          plot_mean_sizes,                  (results,)),
         ('he_content.png',          plot_he_content,                  (results,)),
         ('number_densities.png',    plot_number_densities,            (results,)),

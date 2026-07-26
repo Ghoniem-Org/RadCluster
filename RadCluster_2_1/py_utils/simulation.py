@@ -284,6 +284,101 @@ class RadClusterSimulation:
                 self.input_data, self.reaction_rates
             )
 
+    def _reconstruct_sia_per_size(self, sia_block):
+        """Reconstruct the per-size ½⟨111⟩ distribution c_n (n = 1..I) from a
+        SIA state block.
+
+        In discrete mode the block is already per-size and is returned (clipped)
+        as-is.  In bin-moment mode the block is ``i_discrete`` discrete sizes
+        followed by ``I_bin`` bins of ``P`` moments each; the binned part is
+        expanded through the active intra-bin shape function, exactly as
+        cpp_bridge reconstructs the appended ⟨100⟩ block.
+        """
+        re_obj = self.rate_equations
+        I = self.input_data.I
+        col = np.maximum(np.asarray(sia_block, dtype=float), 0.0)
+        if 'bin_moment' not in self.input_data.physics_option:
+            c = np.zeros(I)
+            c[:min(I, col.size)] = col[:I]
+            return c
+        from .bin_moment_rates import reconstruct_distribution
+        i_d  = int(getattr(re_obj, 'i_discrete', 0))
+        P    = int(getattr(re_obj, 'n_mom', 2))
+        bins = getattr(re_obj, 'bins', [])
+        I_bin = len(bins)
+        c = np.zeros(I)
+        c[:i_d] = col[:i_d]
+        if I_bin > 0:
+            mom = col[i_d:i_d + P * I_bin]
+            mu0 = mom[0::P][:I_bin]
+            mu1 = mom[1::P][:I_bin] if P >= 2 else None
+            mu2 = mom[2::P][:I_bin] if P >= 3 else None
+            rec = reconstruct_distribution(
+                getattr(re_obj, 'shape_function', 'linear'),
+                mu0, mu1, mu2, bins, I)
+            c[i_d:] = rec[i_d:]
+        return c
+
+    def _loop_network_update(self, results, dt):
+        """Operator-split advance of the dynamic network density ρ_net between
+        integration segments (loop_network_loss.tex §Implementation).
+
+        ρ_net is held piecewise-constant *within* a segment (so the Jacobian /
+        Woodbury structure is untouched) and advanced *between* segments by an
+        explicit Euler step of Eq. (rho_net_balance):
+
+            ρ_net ← ρ_net + dt · [ (π/Ω) Σ d_n Λ_n c_n  −  K_rec ρ_net^{3/2} ]
+
+        The segment-end SIA/vacancy monomers are frozen into ``ci1_seg`` /
+        ``cv1_seg`` (they set the network climb velocity v_net for the next
+        segment), and ``rebuild_rates`` refreshes ReactionRates so the P4 sink
+        and Λ_n^net pick up the new ρ_net.  No-op unless the channel is on.
+
+        The per-size loop distributions that drive the growth term come from the
+        post-processed segment and so work in BOTH discrete and bin-moment modes:
+          * ½⟨111⟩ — the SIA block of ``results['y']`` (per-size in discrete
+            mode; reconstructed from the SIA bin moments via the active shape
+            function in bin-moment mode);
+          * ⟨100⟩  — ``results['y_sia100']``, which cpp_bridge has already
+            reconstructed to per-size [I, n_t] in both modes.  (Note ``results['y']``
+            no longer carries the appended ⟨100⟩ block — cpp_bridge splits it
+            off — so it must be read from this dedicated key, not the y tail.)
+        """
+        rr = self.reaction_rates
+        if not getattr(rr, 'loop_network_loss', False) or dt <= 0.0:
+            return
+        re_obj = self.rate_equations
+        I = self.input_data.I
+        y_end = np.asarray(results['y'][:, -1], dtype=float)
+        i_vac = int(getattr(re_obj, 'i_VAC', I))
+        ci1 = float(y_end[0]) if y_end.size > 0 else 0.0
+        cv1 = float(y_end[i_vac]) if y_end.size > i_vac else 0.0
+
+        # Per-size ½⟨111⟩ loop distribution (the SIA block precedes the VAC block).
+        c_111 = self._reconstruct_sia_per_size(y_end[:i_vac])
+
+        # Per-size ⟨100⟩ loop distribution — already reconstructed by cpp_bridge
+        # (per-size [I, n_t] in both discrete and bin-moment modes).
+        y100 = results.get('y_sia100')
+        c_100 = None
+        if y100 is not None and np.asarray(y100).size:
+            c_100 = np.asarray(y100, dtype=float)[:, -1]
+
+        drho = rr.loop_network_drho_dt(c_111, c_100)
+        rho_floor = float(self.input_data.reactions.get('rho_d', 1.0e14))
+        # Ceiling guards against ρ_net runaway when K_rec is small/uncalibrated:
+        # the gain term grows ∝ ρ_net (Λ ∝ ρ_net), so without the mandatory
+        # recovery sink ρ_net would diverge and drive the sinks numerically
+        # stiff.  Default ceiling = a physically large network density.
+        rho_max = float(self.input_data.reactions.get('loop_net_rho_max', 1.0e16))
+        rho_new = min(max(float(rr.rho_net) + dt * drho, rho_floor), rho_max)
+
+        re = self.input_data.reactions
+        re['rho_net'] = rho_new
+        re['ci1_seg'] = ci1
+        re['cv1_seg'] = cv1
+        self.rebuild_rates()
+
     def _resize_domain(self, I_new, V_new):
         """Resize the cluster domain and rebuild all rate objects."""
         self.input_data.reactions['I'] = int(I_new)
@@ -577,7 +672,7 @@ class RadClusterSimulation:
 
     # ── Time-series keys that should be concatenated when merging segments ────
 
-    _TS_KEYS = {'t', 'dose', 'C_SIA_tot', 'C_VAC_tot', 'C_He_tot',
+    _TS_KEYS = {'t', 'dose', 'rho_net', 'C_SIA_tot', 'C_VAC_tot', 'C_He_tot',
                 'C_He_free', 'mean_n_i', 'mean_n_v', 'N_loops', 'N_voids',
                 'swelling', 'C_i1', 'C_v1', 'delta_FP', 'delta_He',
                 'J_SIA_fixed', 'J_SIA_mutual', 'J_VAC_fixed', 'J_VAC_mutual',
@@ -800,6 +895,15 @@ class RadClusterSimulation:
                 self._accumulated_results = accumulated
                 interrupted = True
                 break
+
+            # Operator-split advance of the dynamic network density ρ_net, once
+            # per segment regardless of whether the domain doubles below (the
+            # doubling branch does not reach the else-clause).  No-op unless
+            # LOOP_NETWORK_LOSS is on.  Freezes the segment-end monomers and
+            # rebuilds the rates so the next segment picks up the new ρ_net.
+            self._loop_network_update(
+                results,
+                float(results['t'][-1] - results['t'][0]))
 
             # Check tail at the last point of this segment
             frac_I, frac_V = self._boundary_fraction_at(results, -1)

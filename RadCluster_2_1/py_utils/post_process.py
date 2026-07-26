@@ -331,6 +331,16 @@ def calculate_derived_quantities(t, y, input_data, rate_eq_obj,
     # Dose axis [dpa]
     dose = G * t
 
+    # Network dislocation density ρ_net [m^-2] (loop_network_loss.tex).  ρ_net is
+    # held piecewise-constant within a segment by the operator split and refreshed
+    # by run_adaptive between segments, so concatenating these per-segment
+    # constants reproduces the step-function ρ_net(t) history vs. dose.  Equals
+    # the static ρ_d when the LOOP_NETWORK_LOSS channel is off.
+    rho_net_val = float(getattr(rr, 'rho_net',
+                                input_data.reactions.get('rho_net',
+                                input_data.reactions.get('rho_d', 1.0e14))))
+    rho_net = np.full(n_t, rho_net_val)
+
     # ── Conservation diagnostics — read cumulative sinks from state vector ──
     # The cumulative sink fluxes are CVODE-integrated extra state variables.
     # Their row indices are exposed explicitly by the rate-equation object;
@@ -438,6 +448,7 @@ def calculate_derived_quantities(t, y, input_data, rate_eq_obj,
     results = {
         't':          t,
         'dose':       dose,
+        'rho_net':    rho_net,     # [m^-2] network dislocation density vs. dose
         'y':          y,           # raw ODE state, still in at.frac
         'Omega':      Omega,       # [m^3] — for downstream unit conversions
         'C_SIA_tot':  C_SIA_tot,   # [m^-3]

@@ -115,6 +115,17 @@ class ReactionRates:
 
         # Dislocation sink parameters (Table 26)
         rho_d = float(re.get('rho_d', 1.0e14))
+        # ── Loop → network-dislocation loss (loop_network_loss.tex) ──────────
+        # When the LOOP_NETWORK_LOSS channel is active, the static network
+        # density rho_d is replaced by the *dynamic* network density rho_net
+        # (operator-split: piecewise-constant within a segment, refreshed by
+        # simulation.run_adaptive between segments via rebuild_rates).  This is
+        # the saturation feedback — a growing network raises the P4 sink
+        # strength.  With the flag OFF, no 'rho_net' key is present and the
+        # legacy static rho_d is used verbatim (bit-identical).
+        self._loop_net_on = int(re.get('LOOP_NETWORK_LOSS', 0)) != 0
+        if self._loop_net_on:
+            rho_d = float(re.get('rho_net', rho_d))   # dynamic network feeds P4 sink
         Z_i   = float(re.get('Z_i',   1.10))
         Z_v   = float(re.get('Z_v',   1.00))
         Z_He  = float(re.get('Z_He',  1.00))
@@ -481,6 +492,81 @@ class ReactionRates:
         self.k2_100       = np.zeros(I)   # sessile: no fixed-sink loss
         self.n_loop_min   = n_loop_min
 
+        # ── Loop → network-dislocation loss channel (loop_network_loss.tex) ──
+        # Transfer of SIA loops to the pre-existing network as a *network-only*,
+        # diffusivity-independent diagonal sink Λ_n^net (active even for sessile
+        # loops, which dominate incorporation).  Both characters are treated;
+        # the channel is folded additively into the P4 diagonal sinks
+        # (k2_SIA for ½⟨111⟩, k2_100 for ⟨100⟩) per the additive-sink-strength
+        # rule, so the existing GraphWalker SINK edges and the C++ k2_SIA path
+        # carry it with no new edge/term, and the SIA-content ledger
+        # J_SIA_fixed (which already sums k2_SIA) stays exactly conservative.
+        #   Λ_n^net = ν_net · P_ℓd(n),   ν_net = v_net · ρ_net · w_c
+        # See docs/Formulation/loop_network_loss.tex Eqs. (loop_diameter_from_n,
+        # loop_network_spacing, elastic_interaction_zone, P_loop_dislocation,
+        # Lambda_network, vnet).
+        ns_f      = np.arange(1.0, I + 1.0)
+        b_100_val = a_m   # ⟨100⟩ Burgers magnitude ≈ a (cf. E_b_loop_100, b_100=a_m)
+        # Per-character loop diameter d_n = 2·sqrt(n·Ω/(π·b_c))  (Eq. loop_diameter_from_n)
+        self.d_loop_111 = 2.0 * np.sqrt(ns_f * Omega / (np.pi * b_111))
+        self.d_loop_100 = 2.0 * np.sqrt(ns_f * Omega / (np.pi * b_100_val))
+        self.Lambda_net_111 = np.zeros(I)
+        self.Lambda_net_100 = np.zeros(I)
+        self.loop_network_loss = self._loop_net_on
+        self.rho_net = rho_d          # = static rho_d when channel off
+        self.K_rec   = 0.0
+        if self._loop_net_on:
+            chi   = float(re.get('loop_net_chi',   1.0))   # geometric range (Eq. 4)
+            xi    = float(re.get('loop_net_xi',    0.0))   # small-n floor (default off)
+            n_inc = int(re.get('loop_net_n_inc',   i_mobile))  # incorporation onset
+            # Recovery prefactor K_rec [m·s^-1] sets the steady-state ρ_net; it
+            # is a primary CALIBRATION parameter (Phase 5) and defaults to 0
+            # (no recovery → ρ_net grows monotonically) so an uncalibrated run
+            # does not crash ρ_net to the floor.  See loop_network_loss.tex.
+            self.K_rec = float(re.get('loop_net_K_rec', 0.0))
+            rho_net = rho_d
+            # Segment-frozen point-defect monomers set the network climb velocity
+            # v_net (Eq. vnet); held constant within a segment (operator split),
+            # so Λ_n^net is a pure size array — no Jacobian coupling to c_1.
+            #
+            # Climb velocity (Bullough–Newman): the number of defects absorbed
+            # per unit dislocation line length per time is Z_α a² ω_α c_α / Ω,
+            # each adding volume Ω and climbing the line by Ω/b, so
+            #   v_net = (a²/b)·(Z_i ω_i^eff c_i − Z_v ω_v^eff c_v)   [m/s].
+            # (The note's Eq. vnet writes Ω/b, which is dimensionally m²/s; the
+            # correct prefactor is a²/b — Ω≈a³.)  |v_net| is used: the network
+            # sweeps past stationary loops whichever way it climbs.
+            ci1 = float(re.get('ci1_seg', 0.0))
+            cv1 = float(re.get('cv1_seg', 0.0))
+            v_net = (a_m ** 2 / b_111) * (Z_i * omega_i * ci1 - Z_v * omega_v * cv1)
+            v_net = abs(v_net)
+            L_ld  = rho_net ** -0.5 if rho_net > 0.0 else np.inf
+
+            def _lambda_net(d_arr, b_c, w_c):
+                R_int = chi * d_arr
+                if xi != 0.0:
+                    R_int = R_int + xi * b_c * np.sqrt(
+                        mu_Pa * Omega * _J_eV * ns_f / max(kBT, 1e-30))
+                s_ld = np.maximum(b_c, L_ld - 0.5 * d_arr)
+                P_ld = 0.5 * (1.0 + np.tanh((R_int - s_ld) / b_c))
+                Lam  = (v_net * rho_net * w_c) * P_ld
+                if n_inc > 1:
+                    Lam[:min(n_inc - 1, I)] = 0.0   # loops below n_inc excluded
+                return Lam
+
+            # Capture width w_c = O(b_c) per character (fixed-but-tunable).  An
+            # explicit 'loop_net_w_c' overrides BOTH characters (used to amplify
+            # the channel in tests); otherwise each uses its own Burgers vector.
+            w_c_over = re.get('loop_net_w_c', None)
+            w_c_111 = float(w_c_over) if w_c_over is not None else b_111
+            w_c_100 = float(w_c_over) if w_c_over is not None else b_100_val
+            self.Lambda_net_111 = _lambda_net(self.d_loop_111, b_111, w_c_111)
+            self.Lambda_net_100 = _lambda_net(self.d_loop_100, b_100_val, w_c_100)
+            # Additive-sink-strength rule: total loss diagonal = P4 + Λ_n^net.
+            self.k2_SIA = self.k2_SIA + self.Lambda_net_111
+            self.k2_100 = self.k2_100 + self.Lambda_net_100
+            self.rho_net = rho_net
+
         # Scalar physics
         self.B_rot  = B_rot
         self.L_hat  = L_hat
@@ -527,6 +613,32 @@ class ReactionRates:
         # Restore the dropped lazy cache so the property can rebuild on demand.
         if not hasattr(self, '_phi_junc_cache'):
             self._phi_junc_cache = None
+
+    def loop_network_drho_dt(self, c_111, c_100=None):
+        """Operator-split network-density rate dρ_net/dt (loop_network_loss.tex,
+        Eq. rho_net_balance):
+
+            dρ_net/dt = (π/Ω) Σ_c Σ_n d_n^(c) Λ_n^(c) c_n^(c)  −  K_rec ρ_net^{3/2}
+
+        ``c_111`` / ``c_100`` are atom-fraction loop distributions (size arrays);
+        ``c_100`` may be None when the ⟨100⟩ population is absent.  Returns 0.0
+        when the channel is off.  Called by simulation.run_adaptive between
+        segments to advance ρ_net explicitly while it is held frozen inside the
+        stiff cluster solve.
+        """
+        if not getattr(self, 'loop_network_loss', False):
+            return 0.0
+        Omega = float(self.inp.derived['Omega'])
+        c_111 = np.asarray(c_111, dtype=float)
+        gain = np.dot(self.d_loop_111[:c_111.size] * self.Lambda_net_111[:c_111.size],
+                      np.maximum(c_111, 0.0))
+        if c_100 is not None:
+            c_100 = np.asarray(c_100, dtype=float)
+            gain += np.dot(self.d_loop_100[:c_100.size] * self.Lambda_net_100[:c_100.size],
+                           np.maximum(c_100, 0.0))
+        gain *= np.pi / Omega
+        recovery = self.K_rec * max(self.rho_net, 0.0) ** 1.5
+        return float(gain - recovery)
 
     def format_diagnostic(self, mean_n_i=None):
         """Return key rate constants as a formatted string.

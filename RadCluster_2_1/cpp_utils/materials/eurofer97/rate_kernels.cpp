@@ -625,6 +625,10 @@ static int rhs_case2(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
                 else if (n >= 2)       dci[n - 2]    += e;
                 dci[0]        += e;
             }
+            // Loop → network-dislocation loss: sessile ⟨100⟩_n swept into the
+            // network (loop_network_loss.tex).  Diagonal first-order sink; its
+            // SIA content is routed into J_SIA_fixed below to keep δ_FP exact.
+            dci100[n - 1] -= P.Lambda_net_100[n - 1] * cn100;
         }
     }
 
@@ -711,11 +715,17 @@ static int rhs_case2(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
     // both species (keeps δ_FP_sia / δ_FP_vac exact with conversion on).
     if (P.loop_conversion) {
         const double* c_i100 = y + P.sia100_off;
-        double s100_mut = 0.0;
-        for (int n = P.conv_n_loop_min; n <= I; ++n)
-            s100_mut += P.K_100_shrink[n - 1] * std::max(c_i100[n - 1], 0.0) * cv1;
-        dydt[P.cons_off + 1] += s100_mut;   // J_SIA_mutual
-        dydt[P.cons_off + 3] += s100_mut;   // J_VAC_mutual
+        double s100_mut = 0.0, s100_fixed = 0.0;
+        for (int n = P.conv_n_loop_min; n <= I; ++n) {
+            s100_mut   += P.K_100_shrink[n - 1] * std::max(c_i100[n - 1], 0.0) * cv1;
+            // ⟨100⟩ loops swept into the network leave SIA content at a fixed
+            // sink (loop_network_loss.tex, Eq. ledger) — keeps δ_FP exact.
+            s100_fixed += static_cast<double>(n) * P.Lambda_net_100[n - 1]
+                          * std::max(c_i100[n - 1], 0.0);
+        }
+        dydt[P.cons_off + 1] += s100_mut;     // J_SIA_mutual
+        dydt[P.cons_off + 3] += s100_mut;     // J_VAC_mutual
+        dydt[P.cons_off + 0] += s100_fixed;   // J_SIA_fixed (network sweep)
     }
 
     // J_He_sink: He lost to sinks
@@ -1996,6 +2006,9 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
                 else if (n >= 2)       d111[n - 2] += e;
                 d111[0]     += e;
             }
+            // Loop → network-dislocation loss on sessile ⟨100⟩
+            // (loop_network_loss.tex); projected onto the ⟨100⟩ moments below.
+            d100[n - 1] -= P.Lambda_net_100[n - 1] * cn100;
         }
 
         // Project d111 onto the ½⟨111⟩ moments and ADD (projection is linear).
@@ -2173,11 +2186,15 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
     // species (keeps δ_FP_sia / δ_FP_vac exact with conversion on) — mirrors the
     // discrete rhs_case2 accounting.
     if (P.loop_conversion && !c_n100.empty()) {
-        double s100_mut = 0.0;
-        for (int n = P.conv_n_loop_min; n <= I; ++n)
-            s100_mut += P.K_100_shrink[n - 1] * std::max(c_n100[n - 1], 0.0) * cv1;
-        dydt[P.cons_off + 1] += s100_mut;   // J_SIA_mutual
-        dydt[P.cons_off + 3] += s100_mut;   // J_VAC_mutual
+        double s100_mut = 0.0, s100_fixed = 0.0;
+        for (int n = P.conv_n_loop_min; n <= I; ++n) {
+            s100_mut   += P.K_100_shrink[n - 1] * std::max(c_n100[n - 1], 0.0) * cv1;
+            s100_fixed += static_cast<double>(n) * P.Lambda_net_100[n - 1]
+                          * std::max(c_n100[n - 1], 0.0);
+        }
+        dydt[P.cons_off + 1] += s100_mut;     // J_SIA_mutual
+        dydt[P.cons_off + 3] += s100_mut;     // J_VAC_mutual
+        dydt[P.cons_off + 0] += s100_fixed;   // J_SIA_fixed (network sweep)
     }
 
     // ── Sliding-window masking for bin_moment mode ───────────────────────────

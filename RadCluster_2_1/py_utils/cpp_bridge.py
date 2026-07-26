@@ -204,6 +204,14 @@ def write_param_file(sim, solver_config, path, y0_override=None):
             lines.append(f"K_100_shrink_{k}={v:.17e}")
         for k, v in enumerate(rr.G_100):
             lines.append(f"G_100_{k}={v:.17e}")
+        # Loop → network-dislocation loss on the sessile ⟨100⟩ block
+        # (loop_network_loss.tex).  Zeros when LOOP_NETWORK_LOSS is off, so the
+        # OFF path is byte-identical.  The ½⟨111⟩ side needs no extra key: its
+        # Λ_n^net is already folded into k2_SIA (additive-sink-strength rule).
+        lam100 = getattr(rr, 'Lambda_net_100', None)
+        if lam100 is not None:
+            for k, v in enumerate(lam100):
+                lines.append(f"lambda_net_100_{k}={v:.17e}")
 
     # ── Scalar physics ────────────────────────────────────────────────────────
     kBT = float(d['kBT'])

@@ -172,6 +172,12 @@ struct Parameters {
     std::vector<double> K_100_grow;   // [I] ⟨100⟩ + I_1 capture (sessile)
     std::vector<double> K_100_shrink; // [I] ⟨100⟩ + V_1 capture (sessile)
     std::vector<double> G_100;        // [I] ⟨100⟩ thermal SIA emission
+    // Loop → network-dislocation loss on the sessile ⟨100⟩ block
+    // (loop_network_loss.tex).  Diagonal first-order sink Λ_n^net applied to the
+    // appended ⟨100⟩ loops AND routed into the J_SIA_fixed ledger so δ_FP is
+    // preserved.  Zeros when LOOP_NETWORK_LOSS is off (byte-identical OFF path).
+    // The ½⟨111⟩ side is already folded into k2_SIA on the Python side.
+    std::vector<double> Lambda_net_100; // [I]
 
     std::vector<double> y0;   // [N_eq]
 
@@ -526,11 +532,13 @@ inline Parameters build_parameters(const std::map<std::string, double>& p) {
         P.K_100_grow.assign(P.I, 0.0);
         P.K_100_shrink.assign(P.I, 0.0);
         P.G_100.assign(P.I, 0.0);
+        P.Lambda_net_100.assign(P.I, 0.0);
         for (int k = 0; k < P.I; ++k) {
             P.Gamma_uni[k]    = optional_param(p, "Gamma_uni_"    + std::to_string(k), 0.0);
             P.K_100_grow[k]   = optional_param(p, "K_100_grow_"   + std::to_string(k), 0.0);
             P.K_100_shrink[k] = optional_param(p, "K_100_shrink_" + std::to_string(k), 0.0);
             P.G_100[k]        = optional_param(p, "G_100_"        + std::to_string(k), 0.0);
+            P.Lambda_net_100[k] = optional_param(p, "lambda_net_100_" + std::to_string(k), 0.0);
         }
     }
 

@@ -706,7 +706,10 @@ class BinMomentRateEquations:
         spectrum = input_data.derived['spectrum']
         G        = input_data.derived['G']
         G_He_r   = input_data.derived['G_He_r']
-        Pr_SIA, Pr_VAC, G_He = production_rates(G, spectrum, I, V, G_He_r)
+        Pr_SIA, Pr_VAC, G_He = production_rates(
+            G, spectrum, I, V, G_He_r,
+            spec_over=(input_data.production_fission if 'fiss' in spectrum.lower()
+                       else input_data.production_fusion))
         self.Pr_SIA = Pr_SIA[1:]   # [I], index k → size k+1
         self.Pr_VAC = Pr_VAC[1:]   # [V]
         self.G_He   = G_He

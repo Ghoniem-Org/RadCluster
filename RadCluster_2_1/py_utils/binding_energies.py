@@ -39,7 +39,7 @@ _A_void = {0: 1.2353, 1: 2.9064, 2: 3.4147, 3: 2.1504, 4: -0.1590}  # eV
 _lambda_void = 0.5756   # decay constant [vac^-1], = ln(100)/8
 
 
-def E_b_void(m, E_f_v, gamma_s, Omega):
+def E_b_void(m, E_f_v, gamma_s, Omega, lambda_void=None, A_void_0=None):
     """
     Binding energy of the m-th vacancy in a spherical void cluster.
 
@@ -53,10 +53,18 @@ def E_b_void(m, E_f_v, gamma_s, Omega):
 
     Parameters
     ----------
-    m       : int or array
-    E_f_v   : float [eV]
-    gamma_s : float [J/m²]
-    Omega   : float [m³]
+    m           : int or array
+    E_f_v       : float [eV]
+    gamma_s     : float [J/m²]
+    Omega       : float [m³]
+    lambda_void : float or None [vac^-1]
+        Blend decay constant λ.  ``None`` (default) uses the module constant
+        ``_lambda_void`` = ln(100)/8, preserving legacy behaviour.  Supplied
+        from the ``dissociation`` sheet key ``lambda`` by ReactionRates so the
+        workbook value is actually honoured — before this argument existed the
+        workbook carried ``lambda`` and ``A_void_0`` but nothing read them.
+    A_void_0    : float or None [eV]
+        Atomistic correction amplitude A(0).  ``None`` uses ``_A_void[0]``.
 
     Returns
     -------
@@ -64,11 +72,12 @@ def E_b_void(m, E_f_v, gamma_s, Omega):
     """
     r0     = atomic_radius(Omega)
     A_cap  = 4.0 * np.pi * gamma_s * r0**2 * _J_eV   # eV  — Eq. 66
-    A_atm  = _A_void[0]
+    A_atm  = _A_void[0]      if A_void_0    is None else float(A_void_0)
+    _lam   = _lambda_void    if lambda_void is None else float(lambda_void)
 
     m = np.asarray(m, dtype=float)
     capillary = A_cap * (m**(2.0/3.0) - (m - 1.0)**(2.0/3.0))
-    correction = A_atm * np.exp(-_lambda_void * np.maximum(m - 1.0, 0.0))
+    correction = A_atm * np.exp(-_lam * np.maximum(m - 1.0, 0.0))
 
     Eb = np.where(m <= 1.0,
                   E_f_v,
@@ -218,6 +227,39 @@ def _E_b_loop_i_continuum(n, E_f_i=3.77, G_shear=82e9, b=2.49e-10,
     mu_eV  = mu * _J_eV
     Eb     = E_f_i - mu_eV
     return Eb
+
+
+def A_111_from_E_b_i2(E_b_i2, B_111):
+    """
+    Loop-binding amplitude ``A_111`` implied by a measured **di-interstitial
+    binding energy** ``E_b^i(2)``.
+
+    The small-n branch of :func:`E_b_loop_i` is the DFT power-law fit
+    ``E_b^fit(n) = A_111 · n^{+B_111}`` (note the exponent is POSITIVE — binding
+    *increases* with loop size).  Evaluated at n = 2 this is the binding of the
+    second SIA to a mono-interstitial, i.e. the di-interstitial binding energy.
+    Inverting,
+
+        A_111 = E_b^i(2) · 2^{−B_111}
+
+    Anchoring on ``E_b^i(2)`` rather than on ``A_111`` directly is preferable
+    for calibration: ``A_111`` has no independent measurement, whereas
+    ``E_b^i(2)`` is reported by DFT for bcc Fe (≈0.8 eV).
+
+    Note that :func:`E_b_loop_i` returns the *blended* value at n = 2, which
+    differs from ``E_b_i2`` by the continuum admixture (1 − w) ≈ 1e-4 at the
+    default blend (n_tr = 25, σ_tr = 5) — negligible, but not identically zero.
+
+    Parameters
+    ----------
+    E_b_i2 : float [eV]  — di-interstitial binding energy
+    B_111  : float       — power-law exponent
+
+    Returns
+    -------
+    A_111 : float [eV]
+    """
+    return float(E_b_i2) * 2.0 ** (-float(B_111))
 
 
 def E_b_loop_i(n, A_111=0.7501, B_111=0.3873, A_100=0.7160, B_100=0.3581,

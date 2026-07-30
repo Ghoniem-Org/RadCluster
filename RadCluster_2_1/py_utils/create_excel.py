@@ -171,6 +171,12 @@ DISSOCIATION = [
     ('Interstitial Loop Binding (power-law + blend, Eqs. 106-108)', None, None, None, None),
     ('1/2<111> amplitude',  'A_111',   0.7501, 'eV',   None),   # Table 18 / Eq. 106
     ('1/2<111> exponent',   'B_111',   0.3873, '−',    None),   # Table 18 / Eq. 106
+    # Di-interstitial binding energy: E_b^fit(2) = A_111*2^{+B_111}.  When set
+    # (>0) it OVERRIDES A_111 via A_111 = E_b_i2*2^{-B_111}, and rescales A_100
+    # by the same factor so the <100>/<111> ratio is preserved.  Blank/0 => the
+    # A_111/A_100 values above are used verbatim.
+    ('Di-interstitial binding', 'E_b_i2', 0.80, 'eV',
+     'DFT anchor (bcc Fe); overrides A_111 = E_b_i2*2^-B_111'),
     ('<100> amplitude',     'A_100',   0.7160, 'eV',   None),   # Table 18 / Eq. 107
     ('<100> exponent',      'B_100',   0.3581, '−',    None),   # Table 18 / Eq. 107
     ('Blend center',        'n_tr',    25,     'SIAs', None),   # Eq. 108
@@ -257,6 +263,19 @@ REACTIONS = [
     ('Junction log-size tol.',    'sigma_s_junc', 0.35,   '-',   'Marian comparable-size width in ln(n/n_prime)'),
     ('Junction min size',         'n_j_min_junc', 30,     '-',   'Marian; junctions from n ~ 34-37'),
     ('<100> loop-onset size',     'n_loop_min',   4,      '-',   'bulk-100 n_min; below this no <100> loop exists'),
+
+    # ── Loop → network-dislocation loss (loop_network_loss.tex) ──────────────
+    # Keys with a STATIC code default carry that number here; the two with a
+    # DYNAMIC default (loop_net_n_inc -> i_mobile, loop_net_w_c -> the
+    # per-character Burgers vector) are shipped BLANK and the code falls back.
+    ('Loop -> Network Dislocation Loss (loop_network_loss.tex)', None, None, None, None),
+    ('Channel enable flag',       'LOOP_NETWORK_LOSS', 0,     '-',    '0=off (legacy 2_0 behaviour), 1=on; needs run_adaptive()'),
+    ('Elastic capture range',     'loop_net_chi',      1.0,   '-',    'R_int = chi*d_loop; CHANNEL IS ~0 BELOW chi~30 (few-nm loops vs ~100 nm network spacing)'),
+    ('Capture width',             'loop_net_w_c',      None,  'm',    'blank = per-character Burgers vector (physical); 150*b_111 reaches the EUROFER plateau'),
+    ('Recovery prefactor',        'loop_net_K_rec',    0.0,   'm/s',  'drho = -K_rec*rho_net^{3/2}; 0 = no recovery (monotonic growth)'),
+    ('Network density ceiling',   'loop_net_rho_max',  1.0e16,'m^-2', 'runaway guard; EUROFER experimental plateau is ~5e14'),
+    ('Small-n stress floor',      'loop_net_xi',       0.0,   '-',    'elastic-zone floor for small n; 0 = off'),
+    ('Incorporation onset size',  'loop_net_n_inc',    None,  '-',    'blank = i_mobile; loops below this size are excluded'),
 
     ('Solver Settings (Table 29)', None, None, None, None),
     ('Solver mode',      'solver_mode',   'full_system',       '−', 'full_system | active_window'),

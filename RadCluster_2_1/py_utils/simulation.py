@@ -370,7 +370,9 @@ class RadClusterSimulation:
         # the gain term grows ∝ ρ_net (Λ ∝ ρ_net), so without the mandatory
         # recovery sink ρ_net would diverge and drive the sinks numerically
         # stiff.  Default ceiling = a physically large network density.
-        rho_max = float(self.input_data.reactions.get('loop_net_rho_max', 1.0e16))
+        from .reaction_rates import _num
+        rho_max = _num(self.input_data.reactions.get('loop_net_rho_max', 1.0e16),
+                       1.0e16)
         rho_new = min(max(float(rr.rho_net) + dt * drho, rho_floor), rho_max)
 
         re = self.input_data.reactions

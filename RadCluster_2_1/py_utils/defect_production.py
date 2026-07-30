@@ -139,7 +139,37 @@ def _spec_get(spec, key):
     raise KeyError(key)
 
 
-def production_rates(G, spectrum, I_max, V_max, G_He_r):
+def _merge_spec(spec, over):
+    """Module-default cascade spec overlaid with workbook values.
+
+    ``over`` is ``InputData.production_fission`` / ``production_fusion`` — the
+    Production sheet as loaded from Excel.  Only keys that are present AND
+    numerically valid override the module default, so a blank cell or a text
+    entry (e.g. 'user', '~10') falls back to the table value rather than
+    poisoning the spectrum with NaN.
+
+    Before this existed, ``production_rates`` read the module dicts directly and
+    the Production sheet was never consulted: eta / f_cl_i / f_cl_v / s_i / s_v /
+    i_cascade / v_cascade were silently un-settable from the workbook.
+    """
+    if not over:
+        return spec
+    merged = dict(spec)
+    for k in ('eta', 'f_cl_i', 's_i', 'i_cascade',
+              'f_cl_v', 's_v', 'v_cascade', 'b0_res'):
+        if k not in over:
+            continue
+        try:
+            v = float(over[k])
+        except (TypeError, ValueError):
+            continue
+        if not np.isfinite(v):
+            continue
+        merged[k] = int(v) if k in ('i_cascade', 'v_cascade') else v
+    return merged
+
+
+def production_rates(G, spectrum, I_max, V_max, G_He_r, spec_over=None):
     """
     Compute cascade production rates P_i^SIA [s^-1] and P_v^VAC [s^-1]
     scaled by displacement rate G [dpa/s].
@@ -166,6 +196,7 @@ def production_rates(G, spectrum, I_max, V_max, G_He_r):
     G_He   : float [atom frac/s]  — He transmutation production rate
     """
     spec = FISSION if 'fiss' in spectrum.lower() else FUSION
+    spec = _merge_spec(spec, spec_over)
 
     eta       = spec['eta']
     f_cl_i    = spec['f_cl_i']

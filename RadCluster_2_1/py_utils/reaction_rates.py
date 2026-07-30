@@ -48,12 +48,46 @@ This ensures: dC [at.frac/s] = K [s^-1 per at.frac] · C_A · C_B.
 import numpy as np
 from .binding_energies import (
     E_b_void, E_b_loop_i, E_b_loop_100, E_b_loop_v, E_b_bubble, ell_max,
-    Gamma_TM, Gamma_res, atomic_radius
+    Gamma_TM, Gamma_res, atomic_radius, A_111_from_E_b_i2
 )
 from .loop_energetics import LoopEnergetics
 
 _kB   = 8.617333262e-5    # eV K^-1
 _J_eV = 6.241509074e18    # J → eV
+
+
+def _opt_pos_float(v):
+    """Workbook cell → positive float, or None.
+
+    Returns None for an absent key, a blank cell (pandas NaN), a
+    non-numeric entry, or a non-positive value.  Used for *optional override*
+    keys, where "not supplied" must be distinguishable from "supplied as 0"
+    and must fall back to the legacy code path rather than raise.
+    """
+    if v is None:
+        return None
+    try:
+        f = float(v)
+    except (TypeError, ValueError):
+        return None
+    if not np.isfinite(f) or f <= 0.0:
+        return None
+    return f
+
+
+def _num(v, default):
+    """Workbook cell → float, falling back to ``default`` for a blank/absent
+    cell.  Unlike :func:`_opt_pos_float` this accepts zero and negatives — it is
+    for keys whose legitimate nominal value may be 0 (``loop_net_xi``,
+    ``loop_net_K_rec``).
+    """
+    if v is None:
+        return float(default)
+    try:
+        f = float(v)
+    except (TypeError, ValueError):
+        return float(default)
+    return f if np.isfinite(f) else float(default)
 
 
 class ReactionRates:
@@ -123,7 +157,7 @@ class ReactionRates:
         # the saturation feedback — a growing network raises the P4 sink
         # strength.  With the flag OFF, no 'rho_net' key is present and the
         # legacy static rho_d is used verbatim (bit-identical).
-        self._loop_net_on = int(re.get('LOOP_NETWORK_LOSS', 0)) != 0
+        self._loop_net_on = int(_num(re.get('LOOP_NETWORK_LOSS', 0), 0)) != 0
         if self._loop_net_on:
             rho_d = float(re.get('rho_net', rho_d))   # dynamic network feeds P4 sink
         Z_i   = float(re.get('Z_i',   1.10))
@@ -152,6 +186,38 @@ class ReactionRates:
         n_tr     = float(inp.dissociation.get('n_tr',    25.0))
         sigma_tr = float(inp.dissociation.get('sigma_tr', 5.0))
         gamma_sf = float(inp.dissociation.get('gamma_sf', 0.6))
+
+        # ── Di-interstitial binding energy override (dissociation!E_b_i2) ────
+        # The small-n loop branch is E_b^fit(n) = A_111·n^{+B_111}, so its value
+        # at n=2 IS the di-interstitial binding energy.  Setting that
+        # measurable quantity is preferable to setting the bare amplitude
+        # A_111, which has no independent experimental determination.  When
+        # 'E_b_i2' is present and positive, it OVERRIDES the workbook A_111:
+        #
+        #     A_111 <- E_b_i2 · 2^{-B_111}                (Eq. Eb_smalln_fit)
+        #
+        # A_100 is rescaled by the SAME factor so the <100>/<111> amplitude
+        # ratio — which sets the relative stability of the two loop characters,
+        # and hence f_100 — is preserved and does not become a free parameter
+        # riding along with this override.
+        #
+        # Absent, blank or non-positive => legacy path, A_111/A_100 used
+        # verbatim (bit-identical to the pre-override behaviour).
+        E_b_i2 = _opt_pos_float(inp.dissociation.get('E_b_i2', None))
+        self.E_b_i2 = E_b_i2
+        if E_b_i2 is not None:
+            A_111_new = A_111_from_E_b_i2(E_b_i2, B_111)
+            if A_111 > 0.0:
+                A_100 = A_100 * (A_111_new / A_111)
+            A_111 = A_111_new
+
+        # ── Void-binding blend parameters (dissociation!lambda, !A_void_0) ───
+        # Read from the workbook rather than taken from the module constants in
+        # binding_energies.py.  Both keys have always been present in the
+        # workbook but were previously hard-coded and silently ignored — a
+        # varied-but-unread parameter is indistinguishable from an inert one.
+        lambda_void = float(inp.dissociation.get('lambda',    0.5756))
+        A_void_0    = float(inp.dissociation.get('A_void_0',  1.2353))
         alpha_He = inp.alpha_He
         nu0_TM   = float(inp.dissociation.get('nu0_TM', 1.0e12))
 
@@ -207,7 +273,8 @@ class ReactionRates:
         def alpha_void(m):
             if m <= 1:
                 return 0.0
-            Eb = E_b_void(m, E_f_v, gamma_s, Omega)
+            Eb = E_b_void(m, E_f_v, gamma_s, Omega,
+                          lambda_void=lambda_void, A_void_0=A_void_0)
             return A_sph * max(m - 1.0, 0.0)**(1.0/3.0) * Dv_eff * np.exp(-Eb / kBT) * inv_Omega23
 
         # Thermal vacancy emission from bubble (m, ell) (Eq. 139 modified)
@@ -516,14 +583,20 @@ class ReactionRates:
         self.rho_net = rho_d          # = static rho_d when channel off
         self.K_rec   = 0.0
         if self._loop_net_on:
-            chi   = float(re.get('loop_net_chi',   1.0))   # geometric range (Eq. 4)
-            xi    = float(re.get('loop_net_xi',    0.0))   # small-n floor (default off)
-            n_inc = int(re.get('loop_net_n_inc',   i_mobile))  # incorporation onset
+            # Blank workbook cells fall back to the code default: the keys with
+            # a *static* default carry an explicit number in the sheet, while
+            # 'loop_net_n_inc' and 'loop_net_w_c' have *dynamic* defaults
+            # (i_mobile, and the per-character Burgers vector) and are shipped
+            # blank.  Reading them with float()/int() directly would turn a
+            # blank cell into NaN and propagate it into Λ_n^net.
+            chi   = _num(re.get('loop_net_chi',  1.0), 1.0)   # geometric range (Eq. 4)
+            xi    = _num(re.get('loop_net_xi',   0.0), 0.0)   # small-n floor (default off)
+            n_inc = int(_num(re.get('loop_net_n_inc', i_mobile), i_mobile))  # onset
             # Recovery prefactor K_rec [m·s^-1] sets the steady-state ρ_net; it
             # is a primary CALIBRATION parameter (Phase 5) and defaults to 0
             # (no recovery → ρ_net grows monotonically) so an uncalibrated run
             # does not crash ρ_net to the floor.  See loop_network_loss.tex.
-            self.K_rec = float(re.get('loop_net_K_rec', 0.0))
+            self.K_rec = _num(re.get('loop_net_K_rec', 0.0), 0.0)
             rho_net = rho_d
             # Segment-frozen point-defect monomers set the network climb velocity
             # v_net (Eq. vnet); held constant within a segment (operator split),
@@ -557,9 +630,9 @@ class ReactionRates:
             # Capture width w_c = O(b_c) per character (fixed-but-tunable).  An
             # explicit 'loop_net_w_c' overrides BOTH characters (used to amplify
             # the channel in tests); otherwise each uses its own Burgers vector.
-            w_c_over = re.get('loop_net_w_c', None)
-            w_c_111 = float(w_c_over) if w_c_over is not None else b_111
-            w_c_100 = float(w_c_over) if w_c_over is not None else b_100_val
+            w_c_over = _opt_pos_float(re.get('loop_net_w_c', None))
+            w_c_111 = w_c_over if w_c_over is not None else b_111
+            w_c_100 = w_c_over if w_c_over is not None else b_100_val
             self.Lambda_net_111 = _lambda_net(self.d_loop_111, b_111, w_c_111)
             self.Lambda_net_100 = _lambda_net(self.d_loop_100, b_100_val, w_c_100)
             # Additive-sink-strength rule: total loss diagonal = P4 + Λ_n^net.

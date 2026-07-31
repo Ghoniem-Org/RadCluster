@@ -93,13 +93,19 @@ at any grid size.**
 
 ## 5. Recommendation
 
-1. **Commission the loop→network loss channel (objective (a)) before any further
-   anchoring.** This is the mechanism whose absence the finding identifies. It is
-   already implemented and parameterised (`loop_net_w_c`, `loop_net_chi`,
-   `loop_net_K_rec`, `loop_net_rho_max`) but is off by default and identically
-   zero at the physical `χ = 1` — see the digital-twin plan §2.4. Its calibration
-   is no longer optional tuning; it is what makes the loop observables
-   well-posed.
+1. ~~Commission the loop→network loss channel before further anchoring.~~
+   **WITHDRAWN 2026-07-31 — tested and insufficient.** Two commissioning scans
+   (`output/20260731_012347_loopnet/`, `output/20260731_055301_loopnet/`) show
+   the channel does **not** bound loop growth. At the runaway base the
+   `I` = 1000 → 2000 scaling of `d̄_ℓ` is ×1.358 (off), ×1.359 (`w_c`=150 `b₁₁₁`),
+   ×1.362 (500 `b₁₁₁`), ×1.372 (2000 `b₁₁₁`) — `sqrt(2)` throughout, even at
+   2000× the physical capture width with `ρ_net` at its ceiling. The channel
+   grows `ρ_net` and improves `δ_FP` ~3×, but imposes no size ceiling.
+   **Revised finding:** the runaway is confined to the low-`f_cl_i` /
+   high-`f_cl_v` corner. At normal production values the distribution is
+   grid-converged (`d̄_ℓ` 2.31 → 2.30 nm, occupancy 0.088, `δ_FP` ~1e-8), so the
+   twin needs the occupancy rule enforced rather than new physics. See
+   [`tier2_tier3_parameter_selection.md`](tier2_tier3_parameter_selection.md) §0.
 2. **Add a grid-adequacy assertion to every run**: flag when the tracked
    population's upper tail carries non-negligible weight at the top bin. A run
    whose distribution touches the ceiling is not a physical result. This is

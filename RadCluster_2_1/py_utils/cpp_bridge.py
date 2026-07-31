@@ -176,7 +176,10 @@ def write_param_file(sim, solver_config, path, y0_override=None):
         lines.append(f"D_VAC_eff_{k}={v:.17e}")
     lines.append(f"A_sph_inv_O23={rr.A_sph_inv_O23:.17e}")
     lines.append(f"A_loop_inv_O23={rr.A_loop_inv_O23:.17e}")
-    Z_i_loop = float(inp.reactions.get('Z_i', 1.05))  # loop bias = dislocation bias Z_i
+    # Loop SIA bias — own key, falling back to the network bias Z_i when the
+    # workbook has no row (keeps pre-existing workbooks bit-identical).
+    _Z_i = float(inp.reactions.get('Z_i', 1.05))
+    Z_i_loop = float(inp.reactions.get('Z_i_loop', _Z_i) or _Z_i)
     lines.append(f"Z_i_loop={Z_i_loop:.17e}")
     Z_ii = float(inp.reactions.get('Z_ii', 1.0))
     lines.append(f"Z_ii={Z_ii:.17e}")

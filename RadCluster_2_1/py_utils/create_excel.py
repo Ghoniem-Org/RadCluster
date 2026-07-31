@@ -220,7 +220,8 @@ REACTIONS = [
 
     ('Dislocation Network Sink (Table 26)', None, None, None, None),
     ('Network dislocation density', 'rho_d',  1.0e14, 'm^-2',  'EUROFER tempered'),  # Table 26
-    ('Interstitial bias factor',    'Z_i',    1.10,   '−',     'Table 26'),          # Table 26
+    ('Interstitial bias factor',    'Z_i',    1.10,   '−',     'Table 26; NETWORK dislocation bias'),  # Table 26
+    ('Loop interstitial bias',      'Z_i_loop',1.10,  '−',     'Eq. P3_i; LOOP bias, independent of Z_i. blank = use Z_i'),
     ('Vacancy bias factor',         'Z_v',    1.00,   '−',     'Table 26'),          # Table 26
     ('He bias factor',              'Z_He',   1.00,   '−',     'Table 26'),          # Table 26
 

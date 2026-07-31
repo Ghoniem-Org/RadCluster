@@ -751,9 +751,22 @@ grid and physics gives the **converged** `δ_FP`:
 | **1e-6** | **1.2×10⁻⁸** | 3.6×10⁻⁶ |
 | 1e-7 | 1.4×10⁻⁷ | 3.9×10⁻⁶ |
 
-**Adopt `rtol = 1e-6`:** it is the optimum, not merely the tightest — 1e-7 is
-*worse* (roundoff-limited). Every tolerance tested passes the 1e-6 gate at 1 dpa,
-so the ladder's remaining value is in `atol` and `C_floor`, not `rtol`.
+**Adopt `rtol = 1e-6` for HF.** It is the optimum, not merely the tightest —
+1e-7 is *worse* (roundoff-limited).
+
+**LF may run at `rtol = 1e-4`.** At the new `d_LF = 0.1 dpa` the measured
+`δ_FP` is **1.5×10⁻⁵ at 623 K and 1.5×10⁻⁶ at 723 K**, both comfortably inside
+the 1e-4 health check of §6. Since conservation is no longer an acceptance
+criterion, there is nothing to gain from a tighter LF tolerance. Measured cost
+at 623 K to 10 dpa: **309 s at `rtol = 1e-4` versus 516 s at 1e-6**, so the loose
+setting is ~1.7× cheaper — on top of the 10× saved by the shorter dose. This is
+what makes the reduced Tier-2 design (§4/Tier 2) comfortably a workstation job.
+
+Caveat, from the same figure: the tolerance curves separate by roughly one
+decade of `δ_FP` per decade of `rtol`, and `δ_FP` climbs with dose regardless.
+Neither matters while the criterion is 1e-4, but if conservation is ever
+reinstated as a scored quantity the LF and HF tiers would no longer be
+comparable and the AR-GP `ρ` would absorb the difference.
 
 Two corrections to earlier revisions of this plan:
 - The claim that "a 100× tolerance relaxation cost ~4.7 orders of magnitude" was
@@ -898,7 +911,8 @@ the only anchor to which that applies, and the deliverable must say so per-row.
 observables, experimental value, band, `|ln y_sim − ln y_fit| / s`);
 `report/T1_prior_predictive.png` — Tier-1 predictions overlaid on the Appendix G
 group-separated panels. **Acceptance:** not that the model fits — it very likely
-will not — but that (i) every run passes `δ_FP < 1e-6` and `δ_He < 1e-6`,
+will not — but that (i) every run passes the `< 1e-4` conservation *health
+check* on the converged value (§6),
 (ii) every observable is finite and physical, (iii) the residual table is
 complete. This is the measurement of `δ^model` that sets `σ_model` in Eq. (H.13).
 
@@ -908,12 +922,30 @@ Purpose: Eq. (H.24)–(H.25), demote the sloppy parameters before they can absor
 scatter.
 
 - **Design:** Saltelli extension of a Sobol sequence, `N(p+2)` evaluations. With
-  `p = 24` (§2.1) and a base `N = 64`, that is 1664 model evaluations *per
+  `p = 24` (§2.1) and a base **`N = 16`**, that is 416 model evaluations *per
   condition*.
 - **Conditions:** three only — N2 (300 °C), N5 (350 °C), I1 (ion, 350 °C, high
   dose rate) — chosen to span the neutron temperature window and to include one
   ion point so the dose-rate-sensitive parameters (`L_1D`, `i_mob`) are exercised.
-  All three are inside the T0.4 envelope. **≈ 5000 LF runs.**
+  All three are inside the T0.4 envelope. **≈ 1250 LF runs.**
+- **`d_LF` = 0.1 dpa** (author decision, 2026-07-30; was 1 dpa).
+
+**Why the cut — the cost is now measured, not assumed.** The anchor scan
+([`anchor_scan_350C_1dpa.md`](anchor_scan_350C_1dpa.md)) timed 1 dpa at
+`I=V=1000`, `im20/vm5`, `rtol=1e-6` at **250–450 s single-threaded**. At the old
+design (`N = 64`, `d_LF = 1 dpa`) that is ~420 core-hours — the expensive branch
+of the feasibility gate below, requiring a cluster. Dropping to `N = 16` and
+`d_LF = 0.1 dpa` brings it to roughly **1250 runs × ~40 s ≈ 14 core-hours**,
+trivially parallel on one workstation.
+
+**What 0.1 dpa costs scientifically, stated plainly.** Sobol indices at 0.1 dpa
+measure sensitivity in the *nucleation-dominated transient*, not at the
+15–30 dpa of the database. Parameters that only matter once loops coarsen — the
+loop→network channel most of all — will screen artificially low. Mitigations:
+(i) carry the loop-evolution parameters (#19–#20, #24) into Tier 3 regardless of
+their Tier-2 index, and (ii) note from the anchor scan that `f₁₀₀` is
+*efficiency-limited, not dose-limited* (3 → 30 dpa bit-identical), so the
+loop-character channel is largely unaffected by the truncation.
 - **Prerequisite from §2.4:** the LF grid must have passed the T0.4b
   network-liveness check. Screening `w_c`, `χ` and `K_rec` on a grid where
   `P_ℓd ≡ 0` returns `S_i = 0` for all three and looks exactly like a genuine
@@ -1117,13 +1149,13 @@ in the campaign and belongs in the figure, not the caption.
 | T0.4 reachability | 12 | LF + HF | dose-per-CPU-minute vs T inside the envelope | T0.2 |
 | T0.4b network liveness | 2 | LF | `ρ̇_net ≠ 0` on the LF grid | T0.2 |
 | T1 anchor | 12 | HF | prior predictive, `σ_model` | T0.5 |
-| T2 screening | ~5000 | LF | `S_i`, `S_i^T` → `θ_act` | T0.3 gate, T0.4b |
+| T2 screening | ~1250 | LF, 0.1 dpa | `S_i`, `S_i^T` → `θ_act` | T0.3 gate, T0.4b |
 | T3 HF design | 24–64 | HF | AR-GP anchor | T2 |
 | T4 calibration | 0 (emulator) | — | posterior | T3 validation gate |
 | T5 assimilation | 0 | — | sequential update | T4 |
 | T6 refinement | 3 × 8 | HF | acquisition loop | T4 |
 | T7 prediction | ~8 confirm | HF | fusion bands (He-only) | T4, T6 |
-| **Total simulator runs** | **≈ 5180** | | | |
+| **Total simulator runs** | **≈ 1430** | | | |
 
 The count rose from ≈4380 because `p` went 20 → 24 (§2.1), which costs
 `3 × 64 × 4 = 768` extra LF evaluations in the Saltelli design. The 5000 LF
@@ -1159,9 +1191,38 @@ again after Tier 7:
 |---|---|---|---|
 | 1 | Statistical consistency | `\|ln y_sim − ln y_fit\| ≤ 2s` for every row | Table G.36 bands |
 | 2 | Distributional consistency | `W₁ ≤ W_tol` per histogram; `W_tol` set from the *between-analysis* spread of the three Dethloff 300 °C histograms — i.e. the tolerance is the experimental reproducibility, not a guess | `META`/`HIST` |
-| 3 | Conservation | `δ_FP < 1e-6` and `δ_He < 1e-6` on every accepted HF run | `results` dict |
+| 3 | ~~Conservation~~ **(removed from acceptance — see below)** | — | — |
 | 4 | Predictive validation | held-out coverage ≈ nominal | Tier-4 holdout, Tier-5 32-dpa point |
 | 5 | Extrapolation discipline | Tier-7 output contains no deterministic curve | artefact inspection |
+
+### Criterion 3 withdrawn — conservation is a health check, not an acceptance gate
+
+**Author decision, 2026-07-30.** `δ_FP` and `δ_He` are **removed from the
+acceptance function and from the likelihood**. Any value **below 1e-4** indicates
+correct integration and a correctly assembled reaction set; there is no
+information about `θ` in *how far* below.
+
+Rationale, from the measurements of
+[`validation_10dpa_revision3.md`](validation_10dpa_revision3.md) §8:
+
+- The converged `δ_FP` sits at 1e-8–4e-6 across every tolerance, temperature and
+  dose tested — always passing, so as a gate it never discriminates.
+- It varies with **dose** (~linearly) and with **integrator tolerance**, i.e. it
+  measures numerics, not physics. Feeding it into a likelihood over `θ` would
+  reward parameter regions that happen to integrate cleanly, which is a
+  numerical artefact masquerading as evidence.
+- Its maximum is a fixed startup artefact (`1.764e-01`), so a naive
+  implementation of the old criterion would have failed every run.
+
+**Replacement:** a per-run **health check**, logged but not scored —
+`δ_FP < 1e-4` and `δ_He < 1e-4` on the **converged (final)** value, never the
+max. A run exceeding 1e-4 is flagged as a *numerical* failure and discarded per
+Appendix F step 2; it is not evidence against its `θ`.
+
+**Consequence for Eq. (H.20):** the `Φ_phys` conservation penalty term is
+dropped from the negative log-likelihood of Eq. (H.19). The remaining physical
+constraints on `θ` come from the log-space `χ²` over `S` and the `W₁` terms over
+`D`.
 
 Criterion 2's tolerance definition is worth stating explicitly because it is the
 one place the database gives a free calibration of "how close is close enough":
@@ -1186,7 +1247,7 @@ the experiment as well as the experiment matches itself.
 | H.3, Eq. (H.14) | Wasserstein `W₁` | `T4_wasserstein.csv` |
 | H.4, Eq. (H.13) | Four-term `σ_j²` | `targets.yaml` + emulator + `T1` `σ_model` |
 | H.4, Eq. (H.19) | Negative log-likelihood | `calibrate.py` |
-| H.4, Eq. (H.20) | `Φ_phys` conservation penalty | `δ_FP`, `δ_He` per run; acceptance 3 |
+| H.4, Eq. (H.20) | ~~`Φ_phys` penalty~~ **dropped from the likelihood** | `δ_FP`, `δ_He` logged as a health check only, §6 |
 | H.5, Eq. (H.23) | AR multi-fidelity GP | `surrogate.py`; `T3_hf_runs.csv` |
 | H.6, Eq. (H.24–25) | Sobol `S_i`, `S_i^T` | `T2_sobol_indices.csv`, `T2_sobol_heatmap.png` |
 | H.6 | Active set `θ_act` | `T2_active_set.yaml` |

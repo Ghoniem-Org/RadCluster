@@ -163,8 +163,14 @@ class ReactionRates:
         Z_i   = float(re.get('Z_i',   1.10))
         Z_v   = float(re.get('Z_v',   1.00))
         Z_He  = float(re.get('Z_He',  1.00))
-        Z_i_loop = float(re.get('Z_i', 1.10))   # loop bias factor ≈ same as Z_i
-        # TODO(Stage3): Z_i_loop currently aliases Z_i; give it its own Excel key.
+        # Loop SIA bias Z_i^loop (Eq. P3_i, Table 26) — INDEPENDENT of the
+        # network bias Z_i.  The pair's *ratio* sets how the SIA flux partitions
+        # between loops and the dislocation network, so they must be separately
+        # settable; collapsing them to one number removes that degree of freedom
+        # and forces the production terms to absorb the difference.
+        # Falls back to Z_i when the key is absent, so a workbook without the
+        # row reproduces the old aliased behaviour bit-for-bit.
+        Z_i_loop = _num(re.get('Z_i_loop', Z_i), Z_i)
 
         # Grain boundary sink (Eq. 135)
         d_g   = float(re.get('d_g',   5.0e-6))

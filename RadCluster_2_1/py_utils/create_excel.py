@@ -263,6 +263,7 @@ REACTIONS = [
     ('Junction peak yield',       'phi_max_junc', 0.5,    '-',   'Marian; yield at n=n_prime (0-1)'),
     ('Junction log-size tol.',    'sigma_s_junc', 0.35,   '-',   'Marian comparable-size width in ln(n/n_prime)'),
     ('Junction min size',         'n_j_min_junc', 30,     '-',   'Marian; junctions from n ~ 34-37'),
+    ('Junction min-size fraction', 'n_j_min_frac', 0.6,   '-',   'n_j_min_eff = min(n_j_min_junc, ceil(frac*i_mobile)); 0.6 keeps 30 at i_mobile=50'),
     ('<100> loop-onset size',     'n_loop_min',   4,      '-',   'bulk-100 n_min; below this no <100> loop exists'),
 
     # ── Loop → network-dislocation loss (loop_network_loss.tex) ──────────────

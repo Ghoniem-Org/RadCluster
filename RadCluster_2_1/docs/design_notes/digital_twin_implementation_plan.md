@@ -8,8 +8,35 @@ particular Tables H.37 (target measurements) and H.38 (prior ranges).
 
 **Target code:** `RadCluster_2_1/` at commit `b17fe85`.
 
-**Status:** plan, with the revision-3 input-path fixes **implemented** (§4/T0.5
-tasks b, c, d). Everything else below is still plan only.
+**Status:** plan, with the revision-3 input-path fixes and the revision-4
+conversion fixes **implemented** (§4/T0.5 tasks a, b, c, c3, c4, d). Everything
+else below is still plan only. **One blocking defect is open — T0.5(c5).**
+
+**Revision 4 (2026-07-31)** — the loop-conversion anchor campaign (~60 runs).
+Full record:
+[`loop_conversion_anchor_2026-07-31.md`](loop_conversion_anchor_2026-07-31.md);
+parameter consequences in §2.4bis.
+
+| Change | Outcome |
+|---|---|
+| **Conversion priors re-anchored in-envelope** | The §3 campaign ran at 450–500 °C, outside the `T ≤ 400 °C` HF envelope, against a database reading that no longer holds. Re-measured at 300/350/400 °C. §2.4bis |
+| **#21 `E_a0_conv` narrowed 1.4–2.0 → 1.5–1.9** | Both old ends were flat (`f₁₀₀` saturates at ~1.0 below 1.4, ~0.02 above 1.9). Nominal 1.6 lands inside the experimental band at all three temperatures |
+| **#22 `ΔH₂` narrowed 0.35–0.70 → 0.35–0.50** | Flat above ≈0.45 |
+| **#18 `T*` dropped from `θ`** | Moves `f₁₀₀` by 2.7 % over 250→450 °C |
+| **#19 `K_rec` range moved 10⁻³–10¹ → 10⁻⁶–10⁻²** | The old prior lay wholly in the saturated regime (from the Tier-2/3 selection note) |
+| **#19/#20/#24 deferred to Tier 3** | Dose-driven; invisible at the 0.1 dpa LF dose |
+| **#23 `φ_max` rescued from a structural null** | It was *bit-identical* over 0.1–1.0 because `n_j_min_junc = 30 > i_mobile`. Fixed by tying the threshold to `i_mobile` — T0.5(c4) |
+| **Experimental target restated** | EUROFER97 neutron `f₁₀₀` at `T ≤ 400 °C` is **0.10–0.87, median 0.72** — ⟨100⟩ is the *majority* character, opposite to the premise `E_a0_conv = 1.8` was fitted to |
+| **⚠ `f₁₀₀` may not be a usable target** | Model ⟨100⟩ loops are **0.74–0.81 nm**; measured are **2.8–180 nm** (median 7.9). Under a 1.5 nm TEM cutoff the model gives `f₁₀₀ ≈ 0` at *every* parameter value. Blocked on re-running at `i_mobile = 50` to separate physics from configuration. §2.4bis |
+| **Observable convention now measured** | number vs content weighting differs by **2×** on the same run; the model's ⟨100⟩ loops are ≈0.8 nm, below TEM visibility. A TEM-filtered `f₁₀₀` is now required. §3.1 item 4 |
+| **`run_adaptive` truncation fixed** | T0.5(c3); `_TS_KEYS` was missing **seven** series — the five ⟨100⟩ ones *and* `delta_FP_sia`/`delta_FP_vac` |
+| **New blocking defect** | `bin_moment` + `loop_conversion` returns `mean_n₁₀₀ > I`; conversion runs must use `discrete`. T0.5(c5) |
+
+Files touched: [reaction_rates.py](../../py_utils/reaction_rates.py),
+[cpp_bridge.py](../../py_utils/cpp_bridge.py),
+[simulation.py](../../py_utils/simulation.py),
+[create_excel.py](../../py_utils/create_excel.py),
+[input/input_parameters.xlsx](../../input/input_parameters.xlsx).
 
 **Revision 3 (2026-07-30)** — author directives, implemented rather than
 specified:
@@ -199,13 +226,13 @@ document; see §2.4 for the evidence behind each.
 
 | # | Symbol | Workbook key | Sheet | Range | Prior | Notes |
 |---|---|---|---|---|---|---|
-| 18 | `T*` | `T_star_conv_C` | `reactions` | **550–610 K** | TN | **key is in °C, prior is in K** — `param_io` converts; nominal 723 K, **outside prior**, §2.3 |
-| 19 | `K_rec` | `loop_net_K_rec` | `reactions` (**new key**) | 10⁻³–10¹ | LN | live only when `LOOP_NETWORK_LOSS = 1`; default 0.0 |
-| 20 ★ | `w_c` | `loop_net_w_c` | `reactions` (**new key**) | **1–200 × `b_111`** | LN | capture width; §2.4 |
-| 21 ★ | `E_a0_conv` | `E_a0_conv` | `reactions` | **1.4–2.0 eV** | TN | unary direct-rotation barrier — *the* `f₁₀₀` lever; §2.4 |
-| 22 ★ | `ΔH₂` | `dH2_conv` | `reactions` | **0.35–0.70 eV** | TN | Marian gate; nominal 1.0 leaves Mechanism B off; §2.4 |
-| 23 ★ | `φ_max` | `phi_max_junc` | `reactions` (**new key**) | **0.1–1.0** | U | junction peak yield; §2.4 |
-| 24 ★ | `χ` | `loop_net_chi` | `reactions` (**new key**) | **1–60** | LN | elastic capture range; the channel is identically zero below ≈30, §2.4 |
+| ~~18~~ | `T*` | `T_star_conv_C` | `reactions` | — | — | **DROPPED (rev. 4).** Measured 2.7 % change in `f₁₀₀` over 250→450 °C. §2.4 |
+| 19 | `K_rec` | `loop_net_K_rec` | `reactions` | **10⁻⁶–10⁻²** | LN | **range moved (rev. 4)** — 10⁻³ already saturates; the old 10⁻³–10¹ prior lay wholly in the saturated regime. Tier 3 only |
+| 20 | `w_c` | `loop_net_w_c` | `reactions` | **1–200 × `b_111`** | LN | capture width; **Tier 3 only** (dose-driven) |
+| 21 ★ | `E_a0_conv` | `E_a0_conv` | `reactions` | **1.45–1.85 eV** | TN | **narrowed (rev. 4)** — unary direct-rotation barrier, the only parameter producing the observed `T`-grading; both ends of the old 1.4–2.0 were flat. Nominal 1.6 (best fit is 1.5 at LF dose, 1.6 at 3 dpa). §2.4bis |
+| 22 | `ΔH₂` | `dH2_conv` | `reactions` | **0.35–0.50 eV** | TN | **narrowed (rev. 4)** — flat above ≈0.45. Nominal 0.40. §2.4bis |
+| 23 ★ | `φ_max` | `phi_max_junc` | `reactions` | **0.1–1.0** | U | junction peak yield. **Only identifiable after fix T0.5(c4)** — was structurally inert whenever `i_mobile < n_j_min_junc`. §2.4 |
+| 24 | `χ` | `loop_net_chi` | `reactions` | **1–60** | LN | elastic capture range; **Tier 3 only**, §2.4 |
 
 **Held fixed, not sampled** (recorded in `parameters.yaml` with `active: false`
 and a reason, so the choice is auditable):
@@ -214,15 +241,26 @@ and a reason, so the choice is auditable):
 |---|---|---|
 | `gamma_a_conv` | 0.02 | Table 11 of the reference: physical value; lowering it walks into the stiffness wall without moving `f₁₀₀` (it scales with `P(n)`, and no population lives at large `n`) |
 | `dH_rev_conv` | 0.30 eV | Enters `P_succ` only through `Δ = ΔH₂ − ΔH_rev`; non-identifiable against #22 |
-| `n_j_min_junc` | 30 | Marian's junction onset (34–37); a mechanism constant, not a fit knob |
+| `n_j_min_junc` | 30 | Marian's junction onset (34–37); a mechanism constant, not a fit knob. **But no longer used raw** — the kernel uses `effective_n_j_min(n_j_min_junc, i_mobile, n_j_min_frac)`, see §2.4 and T0.5(c4) |
+| `n_j_min_frac` | 0.6 | Couples the junction threshold to the mobility cutoff. Chosen so `0.6 × 50 = 30` reproduces the Marian value exactly at the production `i_mobile`, leaving all prior results unchanged |
+| `T_star_conv_C` | 450 °C | Demoted from #18 (rev. 4) — measured inert |
 | `nu0_conv` | 10¹³ s⁻¹ | Debye frequency |
 | `loop_net_rho_max` | 5×10¹⁴ m⁻² | EUROFER network plateau, measured not fitted |
 | `n_ref_conv` | 50 | `ΔF` calibration anchor size; redundant with `T*` |
 
-**Count.** `p = 24` active parameters. This is above the "p ≃ 16–20" of
-Eq. (H.2), which is expected — Eq. (H.8) predates both the loop-conversion and
-loop→network channels. The Tier-2 screening is what brings it back down; §4/Tier 2
-states the expectation that 6–10 survive.
+**Count — revision 4.** `p = 23` declared, but they no longer all enter the
+same tier. The anchor campaign of 2026-07-31 (§2.4) measured which are live at
+LF conditions:
+
+| Tier | Count | Parameters |
+|---|---|---|
+| **Tier 2 (LF, 0.1 dpa)** | **~18** | everything except the four below |
+| **Tier 3 only** (dose-driven — `ρ_net` compounds, invisible at 0.1 dpa) | 3 | #19 `K_rec`, #20 `w_c`, #24 `χ` |
+| **Dropped** (measured inert) | 1 | #18 `T*` |
+
+That brings the Tier-2 dimension to ≈18, close to Eq. (H.2)'s "p ≃ 16–20"
+without any screening having been run yet. §4/Tier 2 still expects 6–10 to
+survive screening.
 
 Because `A_100`/`B_100` are separate keys, sampling `A_I`/`B_I` must decide
 whether the two loop characters share a binding law. Recommendation: sample
@@ -577,6 +615,131 @@ Tier-2 LF ensemble specifically — **the LF grid chosen in T0.2 must be checked
 for a nonzero `ρ̇_net` before Tier 2 is authorised**, or the whole screening will
 report `w_c`, `χ` and `K_rec` as inert.
 
+---
+
+#### 2.4bis Revision 4 — the loop-conversion anchor campaign (2026-07-31)
+
+~60 runs re-measured this block. Everything above in §2.4 predates them and is
+superseded where the two disagree. Record:
+[`loop_conversion_anchor_2026-07-31.md`](loop_conversion_anchor_2026-07-31.md).
+
+**Why the §3 numbers could not simply be adopted.** §3 ran at **450–500 °C**,
+now outside the HF envelope (`T ≤ 400 °C`); it was calibrated against a reading
+of the database in which `f₁₁₁ ≈ 1` below ~330 °C; and it used `I = 200`,
+`i_mobile = 10`, where the weak-conversion runs reach occupancy 0.27–0.41.
+
+**The experimental target changed.** EUROFER97, neutron, `T ≤ 400 °C`, ⟨100⟩
+**number** fraction: **n = 11, range 0.10–0.87, median 0.72**. ⟨100⟩ is the
+*majority* character at 300–400 °C. Three further rows read `f₁₀₀ = 0` but are
+½⟨111⟩-only entries with no paired ⟨100⟩ row — "not reported" is
+indistinguishable from "not present" in that encoding, and one of them shares a
+condition with Dethloff's 0.78. `targets.yaml` must flag them, not read them as
+zeros. **Scatter (0.27–0.78 at a single temperature) exceeds any model-parameter
+effect**, which sets the floor on `σ_model` for this observable.
+
+**⚠ Before any of the ranges below: `f₁₀₀` may not be a usable calibration
+target at all.** The model's ⟨100⟩ loops sit at `n ≈ 11` atoms —
+**0.74–0.81 nm** across every run — while the measured ⟨100⟩ diameters are
+**2.8–180 nm, median 7.9** (n = 27). Applying a realistic 1.5 nm TEM cutoff to
+both characters, the model returns `f₁₀₀ ≈ 0` (0.0000–0.0191) at **every**
+parameter value tested, against a measured 0.10–0.87. The discrepancy is in the
+⟨100⟩ *size* distribution, not the *fraction*, so no conversion parameter can
+close it. Calibrating `E_a0_conv` against the raw number fraction would yield a
+confident posterior on an observable the model cannot reproduce.
+
+*Caveat and top follow-up:* every run used `i_mobile = 10`. ⟨100⟩ loops grow by
+Marian absorption of **mobile** ½⟨111⟩, so that cutoff starves the growth
+channel. The size deficit is **not established as physics** until the anchor is
+re-run at the production `i_mobile = 50` — which is itself blocked on T0.5(c5),
+since `i_mobile = 50` at a useful grid means `bin_moment`.
+
+**Measured `f₁₀₀` (number-weighted), discrete, 3 dpa:**
+
+| `E_a0` | 300 °C | 350 °C | 400 °C | reading |
+|---:|---:|---:|---:|---|
+| 1.2 | 1.000 | 0.999 | 1.000 | saturated — no `T` discrimination |
+| 1.4 | 0.905 | 0.963 | 0.997 | still saturated |
+| **1.6** | **0.356** | **0.481** | **0.824** | **inside the experimental band at all three `T`** |
+| 1.8 | 0.032 | 0.295 | 0.422 | too low at 300 °C |
+| 2.0 | 0.001 | 0.021 | 0.250 | channel effectively off |
+
+Hence **#21 narrowed to 1.45–1.85**: the old 1.4–2.0 spent both ends in flat
+regions where Sobol samples buy nothing.
+
+Repeated **dose-matched at the LF dose (0.1 dpa, `I = 200` vs `600`)** the
+picture holds but the best-fit value shifts, which matters because LF and HF run
+at different doses:
+
+| `E_a0` | 300 °C | 350 °C | 400 °C |
+|---:|---:|---:|---:|
+| 1.5 | 0.533 | **0.797** | 0.973 |
+| 1.6 | 0.261 | 0.579 | **0.827** |
+| 1.7 | 0.060 | 0.351 | 0.676 |
+| 1.8 | 0.007 | 0.122 | 0.486 |
+
+At 0.1 dpa the data prefer `E_a0 ≈ 1.5`; at 3 dpa, ≈1.6. The 350 and 400 °C
+columns are dose-converged (identical at 0.1 and 3 dpa) but **300 °C is not**
+(0.260 vs 0.356) — the slowest condition has not equilibrated by the LF dose.
+**The AR multi-fidelity model must treat that as a real LF/HF discrepancy at low
+temperature, not as noise.**
+
+**Grid robustness of `f₁₀₀`:** across eight matched-dose `I = 200`/`600` pairs,
+five are stable (`Δ ≤ 0.023`) and three are grid-sensitive (`Δ` 0.066–0.156),
+the latter exactly where `n̄₁₁₁` runs away (85 → 281). Worst case 0.156 is still
+below the experimental scatter at one temperature, so grid resolution is not the
+limiting uncertainty here — but the sensitive corner must be flagged, not
+averaged in.
+
+**#23 `φ_max` was structurally inert — a code defect, not a physics result.**
+`φ_max` = 0.1 and 1.0 gave **bit-identical** `f₁₀₀`. The junction requires
+`min(n, n′) ≥ n_j_min_junc = 30`, but coalescence partners are capped at
+`i_mobile`, which the twin samples over **5–50**. For every sample with
+`i_mobile < 30` the channel is identically zero, so `φ_max` would have screened
+inert over most of its prior for a purely structural reason — the same failure
+mode T0.4b guards against for the network channel. **Fixed** in T0.5(c4):
+`n_j_min_eff = min(n_j_min_junc, ⌈0.6 · i_mobile⌉)`, which returns exactly 30 at
+`i_mobile = 50` (production unchanged) and keeps the channel live below.
+Post-fix, `φ_junc` scales 10× with `φ_max` at `i_mobile = 10`.
+
+**#22 `ΔH₂` is flat across most of its old prior.** At 350 °C, `E_a0 = 1.6`:
+1.00 → 0.4813, 0.70 → 0.4819, 0.55 → 0.4912, 0.40 → 0.6585. Only below ≈0.45
+does anything happen ⇒ narrowed to **0.35–0.50, nominal 0.40**.
+
+**#18 `T*` dropped.** 250 → 450 °C moves `f₁₀₀` by 2.7 % (0.846 → 0.824). Not
+bit-identical as §3 reported, but far too weak to spend a dimension on.
+
+**`f₁₀₀` is dose-independent in-envelope** — 0.3 and 3 dpa agree to four
+decimals. **The LF tier at 0.1 dpa can see the conversion signal**, so the whole
+block is Tier-2-visible (unlike the network block, which is dose-driven).
+
+**The weighting convention is worth more than any of these parameters.** The
+code's `f_111_loop` is content-weighted; the database is number-weighted; and
+the model's ⟨100⟩ loops sit at `n ≈ 11` atoms ⇒ **≈0.8 nm, below TEM
+visibility**, while the surviving ½⟨111⟩ are ≈2 nm. At `E_a0 = 1.6`, 400 °C the
+same run reports `f₁₀₀` = **0.824** (number), **0.408** (content) — a factor 2
+from the convention alone. An unfiltered number fraction compares a mostly
+*invisible* modelled population against a *counted* experimental one. §3.1's
+observable operator must emit `f_100_number`, `f_100_content` **and** a
+TEM-filtered variant with the cutoff applied to both characters, and the
+calibration must consume the TEM-filtered one.
+
+**Two hard constraints this campaign imposed on how conversion may be run:**
+
+1. **`equations='discrete'` is mandatory with `loop_conversion=1`** until
+   T0.5(c5) is fixed — `bin_moment` returned `mean_n₁₀₀ = 2853` on a grid of
+   `I = 1000` and `N₁₀₀ = 5×10²⁴ m⁻³` (17 % of all atoms in loops at 1 dpa).
+   Build step 7d was never implemented and fails silently. This collides with
+   T0.2: the grid-converged production config *is* `bin_moment`.
+2. **Conversion does not rescue the unbounded-loop problem.** Raising `I` from
+   200 to 600 did not reduce occupancy (0.25–0.40 → 0.06–0.48); the loops grew
+   to the new ceiling. Under *strong* conversion the runaway is *transferred*:
+   ⟨100⟩ reaches `mean_n₁₀₀ = 299.8` against `I = 300`, growing without bound by
+   Marian absorption of mobile ½⟨111⟩. So conversion joins the loop→network
+   channel as a mechanism that does **not** bound loop size, and the occupancy
+   admissibility rule remains the operative control.
+
+---
+
 **Operational prerequisite (easy to re-trip).** §3 records two conditions that
 must hold before `ρ_net` moves at all, and both are driver-side:
 
@@ -680,11 +843,28 @@ Decisions that must be made explicitly and recorded in `provenance`:
    sub-visible clusters. Table H.37 wants `S = (π/6) N_c d̄_c³` from the
    *visible* cavity population. **These are different numbers.** Emit both, as
    `S_inventory` and `S_visible`, and compare only `S_visible` to the database.
-4. **Loop fraction convention.** The code's `f_111_loop` is content-weighted
-   (Eq. 56, `Σ n c_n`); most database entries are number fractions from loop
-   counting. Emit both `f_100_content` and `f_100_number`; compare `f_100_number`
-   to the database and carry the difference between them as a lower bound on
-   `σ_model` for that observable.
+4. **Loop fraction convention — now measured, and it is large.** The code's
+   `f_111_loop` is content-weighted (Eq. 56, `Σ n c_n`); most database entries
+   are number fractions from loop counting. Emit `f_100_content`,
+   `f_100_number`, **and** `f_100_tem(d_min)`.
+
+   The third is not optional. The model's ⟨100⟩ loops sit at `n ≈ 11` atoms —
+   `d = 2√(nΩ/πb_100) ≈ 0.8 nm`, **below TEM visibility** — while the surviving
+   ½⟨111⟩ are ≈2 nm. A raw number fraction therefore compares a mostly invisible
+   modelled population against a counted experimental one. Measured at
+   `E_a0 = 1.6`, 400 °C, one and the same run:
+
+   | convention | `f₁₀₀` |
+   |---|---:|
+   | number-weighted | 0.824 |
+   | content-weighted | 0.408 |
+
+   A factor 2 from the convention alone — larger than the effect of any
+   conversion parameter inside its narrowed prior. Apply the cutoff to **both**
+   characters (they have different `b`, so the same `n` maps to different `d`),
+   compare `f_100_tem` to the database, sample `d_min` over the reported TEM
+   detection limits, and carry the spread between conventions as the floor on
+   `σ_model` for this observable.
 5. **Size distributions on experimental bin edges.** Reconstruct `c_n`, convert to
    diameter, rebin onto the edges in `META`/`HIST` for the matching condition,
    normalise, return. This is what `W₁` consumes.
@@ -711,6 +891,17 @@ CELL_MARKERS = ("XLSX = ", "def parse_density", "def build_database",
 tuples — as frozen constants with a provenance line. Do not re-fit at calibration
 time; the fits are a published result and refitting inside the loop would let the
 targets move as the code changes.
+
+**Loop-fraction rows need explicit missing-data handling** (rev. 4). The
+`Loop_fractions` sheet encodes "⟨100⟩ not reported" and "⟨100⟩ not present"
+*identically*, as `Fraction of <100> [%] = 0`. Three EUROFER97 rows are affected
+(300 °C/15.0, 300 °C/16.3, 350 °C/16.3); each is a `Loop Type = 1/2<111>` row
+with no paired ⟨100⟩ row, and the 300 °C/15.0 condition also carries Dethloff's
+0.78, so at least one of the two readings is a convention artefact. The loader
+must emit these as **`null`, not `0.0`**, and the acceptance function must skip
+them. Reading them as zeros would pull the target band from 0.10–0.87 down
+toward 0 and bias `E_a0_conv` high — the same direction as the error this
+revision corrected.
 
 **The −60 °C ion shift must not reach the simulator.** `T_eq = T − 60 °C` is a
 data-side device for putting ion and neutron points on one axis (Appendix G.1),
@@ -844,11 +1035,13 @@ converge.
 
 | | Task | From | Status | Acceptance |
 |---|---|---|---|---|
-| (a) | `Z_i_loop` its own key in `K_loop` + `reactions` row + C++ mirror | §2.2(a), directive 2 | **open** | bit-identical run at `Z_i_loop = Z_i` |
+| (a) | `Z_i_loop` its own key in `K_loop` + `reactions` row + C++ mirror | §2.2(a), directive 2 | **done** | bit-identical run at `Z_i_loop = Z_i` |
 | (b) | `lambda` / `A_void_0` threaded from the workbook into `E_b_void` | §2.2(b), directives 3–4 | **done** | `G_VAC` verified to move with each |
 | (c) | `E_b_i2` key + `A_111`/`A_100` override | §2.2(c), directive 7 | **mechanism done, value disabled** | `E_b_loop_i(2) = 0.8001 eV`; blank cell ⇒ legacy. **0.80 eV fails the 10 dpa gate** — needs an `(A_111, B_111)` refit, §2.2(c) |
 | (c2) | Re-fit `(A_111, B_111)` (and `A_100`/`B_100`) to DFT small-`n` binding, then re-validate at 10 dpa | validation | **open** | `δ_FP < 1e-6` at the production config with `E_b^i(2)` in 0.6–1.2 eV |
-| (c3) | Fix `run_adaptive` truncation of loop-conversion output arrays | validation §5 | **open** | `f_111_loop`/`N_loops_100` length == `len(t)`; the 4 broken plots render |
+| (c3) | Fix `run_adaptive` truncation of loop-conversion output arrays | validation §5 | **done** | `f_111_loop`/`N_loops_100` length == `len(t)`; the 4 broken plots render |
+| (c4) | **`n_j_min_junc` tied to `i_mobile`** — `effective_n_j_min()` in `reaction_rates.py`, used by both the Python kernel and `cpp_bridge`; new `n_j_min_frac` key (0.6) | §2.4 | **done** | at `i_mobile = 50` the threshold is exactly 30 ⇒ production bit-identical; at `i_mobile = 10`, `φ_junc` scales 10× with `φ_max` (was bit-identical) |
+| (c5) | **`bin_moment` + `loop_conversion` produces `mean_n₁₀₀ > I`** under strong conversion — build step 7d (bin-moment ⟨100⟩ reconstruct→transfer→project) was never implemented and fails **silently** | anchor runs 2026-07-31 | **open — blocking** | `mean_n₁₀₀ ≤ I` and discrete/bin_moment agree on `f₁₀₀` to <5 %. Until then conversion runs **must** use `equations='discrete'` |
 | (d) | `loop_net_*` + `LOOP_NETWORK_LOSS` rows added to the workbook and `create_excel.py`; blank-cell readers hardened | §2.4, directive 8 | **done** | nominals = code defaults ⇒ no result change; `Λ_net` finite on the blank path |
 | (e) | `extract_observables.py` lifted out of `visualization.py` and unit-tested against a saved run | §3.1 | open | reproduces the saved run's plotted panel |
 | (f) | `param_io.py` round-trip test (`θ → workbook → InputData → θ`) | §3 | open | exact for continuous keys, exact for `cat` |
@@ -978,14 +1171,23 @@ That is the correct outcome, not a failure.
 Two specific predictions worth recording now, so that confirming them counts as
 evidence the screening is working rather than as a surprise:
 
-- **`T*` (#18) should screen out.** §3 measured `T*` 250 → 180 °C as
-  bit-identical in `f₁₀₀`, because the `ΔF > 0` cutoff sits far above the sizes
-  the loops actually occupy. If `T*` comes back with a large `S_i^T` on the
-  loop-fraction channel, something is wrong with the `ΔF` implementation, not
-  with the screening.
-- **`E_a0_conv` (#21) should dominate the `f₁₀₀` channel.** §3's measured
-  0.325 → 0.948 response to a 0.2 eV change is the largest single-parameter
-  effect anywhere in the campaign record.
+- **`T*` (#18) — no longer sampled** (rev. 4). It was measured at 2.7 % and
+  dropped in §2.4bis, so it cannot screen out; it is simply gone.
+- **`E_a0_conv` (#21) should dominate the `f₁₀₀` channel.** Re-measured
+  in-envelope at 2026-07-31: 0.356 → 0.824 across 300–400 °C at `E_a0 = 1.6`,
+  and 1.000 → 0.001 at 300 °C across the barrier range. It remains the largest
+  single-parameter effect in the record, and the only one producing the observed
+  temperature grading.
+- **`φ_max` (#23) is a screening *canary*.** Before fix T0.5(c4) it was
+  structurally inert whenever `i_mobile < 30`. If it still returns
+  `S_i^T ≈ 0` after the fix, check that `n_j_min_frac` reached the kernel before
+  concluding the junction channel is physically unimportant — this parameter has
+  already produced one false null.
+- **Expect `σ_model` to dominate `f₁₀₀`, not `σ_exp`.** The convention spread
+  (number vs content: 0.824 vs 0.408 on one run) and the inter-laboratory
+  scatter (0.27–0.78 at 300 °C) are both larger than the parameter effects
+  inside the narrowed priors. A tight posterior on `E_a0_conv` from this
+  observable alone would be a sign that `σ_model` was set too small.
 
 ### Tier 3 — HF design and the multi-fidelity anchor
 
@@ -1328,22 +1530,22 @@ the experiment as well as the experiment matches itself.
 
 ## 9. Recommended immediate next steps
 
-Updated for revision 3. Steps 2–4 of revision 2 are **done**; what remains:
+Updated for **revision 4**. Items 1 and 2 of revision 3 are **done**; what
+remains:
 
-1. **Give `Z_i_loop` its own entry and key** — `reaction_rates.py:132` **and**
-   `cpp_bridge.py:179` (two alias sites), plus the `reactions` workbook row.
-   §2.2(a). Acceptance: bit-identical at `Z_i_loop = Z_i`, then a perturbation
-   test showing `K_SIA_grow`/`K_SIA_loop` move when it is varied alone.
-2. **Re-run the affected calibrations.** `E_b_i2 = 0.80 eV` changes the SIA
-   emission rates by ~27 orders of magnitude at `n = 2` (§2.2(c)), so any result
-   tuned against `A_111 = 3.0` — in particular the §3 loop-conversion campaign
-   and the `E_a0_conv ≈ 1.6 eV` recommendation — is no longer anchored. Re-run
-   at least one §3 condition (500 °C, 3 dpa, `E_a0 = 1.6`) and confirm the
-   `f₁₀₀` response is unchanged in character before the §2.4 priors are trusted.
-   **This is the highest-value check in the list.**
+1. ~~Give `Z_i_loop` its own entry and key.~~ **DONE** — de-aliased at both
+   sites, workbook row added, bit-identical at `Z_i_loop = Z_i`.
+2. ~~Re-run the affected calibrations.~~ **DONE, and the conclusion changed** —
+   the ~60-run anchor campaign of 2026-07-31 (§2.4bis) re-measured the whole
+   conversion block in-envelope. `E_b_i2` remains *disabled* (shipped blank), so
+   `A_111 = 3.0` still holds and the §3 results were never de-anchored by it;
+   what invalidated them was the temperature envelope, the database re-reading,
+   and grid inadmissibility. Priors #18, #21, #22, #23 revised accordingly.
+   **New blocking item:** `bin_moment` + `loop_conversion` is broken —
+   T0.5(c5).
 3. **Resolve the remaining §2.3 conflicts** — `f_cl_v` against Appendix A, and
-   the `f_cl_i` = 0.58 / 0.25 documentation disagreement. `T*` is now deferred to
-   Tier 2 by design; `E_b^i(2)` is closed.
+   the `f_cl_i` = 0.58 / 0.25 documentation disagreement. `E_b^i(2)` is closed;
+   `T*` is no longer sampled at all (§2.4bis).
 4. **Close the two `E_b_void` items of §2.2(b)** — adopt the Eq. (B.14) form, and
    give `E_b_bubble` the atomistic correction so `E_b_bubble(m, 0) = E_b_void(m)`.
    Needed before Tier 3, since the fusion path passes continuously through

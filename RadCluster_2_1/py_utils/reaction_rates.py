@@ -90,6 +90,37 @@ def _num(v, default):
     return f if np.isfinite(f) else float(default)
 
 
+def effective_n_j_min(n_j_min_junc, i_mobile, frac=0.6):
+    """Junction minimum size, made consistent with the mobility cutoff.
+
+    The Marian junction fires only when BOTH partners satisfy
+    ``min(n, n') >= n_j_min_junc`` (``reaction_rates.phi_junc``,
+    ``rate_kernels.cpp:conv_phi_junc``).  But coalescence partners are mobile
+    clusters, so no partner can exceed ``i_mobile``.  With the shipped
+    ``n_j_min_junc = 30`` and ``i_mobile < 30`` the condition is unsatisfiable
+    and the junction channel is **identically zero** — measured 2026-07-31:
+    ``phi_max_junc`` 0.1 and 1.0 gave bit-identical ``f_100`` at
+    ``i_mobile = 10``.
+
+    That matters because ``i_mobile`` is sampled over 5-50 in the twin, so the
+    channel would switch on discontinuously at ``i_mobile = 30`` and
+    ``phi_max_junc`` would screen as inert over most of the prior for a purely
+    structural reason.
+
+    Rule: ``n_j_min_eff = min(n_j_min_junc, ceil(frac * i_mobile))``, floored
+    at 2 (a junction needs at least two di-interstitials).  With the default
+    ``frac = 0.6`` this returns exactly ``n_j_min_junc`` at ``i_mobile = 50``
+    (0.6*50 = 30), so the production configuration is **unchanged** and every
+    existing result at ``i_mobile >= 50`` is bit-identical; the threshold only
+    relaxes where the mobility cutoff would otherwise make it unreachable.
+    """
+    n_j = float(_num(n_j_min_junc, 30.0))
+    i_m = float(_num(i_mobile, 50.0))
+    f = float(_num(frac, 0.6))
+    scaled = float(np.ceil(f * i_m)) if np.isfinite(f) and f > 0 else n_j
+    return float(max(2.0, min(n_j, scaled)))
+
+
 class ReactionRates:
     """
     Pre-computed rate constant arrays for the RadCluster_2_1 ODE system.
@@ -522,7 +553,11 @@ class ReactionRates:
         # the Python reference RHS actually asks for it (small-I runs/tests).
         phi_max = float(re.get('phi_max_junc',  0.5))
         sigma_s = float(re.get('sigma_s_junc',  0.35))
-        n_j_min = float(re.get('n_j_min_junc',  30.0))
+        # Tied to the mobility cutoff: a junction partner must be mobile, so a
+        # threshold above i_mobile is unsatisfiable and silently kills the
+        # channel.  Unchanged at i_mobile >= 50 (see effective_n_j_min).
+        n_j_min = effective_n_j_min(re.get('n_j_min_junc', 30.0), i_mobile,
+                                    re.get('n_j_min_frac', 0.6))
         # Marian two-step success probability (½⟨111⟩ → ½⟨110⟩ → ⟨100⟩, Fig. 3):
         # from the metastable ½⟨110⟩ intermediate the segment either rotates
         # FORWARD to ⟨100⟩ (barrier ΔH₂) or REVERTS to ½⟨111⟩ (reverse barrier

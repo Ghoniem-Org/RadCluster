@@ -193,7 +193,14 @@ def write_param_file(sim, solver_config, path, y0_override=None):
     lines.append(f"loop_conversion={loop_conv}")
     if loop_conv:
         lines.append(f"n_loop_min={int(getattr(rr, 'n_loop_min', 4))}")
-        lines.append(f"n_j_min_junc={int(inp.reactions.get('n_j_min_junc', 30))}")
+        # Effective junction threshold, tied to the mobility cutoff so the
+        # channel cannot be silently dead when i_mobile < n_j_min_junc.  Must
+        # use the SAME rule as the Python kernel or the two RHS disagree.
+        from .reaction_rates import effective_n_j_min
+        lines.append("n_j_min_junc=%d" % int(effective_n_j_min(
+            inp.reactions.get('n_j_min_junc', 30),
+            d['i_mobile'],
+            inp.reactions.get('n_j_min_frac', 0.6))))
         lines.append(f"phi_max_junc={float(inp.reactions.get('phi_max_junc', 0.5)):.17e}")
         lines.append(f"sigma_s_junc={float(inp.reactions.get('sigma_s_junc', 0.35)):.17e}")
         # Marian two-step success probability P_success(T) — gates junction +

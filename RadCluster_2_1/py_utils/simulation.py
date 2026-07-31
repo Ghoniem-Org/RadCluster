@@ -678,7 +678,18 @@ class RadClusterSimulation:
                 'C_He_free', 'mean_n_i', 'mean_n_v', 'N_loops', 'N_voids',
                 'swelling', 'C_i1', 'C_v1', 'delta_FP', 'delta_He',
                 'J_SIA_fixed', 'J_SIA_mutual', 'J_VAC_fixed', 'J_VAC_mutual',
-                'J_He_sink'}
+                'J_He_sink',
+                # loop-conversion series (⟨100⟩ block); omitting these left
+                # them holding only the LAST segment, so their length no
+                # longer matched len(t) and every loop-character plot broke.
+                'N_loops_111', 'N_loops_100', 'mean_n_111', 'mean_n_100',
+                'f_111_loop',
+                # the separated conservation arms — same defect
+                'delta_FP_sia', 'delta_FP_vac'}
+
+    # 2-D [size, time] arrays: sliced by column, merged with row zero-padding
+    # so a domain doubling (which grows the size axis) still concatenates.
+    _TS_KEYS_2D = {'y_sia100'}
 
     def _slice_results(self, results, start, end):
         """Slice a results dict to time indices [start:end)."""
@@ -687,7 +698,8 @@ class RadClusterSimulation:
         for key, val in results.items():
             if key in self._TS_KEYS and isinstance(val, np.ndarray):
                 sliced[key] = val[start:end]
-            elif key == 'y' and isinstance(val, np.ndarray) and val.ndim == 2:
+            elif (key == 'y' or key in self._TS_KEYS_2D) and \
+                    isinstance(val, np.ndarray) and val.ndim == 2:
                 sliced[key] = val[:, start:end]
             else:
                 sliced[key] = val
@@ -731,9 +743,28 @@ class RadClusterSimulation:
                         accumulated, new_segment, skip)
                 else:
                     merged[key] = new_val
+            elif key in self._TS_KEYS_2D and isinstance(new_val, np.ndarray) \
+                    and new_val.ndim == 2:
+                if old_val is not None and isinstance(old_val, np.ndarray) \
+                        and old_val.ndim == 2:
+                    merged[key] = self._concat_2d_padded(
+                        old_val, new_val[:, skip:])
+                else:
+                    merged[key] = new_val
             else:
                 merged[key] = new_val
         return merged
+
+    @staticmethod
+    def _concat_2d_padded(old, new):
+        """Concatenate two [size, time] arrays along time, zero-padding the
+        shorter size axis so a domain doubling does not break the merge."""
+        n_old, n_new = old.shape[0], new.shape[0]
+        if n_old < n_new:
+            old = np.vstack([old, np.zeros((n_new - n_old, old.shape[1]))])
+        elif n_new < n_old:
+            new = np.vstack([new, np.zeros((n_old - n_new, new.shape[1]))])
+        return np.concatenate([old, new], axis=1)
 
     @staticmethod
     def _merge_y_blocks(accumulated, new_segment, skip):

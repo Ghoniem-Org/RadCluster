@@ -582,10 +582,19 @@ class ReactionRates:
         K100_grow   = np.zeros(I)
         K100_shrink = np.zeros(I)
         G100        = np.zeros(I)
+        # ⟨100⟩-ONLY monomer-capture scale.  `Z_i_loop` cannot serve this role:
+        # it multiplies the ½⟨111⟩ loop-capture kernels too (see the K_loop
+        # branches above), so raising it grows both characters equally and
+        # leaves the ⟨100⟩/½⟨111⟩ ratio unchanged — which is why a 1.05→1.30
+        # sweep produced no differential effect (2026-08-01).  Default 1.0 ⇒
+        # bit-identical.  Reaches the C++ solver automatically because
+        # cpp_bridge exports K_100_grow as an explicit per-size array.
+        grow_boost_100 = float(re.get('grow_boost_100', 1.0) or 1.0)
         for n in range(1, I + 1):
             if n >= n_loop_min:
                 rt = float(n) ** 0.5
-                K100_grow[n - 1]   = A_loop * rt * Z_i_loop * Di_eff * inv_Omega23
+                K100_grow[n - 1]   = (A_loop * rt * Z_i_loop * Di_eff
+                                      * inv_Omega23 * grow_boost_100)
                 K100_shrink[n - 1] = A_loop * rt * Dv_eff * inv_Omega23
             if n >= 2:
                 Eb100 = E_b_loop_100(n, A_100=A_100, B_100=B_100,

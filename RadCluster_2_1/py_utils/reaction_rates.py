@@ -571,6 +571,32 @@ class ReactionRates:
         ef = np.exp(-dH2_conv / kBT)
         eb = np.exp(-dH_rev_conv / kBT)
         self.conv_psuccess = float(ef / (ef + eb))        # P_success(T) ∈ (0, 0.5)
+        # ── Size-asymmetric success gate for ABSORPTION (2026-08-01) ─────────
+        # The single P_success above gates two physically different events:
+        #   (a) a JUNCTION between two loops of comparable size, where the
+        #       ½⟨110⟩ intermediate must nucleate a new ⟨100⟩ character and
+        #       reversion is genuinely competitive; and
+        #   (b) ABSORPTION of a mobile ≤ i_mobile cluster by a ⟨100⟩ loop of
+        #       hundreds of atoms, where the incorporated segment is negligible
+        #       against the host and inherits — is templated by — the host's
+        #       existing ⟨100⟩ character.  Reversion should be far less likely.
+        # Charging (b) the same 0.70 eV as (a) throttles it by 1/P_success =
+        # 4.6e5.  That is the whole ⟨100⟩ size deficit: the ½⟨111⟩ and ⟨100⟩
+        # MONOMER kernels are identical (K_SIA_grow vs K_100_grow), so the only
+        # asymmetry between the characters is that a sessile ½⟨111⟩ loop eats
+        # mobile clusters at full rate (K_SIA_loop) while a ⟨100⟩ loop does so
+        # at 2.18e-6 of it.  Hence a separate, lower forward barrier for (b).
+        #   P_success^abs(T) = A_abs · [1 + exp((ΔH₂^abs − ΔH_rev)/k_BT)]^{-1}
+        # Defaults reproduce legacy behaviour exactly (ΔH₂^abs = ΔH₂, A = 1).
+        # Expressing it as an energy rather than a bare rate multiplier keeps
+        # the Arrhenius T-dependence the digital-twin campaign needs across
+        # 300–400 °C, which a constant boost factor would not supply.
+        dH2_abs = float(re.get('dH2_abs_conv', dH2_conv))
+        A_abs   = float(_num(re.get('psucc_abs_pref', 1.0), 1.0))
+        ef_abs  = np.exp(-dH2_abs / kBT)
+        self.conv_psuccess_abs = float(A_abs * ef_abs / (ef_abs + eb))
+        self.dH2_abs_conv      = dH2_abs
+        self.psucc_abs_pref    = A_abs
         # Parameters for the lazy φ_junc property (no dense allocation here).
         self._phi_junc_params = (phi_max, sigma_s, n_j_min)
         self._phi_junc_n      = int(ns.size)

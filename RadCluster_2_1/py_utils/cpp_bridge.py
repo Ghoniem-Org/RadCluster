@@ -206,6 +206,15 @@ def write_param_file(sim, solver_config, path, y0_override=None):
         # Marian two-step success probability P_success(T) — gates junction +
         # absorption (½⟨111⟩→½⟨110⟩→⟨100⟩, Fig. 3); computed by ReactionRates.
         lines.append(f"loop_conv_psuccess={float(getattr(rr, 'conv_psuccess', 1.0)):.17e}")
+        # Absorption-only success gate P_success^abs(T) = A_abs·[1 +
+        # exp((ΔH₂^abs − ΔH_rev)/k_BT)]^{-1}.  Decoupled from the junction gate
+        # because a mobile ≤ i_mobile cluster joining a several-hundred-atom
+        # ⟨100⟩ loop is templated by the host character and should not pay the
+        # junction's reversion penalty.  Falls back to conv_psuccess so an older
+        # ReactionRates object (no such attribute) is byte-identical.
+        lines.append("loop_conv_psuccess_abs=%.17e" % float(
+            getattr(rr, 'conv_psuccess_abs',
+                    getattr(rr, 'conv_psuccess', 1.0))))
         # Absorption-only scale (1-D-glide enhanced capture of ½⟨111⟩ by
         # sessile ⟨100⟩).  Separate from conv_psuccess, which multiplies the
         # junction yield too and so cannot isolate growth from nucleation.

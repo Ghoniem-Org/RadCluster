@@ -167,6 +167,9 @@ struct Parameters {
     double conv_phi_max = 0.5;        // junction peak yield at n = n'
     double conv_sigma_s = 0.35;       // junction log-size tolerance
     double conv_psuccess = 1.0;       // Marian two-step success prob P_success(T)
+    double conv_psuccess_abs = 1.0;   // absorption-only success gate
+                                      // A_abs·[1+exp((ΔH₂^abs−ΔH_rev)/kT)]^-1;
+                                      // decoupled from conv_psuccess (junction)
     double conv_absorb_boost = 1.0;   // scales K_100_absorb ONLY (1-D-glide
                                       // enhanced capture); 1.0 = legacy
                                       // (gates junction + absorption; Fig. 3)
@@ -530,6 +533,10 @@ inline Parameters build_parameters(const std::map<std::string, double>& p) {
         P.conv_phi_max    = optional_param(p, "phi_max_junc", 0.5);
         P.conv_sigma_s    = optional_param(p, "sigma_s_junc", 0.35);
         P.conv_psuccess   = optional_param(p, "loop_conv_psuccess", 1.0);
+        // Default to conv_psuccess so a params file written by an older
+        // cpp_bridge (no such key) reproduces the legacy coupled behaviour.
+        P.conv_psuccess_abs = optional_param(p, "loop_conv_psuccess_abs",
+                                             P.conv_psuccess);
         P.conv_absorb_boost = optional_param(p, "conv_absorb_boost", 1.0);
         P.Gamma_uni.assign(P.I, 0.0);
         P.K_100_grow.assign(P.I, 0.0);

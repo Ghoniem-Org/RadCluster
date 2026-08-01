@@ -327,9 +327,16 @@ def build_eurofer_rag(input_data, reaction_rates, *,
     # intersection rate can exceed the isotropic estimate by up to ~rot_factor.
     # Default 1.0 ⇒ bit-identical to the previous behaviour.
     absorb_boost = float(input_data.reactions.get('absorb_boost_100', 1.0) or 1.0)
+    # As of 2026-08-01 this kernel uses its OWN success gate `conv_psuccess_abs`
+    # (barrier ΔH₂^abs, prefactor A_abs — see reaction_rates.py), decoupled from
+    # the junction's `conv_psuccess`.  Rationale: absorption of a ≤ i_mobile
+    # cluster by a several-hundred-atom ⟨100⟩ loop is templated by the host's
+    # existing character, so it should not carry the junction's 0.70 eV
+    # reversion penalty.  Defaults (ΔH₂^abs = ΔH₂, A_abs = 1) reproduce the old
+    # behaviour bit-for-bit, so `absorb_boost_100` remains a pure test knob.
     rag.register_kernel(
         "K_100_absorb",
-        lambda: (float(rr.conv_psuccess) * absorb_boost
+        lambda: (float(rr.conv_psuccess_abs) * absorb_boost
                  * _absorb_kernel(D_SIA_eff, A_8pi)))
     # Sessile ⟨100⟩ point-defect ladders (loop geometry; monomer-driven).
     rag.register_kernel("K_100_grow",   np.asarray(rr.K_100_grow, dtype=float))

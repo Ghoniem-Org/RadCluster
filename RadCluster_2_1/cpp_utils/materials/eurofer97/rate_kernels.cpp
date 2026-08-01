@@ -223,7 +223,10 @@ static inline double K_100_absorb(const Parameters& P, int m, int n) {
     const double A_8pi = P.A_sph_inv_O23 * (8.0 * PI / P.A_sph);
     const double xi_m  = std::cbrt(3.0 * static_cast<double>(m) / (8.0 * PI));
     const double xi_n  = std::cbrt(3.0 * static_cast<double>(n) / (8.0 * PI));
-    return A_8pi * (xi_m + xi_n) * P.D_SIA_eff[n - 1] * P.conv_psuccess
+    // Uses the ABSORPTION-only gate: a mobile ≤ i_mobile cluster joining a
+    // several-hundred-atom ⟨100⟩ loop is templated by the host's existing
+    // character, so it does not pay the junction's reversion penalty.
+    return A_8pi * (xi_m + xi_n) * P.D_SIA_eff[n - 1] * P.conv_psuccess_abs
          * P.conv_absorb_boost;
 }
 

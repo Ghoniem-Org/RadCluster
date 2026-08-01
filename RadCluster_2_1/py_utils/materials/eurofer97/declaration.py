@@ -326,7 +326,7 @@ def build_eurofer_rag(input_data, reaction_rates, *,
     # planar trap, and a 1-D glider sweeps a tube, so the tube-disc
     # intersection rate can exceed the isotropic estimate by up to ~rot_factor.
     # Default 1.0 ⇒ bit-identical to the previous behaviour.
-    absorb_boost = float(inp.reactions.get('absorb_boost_100', 1.0) or 1.0)
+    absorb_boost = float(input_data.reactions.get('absorb_boost_100', 1.0) or 1.0)
     rag.register_kernel(
         "K_100_absorb",
         lambda: (float(rr.conv_psuccess) * absorb_boost

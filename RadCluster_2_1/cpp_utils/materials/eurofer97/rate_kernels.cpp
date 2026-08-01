@@ -223,7 +223,8 @@ static inline double K_100_absorb(const Parameters& P, int m, int n) {
     const double A_8pi = P.A_sph_inv_O23 * (8.0 * PI / P.A_sph);
     const double xi_m  = std::cbrt(3.0 * static_cast<double>(m) / (8.0 * PI));
     const double xi_n  = std::cbrt(3.0 * static_cast<double>(n) / (8.0 * PI));
-    return A_8pi * (xi_m + xi_n) * P.D_SIA_eff[n - 1] * P.conv_psuccess;
+    return A_8pi * (xi_m + xi_n) * P.D_SIA_eff[n - 1] * P.conv_psuccess
+         * P.conv_absorb_boost;
 }
 
 static int rhs_case2(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,

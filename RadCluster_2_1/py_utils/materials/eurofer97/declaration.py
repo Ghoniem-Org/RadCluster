@@ -312,9 +312,25 @@ def build_eurofer_rag(input_data, reaction_rates, *,
     # Marian absorption  ⟨100⟩_m + ½⟨111⟩_n -> ⟨100⟩_{m+n}  (cross-character),
     # gated by the two-step success probability P_success(T) (Marian Fig. 3) —
     # the absorbed ½⟨111⟩ must rotate through the metastable ½⟨110⟩ to ⟨100⟩.
+    # `absorb_boost_100` scales THIS kernel only.  It exists because
+    # `conv_psuccess` multiplies both the absorption kernel and the junction
+    # yield, so varying ΔH₂ cannot separate "⟨100⟩ grows faster" from "⟨100⟩
+    # nucleates more often" — the 2026-07-31 ΔH₂ scan raised both at once and
+    # N₁₀₀ doubled while d₁₀₀ moved 9 %.
+    #
+    # Physically it represents 1-D-glide-enhanced capture of ½⟨111⟩ by a
+    # sessile ⟨100⟩ loop.  `D_SIA_eff` carries the isotropic-equivalent
+    # diffusivity `D1D(n)/rot_factor` with `rot_factor = 1 + B_rot·L̂² ≈ 6568`
+    # (reaction_rates.py), i.e. the rate a randomly-placed spherical sink sees
+    # from a rotating 1-D glider.  A ⟨100⟩ loop is neither: it is an extended
+    # planar trap, and a 1-D glider sweeps a tube, so the tube-disc
+    # intersection rate can exceed the isotropic estimate by up to ~rot_factor.
+    # Default 1.0 ⇒ bit-identical to the previous behaviour.
+    absorb_boost = float(inp.reactions.get('absorb_boost_100', 1.0) or 1.0)
     rag.register_kernel(
         "K_100_absorb",
-        lambda: float(rr.conv_psuccess) * _absorb_kernel(D_SIA_eff, A_8pi))
+        lambda: (float(rr.conv_psuccess) * absorb_boost
+                 * _absorb_kernel(D_SIA_eff, A_8pi)))
     # Sessile ⟨100⟩ point-defect ladders (loop geometry; monomer-driven).
     rag.register_kernel("K_100_grow",   np.asarray(rr.K_100_grow, dtype=float))
     rag.register_kernel("K_100_shrink", np.asarray(rr.K_100_shrink, dtype=float))

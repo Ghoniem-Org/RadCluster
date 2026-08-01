@@ -206,6 +206,11 @@ def write_param_file(sim, solver_config, path, y0_override=None):
         # Marian two-step success probability P_success(T) — gates junction +
         # absorption (½⟨111⟩→½⟨110⟩→⟨100⟩, Fig. 3); computed by ReactionRates.
         lines.append(f"loop_conv_psuccess={float(getattr(rr, 'conv_psuccess', 1.0)):.17e}")
+        # Absorption-only scale (1-D-glide enhanced capture of ½⟨111⟩ by
+        # sessile ⟨100⟩).  Separate from conv_psuccess, which multiplies the
+        # junction yield too and so cannot isolate growth from nucleation.
+        lines.append("conv_absorb_boost=%.17e" % float(
+            inp.reactions.get('absorb_boost_100', 1.0) or 1.0))
         for k, v in enumerate(rr.Gamma_uni):
             lines.append(f"Gamma_uni_{k}={v:.17e}")
         for k, v in enumerate(rr.K_100_grow):

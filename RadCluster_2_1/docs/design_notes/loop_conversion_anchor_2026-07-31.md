@@ -99,14 +99,82 @@ a tight, confident posterior on a parameter that cannot reproduce the observable
 once the measurement convention is applied — the failure is in the ⟨100⟩ *size*
 distribution, not in the *fraction*, and no conversion parameter addresses it.
 
-**Caveat, and the first thing to test.** Every run in this campaign used
-`i_mobile = 10` (the §3 configuration). ⟨100⟩ loops grow by Marian absorption of
-**mobile** ½⟨111⟩ clusters, so a mobility cutoff of 10 starves exactly the
-channel that should make them TEM-visible. At the production `i_mobile = 50` the
-⟨100⟩ loops may grow substantially. **Until that is run, the size deficit is not
-established as physics** — it may be a configuration artefact. That run is
-blocked on T0.5(c5), because `i_mobile = 50` at a useful grid means
-`bin_moment`, which is exactly what conversion currently breaks.
+### 2.1 RESOLVED — the cause is a missing mechanism, not a parameter
+
+A further ~25 runs (2026-07-31, later the same day) eliminated every candidate
+parameter and identified the structural cause. **The ⟨100⟩ *content* is right;
+the *number* is 125× too high; the size follows arithmetically.**
+
+| quantity | model / experiment |
+|---|---|
+| ⟨100⟩ content | ≈ correct |
+| `N₁₀₀` | **125×** too high |
+| `d₁₀₀` | 0.10× — and `√125 = 11.2` vs the measured ratio **10.0** |
+
+Because `d ∝ √n` and `n ∝ content/N`, a number density 125× too high forces a
+diameter ~11× too small *given the correct content*. That single fact explains
+every negative result below.
+
+**Four mechanisms tested, all eliminated:**
+
+| mechanism | knob, and how far it was pushed | `d₁₀₀` |
+|---|---|---|
+| junction nucleation | `i_mobile` 10→50 (threshold live, `n_j_min_eff` = 30) | nothing populates `n ≥ 60`; `φ_max` 0.5 vs 1.0 bit-identical |
+| unary rate | `E_a0` 1.6→2.0 — unary rate down **1700×** | 0.79 → 0.83 nm |
+| ΔF gate | `T*` 450→150 — gate `n ≤ 35` → `n ≤ 117` | 0.79 → 0.80 nm |
+| **absorption** | `absorb_boost_100` 1→6568 (= `rot_factor`, i.e. pure 1-D glide with the isotropic penalty fully removed) | **0.79 → 0.80 nm** |
+| monomer bias | `Z_i_loop` 1.05→1.30, full dose | 0.79 → 0.79 nm |
+
+Growth boosts cannot work: the absorbable ½⟨111⟩ inventory is fixed, and spread
+over 4.7×10²³ loops m⁻³ it gives each loop a few atoms however fast the transfer.
+Suppression cannot work either: raising `E_a0` cuts number **and** content
+together (`f₁₀₀` 0.637 → 0.007), leaving the size unchanged. Fewer-but-larger
+requires **redistribution**, and the model has no redistribution channel.
+
+**The structural gap.** The `sia_100` population has *two sources* (junction,
+unary) and no removal mechanism at all:
+
+- **no ⟨100⟩×⟨100⟩ coalescence** — deliberate (§4.2 of
+  [`loop_111_to_100_conversion.md`](loop_111_to_100_conversion.md): "`bulk-100`
+  gets no SOURCE and no self-COALESCENCE"), on the grounds that two sessile
+  loops cannot collide diffusively;
+- **no dissolution** — measured emission/growth ratio at 350 °C is
+  **1e-29 (n=4)** to **1e-54 (n=20)**. With `E_b^100(n) = A_100·n^{B_100}`,
+  `A_100 = 3.0`, a 4-atom ⟨100⟩ loop binds at ≈4.9 eV and is effectively
+  immortal;
+- the only optional sink is the loop→network channel, off by default and
+  already measured weak ([`loop_growth_grid_limit.md`](loop_growth_grid_limit.md) §5).
+
+So `N₁₀₀` is a monotonically accumulating counter of conversion events. Nothing
+in the current mechanism set can reduce it at fixed content.
+
+**Consequence for the twin: `f₁₀₀`, `N₁₀₀` and `d₁₀₀` are not calibratable**
+with the present physics. They should be excluded from the acceptance function —
+not down-weighted — until a ⟨100⟩ number-reducing mechanism exists. Calibrating
+against them now would drive `E_a0_conv` to whatever value minimises a residual
+the model cannot physically attain.
+
+**Candidate mechanisms to add** (in rough order of physical defensibility):
+
+1. **⟨100⟩ loop impingement/coalescence.** Sessile loops cannot collide
+   *diffusively*, but they can grow into one another. At `N₁₀₀ ~ 10²³ m⁻³` the
+   mean spacing is ~2 nm, comparable to the loop size — impingement is not a
+   small correction at these densities. This is the most likely missing term.
+2. **⟨100⟩ absorption by the network** — `lambda_net_100_k` already exists in
+   `cpp_bridge`; enabling `LOOP_NETWORK_LOSS` gives ⟨100⟩ a removal path.
+   Previously measured weak, but it was never tested as a *number* control.
+3. **Revisit `A_100`.** `A_100 = 3.0` (matching `A_111`) makes small ⟨100⟩ loops
+   unconditionally stable. Table 18's value is **0.7160**, which would make
+   `E_b^100(4) ≈ 1.2 eV` instead of 4.9 eV and open an Ostwald-ripening path.
+   The workbook value may simply be wrong.
+
+**Caveat on the `i_mobile` runs.** The `i_mobile ≥ 30` cases dose-starved at
+0.007–0.035 dpa (against 0.3) *and* were grid-limited (`n̄₁₁₁ = 350` at
+`I = 800`, occupancy 0.44). Their qualitative reading — nothing populates ⟨100⟩
+above `n = 60` — stands, but no number from them is quotable. Separately this
+establishes that **`i_mobile = 50` with conversion is computationally out of
+reach** in discrete mode at an admissible grid: 5400 s bought 0.007 dpa. That is
+a harder constraint on the twin than the 7d defect and is not fixed by fixing it.
 
 ---
 

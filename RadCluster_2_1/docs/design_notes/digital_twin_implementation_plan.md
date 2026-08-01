@@ -27,7 +27,10 @@ parameter consequences in §2.4bis.
 | **#19/#20/#24 deferred to Tier 3** | Dose-driven; invisible at the 0.1 dpa LF dose |
 | **#23 `φ_max` rescued from a structural null** | It was *bit-identical* over 0.1–1.0 because `n_j_min_junc = 30 > i_mobile`. Fixed by tying the threshold to `i_mobile` — T0.5(c4) |
 | **Experimental target restated** | EUROFER97 neutron `f₁₀₀` at `T ≤ 400 °C` is **0.10–0.87, median 0.72** — ⟨100⟩ is the *majority* character, opposite to the premise `E_a0_conv = 1.8` was fitted to |
-| **⚠ `f₁₀₀` may not be a usable target** | Model ⟨100⟩ loops are **0.74–0.81 nm**; measured are **2.8–180 nm** (median 7.9). Under a 1.5 nm TEM cutoff the model gives `f₁₀₀ ≈ 0` at *every* parameter value. Blocked on re-running at `i_mobile = 50` to separate physics from configuration. §2.4bis |
+| **⚠ `f₁₀₀`/`N₁₀₀`/`d₁₀₀` EXCLUDED from the acceptance function** | Missing physics, not calibration. `N₁₀₀` is 125× too high because `sia_100` has two sources and **no removal mechanism**; `d₁₀₀` follows at `√125` too small. Five knobs eliminated, including absorption pushed to the full `rot_factor` (6568×). §2.4bis |
+| **`T*` stays dropped — for a measured reason** | An intermediate revision reinstated it on the grounds that it controls the ΔF gate edge and therefore ⟨100⟩ birth size. Direct measurement refuted that: widening the gate 3.3× moves `d₁₀₀` by 2.9 %, because `Γ_uni` peaks at `n = 4` and carries negligible rate at the gate edge. Permission is not flux |
+| **`φ_max` identifiability claim softened** | Fix (c4) removed a genuine structural zero — `φ_junc` now scales with `φ_max` — but `φ_max` remains *effectively* inert: the junction only fires for partners in `[n_j_min_eff, i_mobile]`, a narrow window the cascade barely populates. Measured bit-identical at `i_mobile = 50` |
+| **`γ_a` and `Z_i_loop` were excluded on the wrong observable** | Both were judged against `f₁₀₀`, which is a *fraction*; the failing quantity is *size*. `γ_a` is the only knob that moves the unary birth peak (`n = 4` → `n = 33` at `γ_a = −0.01`). Neither is reinstated yet — the ⟨100⟩ removal gap dominates — but the exclusion reasoning is void |
 | **Observable convention now measured** | number vs content weighting differs by **2×** on the same run; the model's ⟨100⟩ loops are ≈0.8 nm, below TEM visibility. A TEM-filtered `f₁₀₀` is now required. §3.1 item 4 |
 | **`run_adaptive` truncation fixed** | T0.5(c3); `_TS_KEYS` was missing **seven** series — the five ⟨100⟩ ones *and* `delta_FP_sia`/`delta_FP_vac` |
 | **New blocking defect** | `bin_moment` + `loop_conversion` returns `mean_n₁₀₀ > I`; conversion runs must use `discrete`. T0.5(c5) |
@@ -637,21 +640,47 @@ condition with Dethloff's 0.78. `targets.yaml` must flag them, not read them as
 zeros. **Scatter (0.27–0.78 at a single temperature) exceeds any model-parameter
 effect**, which sets the floor on `σ_model` for this observable.
 
-**⚠ Before any of the ranges below: `f₁₀₀` may not be a usable calibration
-target at all.** The model's ⟨100⟩ loops sit at `n ≈ 11` atoms —
-**0.74–0.81 nm** across every run — while the measured ⟨100⟩ diameters are
-**2.8–180 nm, median 7.9** (n = 27). Applying a realistic 1.5 nm TEM cutoff to
-both characters, the model returns `f₁₀₀ ≈ 0` (0.0000–0.0191) at **every**
-parameter value tested, against a measured 0.10–0.87. The discrepancy is in the
-⟨100⟩ *size* distribution, not the *fraction*, so no conversion parameter can
-close it. Calibrating `E_a0_conv` against the raw number fraction would yield a
-confident posterior on an observable the model cannot reproduce.
+**⚠ EXCLUDE `f₁₀₀`, `N₁₀₀` and `d₁₀₀` from the acceptance function — the model
+cannot reproduce them with the present mechanism set.** This is a
+missing-physics finding, established by ~25 additional runs and not a
+calibration matter.
 
-*Caveat and top follow-up:* every run used `i_mobile = 10`. ⟨100⟩ loops grow by
-Marian absorption of **mobile** ½⟨111⟩, so that cutoff starves the growth
-channel. The size deficit is **not established as physics** until the anchor is
-re-run at the production `i_mobile = 50` — which is itself blocked on T0.5(c5),
-since `i_mobile = 50` at a useful grid means `bin_moment`.
+The ⟨100⟩ *content* is about right. The *number density* is **125× too high**
+(9.9e22 vs a measured median 3.7e21 m⁻³), and since `d ∝ √n` with
+`n ∝ content/N`, the diameter follows at `√125 = 11.2×` too small — against a
+measured ratio of **10.0×** (0.80 nm vs 7.9 nm). One fact explains the whole
+discrepancy.
+
+Every candidate parameter was eliminated:
+
+| knob | pushed to | `d₁₀₀` |
+|---|---|---|
+| `E_a0_conv` | 1.6→2.0 (unary rate ÷1700) | 0.79 → 0.83 nm |
+| `T*` | 450→150 (ΔF gate `n≤35`→`n≤117`) | 0.79 → 0.80 nm |
+| `absorb_boost_100` | 1→6568 (= `rot_factor`; pure 1-D glide, isotropic penalty removed) | 0.79 → 0.80 nm |
+| `Z_i_loop` | 1.05→1.30, full dose | 0.79 → 0.79 nm |
+| `i_mobile` / `φ_max` | 10→50, junction live | nothing populates `n ≥ 60` |
+
+Growth boosts fail because the absorbable ½⟨111⟩ inventory is fixed and
+spreading it over 4.7e23 loops m⁻³ gives each a few atoms regardless of rate.
+Suppression fails because `E_a0` cuts number *and* content together
+(`f₁₀₀` 0.637 → 0.007). **Fewer-but-larger needs redistribution, and there is no
+redistribution channel:** `sia_100` has two sources and *no* removal mechanism —
+no self-coalescence (deliberate: sessile loops can't collide diffusively), and
+no dissolution (measured emission/growth 1e-29 at `n=4`, since `A_100 = 3.0`
+binds a 4-atom loop at ≈4.9 eV). `N₁₀₀` is a monotonically accumulating counter
+of conversion events.
+
+Fix candidates, before these observables can rejoin the calibration: ⟨100⟩ loop
+**impingement** (mean spacing ~2 nm at these densities — comparable to the loop
+size, so not a small correction); ⟨100⟩ absorption by the network via
+`LOOP_NETWORK_LOSS` (`lambda_net_100_k` already exists); or correcting `A_100`,
+which the workbook carries at 3.0 while Table 18 gives **0.7160** — the latter
+would put `E_b^100(4)` at ≈1.2 eV and open an Ostwald-ripening path.
+
+*Also established:* `i_mobile = 50` with conversion is **computationally out of
+reach** in discrete mode at an admissible grid — 5400 s reached 0.007 dpa. That
+constrains the twin harder than T0.5(c5) and is not fixed by fixing it.
 
 **Measured `f₁₀₀` (number-weighted), discrete, 3 dpa:**
 

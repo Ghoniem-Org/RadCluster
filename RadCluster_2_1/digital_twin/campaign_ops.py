@@ -376,7 +376,14 @@ def watch(design: Path, results_dir: Path, n_machines: int = 4,
           workers_per_machine: int | None = None, interval: float = 60.0,
           iterations: int = 10_000, targets: dict | None = None) -> dict:
     """Live monitor. Interrupt the cell (kernel stop) to leave it."""
-    from IPython.display import clear_output
+    # In-place refresh needs IPython; outside a notebook (or without it
+    # installed) fall back to scrolling output rather than failing — the
+    # monitor is the point, the redraw is cosmetic.
+    try:
+        from IPython.display import clear_output
+    except ImportError:
+        def clear_output(wait=False):
+            print("\n" + "─" * 78 + "\n")
     targets = targets if targets is not None else load_targets()
     st = None
     try:

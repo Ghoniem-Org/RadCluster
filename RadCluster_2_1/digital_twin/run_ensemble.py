@@ -396,6 +396,10 @@ def main(argv=None):
                 REPO / "RadCluster_2_1" / "input" / "input_parameters.xlsx")[:16],
             "design_sha256": meta.get("design_sha256", "")[:16],
             "run_cfg_sha": run_cfg_sha,
+            # carried per row (not only in run_cfg_sha) so merge_and_sobol can
+            # apply the per-mode observable-fidelity restriction without having
+            # to resolve the hash back to a configuration
+            "equations": a.equations,
             "python": platform.python_version()}
     print(f"machine {a.machine}/{a.of}  rows {len(mine)} "
           f"({len(done)} done, {len(todo)} to run)  workers {a.workers}")

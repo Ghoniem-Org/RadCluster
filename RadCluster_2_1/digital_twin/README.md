@@ -164,6 +164,29 @@ Set `OMP_NUM_THREADS=1` (the runner does this) and use many single-threaded
 workers rather than few threaded ones: better throughput for an ensemble, and it
 removes OpenMP reduction-order nondeterminism between machines.
 
+## Gotchas that have already cost real work
+
+**`RadClusterSimulation.__init__` silently discards unknown kwargs.** Its
+signature ends in `**legacy_kw`, and anything not named there is swallowed and
+dropped — no error, no warning. Passing `i_discrete=…`, `I_bin=…` or
+`shape_function=…` to the constructor does **nothing**. On 2026-08-02 this
+produced nine "refinement" runs that came back bit-identical and were nearly
+read as evidence of a structural closure failure. Set them through
+`input_data.reactions[...]` then `_calculate_derived()` + `rebuild_rates()`.
+
+**The bin configuration lives on `sim.rate_equations`, not
+`sim.reaction_rates`.** `reaction_rates` is a `ReactionRates` in both modes;
+`rate_equations` is the `BinMomentRateEquations` that owns `i_discrete`,
+`I_bin`, `r`, `shape_function`, `n_mom`, `N_eq`. Querying the wrong object
+returns `?`/`nan` rather than raising.
+
+**The `bin_moment` default binning is very coarse:** `i_discrete=10, I_bin=6,
+r=1.849` — six bins spanning sizes 11…I. Any accuracy comparison that does not
+state its binning is comparing against that.
+
+**`δ_FP` cannot see grid truncation** (see above) — judge grid adequacy by
+`pile` and `d/d_ceiling`.
+
 ## Before a production launch — open items
 
 1. **Two parameters are `REVISION_PENDING`** (`design.py` warns): `E_a0_conv`

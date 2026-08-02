@@ -47,6 +47,47 @@ OBSERVABLES = ["N_loops_100", "d_100_nm", "f_100_number", "f_100_content",
                "f_100_tem_0p8", "f_100_tem_1", "f_100_tem_1p25", "f_100_tem_1p5",
                "N_loops_111", "d_111_nm", "N_voids", "S_inventory"]
 
+# ── OBSERVABLE FIDELITY BY EQUATIONS MODE ────────────────────────────────────
+# An observable is only screenable in a mode where it has been VALIDATED against
+# a converged discrete reference.  This is not bookkeeping: an index computed
+# from an observable the closure gets wrong is a confident number about the
+# numerics, not the physics — the same failure mode as the grid saturation that
+# delta_FP could not see.
+#
+# bin_moment: the <100> block is a SESSILE, ONE-WAY population — born small by
+# conversion, then advected upward in size space with no back-diffusion.  Moment
+# closures suffer numerical diffusion on sharply-peaked advecting distributions,
+# which broadens the reconstruction and biases the mean UP.  Measured 2026-08-02
+# against a converged discrete reference (pile = 0.0000, delta_FP = 3.5e-07):
+# mean_n_100 648.0 vs 265.2, +144 %, and the error GREW with refinement of the
+# comparison (+58 % at the coarser setting).  The 1/2<111> block is unaffected
+# (mean_n_111 within 6-7 % in two independent comparisons) because it is
+# populated across its whole range rather than peaked and advecting.
+#
+# Author's decision 2026-08-02: if the <100> closure problem persists, screen
+# with bin_moment on the 1/2<111>/void observables only.  Encoded here so the
+# restriction is enforced by the tooling rather than remembered.
+BIN_MOMENT_BLOCKED = {"N_loops_100", "d_100_nm", "f_100_number", "f_100_content",
+                      "f_100_tem_0p8", "f_100_tem_1", "f_100_tem_1p25",
+                      "f_100_tem_1p5"}
+
+
+def observables_for_mode(equations: str, blocked_override=None) -> tuple[list, set]:
+    """Observables screenable in this equations mode, and those withheld."""
+    if equations != "bin_moment":
+        return list(OBSERVABLES), set()
+    blocked = set(blocked_override if blocked_override is not None
+                  else BIN_MOMENT_BLOCKED)
+    return [o for o in OBSERVABLES if o not in blocked], blocked
+
+
+def equations_mode_of(recs: dict) -> str | None:
+    """What mode produced these rows?  Read from the manifest-backed rows."""
+    modes = {r.get("equations") for r in recs.values() if r.get("equations")}
+    if len(modes) == 1:
+        return modes.pop()
+    return None if not modes else "MIXED"
+
 
 def load_results(res_dir: Path) -> dict[int, dict]:
     recs: dict[int, dict] = {}
@@ -207,10 +248,26 @@ def main(argv=None):
         print(f"    inadmissible because: {dict(reasons)}")
 
     a.out.mkdir(parents=True, exist_ok=True)
+
+    # Restrict to observables validated in the mode that produced these rows.
+    mode = equations_mode_of(recs)
+    obs_list, blocked = observables_for_mode(mode or "discrete")
+    if mode == "MIXED":
+        print("\n  *** rows come from MORE THAN ONE equations mode - they are "
+              "not poolable; separate them before estimating.")
+    if blocked:
+        print(f"\n  equations mode = {mode}: withholding {len(blocked)} "
+              f"observable(s) whose closure is not validated in this mode:")
+        print(f"    {', '.join(sorted(blocked))}")
+        print("  Screening on them would produce indices about the numerics, "
+              "not the physics.")
+        print("  (<100> in bin_moment: mean_n_100 +144% vs a converged discrete "
+              "reference, 2026-08-02.)")
+
     rows_out = []
     for cond in meta["conditions"]:
         dc = [d for d in design if d["condition"] == cond]
-        for obs in OBSERVABLES:
+        for obs in obs_list:
             r = sobol_indices(recs, dc, p_keys, obs, n_boot=a.n_boot)
             if r is None:
                 print(f"  {cond:>4s} {obs:16s} -- too few usable base points")

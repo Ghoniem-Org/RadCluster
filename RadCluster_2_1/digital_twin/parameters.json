@@ -90,9 +90,8 @@
      "note": "de-aliased from Z_i (plan S2.2a). SHARED between 1/2<111> capture and <100> growth, so it cannot change the character ratio - verified 2026-08-01"},
 
     {"id": 21, "key": "E_a0_conv",   "sheet": "reactions", "tier": 2,
-     "lo": 1.45, "hi": 1.85, "nominal": 1.60, "prior": "TN", "units": "eV",
-     "REVISION_PENDING": true,
-     "note": "PROVISIONAL. rev.4 range 1.45-1.85 was set with the <100> absorption channel throttled. With it open, N_100 on target needs E_a0 ~ 2.2-2.25 (2026-08-01). Also N_100 ~ exp(-E_a0/kT) EXACTLY (41.3x per 0.2 eV, matches 1/kT to 3 digits), so this is analytically invertible and is a candidate for demotion to a DERIVED quantity once the absorption gate is fixed. Re-set both range and tier before launching Tier 2."},
+     "lo": 1.60, "hi": 2.40, "nominal": 2.25, "prior": "U", "units": "eV",
+     "note": "REVISED 2026-08-02, and DELIBERATELY LEFT WIDE. Two temperatures pull this parameter in opposite directions and it cannot satisfy both: N_100 at 350 C wants 2.25 (measured 1.08x target at that value), while the f_100(T) trend wants ~1.6 (the plan's own record: f_100 0.356 -> 0.824 across 300-400 C at E_a0 = 1.6). At 2.25 the modelled trend is 0.0002 -> 0.375 across the same span, against data that is roughly flat - because N_100 ~ exp(-E_a0/kT) EXACTLY (41.3x per 0.2 eV, matching 1/kT to three digits), giving a 665x swing where the data shows almost none. Narrowing to 2.25 would bake in that bad temperature dependence and HIDE the conflict, which is precisely what Tier 2/4 exist to expose. Prior widened to span both attractors; uniform rather than truncated-normal so neither end is favoured. The rev.4 range 1.45-1.85 is withdrawn: it was set with the <100> absorption channel throttled."},
 
     {"id": 22, "key": "dH2_conv",    "sheet": "reactions", "tier": 2,
      "lo": 0.35, "hi": 0.50, "nominal": 0.40, "prior": "TN", "units": "eV",
@@ -104,9 +103,8 @@
      "note": "SCREENING CANARY: was structurally inert whenever i_mobile < n_j_min_junc. If S_i^T ~ 0 after fix T0.5(c4), check n_j_min_frac reached the kernel BEFORE concluding the junction is unimportant - this parameter has already produced one false null"},
 
     {"id": 25, "key": "dH2_abs_conv", "sheet": "reactions", "tier": 2,
-     "lo": 0.15, "hi": 0.50, "nominal": 0.21, "prior": "U", "units": "eV",
-     "REVISION_PENDING": true,
-     "note": "NEW 2026-08-01. Absorption-only success gate barrier; the parameter that unsticks <100> size. PROVISIONAL range - calibration in progress, gate ~1.7 at 350 C interpolated between measured gate 1.0 (n=198) and 2.0 (n>2076). DEGENERATE with psucc_abs_pref at fixed T: only the product (the gate) is identifiable from one temperature. The two separate ONLY through the f_100(T) spread across the 300/350/400 C conditions, which is why psucc_abs_pref is held fixed below rather than co-sampled."},
+     "lo": 0.26, "hi": 0.45, "nominal": 0.273, "prior": "U", "units": "eV",
+     "note": "CALIBRATED 2026-08-02. Absorption-only success gate barrier; the parameter that unsticks <100> size. At 0.273 (gate 1.246, with psucc_abs_pref = 2.0) and E_a0_conv = 2.25, a converged I=3200 run at 350 C / 0.3 dpa gives d_100 = 7.83 nm against a 7.9 nm target (0.99x) and N_100 = 4.00e21 against 3.72e21 (1.08x), with pile = 0.0000 and delta_FP = 1.5e-08. THE LOWER BOUND IS NUMERICAL, NOT PHYSICAL: <100> has no size cap in the present model, so small dH2_abs opens the gate wide enough for unbounded growth - at 0.15 (gate 1.885) d_100 fails to converge on ANY grid tried (6.04/8.09/9.40 nm at I = 800/1600/2400, pile still 0.67 at the largest), while N_100 converges to 1.9e21 throughout. Loops that never stop growing cannot be represented at affordable cost, so the box is cut to exclude that corner; 0.26 already shows pile = 0.071 at I=3200. Restore the lower bound only after a size cap exists (loop->network, id 24). DEGENERATE with psucc_abs_pref at fixed T - only the product (the gate) is identifiable from one temperature; they separate solely through the f_100(T) spread across the three conditions, which is why psucc_abs_pref is held fixed rather than co-sampled."},
 
     {"id": 26, "key": "d_min_tem",   "sheet": "postproc", "tier": 0,
      "lo": 0.8, "hi": 1.5, "nominal": 1.0, "prior": "U", "units": "nm",

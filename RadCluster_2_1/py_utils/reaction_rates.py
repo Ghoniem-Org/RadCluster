@@ -591,7 +591,12 @@ class ReactionRates:
         # Expressing it as an energy rather than a bare rate multiplier keeps
         # the Arrhenius T-dependence the digital-twin campaign needs across
         # 300–400 °C, which a constant boost factor would not supply.
-        dH2_abs = float(re.get('dH2_abs_conv', dH2_conv))
+        # `_num`, not float(): 'dH2_abs_conv' ships BLANK in the workbook (its
+        # default is dynamic — it tracks dH2_conv), and a blank cell arrives as
+        # pandas NaN rather than as an absent key, so re.get(k, default) returns
+        # NaN and the default never fires.  float(NaN) would then poison the
+        # gate silently.  Same trap documented for loop_net_n_inc/loop_net_w_c.
+        dH2_abs = float(_num(re.get('dH2_abs_conv', dH2_conv), dH2_conv))
         A_abs   = float(_num(re.get('psucc_abs_pref', 1.0), 1.0))
         ef_abs  = np.exp(-dH2_abs / kBT)
         self.conv_psuccess_abs = float(A_abs * ef_abs / (ef_abs + eb))

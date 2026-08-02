@@ -1,0 +1,47 @@
+{
+  "tier": 3,
+  "N": 4,
+  "p": 24,
+  "seed": 20260801,
+  "conditions": [
+    "N2",
+    "N5",
+    "I1"
+  ],
+  "rows_per_condition": 104,
+  "rows_total": 312,
+  "parameters": [
+    "eta",
+    "f_cl_i",
+    "f_cl_v",
+    "E_m_i",
+    "E_m_v",
+    "E_m_h",
+    "L_hat",
+    "i_mobile",
+    "v_mobile",
+    "gamma_s",
+    "E_b_v2",
+    "lambda",
+    "B_111",
+    "E_b_i2",
+    "E_b_hV_1",
+    "Z_i",
+    "Z_i_loop",
+    "loop_net_K_rec",
+    "loop_net_w_c",
+    "E_a0_conv",
+    "dH2_conv",
+    "phi_max_junc",
+    "loop_net_chi",
+    "dH2_abs_conv"
+  ],
+  "parameters_version": "T2_v1",
+  "revision_pending": [
+    "E_a0_conv",
+    "dH2_abs_conv"
+  ],
+  "design_sha256": "cc71047661dbe740f7b33c7423be51c2ea66cc4bf127f747e781ee135615371d",
+  "git_sha": "440dbf392146aa3de846ab4496e1aea14eb0517d",
+  "estimator": "Saltelli; S_j pairs A_i with AB_i^(j), S_T_j pairs B_i with AB_i^(j)"
+}

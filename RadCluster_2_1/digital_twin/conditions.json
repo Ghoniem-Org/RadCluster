@@ -1,0 +1,42 @@
+{
+  "_comment": [
+    "Run grid for the Tier-2 screening ensemble (plan S4/Tier 2).",
+    "",
+    "Three conditions only: two neutron points spanning the temperature window",
+    "plus one ion point, so the dose-rate-sensitive parameters (L_hat, i_mobile)",
+    "are actually exercised.  All three sit inside the T0.4 envelope.",
+    "",
+    "T_K is the ACTUAL temperature of the experiment.  The -60 C ion shift",
+    "(T_eq = T - 60) is a data-side plotting device (plan S3.2) and is exactly",
+    "collinear with an ion dummy; it must NEVER reach the simulator.  It is",
+    "absent from this file by construction and run_ensemble asserts on it.",
+    "",
+    "G is the NRT displacement rate in dpa/s BEFORE the survival factor eta;",
+    "leave null to take the workbook value.  The ion point's higher dose rate is",
+    "physics the model is supposed to reproduce, not a correction to apply."
+  ],
+
+  "N2": {
+    "label": "neutron 300 C",
+    "T_K": 573.15,
+    "cascade": "fission",
+    "G": null,
+    "rho_d": 1.0e14
+  },
+
+  "N5": {
+    "label": "neutron 350 C",
+    "T_K": 623.15,
+    "cascade": "fission",
+    "G": null,
+    "rho_d": 1.0e14
+  },
+
+  "I1": {
+    "label": "ion 350 C, high dose rate",
+    "T_K": 623.15,
+    "cascade": "fission",
+    "G": 1.0e-4,
+    "rho_d": 1.0e14
+  }
+}

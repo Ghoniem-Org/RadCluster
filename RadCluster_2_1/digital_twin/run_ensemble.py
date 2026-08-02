@@ -1,0 +1,414 @@
+#!/usr/bin/env python
+"""run_ensemble - the campaign worker.  One instance per machine.
+
+    machine k of M  ->  runs every design row with  row_id % M == k
+
+Deterministic, restartable, needs no shared filesystem and no coordination: a
+dead machine leaves an identifiable GAP rather than corrupting the design.
+Results are appended one JSON object per line, so a crash costs one row rather
+than the file, and merging is plain concatenation.
+
+    python run_ensemble.py --design design/T2_design_v1.csv \
+                           --machine 0 --of 4 --workers 10
+
+WHY THE ADMISSIBILITY BLOCK EXISTS
+----------------------------------
+delta_FP is BLIND to grid truncation.  On 2026-08-01 it held at 1e-8 while
+99.96 % of the <100> content was stacked against the top of the grid, because
+the `if (n < I)` growth guard in rate_kernels.cpp halts growth WITHOUT losing
+atoms.  Conservation is a health check, not a grid-adequacy check.
+
+Across ~1250 rows with theta varying over its full prior box, some cells WILL
+saturate the grid.  Without pile/occupancy recorded per row those cells enter
+the Sobol estimator as ordinary data and their sensitivity is an artefact of
+the grid, not of the physics.  So every row carries:
+
+    occ_111, occ_100     mean size / I          (project rule: > ~0.1 suspect)
+    pile_111, pile_100   content fraction in the top 2 % of the grid
+    d_over_ceiling_100   d_100 / d(n=I)
+    dose_reached, starved, delta_FP, delta_He, solver_rc, wall_s
+
+and `admissible`, which merge_and_sobol uses to decide what may be estimated
+from.  A row that is inadmissible is NOT a failed row -- it ran fine, it just
+cannot answer the question asked of it.
+"""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import io
+import json
+import os
+import platform
+import subprocess
+import sys
+import time
+import traceback
+from pathlib import Path
+
+os.environ.setdefault("OMP_NUM_THREADS", "1")   # many serial jobs > few threaded
+
+import numpy as np
+
+HERE = Path(__file__).resolve().parent
+REPO = HERE.parent.parent
+sys.path.insert(0, str(REPO))
+
+B111_M = 2.482e-10       # <111> Burgers magnitude [m], for loop_net_w_c units
+PILE_TOP_FRAC = 0.02     # "top 2 % of the grid"
+PILE_TOL = 0.05          # above this the size readout is a ceiling artefact
+OCC_TOL = 0.10           # project occupancy rule
+
+
+# ------------------------------------------------------------------- utilities
+def sha256_file(p: Path) -> str:
+    try:
+        return hashlib.sha256(Path(p).read_bytes()).hexdigest()
+    except Exception:
+        return "unavailable"
+
+
+def git_sha() -> str:
+    try:
+        return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=str(REPO),
+                                       stderr=subprocess.DEVNULL, text=True).strip()
+    except Exception:
+        return "unknown"
+
+
+def read_design(path: Path) -> tuple[list[dict], dict]:
+    meta_p = path.with_suffix(".meta.json")
+    meta = json.loads(meta_p.read_text(encoding="utf-8")) if meta_p.exists() else {}
+    got = sha256_file(path)
+    if meta.get("design_sha256") and meta["design_sha256"] != got:
+        raise SystemExit(
+            f"DESIGN HASH MISMATCH\n  expected {meta['design_sha256']}\n"
+            f"  got      {got}\nThe design file has been edited since it was "
+            f"generated. Saltelli pairing cannot be trusted; regenerate or "
+            f"restore it. Refusing to run.")
+    lines = path.read_text(encoding="utf-8").strip().splitlines()
+    cols = lines[0].split(",")
+    rows = []
+    for ln in lines[1:]:
+        vals = ln.split(",")
+        d = {}
+        for c, v in zip(cols, vals):
+            if c in ("row_id", "cond_row_id", "base_idx", "param_j"):
+                d[c] = int(v)
+            elif c in ("matrix", "condition"):
+                d[c] = v
+            else:
+                d[c] = float(v)
+        rows.append(d)
+    return rows, meta
+
+
+# ------------------------------------------------------- theta -> InputData
+def apply_theta(sim, spec: dict, row: dict, cond: dict):
+    """Write one design row into the simulation's InputData.
+
+    Returns the dict of values actually written, for the provenance record.
+    Constructor-level parameters (i_mobile, v_mobile) are handled by the caller
+    BEFORE construction -- they cannot be set here.
+    """
+    d = sim.input_data
+    by_key = {p["key"]: p for p in spec["parameters"]}
+    written = {}
+
+    def put(sheet, key, val):
+        tgt = getattr(d, sheet, None)
+        if tgt is None:
+            raise KeyError(f"InputData has no sheet {sheet!r}")
+        tgt[key] = val
+        written[f"{sheet}.{key}"] = val
+
+    for key, val in row.items():
+        if key not in by_key:
+            continue
+        p = by_key[key]
+        sheets = p["sheet"]
+        if sheets in ("ctor", "postproc"):
+            continue                      # handled elsewhere / post-processing
+        if isinstance(sheets, str):
+            sheets = [sheets]
+        v = val
+        if key == "loop_net_w_c":
+            v = val * B111_M              # spec is in units of b_111
+        for sh in sheets:
+            put(sh, key, v)
+
+        # derived partners: the <100> binding law is a FIXED offset from <111>
+        # so the character ratio cannot absorb the f_100 data (plan S2.1).
+        if key == "B_111":
+            put("dissociation", "B_100", val * 0.9246)
+
+    # A_111 is DERIVED from E_b_i2 (plan S2.2c), never sampled directly.
+    if "E_b_i2" in row and "B_111" in row:
+        # E_b_loop(2) = A_111 * 2^-B_111  =>  A_111 = E_b_i2 * 2^B_111
+        a111 = float(row["E_b_i2"]) * (2.0 ** float(row["B_111"]))
+        put("dissociation", "A_111", a111)
+        put("dissociation", "A_100", a111 * 0.9545)
+
+    # fixed values, written explicitly so a stale workbook cannot leak in
+    for f in spec.get("fixed", []):
+        k, v = f["key"], f["value"]
+        if k in ("psucc_abs_pref", "dH_rev_conv", "gamma_a_conv", "n_j_min_junc",
+                 "n_j_min_frac", "T_star_conv_C", "nu0_conv", "loop_net_rho_max",
+                 "n_ref_conv", "absorb_boost_100", "grow_boost_100"):
+            put("reactions", k, v)
+
+    # condition: the ACTUAL T and dose rate of the experiment.
+    # T_eq = T - 60 C is a data-side plotting device (plan S3.2) and must never
+    # reach the simulator -- asserted here rather than trusted.
+    assert "T_eq" not in cond, "T_eq must not be passed to the simulator"
+    put("reactions", "T", float(cond["T_K"]))
+    # null in conditions.json means "keep the workbook value" -- test for None,
+    # not for key presence, or the null is coerced and blows up.
+    if cond.get("G") is not None:
+        put("reactions", "G", float(cond["G"]))
+    if cond.get("rho_d") is not None:
+        put("reactions", "rho_d", float(cond["rho_d"]))
+    return written
+
+
+# ------------------------------------------------------------- one evaluation
+def evaluate(args):
+    row, spec, cond, cfg = args
+    t0 = time.time()
+    rec = {"row_id": int(row["row_id"]), "cond_row_id": int(row["cond_row_id"]),
+           "matrix": row["matrix"], "base_idx": int(row["base_idx"]),
+           "param_j": int(row["param_j"]), "condition": row["condition"]}
+    # theta hash: catches design drift without storing 20 floats per row
+    theta_keys = sorted(k for k in row
+                        if k not in ("row_id", "cond_row_id", "matrix",
+                                     "base_idx", "param_j", "condition"))
+    rec["theta_hash"] = hashlib.sha256(
+        json.dumps({k: row[k] for k in theta_keys}, sort_keys=True).encode()
+    ).hexdigest()[:16]
+
+    try:
+        from RadCluster_2_1.py_utils.simulation import RadClusterSimulation
+        i_mob = int(row.get("i_mobile", cfg["i_mobile_default"]))
+        v_mob = int(row.get("v_mobile", cfg["v_mobile_default"]))
+        _s = sys.stdout, sys.stderr
+        buf = io.StringIO()
+        try:
+            sys.stdout = sys.stderr = buf
+            sim = RadClusterSimulation(
+                I=cfg["I"], V=cfg["V"], solver_mode="full_system",
+                equations=cfg["equations"], cascade=cond.get("cascade", "fission"),
+                C_floor=cfg["C_floor"], he_kinetics="quasi_steady_state",
+                i_mobile=i_mob, v_mobile=v_mob)
+            written = apply_theta(sim, spec, row, cond)
+            sim.input_data._calculate_derived()
+            sim.rebuild_rates()
+            G = float(sim.input_data.reactions["G"])
+            scfg = {"t_span": (1e-6, cfg["dose"] / G), "n_points": cfg["n_points"],
+                    "log_time": True, "rtol": cfg["rtol"], "atol": cfg["atol"],
+                    "timeout_s": cfg["timeout_s"],
+                    "solver_method": {"linsol": "gmres",
+                                      "preconditioner": "Woodbury",
+                                      "concentration_threshold": 1e-22},
+                    "loop_conversion": 1}
+            res = sim.run(solver_config=scfg, save_output=False)
+        finally:
+            sys.stdout, sys.stderr = _s
+        rec["solver_rc"] = 0
+        rec.update(observe(res, sim, cfg, float(row.get("d_min_tem", 1.0))))
+        rec["n_written"] = len(written)
+    except Exception as exc:
+        rec["solver_rc"] = 1
+        rec["error"] = f"{type(exc).__name__}: {exc}"[:300]
+        rec["traceback_tail"] = traceback.format_exc()[-500:]
+        rec["admissible"] = False
+    rec["wall_s"] = round(time.time() - t0, 1)
+    return rec
+
+
+def observe(res, sim, cfg, d_min_nm):
+    """Observation operator + the admissibility block."""
+    out = {}
+    d = sim.input_data
+    I = cfg["I"]
+    Om = float(d.derived["Omega"])
+    b100 = float(d.energetics.get("b_100", 0.2867)) * 1e-9
+    b111 = B111_M
+    t = np.asarray(res["t"], float)
+
+    def ser(k):
+        if k not in res:
+            return np.zeros_like(t)
+        v = np.asarray(res[k], float).ravel()
+        return v if v.size == t.size else np.zeros_like(t)
+
+    G = float(d.reactions["G"])
+    out["dose_reached"] = float(t[-1] * G)
+    out["starved"] = bool(out["dose_reached"] < 0.95 * cfg["dose"])
+    out["delta_FP"] = float(ser("delta_FP")[-1])
+    out["delta_He"] = float(ser("delta_He")[-1])
+
+    N111, N100 = float(ser("N_loops_111")[-1]), float(ser("N_loops_100")[-1])
+    n111, n100 = float(ser("mean_n_111")[-1]), float(ser("mean_n_100")[-1])
+    out["N_loops_111"], out["N_loops_100"] = N111, N100
+    out["mean_n_111"], out["mean_n_100"] = n111, n100
+    out["d_111_nm"] = float(2*np.sqrt(max(n111, 0)*Om/(np.pi*b111))*1e9)
+    out["d_100_nm"] = float(2*np.sqrt(max(n100, 0)*Om/(np.pi*b100))*1e9)
+    out["N_voids"] = float(ser("N_voids")[-1])
+    out["S_inventory"] = float(ser("swelling")[-1])
+
+    # --- admissibility -----------------------------------------------------
+    out["occ_111"] = n111 / I
+    out["occ_100"] = n100 / I
+    d_ceil = float(2*np.sqrt(I*Om/(np.pi*b100))*1e9)
+    out["d_ceiling_100_nm"] = d_ceil
+    out["d_over_ceiling_100"] = out["d_100_nm"] / d_ceil if d_ceil > 0 else None
+
+    y, y100 = res.get("y"), res.get("y_sia100")
+    pile111 = pile100 = None
+    f_num = f_cont = f_tem = None
+    if y is not None:
+        y = np.asarray(y)
+        if y.ndim == 2:
+            n_ax = np.arange(1, I + 1)
+            c111 = np.maximum(y[:I, -1] - cfg["C_floor"], 0.0)
+            top = int((1 - PILE_TOP_FRAC) * I)
+            k111 = n_ax * c111
+            if k111.sum() > 0:
+                pile111 = float(k111[top:].sum() / k111.sum())
+            if y100 is not None:
+                y100 = np.asarray(y100)
+                if y100.ndim == 2:
+                    c100 = np.maximum(y100[:I, -1] - cfg["C_floor"], 0.0)
+                    k100 = n_ax * c100
+                    if k100.sum() > 0:
+                        pile100 = float(k100[top:].sum() / k100.sum())
+                    # loop-fraction conventions (plan S3.1-4): all three
+                    s0, s1 = float(c100.sum()), float(c111.sum())
+                    f_num = s0 / (s0 + s1) if (s0 + s1) > 0 else None
+                    q0, q1 = float(k100.sum()), float(k111.sum())
+                    f_cont = q0 / (q0 + q1) if (q0 + q1) > 0 else None
+                    # The cutoff is applied to BOTH characters: they have
+                    # different b, so the same n maps to a different d.
+                    dd100 = 2*np.sqrt(n_ax*Om/(np.pi*b100))*1e9
+                    dd111 = 2*np.sqrt(n_ax*Om/(np.pi*b111))*1e9
+                    # Emit the whole cutoff curve rather than one sampled value:
+                    # d_min is post-processing, so this is free, and the spread
+                    # across cutoffs is itself the floor on sigma_model for
+                    # f_100 (plan S3.1-4; convention alone moved one measurement
+                    # 0.824 -> 0.408).
+                    for dm in cfg.get("d_min_sweep", [0.8, 1.0, 1.25, 1.5]):
+                        a0 = float(c100[dd100 >= dm].sum())
+                        a1 = float(c111[dd111 >= dm].sum())
+                        tag = f"{dm:g}".replace(".", "p")
+                        out[f"f_100_tem_{tag}"] = ((a0 / (a0 + a1))
+                                                   if (a0 + a1) > 0 else None)
+                        out[f"N_100_vis_{tag}"] = a0 / Om
+                        out[f"N_111_vis_{tag}"] = a1 / Om
+                    v0 = float(c100[dd100 >= d_min_nm].sum())
+                    v1 = float(c111[dd111 >= d_min_nm].sum())
+                    f_tem = v0 / (v0 + v1) if (v0 + v1) > 0 else None
+                    out["N_100_visible"] = v0 / Om
+                    out["N_111_visible"] = v1 / Om
+    out["pile_111"], out["pile_100"] = pile111, pile100
+    out["f_100_number"], out["f_100_content"] = f_num, f_cont
+    out["f_100_tem"], out["d_min_tem_nm"] = f_tem, d_min_nm
+
+    bad_pile = (pile100 is not None and pile100 > PILE_TOL) or \
+               (pile111 is not None and pile111 > PILE_TOL)
+    out["grid_limited"] = bool(bad_pile or out["occ_111"] > OCC_TOL
+                               or out["occ_100"] > OCC_TOL)
+    out["admissible"] = bool((not out["starved"]) and (not out["grid_limited"])
+                             and abs(out["delta_FP"]) < 1e-3)
+    return out
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=__doc__,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--design", type=Path, required=True)
+    ap.add_argument("--machine", type=int, required=True, help="this machine's index k")
+    ap.add_argument("--of", type=int, required=True, help="total machines M")
+    ap.add_argument("--workers", type=int, default=max(1, (os.cpu_count() or 4) - 2))
+    ap.add_argument("--out", type=Path, default=None)
+    ap.add_argument("--conditions", type=Path, default=HERE / "conditions.json")
+    ap.add_argument("--I", type=int, default=800)
+    ap.add_argument("--V", type=int, default=600)
+    ap.add_argument("--dose", type=float, default=0.1)
+    ap.add_argument("--equations", default="discrete")
+    ap.add_argument("--rtol", type=float, default=1e-6)
+    ap.add_argument("--timeout-s", type=float, default=3600)
+    ap.add_argument("--limit", type=int, default=0, help="run only the first n rows (smoke test)")
+    a = ap.parse_args(argv)
+
+    spec = json.loads((HERE / "parameters.json").read_text(encoding="utf-8"))
+    rows, meta = read_design(a.design)
+    conds = (json.loads(a.conditions.read_text(encoding="utf-8"))
+             if a.conditions.exists() else
+             {"N2": {"T_K": 573.15}, "N5": {"T_K": 623.15},
+              "I1": {"T_K": 623.15, "cascade": "fission"}})
+
+    mine = [r for r in rows if r["row_id"] % a.of == a.machine]
+    if a.limit:
+        mine = mine[:a.limit]
+    out = a.out or (HERE / "results" / f"{a.design.stem}_machine{a.machine}.jsonl")
+    out.parent.mkdir(parents=True, exist_ok=True)
+
+    # resume: skip row_ids already present
+    done = set()
+    if out.exists():
+        for ln in out.read_text(encoding="utf-8").splitlines():
+            try:
+                done.add(json.loads(ln)["row_id"])
+            except Exception:
+                pass
+    todo = [r for r in mine if r["row_id"] not in done]
+
+    solver = REPO / "RadCluster_2_1" / "build" / "Release" / "solver.exe"
+    prov = {"git_sha": git_sha(), "machine_id": platform.node(),
+            "solver_sha256": sha256_file(solver)[:16],
+            "workbook_sha256": sha256_file(
+                REPO / "RadCluster_2_1" / "input" / "input_parameters.xlsx")[:16],
+            "design_sha256": meta.get("design_sha256", "")[:16],
+            "python": platform.python_version()}
+    print(f"machine {a.machine}/{a.of}  rows {len(mine)} "
+          f"({len(done)} done, {len(todo)} to run)  workers {a.workers}")
+    print(f"  provenance {json.dumps(prov)}")
+    if meta.get("revision_pending"):
+        print(f"  *** design carries REVISION_PENDING parameters: "
+              f"{meta['revision_pending']}")
+
+    cfg = {"I": a.I, "V": a.V, "dose": a.dose, "equations": a.equations,
+           "rtol": a.rtol, "atol": 1e-20, "n_points": 40, "C_floor": 1e-25,
+           "timeout_s": a.timeout_s, "i_mobile_default": 10, "v_mobile_default": 5}
+
+    from concurrent.futures import ProcessPoolExecutor
+    t0 = time.time()
+    n_ok = n_bad = n_inadm = 0
+    with ProcessPoolExecutor(max_workers=a.workers) as ex, \
+            out.open("a", encoding="utf-8") as fh:
+        tasks = [(r, spec, conds.get(r["condition"], {"T_K": 623.15}), cfg)
+                 for r in todo]
+        for rec in ex.map(evaluate, tasks):
+            rec.update(prov)
+            fh.write(json.dumps(rec) + "\n")
+            fh.flush()
+            if rec.get("solver_rc"):
+                n_bad += 1
+            elif not rec.get("admissible"):
+                n_inadm += 1
+            else:
+                n_ok += 1
+            print(f"  row {rec['row_id']:6d} {rec['condition']:>4s} "
+                  f"{rec['matrix']:>2s} "
+                  f"{'FAIL' if rec.get('solver_rc') else ('INADM' if not rec.get('admissible') else ' ok  ')} "
+                  f"d100={rec.get('d_100_nm', float('nan')):6.2f} "
+                  f"N100={rec.get('N_loops_100', float('nan')):9.3e} "
+                  f"pile={rec.get('pile_100')} dFP={rec.get('delta_FP', float('nan')):8.1e} "
+                  f"{rec['wall_s']:.0f}s", flush=True)
+    print(f"\ndone in {time.time()-t0:.0f}s: {n_ok} admissible, "
+          f"{n_inadm} inadmissible, {n_bad} failed -> {out}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -1,0 +1,250 @@
+#!/usr/bin/env python
+"""merge_and_sobol - concatenate the machines' results and estimate S_i, S_i^T.
+
+    python merge_and_sobol.py --design design/T2_design_v1.csv \
+                              --results results/ --out report/
+
+Merging is plain concatenation keyed on row_id, so it is order-independent and
+idempotent: re-running after a machine catches up simply adds the new rows.
+
+THE SUBTLETY THAT MAKES THIS FILE WORTH READING
+-----------------------------------------------
+Saltelli estimators are PAIRWISE.  For parameter j and base index i they need
+the triple ( f(A_i), f(B_i), f(AB_i^(j)) ).  The plan says "discard and flag"
+failed runs, which is right for the physics but incomplete here:
+
+  * dropping a row globally biases EVERY index, because the A_i and B_i rows are
+    shared across all p parameters;
+  * dropping nothing and imputing is worse.
+
+The correct handling is PAIRWISE DELETION: if AB_i^(j) is unusable, base index i
+is excluded from parameter j's estimator ONLY.  If A_i or B_i is unusable, base
+index i is excluded from all p estimators (they genuinely share those rows).
+Every index therefore has its own effective sample size, reported as n_eff --
+an index computed from 3 of 16 base points is not comparable to one computed
+from 16 and must not be read as a screening result.
+
+"Unusable" means failed OR inadmissible.  An inadmissible row (grid-limited or
+dose-starved) ran to completion and conserves, but its observables are an
+artefact of the numerics; feeding it to the estimator measures the grid, not
+the physics.  See run_ensemble.py for why delta_FP cannot detect this.
+"""
+from __future__ import annotations
+
+import argparse
+import json
+from collections import defaultdict
+from pathlib import Path
+
+import numpy as np
+
+HERE = Path(__file__).resolve().parent
+
+# f_100_tem is emitted at every cutoff in the parameters.json d_min sweep, so the
+# convention spread shows up as the spread ACROSS these columns rather than being
+# buried in a variance decomposition (d_min is post-processing, not a design axis).
+OBSERVABLES = ["N_loops_100", "d_100_nm", "f_100_number", "f_100_content",
+               "f_100_tem_0p8", "f_100_tem_1", "f_100_tem_1p25", "f_100_tem_1p5",
+               "N_loops_111", "d_111_nm", "N_voids", "S_inventory"]
+
+
+def load_results(res_dir: Path) -> dict[int, dict]:
+    recs: dict[int, dict] = {}
+    files = sorted(res_dir.glob("*.jsonl"))
+    if not files:
+        raise SystemExit(f"no .jsonl files in {res_dir}")
+    dup = 0
+    for f in files:
+        for ln in f.read_text(encoding="utf-8").splitlines():
+            if not ln.strip():
+                continue
+            try:
+                r = json.loads(ln)
+            except json.JSONDecodeError:
+                continue                       # truncated final line after a crash
+            rid = r["row_id"]
+            if rid in recs:
+                dup += 1
+                # keep the later record: a resumed run supersedes a crashed one
+            recs[rid] = r
+    print(f"  loaded {len(recs)} unique rows from {len(files)} file(s)"
+          + (f"  ({dup} duplicate row_id(s) superseded)" if dup else ""))
+    return recs
+
+
+def check_provenance(recs: dict[int, dict]) -> None:
+    """Four machines must have run the SAME code against the SAME design."""
+    for field in ("git_sha", "solver_sha256", "workbook_sha256", "design_sha256"):
+        vals = defaultdict(list)
+        for r in recs.values():
+            vals[r.get(field, "missing")].append(r.get("machine_id", "?"))
+        if len(vals) > 1:
+            print(f"  *** PROVENANCE SPLIT on {field}: results are NOT "
+                  f"comparable across machines")
+            for v, ms in vals.items():
+                print(f"        {v}  <- {sorted(set(ms))}")
+
+
+def usable(r: dict) -> bool:
+    return bool(r and not r.get("solver_rc") and r.get("admissible"))
+
+
+def sobol_indices(recs, design_rows, p_keys, observable, n_boot=200, seed=0):
+    """Saltelli/Jansen estimators with pairwise deletion.
+
+    S_j    = mean_i f(B_i) [ f(AB_i^j) - f(A_i) ] / V        (Saltelli 2010)
+    S_T_j  = mean_i [ f(A_i) - f(AB_i^j) ]^2 / (2 V)         (Jansen 1999)
+    """
+    # index the design: (base_idx, matrix, param_j) -> row_id
+    idx = {}
+    for d in design_rows:
+        idx[(d["base_idx"], d["matrix"], d["param_j"])] = d["row_id"]
+    bases = sorted({d["base_idx"] for d in design_rows})
+
+    def val(b, m, j):
+        rid = idx.get((b, m, j))
+        if rid is None:
+            return None
+        r = recs.get(rid)
+        if not usable(r):
+            return None
+        v = r.get(observable)
+        if v is None:
+            return None
+        v = float(v)
+        return v if np.isfinite(v) else None
+
+    fA, fB, ok_base = {}, {}, []
+    for b in bases:
+        a_, b_ = val(b, "A", -1), val(b, "B", -1)
+        if a_ is not None and b_ is not None:
+            fA[b], fB[b] = a_, b_
+            ok_base.append(b)
+    if len(ok_base) < 3:
+        return None
+
+    allf = np.array([fA[b] for b in ok_base] + [fB[b] for b in ok_base])
+    V = float(np.var(allf, ddof=1))
+    rng = np.random.default_rng(seed)
+    res = {}
+    for j, key in enumerate(p_keys):
+        rows = [(fA[b], fB[b], val(b, "AB", j)) for b in ok_base]
+        rows = [(a_, b_, ab) for (a_, b_, ab) in rows if ab is not None]
+        n = len(rows)
+        if n < 3 or V <= 0:
+            res[key] = {"S": None, "ST": None, "n_eff": n,
+                        "S_lo": None, "S_hi": None}
+            continue
+        A = np.array([r[0] for r in rows])
+        B = np.array([r[1] for r in rows])
+        AB = np.array([r[2] for r in rows])
+        S = float(np.mean(B * (AB - A)) / V)
+        ST = float(np.mean((A - AB) ** 2) / (2.0 * V))
+        # bootstrap over base indices
+        bs = []
+        for _ in range(n_boot):
+            k = rng.integers(0, n, n)
+            Vb = np.var(np.concatenate([A[k], B[k]]), ddof=1)
+            if Vb > 0:
+                bs.append(np.mean(B[k] * (AB[k] - A[k])) / Vb)
+        lo, hi = (float(np.percentile(bs, 2.5)),
+                  float(np.percentile(bs, 97.5))) if bs else (None, None)
+        res[key] = {"S": S, "ST": ST, "n_eff": n, "S_lo": lo, "S_hi": hi}
+    return {"V": V, "n_base_ok": len(ok_base), "indices": res}
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=__doc__,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--design", type=Path, required=True)
+    ap.add_argument("--results", type=Path, default=HERE / "results")
+    ap.add_argument("--out", type=Path, default=HERE / "report")
+    ap.add_argument("--n-boot", type=int, default=200)
+    a = ap.parse_args(argv)
+
+    meta = json.loads(a.design.with_suffix(".meta.json").read_text(encoding="utf-8"))
+    p_keys = meta["parameters"]
+    lines = a.design.read_text(encoding="utf-8").strip().splitlines()
+    cols = lines[0].split(",")
+    design = []
+    for ln in lines[1:]:
+        v = dict(zip(cols, ln.split(",")))
+        design.append({"row_id": int(v["row_id"]), "condition": v["condition"],
+                       "base_idx": int(v["base_idx"]), "matrix": v["matrix"],
+                       "param_j": int(v["param_j"])})
+
+    recs = load_results(a.results)
+    check_provenance(recs)
+
+    total = len(design)
+    have = sum(1 for d in design if d["row_id"] in recs)
+    ok = sum(1 for d in design if usable(recs.get(d["row_id"])))
+    failed = sum(1 for d in design
+                 if d["row_id"] in recs and recs[d["row_id"]].get("solver_rc"))
+    inadm = have - ok - failed
+    print(f"\n  coverage: {have}/{total} rows present, {ok} admissible, "
+          f"{inadm} inadmissible, {failed} failed, {total-have} MISSING")
+    if total - have:
+        miss = sorted(d["row_id"] for d in design if d["row_id"] not in recs)
+        by_mach = defaultdict(int)
+        for m in miss:
+            by_mach[m % 4] += 1
+        print(f"    missing row_ids mod 4: {dict(by_mach)}  "
+              f"(a whole residue class means a machine never reported)")
+
+    # why runs were inadmissible -- this is diagnostic, not bookkeeping
+    reasons = defaultdict(int)
+    for r in recs.values():
+        if r.get("solver_rc") or r.get("admissible"):
+            continue
+        if r.get("starved"):
+            reasons["dose-starved"] += 1
+        if r.get("grid_limited"):
+            reasons["grid-limited"] += 1
+        if abs(r.get("delta_FP") or 0) >= 1e-3:
+            reasons["delta_FP>=1e-3"] += 1
+    if reasons:
+        print(f"    inadmissible because: {dict(reasons)}")
+
+    a.out.mkdir(parents=True, exist_ok=True)
+    rows_out = []
+    for cond in meta["conditions"]:
+        dc = [d for d in design if d["condition"] == cond]
+        for obs in OBSERVABLES:
+            r = sobol_indices(recs, dc, p_keys, obs, n_boot=a.n_boot)
+            if r is None:
+                print(f"  {cond:>4s} {obs:16s} -- too few usable base points")
+                continue
+            print(f"\n  {cond} / {obs}   Var={r['V']:.4g}  "
+                  f"base points usable {r['n_base_ok']}/{meta['N']}")
+            ranked = sorted(r["indices"].items(),
+                            key=lambda kv: -(kv[1]["ST"] or -1))
+            for key, v in ranked[:6]:
+                if v["S"] is None:
+                    continue
+                flag = "  <-- n_eff LOW" if v["n_eff"] < 0.5 * meta["N"] else ""
+                print(f"      {key:18s} S={v['S']:7.3f} "
+                      f"[{v['S_lo']:6.3f},{v['S_hi']:6.3f}]  "
+                      f"ST={v['ST']:7.3f}  n_eff={v['n_eff']:3d}{flag}")
+            for key, v in r["indices"].items():
+                rows_out.append({"condition": cond, "observable": obs,
+                                 "parameter": key, **v})
+
+    csv = a.out / "T2_sobol_indices.csv"
+    with csv.open("w", encoding="utf-8", newline="") as fh:
+        fh.write("condition,observable,parameter,S,S_lo,S_hi,ST,n_eff\n")
+        for r in rows_out:
+            def g(k):
+                return "" if r[k] is None else f"{r[k]:.6g}"
+            fh.write(f"{r['condition']},{r['observable']},{r['parameter']},"
+                     f"{g('S')},{g('S_lo')},{g('S_hi')},{g('ST')},{r['n_eff']}\n")
+    print(f"\n  wrote {csv}  ({len(rows_out)} rows)")
+    print("\n  Read n_eff before reading any index: an S_i^T computed from a")
+    print("  handful of base points is not a screening result. Parameters whose")
+    print("  n_eff collapsed are telling you their prior region is unintegrable")
+    print("  at this tolerance -- itself a finding (plan Tier-2 failure handling).")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -43,9 +43,22 @@ HERE = Path(__file__).resolve().parent
 # f_100_tem is emitted at every cutoff in the parameters.json d_min sweep, so the
 # convention spread shows up as the spread ACROSS these columns rather than being
 # buried in a variance decomposition (d_min is post-processing, not a design axis).
+# SWELLING IS WITHDRAWN AS AN OBSERVABLE (author, 2026-08-02).  Two reasons,
+# the second the stronger:
+#   (a) in ferritic/martensitic steels swelling is small and not a quantity the
+#       campaign needs to reproduce accurately; and
+#   (b) it carries NO INDEPENDENT INFORMATION.  S_inventory is the vacancy
+#       content, i.e. N_voids x mean_n_v exactly -- verified numerically:
+#       (1-0.115)(1-0.269) = 0.647, reproducing the measured 35.3 % bin_moment
+#       error to three digits.  Feeding a deterministic function of two other
+#       observables into a variance decomposition double-counts the void
+#       channel and inflates the apparent number of constraints on theta.
+# It is still EMITTED by run_ensemble (free, and a useful health check); it is
+# simply not screened or calibrated on.  d_cavity_nm/mean_n_v replace it so the
+# void channel keeps its size information rather than becoming density-only.
 OBSERVABLES = ["N_loops_100", "d_100_nm", "f_100_number", "f_100_content",
                "f_100_tem_0p8", "f_100_tem_1", "f_100_tem_1p25", "f_100_tem_1p5",
-               "N_loops_111", "d_111_nm", "N_voids", "S_inventory"]
+               "N_loops_111", "d_111_nm", "N_voids", "d_cavity_nm"]
 
 # ── OBSERVABLE FIDELITY BY EQUATIONS MODE ────────────────────────────────────
 # An observable is only screenable in a mode where it has been VALIDATED against

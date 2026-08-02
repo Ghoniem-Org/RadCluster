@@ -70,7 +70,8 @@ OBSERVABLES = ["N_loops_100", "d_100_nm", "d_100_content_nm", "mean_n_100",
                "N_loops_111", "d_111_nm", "mean_n_111",
                "f_100_number", "f_100_content",
                "f_100_tem_0p8", "f_100_tem_1", "f_100_tem_1p25", "f_100_tem_1p5",
-               "N_100_visible", "N_111_visible", "N_voids", "S_inventory"]
+               "N_100_visible", "N_111_visible", "N_voids", "mean_n_v",
+               "d_cavity_nm", "S_inventory"]
 ADMIN = ["admissible", "grid_limited", "starved", "dose_reached",
          "occ_100", "occ_111", "pile_100", "pile_111",
          "d_over_ceiling_100", "d_ceiling_100_nm", "delta_FP", "delta_He",

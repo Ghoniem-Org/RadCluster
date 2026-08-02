@@ -260,6 +260,20 @@ def observe(res, sim, cfg, d_min_nm):
     out["d_111_nm"] = float(2*np.sqrt(max(n111, 0)*Om/(np.pi*b111))*1e9)
     out["d_100_nm"] = float(2*np.sqrt(max(n100, 0)*Om/(np.pi*b100))*1e9)
     out["N_voids"] = float(ser("N_voids")[-1])
+    # Cavity SIZE, not just density.  The database reports both, and with
+    # swelling withdrawn as an observable (it is N_voids x mean_n_v exactly, so
+    # it carries no independent information -- author, 2026-08-02) the void
+    # channel would otherwise be density-only.  Spherical cavity:
+    #   d = 2 (3 m Omega / 4 pi)^(1/3)          [CLAUDE.md S8 / plan S3.1-2]
+    nv = float(ser("mean_n_v")[-1])
+    out["mean_n_v"] = nv
+    out["d_cavity_nm"] = float(
+        2.0 * (3.0 * max(nv, 0.0) * Om / (4.0 * np.pi)) ** (1.0 / 3.0) * 1e9)
+    # Still emitted (free, and a useful health check), but NOT screened or
+    # calibrated on -- see OBSERVABLES in merge_and_sobol.py.  Note this is the
+    # vacancy-INVENTORY swelling of the conservation identity, which includes
+    # sub-visible clusters; the database reports S = (pi/6) N_c d_c^3 from the
+    # VISIBLE cavity population.  They are different numbers (plan S3.1-3).
     out["S_inventory"] = float(ser("swelling")[-1])
 
     # --- admissibility -----------------------------------------------------

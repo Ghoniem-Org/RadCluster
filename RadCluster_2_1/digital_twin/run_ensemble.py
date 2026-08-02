@@ -46,7 +46,12 @@ import time
 import traceback
 from pathlib import Path
 
-os.environ.setdefault("OMP_NUM_THREADS", "1")   # many serial jobs > few threaded
+# Force, do NOT setdefault: an inherited OMP_NUM_THREADS (the
+# workstation exports 24) would give every worker its own thread
+# pool -- 10 workers x 24 threads on 24 cores -- and would also
+# let reduction order vary between machines.  Many serial workers
+# beat few threaded ones for an ensemble anyway.
+os.environ["OMP_NUM_THREADS"] = "1"   # many serial jobs > few threaded
 
 import numpy as np
 
@@ -371,11 +376,26 @@ def main(argv=None):
     todo = [r for r in mine if r["row_id"] not in done]
 
     solver = REPO / "RadCluster_2_1" / "build" / "Release" / "solver.exe"
+    # RUN CONFIGURATION IS PROVENANCE.  I/V/dose/equations/rtol are NOT part of
+    # theta, so without recording them here nothing in the result row would show
+    # that the numerics moved between two batches — and a grid change silently
+    # invalidates comparability far more than most theta changes do.  Hashed
+    # into one short field so it can be compared cheaply on resume, and kept in
+    # full in the manifest.
+    run_cfg = {"I": a.I, "V": a.V, "dose": a.dose, "equations": a.equations,
+               "rtol": a.rtol, "atol": 1e-20, "C_floor": 1e-25,
+               "solver_mode": "full_system", "linsol": "gmres",
+               "preconditioner": "Woodbury", "loop_conversion": 1,
+               "i_mobile_default": 10, "v_mobile_default": 5,
+               "n_points": 40, "timeout_s": a.timeout_s}
+    run_cfg_sha = hashlib.sha256(
+        json.dumps(run_cfg, sort_keys=True).encode()).hexdigest()[:16]
     prov = {"git_sha": git_sha(), "machine_id": platform.node(),
             "solver_sha256": sha256_file(solver)[:16],
             "workbook_sha256": sha256_file(
                 REPO / "RadCluster_2_1" / "input" / "input_parameters.xlsx")[:16],
             "design_sha256": meta.get("design_sha256", "")[:16],
+            "run_cfg_sha": run_cfg_sha,
             "python": platform.python_version()}
     print(f"machine {a.machine}/{a.of}  rows {len(mine)} "
           f"({len(done)} done, {len(todo)} to run)  workers {a.workers}")
@@ -387,7 +407,8 @@ def main(argv=None):
     # two populations into one Sobol estimate.  Refuse unless told otherwise.
     if prior:
         drift = {}
-        for f in ("git_sha", "solver_sha256", "workbook_sha256", "design_sha256"):
+        for f in ("git_sha", "solver_sha256", "workbook_sha256", "design_sha256",
+                  "run_cfg_sha"):
             old = {r.get(f) for r in prior if r.get(f)}
             if old and prov[f] not in old:
                 drift[f] = (sorted(old), prov[f])
@@ -474,9 +495,70 @@ def main(argv=None):
                 while pending and len(inflight) < a.workers:
                     inflight.add(submit(pending.pop(0)))
 
+    # ── run-level manifest ───────────────────────────────────────────────────
+    # The per-row block carries hashes so a mixed file is detectable; this
+    # carries the FULL configuration behind those hashes, so a result set is
+    # interpretable years later without re-deriving anything.  Mirrors the
+    # repo's output/<stamp>/provenance.md convention (CLAUDE.md "Output
+    # format"), in JSON because it is also read back by campaign_ops.
+    all_recs = []
+    if out.exists():
+        for ln in out.read_text(encoding="utf-8").splitlines():
+            try:
+                all_recs.append(json.loads(ln))
+            except Exception:
+                pass
+    ws = [r["wall_s"] for r in all_recs if r.get("wall_s")]
+    man = {
+        "schema_version": "1",
+        "written_at_unix": time.time(),
+        "written_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "campaign": {"design_file": str(a.design), "design_sha256":
+                     meta.get("design_sha256"), "tier": meta.get("tier"),
+                     "N": meta.get("N"), "p": meta.get("p"),
+                     "conditions": meta.get("conditions"),
+                     "parameters": meta.get("parameters"),
+                     "parameters_version": meta.get("parameters_version"),
+                     "revision_pending": meta.get("revision_pending"),
+                     "rows_total": meta.get("rows_total")},
+        "machine": {"index": a.machine, "of": a.of,
+                    "machine_id": platform.node(), "platform": platform.platform(),
+                    "python": platform.python_version(),
+                    "cpu_count": os.cpu_count(), "workers": a.workers,
+                    "omp_num_threads": os.environ.get("OMP_NUM_THREADS")},
+        "code": {"git_sha": prov["git_sha"], "solver_sha256": prov["solver_sha256"],
+                 "solver_path": str(solver),
+                 "workbook_sha256": prov["workbook_sha256"]},
+        "run_config": run_cfg,
+        "run_cfg_sha": run_cfg_sha,
+        "conditions_file": str(a.conditions),
+        "conditions": conds,
+        "rows": {"assigned": len(mine), "completed": len(all_recs),
+                 "admissible": sum(1 for r in all_recs
+                                   if not r.get("solver_rc") and r.get("admissible")),
+                 "inadmissible": sum(1 for r in all_recs
+                                     if not r.get("solver_rc") and not r.get("admissible")),
+                 "failed": sum(1 for r in all_recs if r.get("solver_rc")),
+                 "not_started": len(pending)},
+        "timing": {"session_wall_s": round(time.time() - t0, 1),
+                   "row_wall_mean_s": (float(np.mean(ws)) if ws else None),
+                   "row_wall_median_s": (float(np.median(ws)) if ws else None),
+                   "row_wall_p90_s": (float(np.percentile(ws, 90)) if ws else None),
+                   "core_hours": (sum(ws) / 3600.0 if ws else 0.0)},
+        "stopped": stopped,
+        "admissibility_rule": {
+            "pile_tol": PILE_TOL, "occ_tol": OCC_TOL, "delta_FP_tol": 1e-3,
+            "pile_top_frac": PILE_TOP_FRAC,
+            "note": "delta_FP is blind to grid truncation; grid adequacy is "
+                    "judged by pile/occupancy, not conservation"},
+    }
+    man_p = out.with_suffix(".manifest.json")
+    man_p.write_text(json.dumps(man, indent=2), encoding="utf-8")
+
     tag = "STOPPED" if stopped else "done"
     print(f"\n{tag} in {time.time()-t0:.0f}s: {n_ok} admissible, "
           f"{n_inadm} inadmissible, {n_bad} failed -> {out}")
+    print(f"  manifest -> {man_p.name}")
     if stopped:
         print(f"  {len(pending)} row(s) were never started and remain assigned "
               f"to this machine.")

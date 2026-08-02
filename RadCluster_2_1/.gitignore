@@ -16,3 +16,4 @@ digital_twin/report/
 # (~/.gitignore_global) starts with `.*`, which matches every dotfile including
 # .gitignore itself - so without -f these rules would exist only locally and
 # would not reach the other campaign machines.
+digital_twin/results/*.log

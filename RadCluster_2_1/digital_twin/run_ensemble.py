@@ -54,6 +54,7 @@ HERE = Path(__file__).resolve().parent
 REPO = HERE.parent.parent
 sys.path.insert(0, str(REPO))
 
+STOP_FILE = HERE / "CAMPAIGN_STOP"   # graceful-halt sentinel (campaign_ops)
 B111_M = 2.482e-10       # <111> Burgers magnitude [m], for loop_net_w_c units
 PILE_TOP_FRAC = 0.02     # "top 2 % of the grid"
 PILE_TOL = 0.05          # above this the size readout is a ceiling artefact
@@ -338,6 +339,9 @@ def main(argv=None):
     ap.add_argument("--rtol", type=float, default=1e-6)
     ap.add_argument("--timeout-s", type=float, default=3600)
     ap.add_argument("--limit", type=int, default=0, help="run only the first n rows (smoke test)")
+    ap.add_argument("--allow-mixed", action="store_true",
+                    help="resume even though git/solver/workbook/design changed "
+                         "since the existing rows (see RESTART SAFETY)")
     a = ap.parse_args(argv)
 
     spec = json.loads((HERE / "parameters.json").read_text(encoding="utf-8"))
@@ -355,12 +359,15 @@ def main(argv=None):
 
     # resume: skip row_ids already present
     done = set()
+    prior = []
     if out.exists():
         for ln in out.read_text(encoding="utf-8").splitlines():
             try:
-                done.add(json.loads(ln)["row_id"])
+                r = json.loads(ln)
             except Exception:
-                pass
+                continue          # truncated last line after a hard kill
+            done.add(r["row_id"])
+            prior.append(r)
     todo = [r for r in mine if r["row_id"] not in done]
 
     solver = REPO / "RadCluster_2_1" / "build" / "Release" / "solver.exe"
@@ -373,6 +380,35 @@ def main(argv=None):
     print(f"machine {a.machine}/{a.of}  rows {len(mine)} "
           f"({len(done)} done, {len(todo)} to run)  workers {a.workers}")
     print(f"  provenance {json.dumps(prov)}")
+
+    # RESTART SAFETY.  Resuming is only a benefit if the new rows are
+    # comparable to the old ones.  If the code, solver or workbook moved since
+    # the existing rows were written, appending to the same file silently mixes
+    # two populations into one Sobol estimate.  Refuse unless told otherwise.
+    if prior:
+        drift = {}
+        for f in ("git_sha", "solver_sha256", "workbook_sha256", "design_sha256"):
+            old = {r.get(f) for r in prior if r.get(f)}
+            if old and prov[f] not in old:
+                drift[f] = (sorted(old), prov[f])
+        if drift and not a.allow_mixed:
+            print("\n  *** REFUSING TO RESUME - the environment changed since the "
+                  "existing rows were written:")
+            for f, (old, new) in drift.items():
+                print(f"        {f}: was {old} -> now {new}")
+            print("\n  Those rows are not comparable to the ones this process "
+                  "would produce.")
+            print("  Choose one:")
+            print("    - restore the previous state (git checkout / rebuild), or")
+            print(f"    - archive the old results and start clean:")
+            print(f"        mv {out.name} {out.stem}_pre-change.jsonl")
+            print("    - or, only if you are certain the change cannot affect "
+                  "results\n      (e.g. a comment or README edit), re-run with "
+                  "--allow-mixed.")
+            return 3
+        if drift:
+            print(f"  WARNING: resuming across an environment change "
+                  f"({', '.join(drift)}) because --allow-mixed was given.")
     if meta.get("revision_pending"):
         print(f"  *** design carries REVISION_PENDING parameters: "
               f"{meta['revision_pending']}")
@@ -381,32 +417,71 @@ def main(argv=None):
            "rtol": a.rtol, "atol": 1e-20, "n_points": 40, "C_floor": 1e-25,
            "timeout_s": a.timeout_s, "i_mobile_default": 10, "v_mobile_default": 5}
 
-    from concurrent.futures import ProcessPoolExecutor
+    # GRACEFUL STOP.  submit/as_completed rather than ex.map: map() has no way
+    # to stop feeding work, so a stop request could only be honoured by killing
+    # the pool, which loses every in-flight row.  Here we simply stop SUBMITTING
+    # once the sentinel appears, let the running rows finish and be written, and
+    # exit 0.  Because rows are appended as they complete and the resume filter
+    # above skips row_ids already present, a restart picks up exactly where this
+    # left off -- no row lost, none recomputed.
+    from concurrent.futures import ProcessPoolExecutor, FIRST_COMPLETED, wait
     t0 = time.time()
     n_ok = n_bad = n_inadm = 0
+    stopped = None
+    pending = list(todo)
     with ProcessPoolExecutor(max_workers=a.workers) as ex, \
             out.open("a", encoding="utf-8") as fh:
-        tasks = [(r, spec, conds.get(r["condition"], {"T_K": 623.15}), cfg)
-                 for r in todo]
-        for rec in ex.map(evaluate, tasks):
-            rec.update(prov)
-            fh.write(json.dumps(rec) + "\n")
-            fh.flush()
-            if rec.get("solver_rc"):
-                n_bad += 1
-            elif not rec.get("admissible"):
-                n_inadm += 1
-            else:
-                n_ok += 1
-            print(f"  row {rec['row_id']:6d} {rec['condition']:>4s} "
-                  f"{rec['matrix']:>2s} "
-                  f"{'FAIL' if rec.get('solver_rc') else ('INADM' if not rec.get('admissible') else ' ok  ')} "
-                  f"d100={rec.get('d_100_nm', float('nan')):6.2f} "
-                  f"N100={rec.get('N_loops_100', float('nan')):9.3e} "
-                  f"pile={rec.get('pile_100')} dFP={rec.get('delta_FP', float('nan')):8.1e} "
-                  f"{rec['wall_s']:.0f}s", flush=True)
-    print(f"\ndone in {time.time()-t0:.0f}s: {n_ok} admissible, "
+
+        def submit(r):
+            return ex.submit(evaluate,
+                             (r, spec, conds.get(r["condition"], {"T_K": 623.15}),
+                              cfg))
+
+        inflight = set()
+        while pending and len(inflight) < a.workers:
+            inflight.add(submit(pending.pop(0)))
+
+        while inflight:
+            finished, inflight = wait(inflight, return_when=FIRST_COMPLETED)
+            for fut in finished:
+                rec = fut.result()
+                rec.update(prov)
+                fh.write(json.dumps(rec) + "\n")
+                fh.flush()
+                if rec.get("solver_rc"):
+                    n_bad += 1
+                elif not rec.get("admissible"):
+                    n_inadm += 1
+                else:
+                    n_ok += 1
+                print(f"  row {rec['row_id']:6d} {rec['condition']:>4s} "
+                      f"{rec['matrix']:>2s} "
+                      f"{'FAIL' if rec.get('solver_rc') else ('INADM' if not rec.get('admissible') else ' ok  ')} "
+                      f"d100={rec.get('d_100_nm', float('nan')):6.2f} "
+                      f"N100={rec.get('N_loops_100', float('nan')):9.3e} "
+                      f"pile={rec.get('pile_100')} "
+                      f"dFP={rec.get('delta_FP', float('nan')):8.1e} "
+                      f"{rec['wall_s']:.0f}s", flush=True)
+            if stopped is None and STOP_FILE.exists():
+                try:
+                    stopped = json.loads(STOP_FILE.read_text(encoding="utf-8"))
+                except Exception:
+                    stopped = {"reason": "unreadable STOP file"}
+                print(f"\n  STOP requested ({stopped.get('reason')}) -- not "
+                      f"submitting further rows; {len(inflight)} in flight will "
+                      f"finish and be written.\n", flush=True)
+            if stopped is None:
+                while pending and len(inflight) < a.workers:
+                    inflight.add(submit(pending.pop(0)))
+
+    tag = "STOPPED" if stopped else "done"
+    print(f"\n{tag} in {time.time()-t0:.0f}s: {n_ok} admissible, "
           f"{n_inadm} inadmissible, {n_bad} failed -> {out}")
+    if stopped:
+        print(f"  {len(pending)} row(s) were never started and remain assigned "
+              f"to this machine.")
+        print("  Clear the flag (campaign_ops.clear_stop()) and re-run the same "
+              "command to resume; completed rows are skipped automatically.")
     return 0
 
 

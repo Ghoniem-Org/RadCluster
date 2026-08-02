@@ -1,0 +1,52 @@
+{
+  "_comment": [
+    "Experimental bands the campaign monitor compares live results against.",
+    "",
+    "PROVENANCE MATTERS MORE THAN THE NUMBERS HERE.  These are the EUROFER97",
+    "neutron values for T <= 400 C used through the 2026-07-31 anchor campaign.",
+    "They are NOT the frozen Table G.36 fits that targets.yaml is meant to carry",
+    "verbatim for calibration - this file exists so the monitor can tell you",
+    "'the ensemble is nowhere near the data' while runs are still going, not to",
+    "define the likelihood.  Tier 4 must use the real target file.",
+    "",
+    "f_100 must be compared in the TEM-FILTERED convention.  Number- and",
+    "content-weighted conventions differ by a factor of 2 on one and the same",
+    "run (0.824 vs 0.408), which is larger than the effect of any conversion",
+    "parameter inside its prior - so comparing the wrong one is worse than not",
+    "comparing at all.  run_ensemble emits f_100_tem at four cutoffs; the",
+    "monitor watches the 1.0 nm one because that is the middle of the reported",
+    "WBDF detection limits."
+  ],
+
+  "condition": "EUROFER97 neutron, T <= 400 C",
+
+  "observables": {
+    "N_loops_100": {
+      "target": 3.72e21, "lo": 1.0e21, "hi": 2.0e22, "units": "m^-3",
+      "note": "median of the EUROFER97 <100> loop densities"
+    },
+    "d_100_nm": {
+      "target": 7.9, "lo": 2.8, "hi": 180.0, "units": "nm",
+      "note": "median 7.9; the full reported range is very wide (2.8-180)"
+    },
+    "f_100_tem_1": {
+      "target": 0.72, "lo": 0.10, "hi": 0.87, "units": "-",
+      "note": "TEM-filtered at d_min = 1.0 nm. <100> is the MAJORITY character at 300-400 C - the opposite of what the pre-2026-07-31 priors assumed"
+    },
+    "N_loops_111": {
+      "target": null, "lo": null, "hi": null, "units": "m^-3",
+      "note": "no clean target isolated yet; watched because f_100 is dominated by it"
+    },
+    "d_111_nm": {
+      "target": null, "lo": null, "hi": null, "units": "nm"
+    },
+    "N_voids": {
+      "target": null, "lo": null, "hi": null, "units": "m^-3",
+      "note": "cavity density; He-dependent, so it needs a per-condition target"
+    },
+    "S_inventory": {
+      "target": null, "lo": null, "hi": null, "units": "-",
+      "note": "vacancy-inventory swelling, NOT the visible-cavity swelling the database reports - see plan S3.1-3. Do not calibrate against this column"
+    }
+  }
+}

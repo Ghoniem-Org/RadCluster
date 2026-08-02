@@ -1,5 +1,11 @@
 # Digital-twin campaign harness — 4-machine protocol
 
+> **Start here: `campaign_control.ipynb`.** Open it on each machine. It
+> configures the run, auto-builds the solver, verifies this machine agrees with
+> the reference, launches the worker, gives a live monitor against the
+> experimental data, and provides graceful stop/restart. The command lines
+> below are what it drives — use them directly if you prefer a shell.
+
 Three modules plus a validation test. Everything else in the plan's §3 listing
 (`surrogate.py`, `calibrate.py`, …) is downstream of these and not yet built.
 

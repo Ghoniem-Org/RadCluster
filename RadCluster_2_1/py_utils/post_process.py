@@ -19,6 +19,56 @@ import numpy as np
 _kB = 8.617333262e-5
 
 
+def _floor_bin_moments(mu0_raw, mu1_raw, nlo, nhi, C_floor, P):
+    """Remove the uniform C_floor IC from a bin's moments, CONSISTENTLY.
+
+    For a bin spanning [nlo, nhi) of width Δ, the uniform C_floor initial
+    condition contributes Δ·C_floor to μ₀ and C_floor·Δ·(nlo+nhi−1)/2 to μ₁.
+    Subtracting them is exact — but clamping each at zero INDEPENDENTLY is not:
+    a near-empty bin can clamp μ₀ to exactly 0 while μ₁ stays positive, i.e. an
+    empty bin that still carries content.  Summed over bins that inflates the
+    content while the count collapses, and content/count — the reported mean
+    size — diverges.  That is how ``mean_n_100`` reached 2853 on a grid of
+    I = 1000, a value arithmetically impossible for a mean size, and why
+    ``bin_moment`` + ``loop_conversion`` appeared to fail silently.
+
+    The bug is NOT conversion-specific: the same pattern governed ``mean_n_i``
+    and ``mean_n_v``.  It stayed latent there only because the ½⟨111⟩ and
+    vacancy bins are normally well populated, whereas the ⟨100⟩ population is
+    near-empty for most of a run (it exists only by conversion) and so sits in
+    the pathological regime continuously.  It still bites the others in the
+    early transient and in the large-size tail.
+
+    Two couplings restore consistency, mirroring the guard the C++
+    reconstruction already applies (``rate_kernels.cpp``, "clamp n_bar into the
+    bin"):
+      (a) an empty bin carries no content;
+      (b) a bin's mean size must lie inside the bin, i.e. μ₁/μ₀ ∈ [nlo, nhi−1].
+
+    Accepts scalars or arrays (the ⟨100⟩ path passes whole time series).
+    """
+    width = float(nhi - nlo)
+    sum_n = width * (nlo + nhi - 1) / 2.0
+    mu0_eff = np.maximum(np.asarray(mu0_raw, dtype=float) - width * C_floor, 0.0)
+    if P >= 2:
+        mu1_eff = np.maximum(np.asarray(mu1_raw, dtype=float) - C_floor * sum_n,
+                             0.0)
+    else:
+        # P == 1 carries no independent μ₁; the closure puts every cluster at
+        # the bin midpoint, which is inside the bin by construction.
+        return mu0_eff, mu0_eff * (nlo + nhi - 1) / 2.0
+
+    empty = mu0_eff <= 0.0
+    mu1_eff = np.where(empty, 0.0, mu1_eff)
+    lo_f, hi_f = float(nlo), float(nhi - 1)
+    with np.errstate(divide='ignore', invalid='ignore'):
+        n_bar = np.divide(mu1_eff, mu0_eff, out=np.zeros_like(mu1_eff),
+                          where=mu0_eff > 0.0)
+    mu1_eff = np.where(~empty & (n_bar < lo_f), mu0_eff * lo_f, mu1_eff)
+    mu1_eff = np.where(~empty & (n_bar > hi_f), mu0_eff * hi_f, mu1_eff)
+    return mu0_eff, mu1_eff
+
+
 def calculate_derived_quantities(t, y, input_data, rate_eq_obj,
                                  xmax_history=None, y_sia100=None):
     """
@@ -204,15 +254,11 @@ def calculate_derived_quantities(t, y, input_data, rate_eq_obj,
             content_i    = float(np.dot(ns_disc[1:], disc_i_eff))
             if I_bin > 0:
                 for kb, (nlo, nhi) in enumerate(rate_eq_obj.bins):
-                    width   = float(nhi - nlo)
-                    sum_n   = width * (nlo + nhi - 1) / 2.0
-                    mu0_eff = max(float(mu0_j[kb]) - width * C_floor, 0.0)
-                    if P >= 2:
-                        mu1_eff = max(float(mu1_j[kb]) - C_floor * sum_n, 0.0)
-                    else:
-                        mu1_eff = mu0_eff * (nlo + nhi - 1) / 2.0
-                    count_i   += mu0_eff
-                    content_i += mu1_eff
+                    mu0_eff, mu1_eff = _floor_bin_moments(
+                        mu0_j[kb], mu1_j[kb] if P >= 2 else 0.0,
+                        nlo, nhi, C_floor, P)
+                    count_i   += float(mu0_eff)
+                    content_i += float(mu1_eff)
             N_loops[j]  = count_i
             mean_n_i[j] = content_i / count_i if count_i > 0.0 else 0.0
 
@@ -222,15 +268,11 @@ def calculate_derived_quantities(t, y, input_data, rate_eq_obj,
             content_v    = float(np.dot(ms_disc[1:], disc_v_eff))
             if V_bin > 0:
                 for kb, (mlo, mhi) in enumerate(rate_eq_obj.vac_bins):
-                    width   = float(mhi - mlo)
-                    sum_m   = width * (mlo + mhi - 1) / 2.0
-                    mu0_eff = max(float(vmu0[kb]) - width * C_floor, 0.0)
-                    if P >= 2:
-                        mu1_eff = max(float(vmu1[kb]) - C_floor * sum_m, 0.0)
-                    else:
-                        mu1_eff = mu0_eff * (mlo + mhi - 1) / 2.0
-                    count_v   += mu0_eff
-                    content_v += mu1_eff
+                    mu0_eff, mu1_eff = _floor_bin_moments(
+                        vmu0[kb], vmu1[kb] if P >= 2 else 0.0,
+                        mlo, mhi, C_floor, P)
+                    count_v   += float(mu0_eff)
+                    content_v += float(mu1_eff)
             N_voids[j]  = count_v
             mean_n_v[j] = content_v / count_v if count_v > 0.0 else 0.0
         else:
@@ -303,13 +345,9 @@ def calculate_derived_quantities(t, y, input_data, rate_eq_obj,
             mu0_100 = mom100[0::P, :]
             mu1_100 = mom100[1::P, :] if P >= 2 else None
             for kb, (nlo, nhi) in enumerate(bins_):
-                width = float(nhi - nlo)
-                sum_n = width * (nlo + nhi - 1) / 2.0
-                mu0_eff = np.maximum(mu0_100[kb, :] - width * C_floor, 0.0)
-                if P >= 2:
-                    mu1_eff = np.maximum(mu1_100[kb, :] - C_floor * sum_n, 0.0)
-                else:
-                    mu1_eff = mu0_eff * (nlo + nhi - 1) / 2.0
+                mu0_eff, mu1_eff = _floor_bin_moments(
+                    mu0_100[kb, :], mu1_100[kb, :] if P >= 2 else 0.0,
+                    nlo, nhi, C_floor, P)
                 N_loops_100 = N_loops_100 + mu0_eff
                 cont100     = cont100 + mu1_eff
         else:

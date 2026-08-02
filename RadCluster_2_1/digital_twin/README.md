@@ -15,6 +15,31 @@ digital_twin/
 └── results/             # one .jsonl per machine
 ```
 
+## Bringing a new machine online
+
+Git carries the design, the workbook and the code — but **not the solver**:
+`build/` is ignored, so each machine compiles its own from `cpp_utils/`. Four
+machines with different SUNDIALS or compiler versions produce numerically
+different results while every provenance hash still looks plausible, and the
+merge step would pool them into one Sobol estimate.
+
+So on each machine, in order:
+
+```bash
+git pull
+cd RadCluster_2_1 && cmake -S . -B build && cmake --build build --config Release
+cd digital_twin && python check_machine.py
+```
+
+`check_machine.py` runs a fixed 30 s probe and compares 12 quantities — two
+diffusivities, both success gates, four population readouts, two inventories,
+swelling and `delta_FP` — against `machine_reference.json` at `rtol = 1e-9`.
+CVODE is deterministic for a fixed binary (verified: 0.00e+00 on a repeat run),
+so a nonzero diff means a different build, not floating-point noise.
+
+**Do not start a machine that fails this check** — its rows cannot be pooled
+with the others. Rebuild from the same commit and re-check.
+
 ## Running it
 
 **Once, on one machine — then commit `design/`:**
@@ -36,11 +61,40 @@ python run_ensemble.py --design design/T2_design_v1.csv \
 Machine `k` runs every row with `row_id % 4 == k`. No coordination, no shared
 filesystem, restartable — re-running skips rows already in its `.jsonl`.
 
-**Then, anywhere, after copying the four `.jsonl` files into one directory:**
+## Tallying across machines
+
+Each machine writes **its own** file — `T2_design_v1_machine0.jsonl` …
+`machine3.jsonl` — so the four never touch the same bytes and **can never
+merge-conflict**. That makes git the transport:
 
 ```bash
+# on each machine, when it finishes (or at any checkpoint)
+git add digital_twin/results/T2_design_v1_machine$K.jsonl
+git commit -m "T2 results, machine $K"
+git push
+```
+
+```bash
+# anywhere, to tally
+git pull
 python merge_and_sobol.py --design design/T2_design_v1.csv --results results/
 ```
+
+Merging is keyed on `row_id`, so it is order-independent and idempotent — pull
+again later and re-run to fold in whichever machines have since finished. Rows
+are appended as they complete, so you can tally a partial campaign at any time;
+`merge_and_sobol.py` reports coverage and refuses to estimate an index from too
+few usable base points.
+
+A shared network drive works equally well — point every machine's `--out` at it
+and skip the commits. Manual copy is the fallback; nothing depends on the files
+arriving together.
+
+**What the tally checks for you.** It prints a `PROVENANCE SPLIT` warning if the
+machines disagree on `git_sha`, `solver_sha256`, `workbook_sha256` or
+`design_sha256`, and it reports missing `row_id`s bucketed by `row_id % 4` — a
+whole residue class missing means one machine never reported, which is
+immediately visible rather than silently shrinking the sample.
 
 ## Why the design is generated once and committed
 

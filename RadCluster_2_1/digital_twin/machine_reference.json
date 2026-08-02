@@ -1,0 +1,42 @@
+{
+  "probe": {
+    "I": 150,
+    "V": 120,
+    "i_mobile": 10,
+    "v_mobile": 5,
+    "T_K": 623.15,
+    "dose": 0.02,
+    "rho_d": 100000000000000.0,
+    "E_a0_conv": 2.2,
+    "dH2_abs_conv": 0.3,
+    "psucc_abs_pref": 2.0,
+    "gamma_a_conv": 0.02,
+    "phi_max_junc": 0.0,
+    "f_cl_i": 0.25,
+    "f_cl_v": 0.05,
+    "rtol": 1e-06
+  },
+  "fields": {
+    "Di_eff": 7.085348836160431e-12,
+    "Dv_eff": 2.125201772771135e-13,
+    "conv_psuccess": 2.1811724838405678e-06,
+    "conv_psuccess_abs": 1.0,
+    "N_loops_100": 1.6553999624484513e+20,
+    "N_loops_111": 2.8449471114732758e+23,
+    "mean_n_100": 122.73294421828389,
+    "mean_n_111": 35.904239865420514,
+    "C_SIA_tot": 1.0234884089190902e+25,
+    "C_VAC_tot": 1.6527439184576213e+21,
+    "swelling": 1.950237823779993e-08,
+    "delta_FP": 0.004114030757035447
+  },
+  "generated_on": {
+    "machine_id": "Nasr-Workstation",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.14.3",
+    "git_sha": "f49832449e90c1eb1b5d33f099da83ae2d2fa955",
+    "solver_sha256": "c28893e7d4a119e20b6b1128186ae0ba365b74203b4073c39f9a622ec435b50f",
+    "solver_exists": true,
+    "workbook_sha256": "9253e7a0370af966bf4773c6dbfe89a16a4a854b0ece76b19612db13ef0150e5"
+  }
+}

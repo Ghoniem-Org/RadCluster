@@ -2632,3 +2632,58 @@ the Mac. For 1008 rows that is ~500–590 core-hours, or roughly **2 days on the
 Mac's 14 workers**, before MATRIX-PC2's 12–15× penalty is accounted for (§(l)).
 Provisional because the final grid is not yet fixed and cost may move with `I`;
 gate §(i)-4 must re-measure at the chosen configuration, including the tail.
+
+#### OpenMP does not engage under `bin_moment` — measured, and it should stay that way
+
+Asked whether threading would speed a 1 dpa row. It does nothing at all:
+
+| `OMP_NUM_THREADS` | wall | `d_100_nm` | `N_loops_100` | `δ_FP` |
+|---|---|---|---|---|
+| 1 | 928.2 s | 9.438290334447974 | 2.1155892458775356e21 | 5.372332906717749e-4 |
+| 8 | **930.8 s** | identical | identical | identical |
+
+0.3 % apart — noise. The solver process sits at **99.7 % CPU** with 8 threads
+requested, i.e. it is running serially.
+
+**Why, structurally:** all four OpenMP pragmas in `rate_kernels.cpp` (lines 281,
+433, 801, 920) carry the clause
+
+```cpp
+#pragma omp parallel for schedule(static, 64) if(x_hi_i_win + x_hi_v_win > 500)
+```
+
+Under `bin_moment` the entire C++ state is ~267 unknowns — `N_eq = 165` plus a
+**binned** ⟨100⟩ block of `i_discrete + n_mom·I_bin = 102`. (The ⟨100⟩ axis
+carries the same reduction as ½⟨111⟩; it is per-size only in `discrete` modes.
+`y_sia100` is emitted per-size in both, but that is a reconstruction for output,
+not the integrated state.) The window bounds never approach 500, the `if()` is
+false, and the parallel region runs serially by construction.
+
+**Three reasons not to lift the gate:**
+
+1. The region would be ~267 unknowns at `schedule(static, 64)` — four chunks.
+   Fork/join per RHS evaluation would plausibly cost more than it saves.
+2. The campaign needs **throughput, not latency**: 16 cores, 1008 rows. 14
+   serial workers beat 4 workers × 4 threads unless scaling is near-linear,
+   which it cannot be at this size. This is what `OMP_NUM_THREADS=1` at
+   `run_ensemble.py:64` is for.
+3. It would forfeit the cross-machine agreement of §(l). OpenMP reduction order
+   varies with build and thread count; the Mac ↔ MATRIX-PC2 comparison came in
+   at 2.95e-08 with threading off. Reintroducing that nondeterminism would undo
+   the one thing that makes four machines poolable.
+
+**Correction to §(m) as first written.** It said raising `I` costs closure
+accuracy "not cost", on the grounds that `N_eq` is independent of `I`. `N_eq`
+*is* independent of `I` — 165 in every configuration measured — but the runs at
+`I = 50000` and `I = 200000` passed 72 minutes against `I = 10000`'s 35, so
+**cost does grow with `I`**. The likely mechanism is stiffness rather than
+system size: the top bins reach much larger `n`, and the rate constants scale as
+`n^{1/2}` (loops) and `n^{1/3}` (cavities), so the spectral range of the
+Jacobian widens with the ceiling. Still far better than `discrete`, where §(c)-4
+measured 14× for a bit-identical trajectory — but not free, and the claim should
+not have been made before it was measured.
+
+**Provisional campaign cost.** ~30 min/row at `I = V = 10000`, but that grid is
+99.8 % artefact at 1 dpa, so the usable figure is **≥ 1 h/row**: 1008 rows
+≈ **1000 core-hours** ≈ 3 days on the Mac's 14 workers. MATRIX-PC2 contributes
+little at 12–15× slower unless `--weights` gives it a much smaller share.

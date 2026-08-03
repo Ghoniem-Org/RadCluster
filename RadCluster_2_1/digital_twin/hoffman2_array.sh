@@ -29,15 +29,18 @@
 #$ -j y
 #$ -o joblogs/$JOB_NAME.$JOB_ID.$TASK_ID.log
 #$ -N radcluster_t2
-#  h_rt: walltime per TASK.  24:00:00 is the usual shared-queue ceiling; check
-#  your allocation.  --stop-after-s below MUST be less than this.
+#  h_rt: 24:00:00 is the CEILING on the shared pool -- MEASURED 2026-08-03, not
+#  assumed: qsub -w v accepts 24h but refuses 336h with "no permission for
+#  cluster queue *_pod.q" on every owned queue. ghoniem is in no group queue,
+#  so 24 h is the hard limit and --stop-after-s below must sit under it.
 #$ -l h_rt=24:00:00,h_data=4G
-#  One core per task.  If you raise this, raise --workers to match AND re-run
-#  campaign_layout.py, because the weights depend on it.
-#$ -pe shared 1
+#  'shared' PE confirmed present (228 PEs on this cluster). If you raise this,
+#  raise --workers to match AND re-run campaign_layout.py -- the weights depend
+#  on it.
+#$ -pe shared 4
 #  Array range = number of tasks. MUST equal the K you passed to
 #  campaign_layout.py --split hoffman2:K
-#$ -t 1-64
+#$ -t 1-16
 
 set -euo pipefail
 
@@ -60,10 +63,25 @@ STOP_AFTER_S=81000
 TIMEOUT_S=<<<SET: p99 row cost measured ON HOFFMAN2, not on the Mac>>>
 
 # ── environment ─────────────────────────────────────────────────────────────
-. /u/local/Modules/default/init/modules.sh
-module load gcc
-module load cmake
-module load python/3.11    # must match the version the other machines record
+# ALL VERSIONS PINNED, and all three corrected from the 2026-08-03 probe:
+#   'module load gcc'    would give 7.5.0 (default), and the SYSTEM gcc is
+#                        4.8.5 -- neither compiles the C++17 in cpp_utils
+#   'module load cmake'  would give 3.19.5 (default); CMakeLists wants >= 3.10
+#                        but the system cmake is 2.8.12 and fails outright
+#   'module load python/3.11'  DOES NOT EXIST. Stock python modules top out at
+#                        3.9.6; anaconda3/2023.03 gives Python 3.10.9 with
+#                        numpy 1.23.5 / scipy 1.10.0 / pandas 1.5.3.
+# The other machines record Python 3.11.7, so this is a KNOWN mismatch.
+# merge_and_sobol does not gate on it (python is not in the split check) and the
+# numerics live in the C++ solver -- the agreement gate below is what actually
+# decides comparability. Recorded per row either way.
+. /u/local/Modules/default/init/bash
+module purge
+module load gcc/11.3.0 cmake/3.30.0 anaconda3/2023.03
+# SUNDIALS is vendored by hoffman2_setup.sh: the probe found no sundials module
+# and nothing under /u/local/apps, so find_package(SUNDIALS REQUIRED) needs this.
+export CMAKE_PREFIX_PATH="$HOME/opt/sundials-7.1.1:${CMAKE_PREFIX_PATH:-}"
+export LD_LIBRARY_PATH="$HOME/opt/sundials-7.1.1/lib64:$HOME/opt/sundials-7.1.1/lib:${LD_LIBRARY_PATH:-}"
 
 cd "$REPO/RadCluster_2_1"
 
@@ -80,14 +98,11 @@ echo "=== task $SGE_TASK_ID -> machine index $MACHINE of $OF on $(hostname) ==="
 # on the same build directory and corrupt it.
 BUILD="$REPO/RadCluster_2_1/build"
 if [ ! -x "$BUILD/solver" ]; then
-  (
-    flock -w 1800 9 || { echo "could not acquire build lock"; exit 1; }
-    if [ ! -x "$BUILD/solver" ]; then
-      echo "building solver..."
-      cmake -S "$REPO/RadCluster_2_1/cpp_utils" -B "$BUILD" -DCMAKE_BUILD_TYPE=Release
-      cmake --build "$BUILD" --config Release -j 4
-    fi
-  ) 9>"$REPO/RadCluster_2_1/.build.lock"
+  echo "*** solver not built. Run hoffman2_setup.sh ONCE on a login node first --"
+  echo "*** it vendors SUNDIALS 7.1.1 (absent on this cluster) and builds the"
+  echo "*** solver. Building it from inside an array task would have 16 tasks"
+  echo "*** racing on one build directory and would waste the queue wait."
+  exit 1
 fi
 
 # ── agreement gate: do NOT contribute rows from an unverified build ─────────
@@ -112,7 +127,7 @@ fi
 python run_ensemble.py \
     --design "$DESIGN" \
     --machine "$MACHINE" --of "$OF" --weights "$WEIGHTS" \
-    --workers 1 \
+    --workers 4 \
     $GRID \
     --timeout-s "$TIMEOUT_S" \
     --stop-after-s "$STOP_AFTER_S"

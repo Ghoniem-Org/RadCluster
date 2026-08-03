@@ -2870,3 +2870,62 @@ At 93 min/row: **1008 rows ≈ 1560 core-hours**. Against the §(n) layout
 (79.6 slot-equivalents) that is **≈ 20 h wall**, or ~4.6 days on the Mac alone —
 which is the argument for Hoffman2 in one number. `campaign_layout.py`'s
 `--row-cost-s` should be run at **5580**, not the 3600 placeholder.
+
+### (p) Hoffman2 environment probe, 2026-08-03 — three assumptions were wrong
+
+Read-only probe over an SSH ControlMaster from the Mac, `login4`. Nothing was
+written or submitted. Job-spec validation used `qsub -w v`, which verifies
+against the live cluster config **without** submitting.
+
+**Confirmed correct in `hoffman2_array.sh`:**
+
+| assumption | measured |
+|---|---|
+| scheduler is UGE with `qsub` / `$SGE_TASK_ID` | **UGE 8.6.4**, `qsub`/`qstat`/`qhost`; no Slurm |
+| `-pe shared N` exists | yes (228 PEs defined) |
+| `h_rt = 24:00:00` | **correct, and it is a hard ceiling** — see below |
+| modules init at `/u/local/Modules/default/init/bash` | yes |
+| login node can reach GitHub for transport | HTTP 200, `git ls-remote` OK |
+
+**Wrong, and each would have failed a queued job rather than failing fast:**
+
+1. **`module load python/3.11` does not exist.** Stock python modules stop at
+   3.9.6. `anaconda3/2023.03` gives **Python 3.10.9** (numpy 1.23.5, scipy
+   1.10.0, pandas 1.5.3) — the version the project's own Hoffman2 guide uses.
+   The other machines record **3.11.7**, so this is a permanent mismatch on this
+   participant. It does not trigger `PROVENANCE SPLIT` (python is not in the
+   check) and the numerics are in the C++ solver, so the agreement gate is what
+   actually decides comparability — but it is recorded per row.
+2. **There is no SUNDIALS anywhere.** No module, nothing under
+   `/u/local/apps`. `cpp_utils/CMakeLists.txt` does
+   `find_package(SUNDIALS REQUIRED)` for 7.1.1 with CVODE + nvecserial, so it
+   must be vendored. **This is the single biggest difference between bringing
+   Hoffman2 online and bringing up another Mac**, and it is why setup is now a
+   separate `hoffman2_setup.sh` rather than something an array task can do.
+3. **The default toolchain cannot build the project.** System `gcc 4.8.5` and
+   `cmake 2.8.12.2` against a `CMAKE_CXX_STANDARD 17` requirement and
+   `cmake_minimum_required(3.10)`. Unversioned `module load gcc`/`cmake` give
+   7.5.0 and 3.19.5. Now pinned to **`gcc/11.3.0`, `cmake/3.30.0`**, which were
+   verified to load and report those versions.
+
+Also corrected: the array script previously tried to build the solver inside a
+task under `flock`. With SUNDIALS to vendor as well, that is 16 tasks racing
+through a 20-minute build after a queue wait. Setup is now explicit and the
+array task **refuses to start** if `build/solver` is absent.
+
+**The walltime ceiling is real, and measured rather than assumed.** `qsub -w v`
+accepts `h_rt=24:00:00` ("found suitable queue(s)") and refuses `336:00:00` with
+`no permission for cluster queue *_pod.q` against every owned queue. `ghoniem`
+is in no group queue — `groups` returns `ghoniem vasp`, and no `*_pod.q`
+references either. So **24 h per task is a hard limit**, `--stop-after-s=81000`
+sits correctly under it, and the campaign depends on the resume path rather than
+on long jobs.
+
+**Capacity, and what is still unmeasured.** `$SCRATCH=/u/scratch/g/ghoniem`
+with a 2 TB quota, empty; `$HOME` 60 GB with 4.85 used. Login CPU is a **Xeon
+Gold 6338N @ 2.20 GHz** — very likely slower per core than the Mac's Apple
+silicon, which matters because §(n) currently assumes `speed = 1.0` for
+Hoffman2. **That factor must be measured before the weights are trusted**: run
+one known row on a compute node and compare against the Mac's 5580 s. Weighting
+a participant by declared rather than measured capacity is the same mistake as
+MATRIX-PC2's (§(n)), and here it would misallocate 80 % of the campaign.

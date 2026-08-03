@@ -2159,8 +2159,8 @@ median means the tail, not the typical row, sets the wall clock.
 | setting | v2 (stopped) | **rev 6** | why |
 |---|---|---|---|
 | `equations` | `discrete` | **`bin_moment`** | decouples cost from `I`; see §(c)-4 |
-| `I` | 3200 | **10000** | with log bins the ceiling is nearly free |
-| `V` | 600 | **10000** | probe 3: V = 600 corrupted `N_100` by 20 % |
+| `I` | 3200 | **≥ 50000 — see §(m)** | 10000 was measured INSUFFICIENT at 1 dpa (`topbin_100 = 0.998`). With log bins the ceiling costs closure accuracy, not `N_eq`. |
+| `V` | 600 | **10000** | probe 3: V = 600 corrupted `N_100` by 20 %. Confirmed generous at 1 dpa (`occ_v = 0.028`). |
 | `i_mobile` | sampled, INT 1–100 | **fixed 50** | see below |
 | `v_mobile` | sampled, INT 1–5 | **fixed 5** | at its nominal already |
 | `i_discrete` | — | **50** (= `i_mobile`) | mobile sizes must be individually resolved |
@@ -2536,3 +2536,87 @@ Three consequences for rev 6, all in §(e4):
 3. **A starved row is a scheduling failure, not a result.** The worker should
    report the starved fraction per machine as it runs, so a machine starving 37 %
    of its rows is visible within the hour rather than at the merge.
+
+### (m) Measured `bin_moment` cost and grid demand — and a correction to §(f)
+
+All at the §(f) layout (`i_mobile=50, v_mobile=5, i_discrete=50, v_discrete=5`,
+25+25 bins requested → 26+26 realised, `linear`), design row 24, N2,
+`OMP_NUM_THREADS=1`, single core:
+
+| `I` | `V` | dose | mode | wall | `topbin_100` | `δ_FP` | verdict |
+|---|---|---|---|---|---|---|---|
+| 10000 | 10000 | **0.1** | active_window | 928 s | 1.7e-15 | 5.4e-04 | **admissible** |
+| 5000 | 5000 | 1.0 | active_window | 940 s | **1.00** | 8.9e-01 | truncated |
+| 10000 | 10000 | 1.0 | active_window | 2103 s | — | 9.1e-01 | truncated |
+| 10000 | 10000 | 1.0 | **full_system** | 1813 s | **0.998** | 9.1e-01 | truncated |
+
+**`N_eq = 165` in every row above** — it is `i_discrete + P·I_bin + v_discrete +
+P·V_bin + extras` and does **not** depend on `I` or `V`. This is the property the
+whole rev-6 design rests on, and it is confirmed.
+
+#### Correction to §(f): `I = V = 10000` is not enough at 1 dpa
+
+The §(f) table specifies `I = V = 10000`. **That is measured wrong for the 1 dpa
+campaign** and must not be launched as written:
+
+- At 1 dpa, `I = 10000` puts **99.8 % of the ⟨100⟩ content in the top bin**
+  (`topbin_100 = 0.998`) with `mean_n_100 = 8626` of a 10000 ceiling and
+  `d_100 = 21.3 nm`. At `I = 5000` it is 100 %.
+- `δ_FP` tracks it exactly: **5.4e-04 at 0.1 dpa → 0.91 at 1 dpa** on the same
+  grid. The 1e-2 bar of §(h) rejects it by 91×, so the gate works — but a
+  campaign run at this grid would reject nearly every row, which is the v2
+  failure repeated with different numbers.
+- This is risk §(j)-3 ("1 dpa may re-open grid demand even under binning"),
+  now confirmed rather than anticipated.
+
+Note the trap it sets: that same truncated run reports `f_100_tem_1 = 0.70`
+against an experimental target of 0.72. **The most nearly on-target `f₁₀₀` in
+this whole study comes from a run that is 99.8 % grid artefact.** Reading it as
+agreement is exactly the error the admissibility block exists to prevent, and it
+is a reminder that §(g)'s "compare at 1 dpa directly to the band" is only sound
+for rows that have passed the gate first.
+
+**The fix is cheap, which is the point of `bin_moment`.** Raising `I` at fixed
+bin count costs nothing in `N_eq`; it only raises the derived ratio
+`r = (I/i_discrete)^(1/I_bin)`, and so the closure error, slightly:
+
+| `I` | `r` (SIA, 26 bins) | linear closure O((r−1)³) |
+|---|---|---|
+| 10 000 | 1.226 | ~1.1 % |
+| 50 000 | 1.301 | ~2.7 % |
+| 200 000 | 1.365 | ~4.9 % |
+
+So the grid ceiling trades against closure accuracy, **not against cost** — the
+opposite of the `discrete` regime, where §(c)-4 measured 14× cost for a
+bit-identical trajectory. If a larger `I` is needed, raise `I_bin` with it to
+hold `r` down; that *does* cost `N_eq`, but linearly and from a base of 165.
+
+`I = 50000 / V = 10000` and `I = 200000 / V = 20000` at 1 dpa are running; the
+rev-6 grid must be set from those, taking the smallest `I` that clears
+`topbin_100 ≤ 0.02` and then confirming `δ_FP` follows it down. **§(f)'s
+`I = V = 10000` stands corrected to "TBD, ≥ 50000 on the SIA axis"** until that
+measurement lands.
+
+The vacancy axis is not the problem: `mean_n_v = 282` at 1 dpa gives
+`occ_v = 0.028` and `topbin_v ~ 1e-24` at `V = 10000`, so `V` is generously
+sized. `V = 10000` stands.
+
+#### `active_window` vs `full_system` under `bin_moment`
+
+1813 s vs 2103 s at the same configuration — `full_system` is **1.16× faster**,
+and both agree (`topbin_100` 0.998, `δ_FP` 0.907, `d_100` 21.26). The
+`active_window` rationale in §(c)-4 was about keeping `N_eq` off the `I` axis in
+`discrete` mode; under `bin_moment` `N_eq` is already 165 and independent of `I`,
+so the sliding-window machinery is overhead rather than saving. **Preconditioner
+selection follows `solver_mode` automatically and is not independently
+selectable, so this is a one-flag change.** Worth confirming on two or three more
+θ before making `full_system` the rev-6 default — the margin is small enough
+that it could be row-dependent.
+
+#### Cost, provisionally
+
+A 1 dpa `bin_moment` row costs **~1800–2100 s** at `I = 10000` on one core of
+the Mac. For 1008 rows that is ~500–590 core-hours, or roughly **2 days on the
+Mac's 14 workers**, before MATRIX-PC2's 12–15× penalty is accounted for (§(l)).
+Provisional because the final grid is not yet fixed and cost may move with `I`;
+gate §(i)-4 must re-measure at the chosen configuration, including the tail.

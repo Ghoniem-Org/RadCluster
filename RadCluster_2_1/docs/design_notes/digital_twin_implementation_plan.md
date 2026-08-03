@@ -1070,7 +1070,7 @@ converge.
 | (c2) | Re-fit `(A_111, B_111)` (and `A_100`/`B_100`) to DFT small-`n` binding, then re-validate at 10 dpa | validation | **open** | `δ_FP < 1e-6` at the production config with `E_b^i(2)` in 0.6–1.2 eV |
 | (c3) | Fix `run_adaptive` truncation of loop-conversion output arrays | validation §5 | **done** | `f_111_loop`/`N_loops_100` length == `len(t)`; the 4 broken plots render |
 | (c4) | **`n_j_min_junc` tied to `i_mobile`** — `effective_n_j_min()` in `reaction_rates.py`, used by both the Python kernel and `cpp_bridge`; new `n_j_min_frac` key (0.6) | §2.4 | **done** | at `i_mobile = 50` the threshold is exactly 30 ⇒ production bit-identical; at `i_mobile = 10`, `φ_junc` scales 10× with `φ_max` (was bit-identical) |
-| (c5) | **`bin_moment` + `loop_conversion` produces `mean_n₁₀₀ > I`** under strong conversion — build step 7d (bin-moment ⟨100⟩ reconstruct→transfer→project) was never implemented and fails **silently** | anchor runs 2026-07-31 | **open — blocking** | `mean_n₁₀₀ ≤ I` and discrete/bin_moment agree on `f₁₀₀` to <5 %. Until then conversion runs **must** use `equations='discrete'` |
+| (c5) | **`bin_moment` + `loop_conversion` produces `mean_n₁₀₀ > I`** under strong conversion | anchor runs 2026-07-31 | **done 2026-08-02 — diagnosis above was WRONG** | `mean_n₁₀₀ ≤ I` restored. See rev. 5 §(c5). Cause was **not** a missing build step 7d — the bin-moment ⟨100⟩ block *is* implemented in `rhs_bin_moment`. Cause was independent flooring of `μ₀`/`μ₁` in `post_process.py`, which is **not conversion-specific** and corrupted *every* `bin_moment` run |
 | (d) | `loop_net_*` + `LOOP_NETWORK_LOSS` rows added to the workbook and `create_excel.py`; blank-cell readers hardened | §2.4, directive 8 | **done** | nominals = code defaults ⇒ no result change; `Λ_net` finite on the blank path |
 | (e) | `extract_observables.py` lifted out of `visualization.py` and unit-tested against a saved run | §3.1 | open | reproduces the saved run's plotted panel |
 | (f) | `param_io.py` round-trip test (`θ → workbook → InputData → θ`) | §3 | open | exact for continuous keys, exact for `cat` |
@@ -1570,8 +1570,9 @@ remains:
    `A_111 = 3.0` still holds and the §3 results were never de-anchored by it;
    what invalidated them was the temperature envelope, the database re-reading,
    and grid inadmissibility. Priors #18, #21, #22, #23 revised accordingly.
-   **New blocking item:** `bin_moment` + `loop_conversion` is broken —
-   T0.5(c5).
+   ~~**New blocking item:** `bin_moment` + `loop_conversion` is broken —
+   T0.5(c5).~~ **CLOSED 2026-08-02** — see revision 5; the diagnosis recorded
+   here was wrong on the cause, and the real defect was wider in scope.
 3. **Resolve the remaining §2.3 conflicts** — `f_cl_v` against Appendix A, and
    the `f_cl_i` = 0.58 / 0.25 documentation disagreement. `E_b^i(2)` is closed;
    `T*` is no longer sampled at all (§2.4bis).
@@ -1585,3 +1586,199 @@ remains:
    `T ≤ 400 °C, d ≤ 30 dpa, 7200 s` envelope, plus the network-liveness check.
    Fourteen runs, and together they decide whether the campaign is executable and
    whether the loop→network parameters can be screened at all.
+
+---
+
+## 10. Revision 5 — pre-freeze settlement (2026-08-02)
+
+Revision 5 records the work done between the 2026-07-31 anchor campaign and the
+Tier-2 code freeze. It **supersedes** the `E_a0_conv` prior of §2.4bis/#21, the
+`bin_moment` blocking item T0.5(c5), and the swelling observable of §H.5.
+
+### (a) The ⟨100⟩ size deficit was an absorption-gate throttle, not a growth deficit
+
+⟨100⟩ loops were ~10× too small at every setting inside the old box. The cause
+was that **one** `P_succ` multiplied both the *nucleation* channel (⟨111⟩→⟨100⟩
+rotation) and the *growth* channel (⟨100⟩ absorbing mobile SIA clusters). At
+623 K, `P_succ = 2.18e-6`. Nucleation genuinely needs that throttle; growth does
+not — an existing ⟨100⟩ loop absorbing an SIA cluster does not have to re-cross
+the rotation barrier. Growth was being suppressed by a factor of 4.6e5 for a
+reason that applies only to nucleation.
+
+The fix decouples the two with a second gate, `P_succ^abs = A_abs·[1 +
+exp((ΔH₂^abs − ΔH_rev)/k_BT)]⁻¹`, wired through `reaction_rates.py`,
+`parameters.h`, `rate_kernels.cpp`, and two new workbook rows. Calibrated point
+(350 °C, 0.3 dpa, `I = 3200`):
+
+| | model | target | ratio |
+|---|---|---|---|
+| `d_100_nm` | 7.83 | 7.9 | 0.99× |
+| `N_loops_100` | 4.002e21 | 3.72e21 | 1.08× |
+
+at `dH2_abs_conv = 0.273`, `psucc_abs_pref = 2.0`, `E_a0_conv = 2.25`, with
+`pile = 0.0000` and `δ_FP = 1.5e-08`.
+
+**Two mechanisms were tried and rejected**, both recorded because the rejection
+is the useful part:
+- `grow_boost_100` (a direct multiplier on ⟨100⟩ growth) — works numerically but
+  gives **unbounded** growth: the distribution pins to the grid ceiling at
+  `I = 800`, `1600`, and `2400` alike. Shipped at its default 1.0.
+- Raising `E_a0_conv` to redistribute fixed content into fewer, larger loops —
+  the premise is wrong. Content scales *with* number, so `E_a0` cuts both
+  together and moves mean size hardly at all.
+
+### (b) `δ_FP` is blind to grid truncation — the `pile` diagnostic exists because of this
+
+For several rounds a ⟨100⟩ diameter of 6.2 nm was read as physical saturation.
+It was the grid ceiling: 93–96 % of loop content was stacked in the top 2 % of
+the size axis. `δ_FP` held at 1e-8 throughout, because the `if (n < I)` guard
+**truncates without losing atoms** — the conservation identity is satisfied
+exactly by a run whose answer is set by `I`.
+
+Nothing in the pre-existing diagnostic set would have caught this. Hence the
+admissibility block now emitted with every row:
+
+| field | meaning | reject at |
+|---|---|---|
+| `occupancy` | `mean_n / I` | `> 0.1` suspect |
+| `pile` | content fraction in the top 2 % of the grid | `> 0.05` = grid-limited |
+| `d / d_ceiling` | mean size against `2√(IΩ/πb)` | — |
+
+**A grid-limited row must never enter a Sobol decomposition**: its observable is
+a function of `I`, which is not a sampled parameter, so its variance is
+attributed to whichever parameter happens to correlate with reaching the ceiling.
+
+### (c) T0.5(c5) — the recorded diagnosis was wrong, and the real bug was wider
+
+The 2026-07-31 note attributed `mean_n₁₀₀ > I` under `bin_moment` to "build
+step 7d never implemented." **That is incorrect** — the bin-moment ⟨100⟩
+reconstruct→transfer→project block *is* implemented in `rhs_bin_moment`.
+
+The actual defect: `post_process.py` floored `μ₀` and `μ₁` **independently**
+against `C_floor`. That admits a bin holding no clusters but finite content, and
+a bin whose mean lies outside its own boundaries — producing `mean_n₁₀₀ = 2853`
+on a grid of `I = 1000`. Fixed by a shared `_floor_bin_moments()` enforcing both
+invariants, applied at all three call sites (½⟨111⟩, vacancies, ⟨100⟩).
+
+The scope correction matters more than the fix: the bug was **not**
+conversion-specific and **not** ⟨100⟩-specific. It corrupted every `bin_moment`
+run through all three populations, which means `bin_moment` results predating
+2026-08-02 should be treated as suspect regardless of whether conversion was on.
+
+### (d) Grid convergence — the ⟨100⟩ channel splits in two
+
+T0.2, at 0.1 dpa / 350 °C, across the revised `dH2_abs_conv` box:
+
+| `I` | 800 | 1600 | 2400 | 3200 |
+|---|---|---|---|---|
+| `N100` nominal (h=0.273) | 7.700e20 | 7.685e20 | — | 7.684e20 |
+| `N100` corner (h=0.260) | 7.706e20 | 7.682e20 | 7.676e20 | — |
+| `pile` nominal | 0.4642 | 0.1474 | — | 0.0000 |
+| `pile` corner | 0.5965 | 0.3608 | 0.1018 | — |
+
+**`N_loops_100` is grid-invariant to 0.4 % across a 4× grid range and both box
+corners; `d_100_nm` is not.** The two ⟨100⟩ observables therefore have different
+admissibility requirements, and a grid that is inadequate for the size is still
+perfectly adequate for the density.
+
+`I = 800` — the value the notebook shipped with — fails at the calibrated
+nominal, not merely at the corner.
+
+### (e) `active_window` makes full grid resolution affordable
+
+`active_window` (two sliding windows, active system 50–200 unknowns regardless
+of `I`) was untested with `loop_conversion`. The C++ `rhs_case2` masks the
+conversion block with the same frontier (`nhi = min(I, x_hi_i_win + 1)`), so the
+combination is implemented and unguarded.
+
+At `I = 1600`, nominal, `OMP_NUM_THREADS=1` both sides:
+
+| | `full_system` + Woodbury | `active_window` + Jacobi |
+|---|---|---|
+| `d100` / `occ` / `pile` | 6.45 / 0.496 / 0.1474 | 6.45 / 0.496 / 0.1474 |
+| `N100` | 7.685e20 | 7.685e20 |
+| `δ_FP` | 1.2e-08 | **6.4e-12** |
+| wall | 2875 s | **1176 s** |
+
+Identical to printed precision, 2.4× cheaper, and three orders better on `δ_FP`.
+At `I = 3200` it clears the gate (`pile = 0.0000`) in 2484 s — still cheaper
+than `full_system` at half the grid. This is what keeps the full observable set
+in scope; the `bin_moment` fallback would have kept four.
+
+### (f) Prior revisions
+
+| # | parameter | was | now | why |
+|---|---|---|---|---|
+| 21 | `E_a0_conv` | 1.45–1.85, nom 1.6 | **1.60–2.40, nom 2.25** | `N₁₀₀ ∝ exp(−E_a0/k_BT)` exactly. Deliberately **not** narrowed to the 350 °C best fit — see (g) |
+| 22 | `dH2_abs_conv` | *(new)* | **0.26–0.45, nom 0.273** | the decoupled growth gate of (a). **The lower bound is numerical, not physical** — below 0.26 the loops outgrow any affordable grid |
+| — | `psucc_abs_pref` | *(new)* | **fixed at 2.0** | `f₁₀₀(T)` spread is smaller than inter-laboratory scatter, so it is not separately identifiable |
+| — | `grow_boost_100` | *(new)* | **fixed at 1.0** | rejected, see (a) |
+
+### (g) Swelling withdrawn as an observable
+
+`swelling = N_voids × mean_n_v` **exactly** — a deterministic function of two
+other observables in the set. Including it double-counts the void channel in a
+variance decomposition: the two ways of writing the same information split the
+attributed variance between them, and `(1 − 0.115)(1 − 0.269) = 0.647` of it
+lands on neither. `d_cavity_nm` replaces it so the void channel retains size
+information. Swelling is still emitted as a health check, never screened on.
+
+### (h) Two open physics discrepancies, carried into Tier 2 deliberately
+
+Neither is a bug, and neither is fixed before the freeze:
+
+1. **½⟨111⟩ density is ~730× too high** (1.14e24 vs 1.56e21 m⁻³), with
+   `d₁₁₁ = 1.47 nm` — at or below most TEM detection limits.
+2. **`f₁₀₀(T)` grades far too steeply** — 0.0002 → 0.375 over 300–400 °C against
+   a flat experimental trend, driven almost entirely by `E_a0_conv`.
+
+These are the reason `E_a0_conv` keeps a wide prior instead of being set to the
+value that fits 350 °C. Narrowing it would encode a temperature trend the data
+contradict, and would hide the discrepancy inside the prior where the
+sensitivity analysis cannot see it. **Tier 2 should screen against these, not
+around them.**
+
+### (i) `bin_moment` fallback — status is weaker than earlier notes claimed
+
+Three `bin_moment` studies were run on 2026-08-02. **Only one of them is valid**,
+and the record needs to be read with that in mind.
+
+| study | config actually used | verdict |
+|---|---|---|
+| `binmom_screen_obs` | **DEFAULT binning** (`i_discrete=10`, `I_bin=6` — six bins spanning sizes 11–1200) | measures the default, not the method |
+| `binmom_refine` (9 SIA-side variants) | **none of them took effect** — all nine returned bit-identical `648.04`, `bins=?`, `r=nan` | **INVALID** |
+| `binmom_void_refine` (4 vacancy-side variants) | genuine (`VACbins` 7→98, `N_eq` 127→474) | valid |
+
+The invalidating defect: `RadClusterSimulation.__init__` absorbs unknown keyword
+arguments into `**legacy_kw` and **silently discards them**, so `i_discrete`,
+`I_bin`, and `shape_function` never reached the solver. Nine "refinement" runs
+were nine copies of the same run. The bin configuration also lives on
+`sim.rate_equations`, *not* `sim.reaction_rates`, so reading it back from the
+wrong attribute reports `nan` rather than raising.
+
+With that filter applied, the **valid** fallback numbers — vacancy-side
+refinement, against a `discrete` reference at `I=1200`, 0.02 dpa, 350 °C:
+
+| observable | default binning | refined | converges? |
+|---|---|---|---|
+| `N_loops_111` | 25.2 % | **8.6 %** | yes |
+| `mean_n_111` | 7.0 % | **14.2 %** | yes |
+| `N_voids` | 91.2 % | **11.5 %** | yes |
+| `mean_n_v` | 94.6 % | **26.9 %** | **no** — flat across a 3.7× `N_eq` range |
+| `swelling` | 99.6 % | 35.3 % | no (withdrawn regardless) |
+
+Refinement moves the void channel from useless to marginal, which is why the
+default-binned 91–99 % figures should not be quoted as the method's accuracy.
+
+**Two corrections to what earlier notes asserted:**
+1. "The fallback is validated at ≤ 14 % on its four observables" — **not
+   supported**. `mean_n_v` sits at 26.9 % and does not improve with refinement.
+2. "`bin_moment` cannot carry ⟨100⟩ at any affordable resolution" — **not
+   established**. That conclusion rests entirely on `binmom_refine`, the invalid
+   study. ⟨100⟩ under `bin_moment` is untested at genuine refinement.
+
+Given (e), this is now **moot rather than resolved**: `active_window` makes
+`discrete` affordable at full grid resolution, so Tier 2 does not need the
+fallback and the ⟨100⟩ refinement study is not worth re-running. Recorded here
+so the open question is not mistaken for a closed one if the fallback is ever
+reconsidered.

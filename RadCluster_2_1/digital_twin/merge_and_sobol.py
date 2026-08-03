@@ -139,8 +139,64 @@ def check_provenance(recs: dict[int, dict]) -> None:
                 print(f"        {v}  <- {sorted(set(ms))}")
 
 
-def usable(r: dict) -> bool:
-    return bool(r and not r.get("solver_rc") and r.get("admissible"))
+# Admissibility is applied HERE, not in the worker.  The worker records every
+# gate quantity per row; this module decides what passes.  That separation is
+# the whole reason the 2026-08-03 re-scoring of the stopped v2 campaign cost no
+# CPU: moving delta_FP from 1e-6 to 1e-3 took its admissible count from 12 to 38
+# without re-running a single row (plan S11(h)).  Never move a threshold into
+# the worker -- it makes every past row unusable at the new threshold.
+DFP_TOL_DEFAULT = 1e-2   # plan S11(h)
+
+
+PILE_TOL = 0.05
+TOPBIN_TOL = 0.02
+
+
+def grid_ok(r: dict):
+    """Re-derive the grid verdict from the recorded pile / top-bin quantities.
+
+    Deliberately does NOT trust the row's stored `grid_limited`.  Rows written
+    before 2026-08-03 had the withdrawn `occ > 0.10` rule folded into that flag,
+    and on the stopped v2 campaign it alone condemned 71 of 275 rows that show
+    no measurable truncation (plan S11(c)-2).  Recomputing here is what lets a
+    superseded scoring rule be undone without re-running anything.
+
+    Returns (ok, reason).  reason is None when ok.
+    """
+    if r.get("starved"):
+        return False, "dose-starved"
+    piles = {k: r.get(k) for k in ("pile_111", "pile_100", "pile_v")}
+    # Fail closed: an axis we could not measure is not an axis we certified.
+    missing = [k for k, v in piles.items() if v is None]
+    if missing:
+        return False, f"unmeasured:{','.join(sorted(missing))}"
+    hot = [k for k, v in piles.items() if v > PILE_TOL]
+    if hot:
+        return False, f"pile>{PILE_TOL:g}:{','.join(sorted(hot))}"
+    if r.get("equations") == "bin_moment":
+        tb = {k: r.get(f"topbin_{k}") for k in ("111", "100", "v")}
+        miss_tb = [k for k, v in tb.items() if v is None]
+        if miss_tb or r.get("unmeasured_gates"):
+            return False, "unmeasured:topbin"
+        hot_tb = [k for k, v in tb.items() if v > TOPBIN_TOL]
+        if hot_tb:
+            return False, f"topbin>{TOPBIN_TOL:g}:{','.join(sorted(hot_tb))}"
+    return True, None
+
+
+def usable(r: dict, dfp_tol: float = DFP_TOL_DEFAULT) -> bool:
+    if not r or r.get("solver_rc"):
+        return False
+    # Rows too old to carry the gate quantities cannot be re-scored; fall back
+    # to the worker's verdict rather than guessing, and let the caller report
+    # them separately instead of silently pooling two scoring rules.
+    if r.get("pile_100") is None and r.get("grid_limited") is None:
+        return bool(r.get("admissible"))
+    ok, _ = grid_ok(r)
+    if not ok:
+        return False
+    dfp = r.get("delta_FP")
+    return dfp is not None and abs(dfp) < dfp_tol
 
 
 def sobol_indices(recs, design_rows, p_keys, observable, n_boot=200, seed=0):
@@ -208,13 +264,19 @@ def sobol_indices(recs, design_rows, p_keys, observable, n_boot=200, seed=0):
 
 
 def main(argv=None):
+    global DFP_TOL_DEFAULT
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--design", type=Path, required=True)
     ap.add_argument("--results", type=Path, default=HERE / "results")
     ap.add_argument("--out", type=Path, default=HERE / "report")
     ap.add_argument("--n-boot", type=int, default=200)
+    ap.add_argument("--dfp-tol", type=float, default=DFP_TOL_DEFAULT,
+                    help="delta_FP admissibility bar, applied HERE not in the "
+                         "worker, so it can be changed without re-running "
+                         "anything (plan S11(h)). Default 1e-2.")
     a = ap.parse_args(argv)
+    DFP_TOL_DEFAULT = a.dfp_tol
 
     meta = json.loads(a.design.with_suffix(".meta.json").read_text(encoding="utf-8"))
     p_keys = meta["parameters"]
@@ -238,6 +300,15 @@ def main(argv=None):
     inadm = have - ok - failed
     print(f"\n  coverage: {have}/{total} rows present, {ok} admissible, "
           f"{inadm} inadmissible, {failed} failed, {total-have} MISSING")
+    # The delta_FP bar is the one gate whose right value is a judgement call, so
+    # show what the alternatives would buy BEFORE any index is read.  A large
+    # spread here means the result depends on the threshold and the threshold
+    # needs an argument, not a default.
+    alts = [t for t in (1e-2, 1e-3, 1e-4, 1e-6) if t != a.dfp_tol]
+    counts = "   ".join(
+        f"{t:.0e}: {sum(1 for d in design if usable(recs.get(d['row_id']), t))}"
+        for t in sorted([a.dfp_tol] + alts, reverse=True))
+    print(f"  admissible vs delta_FP bar   {counts}      (in use: {a.dfp_tol:.0e})")
     if total - have:
         miss = sorted(d["row_id"] for d in design if d["row_id"] not in recs)
         by_mach = defaultdict(int)
@@ -246,19 +317,23 @@ def main(argv=None):
         print(f"    missing row_ids mod 4: {dict(by_mach)}  "
               f"(a whole residue class means a machine never reported)")
 
-    # why runs were inadmissible -- this is diagnostic, not bookkeeping
+    # why runs were inadmissible -- this is diagnostic, not bookkeeping.
+    # Reasons come from the SAME re-derivation usable() applies, so the counts
+    # add up against the coverage line above; reading the row's stored flags
+    # here would report the superseded rule.
     reasons = defaultdict(int)
     for r in recs.values():
-        if r.get("solver_rc") or r.get("admissible"):
+        if r.get("solver_rc") or usable(r, a.dfp_tol):
             continue
-        if r.get("starved"):
-            reasons["dose-starved"] += 1
-        if r.get("grid_limited"):
-            reasons["grid-limited"] += 1
-        if abs(r.get("delta_FP") or 0) >= 1e-3:
-            reasons["delta_FP>=1e-3"] += 1
+        ok, why = grid_ok(r)
+        if not ok:
+            reasons[why] += 1
+        elif abs(r.get("delta_FP") or 0) >= a.dfp_tol:
+            reasons[f"delta_FP>={a.dfp_tol:g}"] += 1
     if reasons:
-        print(f"    inadmissible because: {dict(reasons)}")
+        print("    inadmissible because:")
+        for k, v in sorted(reasons.items(), key=lambda t: -t[1]):
+            print(f"       {v:5d}  {k}")
 
     a.out.mkdir(parents=True, exist_ok=True)
 

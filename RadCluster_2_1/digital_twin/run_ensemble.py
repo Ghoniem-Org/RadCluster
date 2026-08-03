@@ -73,7 +73,14 @@ STOP_FILE = HERE / "CAMPAIGN_STOP"   # graceful-halt sentinel (campaign_ops)
 B111_M = 2.482e-10       # <111> Burgers magnitude [m], for loop_net_w_c units
 PILE_TOP_FRAC = 0.02     # "top 2 % of the grid"
 PILE_TOL = 0.05          # above this the size readout is a ceiling artefact
-OCC_TOL = 0.10           # project occupancy rule (SIA axes only -- see observe())
+OCC_TOL = 0.10           # RECORDED ONLY since 2026-08-03 -- no longer a gate.
+                         # Probe: row 24 at occ_100=0.171 / pile_100=2.3e-10 is
+                         # bit-identical at I=3200 and I=12800.  Occupancy is not
+                         # a truncation test (plan S11(c)-2).
+TOPBIN_TOL = 0.02        # bin_moment: max content fraction in the TOP BIN.
+                         # `pile` is measured on the reconstructed per-size
+                         # distribution and inherits the closure's smoothing;
+                         # this reads the raw moments instead.
 
 # CLAUDE.md S8's own standard: delta_FP below ~1e-6 is good, above 1e-3 signals
 # a coding error.  Admissibility used 1e-3, i.e. it only rejected the "coding
@@ -82,7 +89,22 @@ OCC_TOL = 0.10           # project occupancy rule (SIA axes only -- see observe(
 # (under the old bar) while mean_n_v was still 11 % from converged, and reached
 # 1.4e-7 at V=480 where it had converged.  1e-6 separates those two cleanly and
 # is comfortably met by good configs (production rows run 1.5e-8 to 2.9e-12).
-DFP_TOL = 1e-6
+#
+# 2026-08-03: 1e-6 -> 1e-2 (plan S11(h)).  Three reasons the tightening above
+# was wrong: (i) 1e-6 IS the solver's own rtol, so it rejected for solver noise
+# -- only 12 % of grid-converged v2 rows cleared it; (ii) it was tightened to
+# catch VACANCY truncation, which V=10000 now designs out, and at 1e-2 it still
+# rejects the known-bad case by 53x (row 229 at V=600 sits at 0.530, dropping to
+# 7.1e-6 at V=2400); (iii) bin_moment carries a closure error discrete does not,
+# so a bar set from discrete experience rejects the method rather than the run.
+#
+# THIS VALUE IS ADVISORY.  It sets the worker's own `admissible` field, which
+# feeds only the live monitor.  The gate that decides what enters a Sobol index
+# is applied post-hoc in merge_and_sobol.usable(), from the per-row quantities
+# recorded here -- so a threshold can be revised without re-running anything.
+# That is not a nicety: re-scoring the stopped v2 campaign under the corrected
+# rules moved it from 12 admissible rows to 52 at zero CPU cost.
+DFP_TOL = 1e-2
 
 
 # ------------------------------------------------------------------- utilities
@@ -196,6 +218,82 @@ def apply_theta(sim, spec: dict, row: dict, cond: dict):
     return written
 
 
+# --------------------------------------------------------- bin-moment config
+def apply_bin_config(sim, cfg):
+    """Write the bin-moment layout onto the workbook dict.
+
+    MUST be called after the constructor and before _calculate_derived() +
+    rebuild_rates().  Bin configuration is NOT a constructor argument -- passing
+    i_discrete=/I_bin=/shape_function= to RadClusterSimulation() raises
+    TypeError since 2026-08-02, and before that it was silently dropped, which
+    produced nine bit-identical "refinement" runs (plan S10(i)).
+
+    No-op in discrete mode, so it is safe to call unconditionally.
+    """
+    if cfg["equations"] != "bin_moment":
+        return
+    r = sim.input_data.reactions
+    r["i_discrete"]    = int(cfg["i_discrete"])
+    r["v_discrete"]    = int(cfg["v_discrete"])
+    r["I_bin"]         = int(cfg["I_bin"])
+    r["V_bin"]         = int(cfg["V_bin"])
+    r["shape_function"] = str(cfg["shape_function"])
+
+
+def bin_layout(sim, cfg):
+    """Read the REALISED bin layout back off sim.rate_equations and verify it.
+
+    Two reasons this is not bookkeeping:
+
+    1.  The layout must be read from `rate_equations` (the BinMomentRateEquations
+        that owns i_discrete/I_bin/r/shape_function), NOT `reaction_rates` --
+        querying the wrong object returns nan rather than raising (plan S10(i)).
+    2.  The realised bin count is NOT the requested one.  `r` is derived as
+        (I/i_discrete)**(1/I_bin) and build_bins() then walks floor(edge*r) with
+        a minimum increment of 1, so the walk overshoots or undershoots the
+        target by a bin or two.  Recording the request and silently running a
+        different layout is exactly the class of error S10(i) is about.
+
+    Raises if the request did not take effect at all -- a silent fallback to the
+    coarse default (i_discrete=10, I_bin=6) is the failure mode that must not
+    reach a production row.
+    """
+    out = {}
+    if cfg["equations"] != "bin_moment":
+        return out
+    re_obj = getattr(sim, "rate_equations", None)
+    if re_obj is None:
+        raise RuntimeError("bin_moment requested but sim.rate_equations is None")
+    got_id = int(getattr(re_obj, "i_discrete", -1))
+    got_ib = int(getattr(re_obj, "I_bin", -1))
+    got_vb = int(getattr(re_obj, "V_bin", -1))
+    got_sf = str(getattr(re_obj, "shape_function", "?"))
+    out["bin_i_discrete"] = got_id
+    out["bin_v_discrete"] = int(getattr(re_obj, "v_discrete", -1))
+    out["bin_I_bin"] = got_ib
+    out["bin_V_bin"] = got_vb
+    out["bin_r"] = float(getattr(re_obj, "r", float("nan")))
+    out["bin_shape"] = got_sf
+    out["bin_n_mom"] = int(getattr(re_obj, "n_mom", -1))
+    out["N_eq"] = int(getattr(re_obj, "N_eq", -1))
+    # The request must have LANDED.  i_discrete and shape_function are set
+    # verbatim, so they must match exactly; the bin counts are allowed to drift
+    # by the floor() walk but not to collapse to the default.
+    if got_id != int(cfg["i_discrete"]) or got_sf != str(cfg["shape_function"]):
+        raise RuntimeError(
+            f"bin config did not take effect: asked i_discrete="
+            f"{cfg['i_discrete']} shape={cfg['shape_function']}, "
+            f"rate_equations reports i_discrete={got_id} shape={got_sf}. "
+            f"This is the silent-default failure of plan S10(i).")
+    for name, want, got in (("I_bin", int(cfg["I_bin"]), got_ib),
+                            ("V_bin", int(cfg["V_bin"]), got_vb)):
+        if want > 0 and abs(got - want) > max(3, 0.2 * want):
+            raise RuntimeError(
+                f"bin config {name}: asked {want}, realised {got} -- too far "
+                f"off to be the floor() walk. Check i_discrete < I.")
+    return out
+
+
 # ------------------------------------------------------------- one evaluation
 def evaluate(args):
     row, spec, cond, cfg = args
@@ -225,8 +323,10 @@ def evaluate(args):
                 C_floor=cfg["C_floor"], he_kinetics="quasi_steady_state",
                 i_mobile=i_mob, v_mobile=v_mob)
             written = apply_theta(sim, spec, row, cond)
+            apply_bin_config(sim, cfg)
             sim.input_data._calculate_derived()
             sim.rebuild_rates()
+            rec.update(bin_layout(sim, cfg))
             G = float(sim.input_data.reactions["G"])
             scfg = {"t_span": (1e-6, cfg["dose"] / G), "n_points": cfg["n_points"],
                     "log_time": True, "rtol": cfg["rtol"], "atol": cfg["atol"],
@@ -248,6 +348,102 @@ def evaluate(args):
         rec["admissible"] = False
     rec["wall_s"] = round(time.time() - t0, 1)
     return rec
+
+
+def per_size_populations(res, sim, cfg):
+    """Return (c111, c_v, binned, topbin) at the FINAL time, per size.
+
+    One extraction that works in both modes, so every downstream gate is
+    computed the same way and is comparable across the discrete/bin_moment
+    bridge (plan S11(e)-2).
+
+      discrete    : `y` is (I + V + extras, nt) -- plain slices.
+      bin_moment  : `y` is (N_eq, nt) with the layout
+                    [0 : i_d]                       discrete SIA
+                    [i_d : i_d + P*I_bin]           SIA bin moments, P per bin
+                    [i_VAC : i_VAC + v_d]           discrete vacancies
+                    [i_VAC+v_d : ... + P*V_bin]     vacancy bin moments
+                    mirroring RadClusterSimulation._size_distributions.
+
+    `topbin` maps axis -> content fraction in the top bin, computed from the RAW
+    mu1 moments (not the reconstruction).  Empty dict in discrete mode.
+
+    Returns c111 / c_v as None when an axis genuinely cannot be extracted; the
+    caller treats None as FAILING the gate, never as passing.
+    """
+    I, V = int(cfg["I"]), int(cfg["V"])
+    y = res.get("y")
+    topbin = {}
+    if y is None:
+        return None, None, False, topbin
+    y = np.asarray(y)
+    if y.ndim != 2:
+        return None, None, False, topbin
+    yj = np.maximum(y[:, -1], 0.0)
+
+    re_obj = getattr(sim, "rate_equations", None)
+    binned = cfg.get("equations") == "bin_moment" and hasattr(re_obj, "bins")
+
+    if not binned:
+        c111 = yj[:I] if yj.shape[0] >= I else None
+        c_v = yj[I:I + V] if yj.shape[0] >= I + V else None
+        return c111, c_v, False, topbin
+
+    from RadCluster_2_1.py_utils.bin_moment_rates import reconstruct_distribution
+    P = int(getattr(re_obj, "n_mom", 2))
+    sf = str(getattr(re_obj, "shape_function", "linear"))
+    i_d = int(getattr(re_obj, "i_discrete", 0))
+    v_d = int(getattr(re_obj, "v_discrete", 0))
+    I_bin = int(getattr(re_obj, "I_bin", 0))
+    V_bin = int(getattr(re_obj, "V_bin", 0))
+    i_vac = int(getattr(re_obj, "i_VAC", i_d + P * I_bin))
+
+    def _axis(start, n_bins, n_disc, bins, n_max, disc_start):
+        """Reconstruct one axis and its top-bin content fraction."""
+        if n_bins <= 0:
+            c = np.zeros(n_max)
+            c[:n_disc] = yj[disc_start:disc_start + n_disc]
+            return c, None
+        mom = yj[start:start + P * n_bins]
+        if mom.size < P * n_bins:
+            return None, None
+        mu0 = mom[0::P][:n_bins]
+        mu1 = mom[1::P][:n_bins] if P >= 2 else None
+        mu2 = mom[2::P][:n_bins] if P >= 3 else None
+        c = reconstruct_distribution(sf, mu0, mu1, mu2, bins, n_max)
+        c[:n_disc] = yj[disc_start:disc_start + n_disc]
+        # Top-bin content fraction from the RAW moments.  mu1 is content
+        # (sum n*c_n); with P==1 there is no mu1, so fall back to mu0 weighted
+        # by the bin's geometric midpoint.
+        if mu1 is not None:
+            tot = float(np.sum(np.maximum(mu1, 0.0)))
+            frac = float(max(mu1[-1], 0.0)) / tot if tot > 0 else None
+        else:
+            mid = np.array([(lo + hi - 1) / 2.0 for lo, hi in bins])
+            w = mid * np.maximum(mu0, 0.0)
+            tot = float(w.sum())
+            frac = float(w[-1]) / tot if tot > 0 else None
+        return c, frac
+
+    c111, topbin["111"] = _axis(i_d, I_bin, i_d, getattr(re_obj, "bins", []),
+                                I, 0)
+    c_v, topbin["v"] = _axis(i_vac + v_d, V_bin, v_d,
+                             getattr(re_obj, "vac_bins", []), V, i_vac)
+
+    # <100> is emitted per-size in both modes (y_sia100), so its top-bin figure
+    # is taken on the SIA bin partition it shares with <111>.
+    y100 = res.get("y_sia100")
+    if y100 is not None:
+        y100 = np.asarray(y100)
+        if y100.ndim == 2 and y100.shape[0] >= I and I_bin > 0:
+            c100 = np.maximum(y100[:I, -1], 0.0)
+            n_ax = np.arange(1, I + 1)
+            k100 = n_ax * c100
+            tot = float(k100.sum())
+            if tot > 0:
+                lo, hi = getattr(re_obj, "bins", [(I, I + 1)])[-1]
+                topbin["100"] = float(k100[lo - 1:min(hi - 1, I)].sum()) / tot
+    return c111, c_v, True, topbin
 
 
 def observe(res, sim, cfg, d_min_nm):
@@ -302,21 +498,29 @@ def observe(res, sim, cfg, d_min_nm):
     out["d_ceiling_100_nm"] = d_ceil
     out["d_over_ceiling_100"] = out["d_100_nm"] / d_ceil if d_ceil > 0 else None
 
-    y, y100 = res.get("y"), res.get("y_sia100")
+    # PER-SIZE EXTRACTION.  In discrete mode `y` is the per-size state and this
+    # is a slice.  In bin_moment mode `y` is (N_eq, nt) with N_eq ~ 150 -- the
+    # old code sliced y[:I] out of it, got N_eq rows back, and died on the
+    # broadcast against arange(1, I+1).  Worse, the vacancy guard below tested
+    # `y.shape[0] >= I + V`, which is false for a binned state, so pile_v fell
+    # through to None and the gate read None as PASSING (plan S11(h)).
+    c111, c_v, binned, topbin = per_size_populations(res, sim, cfg)
+    y100 = res.get("y_sia100")
     pile111 = pile100 = None
     f_num = f_cont = f_tem = None
-    if y is not None:
-        y = np.asarray(y)
-        if y.ndim == 2:
-            n_ax = np.arange(1, I + 1)
-            c111 = np.maximum(y[:I, -1] - cfg["C_floor"], 0.0)
-            top = int((1 - PILE_TOP_FRAC) * I)
-            k111 = n_ax * c111
-            if k111.sum() > 0:
-                pile111 = float(k111[top:].sum() / k111.sum())
-            if y100 is not None:
-                y100 = np.asarray(y100)
-                if y100.ndim == 2:
+    if c111 is not None:
+        n_ax = np.arange(1, I + 1)
+        top = int((1 - PILE_TOP_FRAC) * I)
+        c111 = np.maximum(c111 - cfg["C_floor"], 0.0)
+        k111 = n_ax * c111
+        if k111.sum() > 0:
+            pile111 = float(k111[top:].sum() / k111.sum())
+        if y100 is not None:
+            y100 = np.asarray(y100)
+            # y_sia100 is emitted PER-SIZE (I, nt) in BOTH modes -- verified
+            # 2026-08-03 on a binned run (N_eq=55, y_sia100 shape (200, 20)) --
+            # so the <100> path needs no reconstruction.
+            if y100.ndim == 2 and y100.shape[0] >= I:
                     c100 = np.maximum(y100[:I, -1] - cfg["C_floor"], 0.0)
                     k100 = n_ax * c100
                     if k100.sum() > 0:
@@ -364,11 +568,13 @@ def observe(res, sim, cfg, d_min_nm):
     # corrupts, and nothing was checking that axis.
     #
     # State layout (discrete): SIA 0..I-1, vacancies I..I+V-1.
+    # (bin_moment): i_discrete + P*I_bin + v_discrete + P*V_bin + He extras,
+    # handled by per_size_populations() above.
     V = int(cfg["V"])
     pile_v = None
-    if y is not None and getattr(y, "ndim", 0) == 2 and y.shape[0] >= I + V:
+    if c_v is not None:
         m_ax = np.arange(1, V + 1)
-        c_v = np.maximum(y[I:I + V, -1] - cfg["C_floor"], 0.0)
+        c_v = np.maximum(c_v - cfg["C_floor"], 0.0)
         k_v = m_ax * c_v
         if k_v.sum() > 0:
             pile_v = float(k_v[int((1 - PILE_TOP_FRAC) * V):].sum() / k_v.sum())
@@ -381,13 +587,39 @@ def observe(res, sim, cfg, d_min_nm):
     # occ_v = 0.319 (V=480).  Rejecting on occ_v > 0.10 would demand V >~ 1600 to
     # accept an answer that is already converged at 480.
     #
-    # The vacancy axis is guarded instead by pile_v and by delta_FP, which --
-    # unlike on the SIA axis -- is genuinely sensitive here.
+    # occ_111 / occ_100 are now recorded on the SAME footing -- WITHDRAWN as
+    # reject criteria on 2026-08-03 (plan S11(c)-2).  Probe: row 24 at
+    # occ_100 = 0.171 with pile_100 = 2.3e-10 returns d100 = 5.3573 and
+    # N100 = 3.99268e21 at BOTH I=3200 and I=12800.  Occupancy is not a
+    # truncation test; pile is.  Under the old rule 71 of 275 v2 rows with no
+    # measurable truncation were discarded.
     bad_pile = (pile100 is not None and pile100 > PILE_TOL) or \
                (pile111 is not None and pile111 > PILE_TOL) or \
                (pile_v is not None and pile_v > PILE_TOL)
-    out["grid_limited"] = bool(bad_pile or out["occ_111"] > OCC_TOL
-                               or out["occ_100"] > OCC_TOL)
+
+    # TOP-BIN GATE (bin_moment only).  `pile` is measured on the RECONSTRUCTED
+    # per-size distribution, so it inherits the closure's smoothing and can look
+    # clean while the top BIN -- the thing that actually holds the overflow --
+    # is loaded.  Gate on the raw moments as well.
+    bad_topbin = False
+    for axis in ("111", "100", "v"):
+        val = topbin.get(axis)
+        out[f"topbin_{axis}"] = val
+        if val is not None and val > TOPBIN_TOL:
+            bad_topbin = True
+
+    # FAIL CLOSED.  A missing truncation measure is not a pass.  Before
+    # 2026-08-03 an uncomputable pile_v silently satisfied the gate, which is
+    # exactly how a binned run would have reported an unguarded vacancy axis as
+    # clean.  If we could not measure an axis, we do not certify it.
+    unmeasured = [nm for nm, val in (("pile_111", pile111), ("pile_100", pile100),
+                                     ("pile_v", pile_v)) if val is None]
+    if binned:
+        unmeasured += [f"topbin_{ax}" for ax in ("111", "100", "v")
+                       if topbin.get(ax) is None]
+    out["unmeasured_gates"] = unmeasured or None
+
+    out["grid_limited"] = bool(bad_pile or bad_topbin or unmeasured)
     out["admissible"] = bool((not out["starved"]) and (not out["grid_limited"])
                              and abs(out["delta_FP"]) < DFP_TOL)
     return out
@@ -469,7 +701,31 @@ def main(argv=None):
     ap.add_argument("--I", type=int, default=800)
     ap.add_argument("--V", type=int, default=600)
     ap.add_argument("--dose", type=float, default=0.1)
-    ap.add_argument("--equations", default="discrete")
+    ap.add_argument("--equations", default="discrete",
+                    choices=["discrete", "bin_moment"])
+    # --- bin_moment layout (ignored unless --equations bin_moment) -----------
+    # These are NOT constructor kwargs; apply_bin_config() writes them to the
+    # workbook dict and bin_layout() verifies they landed.  Defaults are the
+    # plan S11(f) rev-6 campaign values, NOT the library defaults -- the library
+    # default (i_discrete=10, I_bin=6) is the coarse binning plan S10(i) warns
+    # about, and silently running it is the failure this whole block prevents.
+    ap.add_argument("--i-discrete", type=int, default=50,
+                    help="max individually-tracked SIA size; must be >= i_mobile")
+    ap.add_argument("--v-discrete", type=int, default=5,
+                    help="max individually-tracked vacancy size; must be >= v_mobile")
+    ap.add_argument("--i-bin", type=int, default=25,
+                    help="target SIA bin count; r=(I/i_discrete)^(1/I_bin) is DERIVED")
+    ap.add_argument("--v-bin", type=int, default=25,
+                    help="target vacancy bin count; r derived the same way")
+    ap.add_argument("--shape-function", default="linear",
+                    choices=["constant", "linear", "lognormal"],
+                    help="intra-bin closure: P=1/2/3 moments per bin")
+    # Used only when the DESIGN does not carry an i_mobile / v_mobile column.
+    # Rev 6 withdraws both from theta (plan S11(f)) precisely because a sampled
+    # i_mobile would change the bin layout row to row, so under rev 6 these are
+    # the campaign values, not fallbacks.
+    ap.add_argument("--i-mobile-default", type=int, default=10)
+    ap.add_argument("--v-mobile-default", type=int, default=5)
     ap.add_argument("--solver-mode", default="active_window",
                     choices=["active_window", "full_system"],
                     help="active_window (default) keeps the ACTIVE system at "
@@ -538,8 +794,46 @@ def main(argv=None):
                "rtol": a.rtol, "atol": 1e-20, "C_floor": 1e-25,
                "solver_mode": a.solver_mode, "linsol": "gmres",
                "preconditioner": precond, "loop_conversion": 1,
-               "i_mobile_default": 10, "v_mobile_default": 5,
+               "i_mobile_default": a.i_mobile_default,
+               "v_mobile_default": a.v_mobile_default,
                "n_points": 40, "timeout_s": a.timeout_s}
+    # The bin layout changes the numerics as much as I/V do, so it belongs in
+    # run_cfg_sha.  Added only in bin_moment mode so an existing discrete
+    # campaign's hash -- and therefore its resume check -- is unchanged.
+    if a.equations == "bin_moment":
+        run_cfg.update({"i_discrete": a.i_discrete, "v_discrete": a.v_discrete,
+                        "I_bin": a.i_bin, "V_bin": a.v_bin,
+                        "shape_function": a.shape_function})
+        if a.i_discrete >= a.I or a.v_discrete >= a.V:
+            raise SystemExit(
+                f"bin_moment needs i_discrete < I and v_discrete < V; got "
+                f"i_discrete={a.i_discrete} I={a.I}, v_discrete={a.v_discrete} "
+                f"V={a.V}. Otherwise I_bin collapses to 0 and the run is "
+                f"silently fully discrete.")
+        # Mobile sizes must be individually resolved -- a mobile cluster living
+        # inside a bin has no per-size concentration for the coalescence and
+        # annihilation sums to use.
+        if a.i_discrete < a.i_mobile_default or a.v_discrete < a.v_mobile_default:
+            raise SystemExit(
+                f"bin_moment needs i_discrete >= i_mobile and v_discrete >= "
+                f"v_mobile; got i_discrete={a.i_discrete} vs i_mobile="
+                f"{a.i_mobile_default}, v_discrete={a.v_discrete} vs v_mobile="
+                f"{a.v_mobile_default}.")
+        # A SAMPLED i_mobile/v_mobile changes i_discrete, hence the bin layout
+        # and N_eq, from row to row.  A variance decomposition across rows that
+        # do not share a discretisation is not interpretable, which is why plan
+        # S11(f) withdraws both from theta for the bin_moment campaign.  Catch
+        # the stale-design case here rather than after 1000 rows.
+        sampled = sorted({k for k in ("i_mobile", "v_mobile")
+                          if any(k in r for r in rows)})
+        if sampled and not a.allow_mixed:
+            raise SystemExit(
+                f"design carries sampled {'/'.join(sampled)} but --equations "
+                f"bin_moment fixes the bin layout from --i-discrete/--v-discrete. "
+                f"Rows would not share a discretisation and their indices would "
+                f"not be comparable (plan S11(f)).\n"
+                f"  Use a design with {'/'.join(sampled)} withdrawn from theta, "
+                f"or pass --allow-mixed if you have a specific reason.")
     run_cfg_sha = hashlib.sha256(
         json.dumps(run_cfg, sort_keys=True).encode()).hexdigest()[:16]
     prov = {"git_sha": git_sha(), "machine_id": platform.node(),

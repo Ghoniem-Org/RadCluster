@@ -96,6 +96,20 @@ A shared network drive works equally well — point every machine's `--out` at i
 and skip the commits. Manual copy is the fallback; nothing depends on the files
 arriving together.
 
+**Stopping a distributed campaign — the stop flag does NOT travel.**
+`campaign_ops.request_stop()` writes a local `CAMPAIGN_STOP` sentinel that only
+the workers on *that* machine poll. It is not in git, and a running worker never
+pulls. To halt all four machines you must, on **each** of them:
+
+```python
+import campaign_ops as ops; ops.request_stop('reason here')
+```
+
+or kill the `run_ensemble.py` PID directly. Either is safe: rows are appended as
+they complete, so nothing already written is lost and a restart resumes by
+skipping `row_id`s already present. This had to be done by hand on 2026-08-03
+and is worth automating if the campaign ever exceeds four machines.
+
 **What the tally checks for you.** It prints a `PROVENANCE SPLIT` warning if the
 machines disagree on `git_sha`, `solver_sha256`, `workbook_sha256` or
 `design_sha256`, and it reports missing `row_id`s bucketed by `row_id % 4` — a
@@ -129,7 +143,7 @@ saturate the grid. Every row therefore carries:
 
 | field | meaning |
 |---|---|
-| `occ_111`, `occ_100` | mean size / `I` — project rule: `> 0.1` is suspect |
+| `occ_111`, `occ_100` | mean size / `I` — **recorded only, no longer a reject rule** (see below) |
 | `pile_111`, `pile_100` | content fraction in the top 2 % of the grid |
 | `d_over_ceiling_100` | `d_100 / d(n=I)` |
 | `dose_reached`, `starved` | did it reach the requested dose |
@@ -139,6 +153,25 @@ saturate the grid. Every row therefore carries:
 A row that is **inadmissible is not a failed row** — it ran fine and conserves,
 but its observables measure the grid rather than the physics. The smoke test at
 `I = 150` produced exactly this: `pile = 0.996`, correctly rejected.
+
+> **Revised 2026-08-03 after the T2-v2 stop — plan §11(c).** Two of these gates
+> were rejecting good rows. Of 275 completed v2 rows, 100 were genuinely
+> grid-converged and only 12 were scored admissible.
+>
+> - **`occ > 0.10` is withdrawn as a reject criterion.** Row 24 (`occ_100 = 0.171`,
+>   `pile_100 = 2.3e-10`) returns `d100 = 5.3573` and `N100 = 3.99268e21` at both
+>   `I = 3200` and `I = 12800` — identical. Occupancy is not a truncation test.
+>   The same argument was already accepted for `occ_v` in plan §10(j)-1.
+> - **`δ_FP < 1e-6` equals the solver's own `rtol`** and was rejecting for solver
+>   noise; 88 % of grid-converged rows failed it. Moving to `1e-2` for the
+>   bin-moment campaign — plan §11(h).
+> - **`pile_v ≤ 0.05` is too loose to guard the vacancy axis.** At `I = 12800`,
+>   `V = 600`, row 229 *passed* `pile_v` at 0.026 while `mean_n_v` was 61 % low
+>   and `N_100` 20 % off; `δ_FP` caught it at 0.530, dropping to 7.1e-6 at
+>   `V = 2400`. **`δ_FP` is the working vacancy guard, not `pile_v`.**
+>
+> Apply admissibility **post-hoc in `merge_and_sobol.py`**, not in the worker, so
+> a threshold can be revised without re-running anything.
 
 ## Failure handling — pairwise, not global
 
@@ -211,6 +244,34 @@ state its binning is comparing against that.
    Screening `w_c`, `χ`, `K_rec` on such a grid returns `S_i = 0` for all three
    and looks exactly like a genuine screening result. `χ` nominal has been moved
    1.0 → 5.0 accordingly.
-6. **`bin_moment` + `loop_conversion` is broken** (T0.5(c5)) and fails silently.
-   Discrete grids large enough for the calibrated ⟨100⟩ sizes cost ~3 h/run,
-   which does not scale to this campaign. This is the gating item.
+6. ~~**`bin_moment` + `loop_conversion` is broken** (T0.5(c5)) and fails
+   silently.~~ **Stale — corrected in plan §10(c).** The recorded diagnosis was
+   wrong. The bin-moment ⟨100⟩ reconstruct→transfer→project block *is*
+   implemented; the real defect was `post_process.py` flooring `μ₀` and `μ₁`
+   independently, which corrupted **every** `bin_moment` run through all three
+   populations, conversion on or off. Fixed 2026-08-02 by a shared
+   `_floor_bin_moments()`. ⟨100⟩ under `bin_moment` at genuine refinement is
+   therefore **untested, not broken** — it is gate §11(i)-1 of the plan and the
+   assumption the rev-6 campaign rests on. `bin_moment` results predating
+   2026-08-02 remain suspect.
+
+## Status — T2-v2 stopped 2026-08-03, superseded by plan §11
+
+The v2 campaign (`discrete`, `I=3200`, `V=600`, 0.1 dpa) was halted at 275 of
+1104 rows having produced **12 admissible rows from 182 core-hours**. Root cause:
+the grid was certified against two values of a *single* parameter
+(`dH2_abs_conv`) and then run over a 21-parameter box in which `L_hat` — spanning
+three decades and never varied in that study — is the strongest driver of grid
+demand.
+
+The replacement campaign is specified in **plan §11**: `bin_moment`,
+`I = V = 10000`, `i_mobile = 50`, `v_mobile = 5`, 25 + 25 bins, 1 dpa, `p = 19`.
+**Do not launch it before the six pre-flight gates in §11(i) pass** — in
+particular the ⟨100⟩ closure validation and a regenerated
+`machine_reference.json`, which cannot certify a bin-moment build as it stands.
+
+Also note, from plan §11(c)-4: **`active_window` is not free in `I`.** A
+bit-identical trajectory costs 14× more going from `I = 3200` to `I = 25600`,
+because CVODE's vector arithmetic runs over the full `N_eq ≈ 2I + V` even though
+the RHS correctly masks to the sliding window. This is why the campaign moves to
+`bin_moment` rather than simply enlarging the discrete grid.

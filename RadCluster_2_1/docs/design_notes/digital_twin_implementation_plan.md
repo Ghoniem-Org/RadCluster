@@ -1877,3 +1877,562 @@ check would have:
 
 Both were introduced or exposed by this session's own edits, which is the
 argument for the smoke test being a standing gate rather than a one-off.
+
+---
+
+## 11. Revision 6 — the T2-v2 stop and the bin-moment redesign (2026-08-03)
+
+The T2-v2 campaign was **halted at 275 of 1104 rows**. It was producing 4.4 %
+usable output. This revision records why, what the completed rows are still
+worth, and the redesigned campaign that replaces it.
+
+### (a) What the stopped campaign actually produced
+
+275 rows, **182 core-hours**, **12 admissible (4.4 %)**. The loss was not one
+failure but three independent ones, stacked:
+
+| gate | survivors | lost here |
+|---|---|---|
+| completed, not starved | 274 | — |
+| `pile ≤ 0.05` — real grid truncation | **100** | 175 |
+| `occ ≤ 0.10` | **29** | 71 |
+| `\|δ_FP\| < 1e-6` | **12** | 17 |
+
+Only the first cut is physics. 95 of the 182 core-hours went to rows that were
+truncated; the remaining 87 core-hours bought 100 grid-converged rows, of which
+the scoring rules then discarded 88.
+
+Wall-time distribution: median 429 s, **mean 2380 s**, max 39 303 s. The mean is
+5.5× the median — a long tail that a fixed `--timeout-s 10800` does not bound
+usefully.
+
+### (b) Root cause — the grid was certified at two points in a 21-dimensional box
+
+Revision 5 §(d) and §(k) certified `I_GRID = 3200` against a "nominal" and a
+"corner". Both were values of a **single** parameter, `dH2_abs_conv`
+(h = 0.273 and h = 0.260). The campaign then sampled the full 21-parameter
+Saltelli box.
+
+Rank correlation of `log pile_100` against θ over the 275 completed rows:
+
+| parameter | ρ vs `log pile_100` | ρ vs `wall_s` |
+|---|---|---|
+| `L_hat` | **−0.424** | −0.263 |
+| `dH2_conv` | +0.315 | −0.051 |
+| `phi_max_junc` | −0.279 | −0.465 |
+| `dH2_abs_conv` | +0.206 | +0.286 |
+| `i_mobile` | +0.040 | **+0.465** |
+
+`L_hat` — log-uniform over 3.5–3500, **three decades** — is the strongest single
+driver of grid demand, and it was held at nominal for the entire grid study.
+`dH2_abs_conv`, the one parameter that *was* varied, ranks fourth.
+
+Revision 5 §(f) set `dH2_abs_conv`'s lower bound at 0.26 because "below 0.26 the
+loops outgrow any affordable grid". That reasoning was right in kind and wrong in
+scope: it treated one parameter as the grid-cost axis when at least four matter.
+
+> **Rule adopted in rev 6: a grid is certified against the design, not against a
+> corner.** The procedure is §(i)-3 below. A one-parameter scan may not be used
+> to justify a grid for a many-parameter ensemble again.
+
+### (c) Three probe experiments, 2026-08-03
+
+Run through `run_ensemble.evaluate` so the numbers are the harness's own.
+
+| probe | config | result |
+|---|---|---|
+| **1 — is a pile-clean row grid-converged?** row 825, `pile=8.8e-10` | I = 3200 / 12800 / 25600 | `d100` = 3.323 / 3.323 / 3.323; `N100` = 8.4708e21 at all three; `f100` agrees to 8 s.f. Wall 13.4 / 66.3 / 186.7 s |
+| **2 — does `occ > 0.10` reject converged rows?** row 24, `occ=0.171`, `pile=2.3e-10` | I = 3200 / 12800 | `d100` = 5.3573 / 5.3573; `N100` = 3.99268e21 / 3.99268e21; `δ_FP` identical |
+| **3 — is a large `δ_FP` a vacancy-grid artefact?** row 229, I = 12800 | V = 600 / 2400 | `δ_FP` **0.530 → 7.08e-6**; `mean_n_v` 276 → 709; `N100` 3.42e22 → 2.72e22; `f100` 0.1412 → 0.1182 |
+
+Four conclusions, each of which changes a rule:
+
+1. **A pile-clean row is exactly grid-converged.** Probe 1 reproduces to eight
+   significant figures across an 8× grid range. This is what makes completed rows
+   reusable at all, and it is the licence for the per-row grid ladder in §(i)-3.
+2. **`occ` is not a truncation test — withdrawn as a reject criterion.** Probe 2
+   is a row rejected solely for occupancy whose observables do not move at 4× the
+   grid. Rev-5 §(j)-1 already accepted exactly this argument for `occ_v`; it
+   applies unchanged to `occ_111` and `occ_100`. `occ` remains **recorded** as a
+   warning field.
+3. **`δ_FP` is the working guard on the vacancy axis, and `pile_v ≤ 0.05` is too
+   loose to be one.** In probe 3 the V = 600 run **passed** `pile_v` at 0.026
+   while `mean_n_v` was 61 % low and `N_100` 20 % off. Only `δ_FP` caught it.
+   This corrects rev-5 §(j)'s closing table ("a 4× increase in V moves the void
+   observables by 0.0 %"), which was measured at `I = 800`, nominal θ, and does
+   not hold across the box.
+4. **`active_window` is not free in `I`.** Probe 1's trajectory is bit-identical
+   across I = 3200 → 25600 and costs **14× more**. Rev-5 §(e)'s "active system
+   50–200 unknowns regardless of `I`" is true of the RHS — `rate_kernels.cpp`
+   masks both the ½⟨111⟩ loop (`x_hi_i_win`) and the ⟨100⟩ block
+   (`nhi = min(I, x_hi_i_win + 1)`) with the window frontier — but not of total
+   cost: CVODE's vector arithmetic, error tests and GMRES all still run over the
+   full `N_eq ≈ 2I + V`. **This is the reason `discrete` cannot simply be given a
+   bigger grid, and the reason the rev-6 campaign moves to `bin_moment`.**
+
+### (d) Pooling results across machines — the transport protocol
+
+`digital_twin/results/` is **not** gitignored (verified 2026-08-03), so git is
+the transport with no further setup. Per-machine files never touch the same
+bytes and cannot merge-conflict.
+
+On each machine k, at any checkpoint and again at the end:
+
+```bash
+cd RadCluster_2_1/digital_twin
+git add results/<design>_machine$K.jsonl results/worker_machine$K.log
+git commit -m "T2 results, machine $K, $(date -u +%Y-%m-%dT%H:%MZ)"
+git pull --rebase && git push
+```
+
+To tally, anywhere:
+
+```bash
+git pull
+python merge_and_sobol.py --design design/<design>.csv --results results/
+```
+
+Three properties that make this safe, all already implemented:
+
+- Merging is keyed on `row_id` — order-independent and idempotent.
+- `merge_and_sobol.py` prints a **PROVENANCE SPLIT** warning if machines
+  disagree on `git_sha`, `solver_sha256`, `workbook_sha256` or `design_sha256`,
+  and reports missing `row_id`s bucketed by `row_id % M`, so a machine that never
+  reported is visible rather than silently shrinking the sample.
+- Rows append as they complete, so a partial campaign tallies at any time.
+
+**Stop control is per-machine and does not travel.** `campaign_ops.request_stop()`
+writes a local `CAMPAIGN_STOP` sentinel; it is not in git and a running worker
+does not pull. To halt a distributed campaign, run `ops.request_stop(reason)` on
+**each** machine (or kill the `run_ensemble.py` PID — rows already written are
+safe either way). This is what had to be done by hand on 2026-08-03 and is worth
+automating if the campaign ever exceeds four machines.
+
+### (e) What the completed v2 rows can and cannot do for rev 6
+
+**They cannot be pooled into the rev-6 Sobol estimate.** This has to be stated
+plainly because it is the one thing the redesign cannot deliver. A Sobol index
+estimates the variance decomposition of one fixed function `f(θ)`. Rev 6 changes
+`f` in four independent ways — dose 0.1 → 1 dpa, `discrete` → `bin_moment`, the
+grid, and `i_mobile`/`v_mobile` moving from sampled to fixed. The v2 rows measure
+a different function. Pooling them would not be noisy, it would be wrong, in the
+same way and for the same reason as the unpaired-design failure in §"Why the
+design is generated once".
+
+Fixing `i_mobile` and `v_mobile` additionally drops `p` from 21 to 19, so the
+Saltelli matrix is regenerated and `row_id → θ` is remapped. There is no
+row-level correspondence to preserve.
+
+**But they improve the rev-6 Sobol estimate itself, in four ways.** "Cannot be
+pooled" is not "cannot be used". Everything below extracts information from the
+v2 rows that makes the *new* design better, without a single v2 evaluation
+entering an index.
+
+---
+
+#### (e1) Assign the influential parameters to the leading Sobol dimensions
+
+`design.active_params()` orders parameters by `p["id"]` — the order they happen
+to appear in `parameters.json`. Dimension `k` of the Sobol sequence is therefore
+assigned arbitrarily. That is a free loss: a Sobol sequence is **not** equally
+well distributed in all dimensions. Its low-dimensional projections are the
+best-balanced, and at `N = 16` — sixteen base points in nineteen dimensions —
+the difference between a leading and a trailing dimension is not subtle.
+
+The v2 rows give the influence ranking needed to fix it, and they give it
+*without* the Saltelli pairing: a rank-correlation dependence measure works on
+any sample, so a campaign that never produced a valid index can still produce a
+valid ordering. Over the **99 pile-clean v2 rows** (grid-converged, so the
+observables are physics rather than ceiling), scoring each parameter by
+`0.5·mean|ρ| + 0.5·max|ρ|` across the eight screened observables:
+
+| rank | parameter | mean\|ρ\| | max\|ρ\| | strongest channel |
+|---|---|---|---|---|
+| 1 | `E_a0_conv` | 0.316 | **0.850** | `f_100_tem_1` |
+| 2 | `gamma_s` | 0.318 | 0.682 | `f_100_tem_1` |
+| 3 | `E_b_i2` | 0.308 | 0.652 | `f_100_tem_1` |
+| 4 | `E_m_v` | 0.200 | 0.730 | `N_voids` |
+| 5 | `dH2_abs_conv` | 0.271 | 0.587 | `N_loops_111` |
+| 6 | `E_b_v2` | 0.308 | 0.481 | `N_loops_100` |
+| 7 | `Z_i` | 0.191 | 0.564 | `N_loops_111` |
+| 8 | `phi_max_junc` | 0.243 | 0.509 | `N_loops_111` |
+| 9 | `dH2_conv` | 0.286 | 0.444 | `f_100_tem_1` |
+| 10–19 | `f_cl_i`, `E_m_i`, `E_b_hV_1`, `B_111`, `L_hat`, `E_m_h`, `f_cl_v`, `lambda`, `Z_i_loop`, `eta` | ≤ 0.22 | ≤ 0.48 | — |
+
+**This ranking is independently corroborated**, which is the reason to trust it
+rather than treat it as a fishing expedition: the Tier 2 section predicted, in
+advance and on physical grounds, that "`E_a0_conv` should dominate the `f₁₀₀`
+channel". It comes out first, at |ρ| = 0.85 on exactly that channel. A method
+that reproduces a pre-registered prediction from an unrelated sample is a method
+worth using for the ordering.
+
+**Action:** give `active_params()` an explicit `dimension_order` list, defaulting
+to the ranking above, and record it in the design sidecar. The physical `θ` box
+is unchanged — this only chooses which prior gets which Sobol axis, so it costs
+nothing and cannot bias anything.
+
+*Caveat, recorded honestly:* the ranking comes from 0.1 dpa `discrete` rows, and
+rank correlation measures monotone first-order dependence, so it will
+under-rank a purely interaction-driven parameter. It is used only to order
+dimensions — a wrong ordering degrades efficiency, never correctness.
+
+#### (e2) Set `N` from the measured admissible fraction, not from a round number
+
+`N = 16` was chosen when a run was believed to cost ~40 s. The binding
+constraint is not cost but **`n_eff`**: an index computed from a handful of base
+points is not a screening result, and the plan already says to read `n_eff`
+first. `n_eff ≈ N × (admissible fraction)`, and v2 is the only measurement of
+that fraction there has ever been.
+
+Of the 99 pile-clean v2 rows, **52 also cleared `δ_FP < 1e-2`** — a 53 %
+admissible fraction *among rows that were not grid-limited at all*. At `N = 16`
+that is `n_eff ≈ 8`, below the plan's own "`n_eff` LOW" warning line of `N/2`.
+
+Most of that δ_FP attrition should disappear at `V = 10000` — probe 3 shows the
+failures were vacancy truncation, not physics. But `bin_moment` adds closure
+error in the other direction, and the two effects are not known to cancel.
+**Do not guess: gate §(i)-3 already runs 32 θ at the rev-6 configuration, so it
+measures the admissible fraction directly. Set `N` from that measurement, with
+`N × fraction ≥ 12` as the floor.** If the fraction lands near 0.5, `N = 32`
+rather than 16 — which the Sobol sequence supports by extension, not
+regeneration, so `N = 16` may be launched first and grown if the gate says so.
+
+#### (e3) Order the work so that stopping early leaves a *valid smaller design*
+
+This is the failure that cost 182 core-hours, and it is a scheduling property,
+not a physics one.
+
+v2 was submitted in `row_id` order and distributed by `row_id % 4`, so at the
+moment it was stopped the completed set was **whichever rows happened to be
+cheap** — and cost is strongly θ-correlated (`ρ = +0.465` with `i_mobile`,
+`−0.465` with `phi_max_junc`). A subsample selected on a θ-correlated variable
+is a biased subsample. Pairwise deletion handles *missing* rows correctly, but
+it cannot repair a completion order that is itself a function of θ.
+
+The fix uses the nested property the plan already relies on for Tier 3: **the
+first `M` base points of a Sobol sequence are themselves a valid low-discrepancy
+design.** So if the campaign always holds a *complete prefix of base points*, a
+campaign stopped at any moment is an unbiased `N = M` campaign rather than a
+biased `N = 16` one.
+
+**Action:** schedule by `base_idx`, not by `row_id`. Work base point `i` to
+completion across all machines before opening base point `i+1`; use the v2
+cost model to pack each base point's `p+2 = 21` rows so they finish together.
+`row_id // (p+2) == base_idx` already, so this is a change to
+`assign_machine()` and the submission order, not to the design.
+
+This also makes a partial campaign *reportable*: "N = 9 complete" is a result,
+where "275 of 1104 rows, cost-biased" is not.
+
+#### (e4) Cost-aware machine weights
+
+`run_ensemble` already takes `--weights`. v2 measured the wall-time
+distribution — median 429 s, **mean 2380 s**, max 39 303 s — and its θ
+correlates. Two consequences: set `--weights` from measured throughput so the
+four machines finish together rather than three idling on the fourth, and set
+`--timeout-s` from the measured p99 rather than a round number. A mean 5.5× the
+median means the tail, not the typical row, sets the wall clock.
+
+---
+
+**And three uses outside the estimator itself:**
+
+1. **The `discrete` ↔ `bin_moment` bridge — the most important single use.** The
+   99 pile-clean v2 rows are *exact* `discrete` references at known θ (probe 1).
+   Rev-5 §(i) records that ⟨100⟩ under `bin_moment` is **untested at genuine
+   refinement** — the nine-case study that appeared to condemn it was invalid
+   (constructor kwargs silently dropped). Re-running a subset of these θ under
+   rev-6 binning at 0.1 dpa is exactly the closure-accuracy validation that has
+   never been done, and it costs nothing to design because the reference already
+   exists. **Designate a 24-row bridge set** spanning the `L_hat` and
+   `dH2_abs_conv` ranges; this is gate §(i)-1.
+2. **Grid certification.** Truncation is predictable from θ alone — a ridge
+   logistic on the 21 parameters plus condition reaches **5-fold CV AUC 0.896**.
+   Use it to pick the 32 most grid-demanding θ for gate §(i)-3, so the
+   certification is run where the grid is most likely to fail rather than at a
+   nominal. **Never to drop rows** — that would bias every index.
+3. **The 0.1 dpa end of a dose series**, and a prior-predictive record of where
+   the box sits relative to the experimental bands.
+
+### (f) The rev-6 T2 configuration
+
+| setting | v2 (stopped) | **rev 6** | why |
+|---|---|---|---|
+| `equations` | `discrete` | **`bin_moment`** | decouples cost from `I`; see §(c)-4 |
+| `I` | 3200 | **10000** | with log bins the ceiling is nearly free |
+| `V` | 600 | **10000** | probe 3: V = 600 corrupted `N_100` by 20 % |
+| `i_mobile` | sampled, INT 1–100 | **fixed 50** | see below |
+| `v_mobile` | sampled, INT 1–5 | **fixed 5** | at its nominal already |
+| `i_discrete` | — | **50** (= `i_mobile`) | mobile sizes must be individually resolved |
+| `v_discrete` | — | **5** (= `v_mobile`) | same |
+| `I_bin` / `V_bin` | default 6 / auto | **25 / 25** | rev-5 §(i) warns the default binning is very coarse |
+| `shape_function` | default | **`linear`** (P = 2) | O((r−1)³) truncation; `constant` is O((r−1)²) |
+| bin ratio `r` | — | **derived, not set** | see below |
+| `dose` | 0.1 dpa | **1.0 dpa** | §(g) |
+| `p` (sampled) | 21 | **19** | `i_mobile`, `v_mobile` withdrawn |
+| design size | 16 × 23 × 3 = 1104 | **16 × 21 × 3 = 1008** | `N(p+2)` per condition |
+
+**The bin ratio is derived from the bin count, not set independently** —
+`BinMomentRateEquations.__init__` computes `r = (I / i_discrete)^(1/I_bin)`
+(clamped to > 1.01), so specifying `I_bin` fixes `r`:
+
+| axis | `n1` | target bins | derived `r` | actual bins |
+|---|---|---|---|---|
+| SIA (½⟨111⟩ and ⟨100⟩) | 51 | 25 | **1.236** | ~26 |
+| vacancy | 6 | 25 | **1.355** | ~26 |
+
+`build_bins` uses `floor(edge · r)` with a minimum increment of 1, so the
+realised count differs from the target by a bin or two — read it back from
+`sim.rate_equations.I_bin` / `.V_bin`, never assume it.
+
+Both ratios are **finer than the 1.5–2.0 the formulation assumes** (§7), so with
+`shape_function = "linear"` the O((r−1)³) truncation term is ~1.3 % on the SIA
+axis and ~4.6 % on the vacancy axis — a useful margin, and an independent reason
+to expect the vacancy channel to be the weaker of the two (risk §(j)-2).
+
+**Why fixing `i_mobile` is right here, and what it costs.** The justification is
+structural, not just a directive: `i_discrete ≥ i_mobile` is required for mobile
+species to be individually resolved, so a *sampled* `i_mobile` would change the
+bin layout and `N_eq` from row to row — the rows would not share a
+discretization, and a variance decomposition across inconsistent discretizations
+is not interpretable. Fixing it is the correct call for a bin-moment campaign.
+
+The cost, recorded so it is not forgotten: `i_mobile` is the **strongest
+wall-time correlate in the v2 data (ρ = +0.465)** and carries real weight in the
+truncation model. Fixing it removes from the screening a parameter the data say
+matters. Recover it in Tier 3, or with a dedicated 1-D scan at the rev-6 grid.
+
+**Harness change — IMPLEMENTED 2026-08-03.** What follows described the defect;
+it is recorded because the failure mode is instructive, and the fix is
+summarised in §(k).
+
+`run_ensemble.evaluate` constructs the simulation
+with `I, V, solver_mode, equations, cascade, C_floor, he_kinetics, i_mobile,
+v_mobile` only. It has **no path to set the bin configuration**, so
+`--equations bin_moment` today silently runs the coarse default
+(`i_discrete=10, I_bin=6`) that rev-5 §(i) warns about. The bin block must be
+written to `sim.input_data.reactions` *after* construction and *before*
+`_calculate_derived()` + `rebuild_rates()` — it is not a constructor argument,
+and passing it as one now raises `TypeError` (rev-5 §(l)). The values must be
+read back from `sim.rate_equations`, not `sim.reaction_rates`, and recorded in
+`run_cfg` so they enter `run_cfg_sha`.
+
+### (g) Dose 1 dpa, compared directly to the experimental band
+
+This **reverses the 2026-07-30 cut to 0.1 dpa** (Tier 2, "d_LF = 0.1 dpa").
+That cut was made for cost — "~1250 runs × ~40 s ≈ 14 core-hours" against ~420
+core-hours at 1 dpa. Two things have changed: the 40 s/run estimate was wrong by
+two orders of magnitude (the v2 campaign measured a 2380 s mean at 0.1 dpa), and
+`bin_moment` decouples cost from the grid. The reason for the cut is gone.
+
+Consequences, all favourable:
+
+- **The §Tier-2 caveat "Sobol indices at 0.1 dpa measure sensitivity in the
+  nucleation-dominated transient, not at the 15–30 dpa of the database" is
+  retired.** So is the mitigation that depended on it (carrying #19–#20, #24 into
+  Tier 3 regardless of index) — those parameters can now screen on their merits,
+  which is the whole point of the loop→network channel this module adds.
+- **No extrapolation in the comparison.** Observables at the final time (1 dpa)
+  are compared directly against the experimental band. The band is for higher
+  dose, and the modelling judgement recorded here is that it is close enough that
+  a direct comparison is sounder than an extrapolation.
+
+One caveat carried forward unchanged: `targets.json` holds the **monitor** bands
+(EUROFER97 neutron, T ≤ 400 °C), not the frozen Table G.36 fits. They are for
+"the ensemble is nowhere near the data" during a run. **Tier 4 still requires the
+real target file** — comparing at 1 dpa does not change that.
+
+### (h) Admissibility for rev 6
+
+| gate | v2 | **rev 6** | note |
+|---|---|---|---|
+| `starved` | reject | reject | unchanged |
+| `occ_111`, `occ_100`, `occ_v` | reject > 0.10 | **record only** | withdrawn — probe 2 |
+| top-bin content fraction | — | **reject > 0.02** | the `bin_moment` analogue of `pile`; see below |
+| `\|δ_FP\|` | < 1e-6 | **< 1e-2** | see below |
+| `\|δ_He\|` | recorded | recorded | unchanged |
+
+**`δ_FP` — the bar moves from 1e-6 to 1e-2.** Three reasons, and one flag:
+
+1. 1e-6 equals the solver's own `rtol`. Only 12 % of grid-converged v2 rows sat
+   below it; it was rejecting for solver noise.
+2. Rev-5 §(j)-2 tightened it 1e-3 → 1e-6 specifically to catch vacancy-grid
+   truncation (`V = 240` passing at 8.3e-4 with `mean_n_v` 11 % off). At
+   `V = 10000` that failure mode is designed out, so the reason for the tightening
+   is gone. `δ_FP` remains the vacancy guard — probe 3 shows it works — and at
+   1e-2 it still rejects probe 3's V = 600 case at 0.530 by a factor of 53.
+3. `bin_moment` carries a closure error that `discrete` does not, so its `δ_FP`
+   floor is structurally higher. A bar set from `discrete` experience would
+   reject the method rather than the run.
+
+> **Flagged discrepancy, 2026-08-03:** the directive gave **0.01** in prose and
+> **1e-3** when selecting from options. The plan adopts **1e-2** for the reasons
+> above. This costs nothing to get wrong in either direction: `δ_FP` is recorded
+> per row and the gate is applied **post-hoc in `merge_and_sobol.py`, not in the
+> worker**, so the threshold can be changed without re-running anything.
+> `merge_and_sobol.py` should print admissible counts at 1e-2, 1e-3 and 1e-4
+> side by side. On the v2 rows those counts are 52 / 38 / 32.
+
+**Grid gates under `bin_moment` are not the `discrete` ones.** `pile` and `occ`
+are defined on per-size state; under binning the state above `i_discrete` is
+moments, so the analogue is the **content fraction in the top bin**,
+`μ₁(top) / Σμ₁`, on each of the three axes (½⟨111⟩, ⟨100⟩, vacancy), rejecting
+above 0.02. This is a new observable and `run_ensemble.observe()` must compute it.
+
+The existing code does **not** degrade gracefully — it fails two different ways
+on a binned state vector, and one of them is silent (verified by reading
+`observe()`, 2026-08-03):
+
+- **SIA axis — fails loudly.** `n_ax = np.arange(1, I+1)` is length `I`, while
+  `c111 = y[:I, -1]` returns only the `N_eq ≈ 157` rows that exist. `k111 =
+  n_ax * c111` raises `ValueError` on the broadcast, `evaluate()` catches it, and
+  the row is recorded `solver_rc = 1`. Annoying but safe.
+- **Vacancy axis — fails silently, and this is the dangerous one.** The guard is
+  `if ... y.shape[0] >= I + V`. At `N_eq ≈ 157` against `I + V = 20000` that is
+  false, so `pile_v` stays `None` — and the gate reads
+  `pile_v is not None and pile_v > PILE_TOL`, so `None` is treated as **passing**.
+  A binned run would report an unguarded vacancy axis as clean.
+
+Both must be fixed before gate §(i)-1, not after.
+
+### (i) Pre-flight gates — required before any rev-6 production launch
+
+The v2 campaign launched without these, which is why it burned 182 core-hours for
+12 rows. None is optional.
+
+1. **`bin_moment` ⟨100⟩ closure validation — never done.** Rev-5 §(i) corrects
+   the record: the study that appeared to show ⟨100⟩ cannot be carried under
+   binning was invalid, so the question is *open*, not settled either way. Run
+   the 24-row bridge set of §(e), "three uses outside the estimator", item 1, at
+   0.1 dpa under rev-6 binning against the
+   exact `discrete` references already in hand. **Accept only if the four
+   screened observables agree within a stated tolerance; record the tolerance.**
+   If ⟨100⟩ does not carry, rev 6 does not launch — fall back to `discrete` with
+   the per-row grid ladder and accept the cost.
+2. **Bin-count convergence.** 20 vs 25 vs 30 bins at fixed θ, on all three axes.
+   Accept the smallest count at which the screened observables have stopped
+   moving. Rev-5 §(i) records that **`mean_n_v` did *not* converge** under
+   vacancy-side refinement — 26.9 % error, flat across a 3.7× `N_eq` range. That
+   is an open defect on the void channel and this gate must confront it, not
+   inherit it. `d_cavity_nm` and `N_voids` depend on it.
+3. **Grid certification against the design, not a corner** (§(b)). Take the 32 θ
+   the v2 predictor ranks most grid-demanding, run them at the rev-6 config, and
+   require the top-bin gate to pass for **all 32**. A single failure means
+   `I`/`V`/bin count go up before launch.
+4. **Cost measurement at the rev-6 config**, including the tail. Set
+   `--timeout-s` from the measured p99, not from a round number. The v2 mean was
+   5.5× its median; budget from the mean.
+5. **The standing smoke test** (rev-5 §(l)) — end-to-end on ≥ 8 rows, all four
+   machines, before the full launch. Both defects it caught last time were
+   introduced by that session's own edits.
+6. **The `design.py` / scheduling changes of §(e1) and §(e3)** — explicit
+   `dimension_order`, and scheduling by `base_idx` so an interrupted campaign is
+   a valid smaller design. Both are cheap, both must land *before* the design is
+   generated and committed, because neither can be applied retroactively: the
+   dimension order is baked into `row_id → θ` and the schedule determines what a
+   partial campaign is worth.
+7. **`check_machine.py` reference must be regenerated** for the rev-6 config.
+   The current `machine_reference.json` is a `discrete` `I=300, V=480` probe;
+   it cannot certify a `bin_moment` build. Until it is regenerated, the
+   cross-machine agreement guarantee does not hold and results from four machines
+   are not poolable.
+
+### (j) Risks, ranked
+
+1. **⟨100⟩ under `bin_moment` may not carry** — gate §(i)-1. This is the single
+   assumption the whole redesign rests on, and it is currently untested. It is
+   first for that reason.
+2. **`mean_n_v` non-convergence under bin refinement** (rev-5 §(i)) — if gate
+   §(i)-2 cannot clear it, the void-size channel (`d_cavity_nm`, `mean_n_v`) must
+   be withdrawn from the screened set and said so, as swelling was in rev-5 §(g).
+   `N_voids` may survive alone; `N_loops_100` was already shown grid-invariant to
+   0.4 % (rev-5 §(d)) while `d_100_nm` was not, so a density-only channel has
+   precedent.
+3. **1 dpa may re-open grid demand** even under binning. The v2 loops reached the
+   ceiling at 0.1 dpa; 1 dpa is 10× the dose. Log bins absorb this cheaply, but
+   gate §(i)-3 must be run at 1 dpa, not at 0.1.
+4. **Fixing `i_mobile` hides a parameter the data say matters** — §(f).
+5. **Two `REVISION_PENDING` parameters remain** (`E_a0_conv`, `dH2_abs_conv`).
+   `dH2_abs_conv`'s lower bound of 0.26 was set as a *numerical* floor for the
+   `discrete` I = 3200 grid (rev-5 §(f)). Under rev-6 binning that floor is no
+   longer binding and the bound should be re-derived from physics, or the
+   restriction recorded as a prior truncation that the screening cannot see past.
+
+### (k) Harness changes landed 2026-08-03
+
+Three of the items above are implemented and tested. Recorded here so the gate
+list in §(i) is read against what the code actually does now.
+
+**1. `bin_moment` is configurable from `run_ensemble.py`** (§(f)).
+
+New flags: `--i-discrete --v-discrete --i-bin --v-bin --shape-function`, plus
+`--i-mobile-default --v-mobile-default` for designs that no longer carry those
+columns. Defaults are the rev-6 campaign values, deliberately **not** the
+library defaults — the library default (`i_discrete=10, I_bin=6`) is the coarse
+binning rev-5 §(i) warns about, and silently running it is the failure this
+whole block exists to prevent.
+
+- `apply_bin_config()` writes the block to `sim.input_data.reactions` after
+  construction and before `_calculate_derived()` + `rebuild_rates()`.
+- `bin_layout()` reads the **realised** layout back off `sim.rate_equations`
+  (never `reaction_rates`, which returns `nan` instead of raising) and **fails
+  the row** if the request did not land. This is the direct guard against the
+  rev-5 §(i) failure where nine "refinement" runs were nine copies of the same
+  run. The realised bin count is not the requested one — `r` is derived as
+  `(I/i_discrete)^(1/I_bin)` and `build_bins()` then walks `floor(edge·r)`, so a
+  request of 8 bins realises 9 — hence the check allows drift but not collapse.
+- `i_discrete`, `v_discrete`, `I_bin`, `V_bin`, `shape_function` now enter
+  `run_cfg_sha`, so a bin-layout change is caught by the restart-safety check
+  exactly as a grid change is. Added only in `bin_moment` mode, so an existing
+  `discrete` campaign's hash is unchanged.
+- Three launch guards: `i_discrete < I`; `i_discrete ≥ i_mobile` (a mobile
+  cluster inside a bin has no per-size concentration for the coalescence sums);
+  and a **refusal to run `bin_moment` against a design that still samples
+  `i_mobile`/`v_mobile`**, since those rows would not share a discretisation.
+  Verified to fire on the v2 design.
+
+**2. `observe()` handles the binned state, and the gates fail closed** (§(h)).
+
+`per_size_populations()` returns per-size `c111` / `c_v` in either mode —
+plain slices for `discrete`, moment reconstruction for `bin_moment`, mirroring
+`RadClusterSimulation._size_distributions`. Confirmed on a binned run that
+`y` is `(N_eq, nt)` — 55 rows where `I+V = 400` — which is why the old
+`y[:I]` slice broke, and that **`y_sia100` is emitted per-size `(I, nt)` in both
+modes**, so the ⟨100⟩ path needs no reconstruction.
+
+New `topbin_111 / topbin_100 / topbin_v` read the **raw `μ₁` moments**, because
+`pile` is measured on the reconstruction and inherits the closure's smoothing;
+gate at 0.02.
+
+The important change is `unmeasured_gates`: **an axis that could not be measured
+now fails.** Previously an uncomputable `pile_v` was `None`, and the gate read
+`pile_v is not None and pile_v > PILE_TOL` — so `None` passed. A binned run
+would have certified an unguarded vacancy axis as clean. Verified: forcing
+`V_bin = 0` yields `unmeasured_gates=['topbin_v']` → `grid_limited=True`, and
+that row's `δ_FP = 0.455` confirms failing closed was right.
+
+Regression: row 24 `discrete` reproduces the campaign value exactly —
+`d_100_nm = 5.357349675389` against 5.357349675 — so the refactor is
+observably inert in `discrete` mode.
+
+**3. Admissibility moved post-hoc, into `merge_and_sobol.usable()`** (§(h)).
+
+The worker records the gate quantities; `merge_and_sobol` decides what passes,
+re-deriving the grid verdict from the recorded `pile_*` / `topbin_*` rather than
+trusting the row's stored `grid_limited` — which, on every v2 row, has the
+withdrawn `occ > 0.10` rule baked into it. `--dfp-tol` selects the bar and the
+coverage report prints the alternatives side by side.
+
+**This is what makes the stopped campaign pay.** Re-scoring the same 275 v2 rows
+under the corrected rules, at zero CPU:
+
+| `δ_FP` bar | 1e-6 (as run) | 1e-4 | 1e-3 | **1e-2 (rev 6)** |
+|---|---|---|---|---|
+| admissible rows | **12** | 32 | 38 | **52** |
+
+12 → 52 from work already done. Remaining rejections are now honest ones: 175
+genuinely truncated (`pile_100 > 0.05`), 47 on `δ_FP`, 1 dose-starved.
+
+> The general rule this establishes: **a threshold that lives in the worker
+> makes every past row unusable at any other threshold.** Record quantities in
+> the worker, apply gates in the analysis.

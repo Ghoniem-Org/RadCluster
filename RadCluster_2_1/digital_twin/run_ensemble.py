@@ -38,6 +38,7 @@ import argparse
 import hashlib
 import io
 import json
+import math
 import os
 import platform
 import subprocess
@@ -342,6 +343,63 @@ def observe(res, sim, cfg, d_min_nm):
     return out
 
 
+_PATTERN_CACHE = {}
+
+
+def _weighted_pattern(of, weights):
+    """Deterministic machine-assignment pattern of length sum(weights).
+
+    Sainte-Lague / highest-averages: repeatedly hand the next slot to the
+    machine with the largest w_k / (2 a_k + 1), where a_k is how many slots it
+    already holds.  This spreads each machine's slots as evenly as the weights
+    allow, rather than giving it one contiguous block.
+
+    Interleaving is the point, not an aesthetic: the design rows are Saltelli
+    A / B / AB_j matrices, so a contiguous block belongs disproportionately to
+    a few base samples.  If one machine dies, scattered gaps cost pairwise
+    deletion a few rows spread over many base samples; a contiguous gap would
+    wipe out whole base samples and take their partners with them.
+
+    Pure function of (of, weights) -- every machine computes the same pattern
+    from the same CLI arguments, so no coordination is needed.
+    """
+    key = (of, tuple(weights))
+    if key in _PATTERN_CACHE:
+        return _PATTERN_CACHE[key]
+    # integerise so the pattern is finite and exactly periodic
+    scale = 1
+    while any(abs(w * scale - round(w * scale)) > 1e-9 for w in weights) and scale < 10 ** 6:
+        scale *= 10
+    ints = [max(1, int(round(w * scale))) for w in weights]
+    g = 0
+    for v in ints:
+        g = math.gcd(g, v)
+    ints = [v // max(g, 1) for v in ints]
+
+    total = sum(ints)
+    assigned = [0] * of
+    pattern = []
+    for _ in range(total):
+        k = max(range(of), key=lambda j: (ints[j] / (2 * assigned[j] + 1), -j))
+        pattern.append(k)
+        assigned[k] += 1
+    _PATTERN_CACHE[key] = pattern
+    return pattern
+
+
+def assign_machine(row_id, of, weights=None):
+    """Which machine owns this row_id.
+
+    weights=None reproduces the original even split (row_id % of) EXACTLY, so
+    an existing campaign resumed without --weights keeps its assignment and
+    every already-computed row stays where it was.
+    """
+    if not weights:
+        return row_id % of
+    pattern = _weighted_pattern(of, weights)
+    return pattern[row_id % len(pattern)]
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -349,6 +407,13 @@ def main(argv=None):
     ap.add_argument("--machine", type=int, required=True, help="this machine's index k")
     ap.add_argument("--of", type=int, required=True, help="total machines M")
     ap.add_argument("--workers", type=int, default=max(1, (os.cpu_count() or 4) - 2))
+    ap.add_argument("--weights", default=None,
+                    help="comma-separated relative capacity of EACH machine, "
+                         "e.g. '6,14,22,22' (normally each machine's --workers). "
+                         "Splits the design in proportion to capacity instead of "
+                         "evenly, so heterogeneous machines finish together. "
+                         "MUST be given identically on every machine. "
+                         "Omit for the default even split (row_id %% M).")
     ap.add_argument("--out", type=Path, default=None)
     ap.add_argument("--conditions", type=Path, default=HERE / "conditions.json")
     ap.add_argument("--I", type=int, default=800)
@@ -370,7 +435,16 @@ def main(argv=None):
              {"N2": {"T_K": 573.15}, "N5": {"T_K": 623.15},
               "I1": {"T_K": 623.15, "cascade": "fission"}})
 
-    mine = [r for r in rows if r["row_id"] % a.of == a.machine]
+    weights = None
+    if a.weights:
+        weights = [float(w) for w in a.weights.split(",")]
+        if len(weights) != a.of:
+            raise SystemExit(f"--weights has {len(weights)} entries but --of is "
+                             f"{a.of}; they must match, and the SAME list must be "
+                             f"passed on every machine.")
+        if min(weights) <= 0:
+            raise SystemExit("--weights entries must all be > 0.")
+    mine = [r for r in rows if assign_machine(r["row_id"], a.of, weights) == a.machine]
     if a.limit:
         mine = mine[:a.limit]
     out = a.out or (HERE / "results" / f"{a.design.stem}_machine{a.machine}.jsonl")
@@ -540,6 +614,7 @@ def main(argv=None):
                      "revision_pending": meta.get("revision_pending"),
                      "rows_total": meta.get("rows_total")},
         "machine": {"index": a.machine, "of": a.of,
+                    "weights": weights, "rows_assigned": len(mine),
                     "machine_id": platform.node(), "platform": platform.platform(),
                     "python": platform.python_version(),
                     "cpu_count": os.cpu_count(), "workers": a.workers,

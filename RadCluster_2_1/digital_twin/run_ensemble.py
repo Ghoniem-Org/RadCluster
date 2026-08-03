@@ -25,8 +25,17 @@ the grid, not of the physics.  So every row carries:
 
     occ_111, occ_100     mean size / I          (project rule: > ~0.1 suspect)
     pile_111, pile_100   content fraction in the top 2 % of the grid
+    pile_v, occ_v        the SAME test on the VACANCY axis (added 2026-08-02)
     d_over_ceiling_100   d_100 / d(n=I)
     dose_reached, starved, delta_FP, delta_He, solver_rc, wall_s
+
+The vacancy axis went unchecked until 2026-08-02 and is not a minor addition:
+at V=120 the check_machine probe reported mean_n_v = 18.7 against a converged
+153.3 and N_voids 10.6x low.  Note the asymmetry -- delta_FP is blind to
+SIA-axis truncation but IS sensitive to the vacancy axis, because the swelling
+identity S = S_I + Delta J^d has the vacancy inventory on the left.  So on the
+vacancy side delta_FP is a real guard, and the admissibility bar was tightened
+from 1e-3 to 1e-6 to make it bite.
 
 and `admissible`, which merge_and_sobol uses to decide what may be estimated
 from.  A row that is inadmissible is NOT a failed row -- it ran fine, it just
@@ -64,7 +73,16 @@ STOP_FILE = HERE / "CAMPAIGN_STOP"   # graceful-halt sentinel (campaign_ops)
 B111_M = 2.482e-10       # <111> Burgers magnitude [m], for loop_net_w_c units
 PILE_TOP_FRAC = 0.02     # "top 2 % of the grid"
 PILE_TOL = 0.05          # above this the size readout is a ceiling artefact
-OCC_TOL = 0.10           # project occupancy rule
+OCC_TOL = 0.10           # project occupancy rule (SIA axes only -- see observe())
+
+# CLAUDE.md S8's own standard: delta_FP below ~1e-6 is good, above 1e-3 signals
+# a coding error.  Admissibility used 1e-3, i.e. it only rejected the "coding
+# error" band.  That is too loose for the VACANCY axis, where delta_FP is the
+# primary guard: the 2026-08-02 vacancy study passed V=240 at delta_FP=8.3e-4
+# (under the old bar) while mean_n_v was still 11 % from converged, and reached
+# 1.4e-7 at V=480 where it had converged.  1e-6 separates those two cleanly and
+# is comfortably met by good configs (production rows run 1.5e-8 to 2.9e-12).
+DFP_TOL = 1e-6
 
 
 # ------------------------------------------------------------------- utilities
@@ -202,7 +220,7 @@ def evaluate(args):
         try:
             sys.stdout = sys.stderr = buf
             sim = RadClusterSimulation(
-                I=cfg["I"], V=cfg["V"], solver_mode="full_system",
+                I=cfg["I"], V=cfg["V"], solver_mode=cfg["solver_mode"],
                 equations=cfg["equations"], cascade=cond.get("cascade", "fission"),
                 C_floor=cfg["C_floor"], he_kinetics="quasi_steady_state",
                 i_mobile=i_mob, v_mobile=v_mob)
@@ -214,7 +232,7 @@ def evaluate(args):
                     "log_time": True, "rtol": cfg["rtol"], "atol": cfg["atol"],
                     "timeout_s": cfg["timeout_s"],
                     "solver_method": {"linsol": "gmres",
-                                      "preconditioner": "Woodbury",
+                                      "preconditioner": cfg["preconditioner"],
                                       "concentration_threshold": 1e-22},
                     "loop_conversion": 1}
             res = sim.run(solver_config=scfg, save_output=False)
@@ -334,12 +352,44 @@ def observe(res, sim, cfg, d_min_nm):
     out["f_100_number"], out["f_100_content"] = f_num, f_cont
     out["f_100_tem"], out["d_min_tem_nm"] = f_tem, d_min_nm
 
+    # --- VACANCY axis -------------------------------------------------------
+    # The SIA-only check above is one-sided.  delta_FP is built on the swelling
+    # identity S = S_I + Delta J^d, and S is the VACANCY inventory, so a
+    # truncated vacancy grid shows up there -- which is how this was found: the
+    # check_machine probe (V=120) sits at delta_FP = 4.1e-3 while mean cavity
+    # size is ~168 vacancies, i.e. the typical cavity does not fit on its grid.
+    #
+    # This matters more since swelling was withdrawn and d_cavity_nm added:
+    # N_voids / mean_n_v / d_cavity_nm are the observables a truncated V
+    # corrupts, and nothing was checking that axis.
+    #
+    # State layout (discrete): SIA 0..I-1, vacancies I..I+V-1.
+    V = int(cfg["V"])
+    pile_v = None
+    if y is not None and getattr(y, "ndim", 0) == 2 and y.shape[0] >= I + V:
+        m_ax = np.arange(1, V + 1)
+        c_v = np.maximum(y[I:I + V, -1] - cfg["C_floor"], 0.0)
+        k_v = m_ax * c_v
+        if k_v.sum() > 0:
+            pile_v = float(k_v[int((1 - PILE_TOP_FRAC) * V):].sum() / k_v.sum())
+    out["pile_v"] = pile_v
+    out["occ_v"] = (out["mean_n_v"] / V) if V > 0 else None
+
+    # occ_v is recorded but deliberately NOT a reject criterion.  The occupancy
+    # heuristic assumes a converged mean sits far below the ceiling, which holds
+    # for loops but not for cavities: the probe converges at mean_n_v = 153 with
+    # occ_v = 0.319 (V=480).  Rejecting on occ_v > 0.10 would demand V >~ 1600 to
+    # accept an answer that is already converged at 480.
+    #
+    # The vacancy axis is guarded instead by pile_v and by delta_FP, which --
+    # unlike on the SIA axis -- is genuinely sensitive here.
     bad_pile = (pile100 is not None and pile100 > PILE_TOL) or \
-               (pile111 is not None and pile111 > PILE_TOL)
+               (pile111 is not None and pile111 > PILE_TOL) or \
+               (pile_v is not None and pile_v > PILE_TOL)
     out["grid_limited"] = bool(bad_pile or out["occ_111"] > OCC_TOL
                                or out["occ_100"] > OCC_TOL)
     out["admissible"] = bool((not out["starved"]) and (not out["grid_limited"])
-                             and abs(out["delta_FP"]) < 1e-3)
+                             and abs(out["delta_FP"]) < DFP_TOL)
     return out
 
 
@@ -420,6 +470,14 @@ def main(argv=None):
     ap.add_argument("--V", type=int, default=600)
     ap.add_argument("--dose", type=float, default=0.1)
     ap.add_argument("--equations", default="discrete")
+    ap.add_argument("--solver-mode", default="active_window",
+                    choices=["active_window", "full_system"],
+                    help="active_window (default) keeps the ACTIVE system at "
+                         "50-200 unknowns regardless of I. Verified 2026-08-02 to "
+                         "reproduce full_system to printed precision at I=1600 "
+                         "(d100/occ/pile/N100 all identical) at 2.4x lower cost "
+                         "and 3 orders better delta_FP. Preconditioner follows "
+                         "this choice automatically.")
     ap.add_argument("--rtol", type=float, default=1e-6)
     ap.add_argument("--timeout-s", type=float, default=3600)
     ap.add_argument("--limit", type=int, default=0, help="run only the first n rows (smoke test)")
@@ -470,10 +528,16 @@ def main(argv=None):
     # invalidates comparability far more than most theta changes do.  Hashed
     # into one short field so it can be compared cheaply on resume, and kept in
     # full in the manifest.
+    # Preconditioner follows the solver mode and is NOT independently selectable.
+    # CLAUDE.md S9: Woodbury is a full_system optimisation -- its 58-RHS setup
+    # cost is counterproductive against active_window's 50-200 unknown active
+    # system, where Jacobi+GMRES converges fine.  Pairing them the other way
+    # round is always a mistake, so the code does not offer the choice.
+    precond = "Woodbury" if a.solver_mode == "full_system" else "Jacobi"
     run_cfg = {"I": a.I, "V": a.V, "dose": a.dose, "equations": a.equations,
                "rtol": a.rtol, "atol": 1e-20, "C_floor": 1e-25,
-               "solver_mode": "full_system", "linsol": "gmres",
-               "preconditioner": "Woodbury", "loop_conversion": 1,
+               "solver_mode": a.solver_mode, "linsol": "gmres",
+               "preconditioner": precond, "loop_conversion": 1,
                "i_mobile_default": 10, "v_mobile_default": 5,
                "n_points": 40, "timeout_s": a.timeout_s}
     run_cfg_sha = hashlib.sha256(
@@ -640,10 +704,18 @@ def main(argv=None):
                    "core_hours": (sum(ws) / 3600.0 if ws else 0.0)},
         "stopped": stopped,
         "admissibility_rule": {
-            "pile_tol": PILE_TOL, "occ_tol": OCC_TOL, "delta_FP_tol": 1e-3,
+            "pile_tol": PILE_TOL, "occ_tol": OCC_TOL,
+            "delta_FP_tol": DFP_TOL,
             "pile_top_frac": PILE_TOP_FRAC,
-            "note": "delta_FP is blind to grid truncation; grid adequacy is "
-                    "judged by pile/occupancy, not conservation"},
+            "axes": ["sia_111", "sia_100", "vacancy"],
+            "note": "delta_FP is blind to SIA-axis truncation (the <100> pile-up "
+                    "held delta_FP at 1e-8 while 96% of content sat at n=I), so "
+                    "grid adequacy is judged by pile/occupancy. It is NOT blind "
+                    "to the VACANCY axis -- delta_FP rests on the swelling "
+                    "identity S = S_I + Delta J^d and S is the vacancy "
+                    "inventory. The vacancy axis was unchecked until 2026-08-02; "
+                    "at the check_machine probe (V=120) mean_n_v moved 18.7->136 "
+                    "and swelling 58x on going to V=240."},
     }
     man_p = out.with_suffix(".manifest.json")
     man_p.write_text(json.dumps(man, indent=2), encoding="utf-8")

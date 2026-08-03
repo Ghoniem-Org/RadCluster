@@ -48,10 +48,28 @@ REF = HERE / "machine_reference.json"
 
 # Fixed probe configuration -- do not change without regenerating the reference
 # on a known-good machine and saying so in the commit message.
-PROBE = dict(I=150, V=120, i_mobile=10, v_mobile=5, T_K=623.15, dose=0.02,
+# solver_mode is part of the probe: it must match what the campaign actually
+# runs, or the agreement check validates a code path nothing uses.
+#
+# V=480, not 120.  At V=120 this probe reported mean_n_v = 18.7 against a
+# converged 153.3, N_voids 10.6x low, and delta_FP = 4.1e-3 -- above CLAUDE.md
+# S8's "coding error" threshold.  The vacancy grid was truncating: mean cavity
+# size is ~153 vacancies, so V=120 could not hold a typical cavity at all.
+# delta_FP falls to 1.4e-7 at V=480 and is unchanged at V=960 (2026-08-02).
+# I=300, not 150, for the same reason on the other axis.  At I=150 delta_FP is
+# 4-5e-3 REGARDLESS of V, because mean_n_111 = 35.9 on a 150-point grid is an
+# occupancy of 0.24 and the 1/2<111> population itself truncates.  Note the
+# asymmetry with the <100> pile-up, where delta_FP stayed at 1e-8: <100> is
+# sessile and one-way, so its growth guard halts without losing atoms, whereas
+# truncating the mobile 1/2<111> population does lose them.
+# I=300, V=480 gives delta_FP = 1.4e-7 in ~35 s.
+PROBE = dict(I=300, V=480, i_mobile=10, v_mobile=5, T_K=623.15, dose=0.02,
              rho_d=1.0e14, E_a0_conv=2.2, dH2_abs_conv=0.30, psucc_abs_pref=2.0,
              gamma_a_conv=0.02, phi_max_junc=0.0, f_cl_i=0.25, f_cl_v=0.05,
-             rtol=1e-6)
+             rtol=1e-6, solver_mode="active_window")
+
+# Preconditioner follows solver_mode -- never selected independently (CLAUDE.md S9).
+PRECOND = {"full_system": "Woodbury", "active_window": "Jacobi"}
 
 # Quantities compared.  Mixed scales on purpose: a state variable, a derived
 # rate, an integrated observable and a conservation residual, so a build
@@ -77,7 +95,7 @@ def probe() -> dict:
     try:
         sys.stdout = sys.stderr = buf
         sim = RadClusterSimulation(I=PROBE["I"], V=PROBE["V"],
-                                   solver_mode="full_system",
+                                   solver_mode=PROBE["solver_mode"],
                                    equations="discrete", cascade="fission",
                                    C_floor=1e-25,
                                    he_kinetics="quasi_steady_state",
@@ -98,7 +116,8 @@ def probe() -> dict:
             "t_span": (1e-6, PROBE["dose"] / G), "n_points": 12,
             "log_time": True, "rtol": PROBE["rtol"], "atol": 1e-20,
             "timeout_s": 900,
-            "solver_method": {"linsol": "gmres", "preconditioner": "Woodbury",
+            "solver_method": {"linsol": "gmres",
+                              "preconditioner": PRECOND[PROBE["solver_mode"]],
                               "concentration_threshold": 1e-22},
             "loop_conversion": 1}, save_output=False)
     finally:

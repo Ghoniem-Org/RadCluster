@@ -100,7 +100,12 @@ def ensure_solver(force: bool = False, verbose: bool = True) -> dict:
         info["built"] = False
         return info
 
-    cfg = subprocess.run(["cmake", "-S", str(MODULE), "-B", str(MODULE / "build")],
+    # CMakeLists.txt lives in cpp_utils/ (core/ + materials/ two-layer split),
+    # NOT at the module root -- pointing -S at MODULE fails with
+    # "does not appear to contain CMakeLists.txt".
+    cfg = subprocess.run(["cmake", "-S", str(MODULE / "cpp_utils"),
+                          "-B", str(MODULE / "build"),
+                          "-DCMAKE_BUILD_TYPE=Release"],
                          capture_output=True, text=True)
     if cfg.returncode != 0 and not (MODULE / "build").exists():
         info["built"] = False

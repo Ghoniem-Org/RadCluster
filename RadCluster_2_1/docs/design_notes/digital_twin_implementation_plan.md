@@ -2422,9 +2422,21 @@ would have certified an unguarded vacancy axis as clean. Verified: forcing
 `V_bin = 0` yields `unmeasured_gates=['topbin_v']` → `grid_limited=True`, and
 that row's `δ_FP = 0.455` confirms failing closed was right.
 
-Regression: row 24 `discrete` reproduces the campaign value exactly —
-`d_100_nm = 5.357349675389` against 5.357349675 — so the refactor is
-observably inert in `discrete` mode.
+**Regression — the refactor is provably inert in `discrete` mode.** Seven pooled
+rows re-run at the campaign `run_cfg` and compared against their stored values
+across 13 quantities (`d_100_nm`, `N_loops_100/111`, `mean_n_v`, `N_voids`,
+`f_100_tem_1`, `δ_FP`, `pile_100/111/v`, `occ_100`, `d_cavity_nm`,
+`S_inventory`):
+
+| rows | worst relative deviation, all 13 quantities |
+|---|---|
+| 805, 809, 813, 817, 821, 825 (already admissible) | **0.000e+00** |
+| 24 (verdict changes) | **0.000e+00** |
+
+Row 24 is the one that matters: `grid_limited True → False`,
+`admissible False → True`, and **every observable bit-identical**. The
+correction changes the scoring, not the physics — which is the entire claim of
+§(c)-2, demonstrated rather than argued.
 
 **3. Admissibility moved post-hoc, into `merge_and_sobol.usable()`** (§(h)).
 

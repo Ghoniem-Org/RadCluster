@@ -2331,7 +2331,18 @@ The v2 campaign launched without these, which is why it burned 182 core-hours fo
    generated and committed, because neither can be applied retroactively: the
    dimension order is baked into `row_id → θ` and the schedule determines what a
    partial campaign is worth.
-7. **`check_machine.py` reference must be regenerated** for the rev-6 config.
+7. **`check_machine.py` must be fixed AND its reference regenerated.** Fixed:
+   add an absolute floor to the comparison, `|a-b| <= rtol*|b| + atol`, because
+   as written it reports a 54 % disagreement on two numbers that are both ~1e-9
+   against a 0.05 bar (§(l)). Regenerated: the current
+   `machine_reference.json` is a `discrete` `I=300, V=480` probe and cannot
+   certify a `bin_moment` build. Until both are done the cross-machine
+   agreement guarantee does not hold and four machines are not poolable.
+8. **The worker must abort on mass failure.** 276 archived rows were scheduled,
+   run and marked done in 0.9 s each, every one a `solver_rc = 1` from a missing
+   binary (§(l)). A worker whose first N rows all fail — or that is producing
+   rows far faster than the cost model predicts — should stop and say so, not
+   fill a results file with failures that look like progress.
    The current `machine_reference.json` is a `discrete` `I=300, V=480` probe;
    it cannot certify a `bin_moment` build. Until it is regenerated, the
    cross-machine agreement guarantee does not hold and results from four machines
@@ -2436,3 +2447,92 @@ genuinely truncated (`pile_100 > 0.05`), 47 on `δ_FP`, 1 dose-starved.
 > The general rule this establishes: **a threshold that lives in the worker
 > makes every past row unusable at any other threshold.** Record quantities in
 > the worker, apply gates in the analysis.
+
+### (l) The pooled v2 campaign — all four machines, 2026-08-03
+
+Machines 2 and 3 were pushed to the remote and merged. The complete v2 pool:
+
+| file | host | rows | admissible | starved | truncated | core-h |
+|---|---|---|---|---|---|---|
+| machine0 | Mac.san.rr.com | 1 | 1 | 0 | 0 | 0.0 |
+| machine1 | Mac.san.rr.com | 274 | 51 | 1 | 175 | 181.8 |
+| machine2 | Mac.san.rr.com | 94 | 8 | 1 | 81 | 60.1 |
+| machine3 | **MATRIX-PC2** | 147 | 14 | **55** | 73 | 261.3 |
+| **pool** | | **516** | **74** | 57 | 329 | **503** |
+
+**74 admissible rows** under the corrected gates, against **21** under the rules
+the campaign shipped with. Across the δ_FP alternatives: 74 / 54 / 48 / 21 at
+1e-2 / 1e-3 / 1e-4 / 1e-6.
+
+**The archived `__no-solver-build` file holds nothing.** All 276 rows are
+`solver_rc = 1`, `TypeError: 'NoneType' object is not subscriptable`, 0.9 s
+each — the solver binary did not exist. Correctly archived; not recoverable.
+Note what this cost: 276 rows were *scheduled and marked done* before anyone
+saw that every one of them had failed. A worker that fails every row in under a
+second should abort, not continue — see gate §(i)-8.
+
+#### The provenance split, resolved by measurement
+
+`merge_and_sobol` raised `PROVENANCE SPLIT on solver_sha256` with three values.
+Two of them are not a real split:
+
+- `unavailable` (machines 0, 1) vs `9366e57649416372` (machine 2) are **the same
+  host and the same binary**. The old code hashed
+  `build/Release/solver.exe`, a path that cannot exist on macOS, so it recorded
+  "unavailable". The remote's `cpp_bridge`-matching search order fixed it. This
+  is a *recording* artefact, and it defeated the entire purpose of hashing the
+  binary on every non-Windows machine — the check was silently inert.
+- `6d878b0180b264d2` (machine 3, MATRIX-PC2) **is** a genuinely different build.
+
+`run_cfg_sha` is **identical across every file** (`1feb7079ec957978`), as is
+`git_sha`. So I, V, dose, rtol and solver mode were the same everywhere — the
+split that would have been fatal did not happen.
+
+Whether the two *builds* agree was then measured directly, by re-running three
+of MATRIX-PC2's own design rows on the Mac at the identical `run_cfg`:
+
+| quantity | worst relative deviation, 3 rows |
+|---|---|
+| `d_100_nm`, `N_loops_100`, `N_loops_111`, `mean_n_v`, `N_voids`, `f_100_tem_1` | **2.95e-08** |
+
+**Verdict: poolable.** ~3e-8 is float64 round-off accumulated over a 0.1 dpa
+stiff integration, not a build difference.
+
+> **But `check_machine.py` would have called this a failure, and that is a
+> defect in `check_machine.py`.** It compares 12 quantities at `rtol = 1e-9`
+> with **no absolute floor**. Two of the quantities it checks can be legitimately
+> near zero — `δ_FP` runs 1e-8 and `pile` runs 1e-9 — and a relative comparison
+> of two noise-level numbers is meaningless. In this very dataset `pile_100`
+> differs by **54 %** relative between the two builds while both values are
+> ~1e-9 against a 0.05 bar: seven orders of margin, reported as a catastrophic
+> disagreement. Naively maximising relative deviation over all quantities
+> returns "NOT POOLABLE" from data that is in fact in excellent agreement.
+>
+> **Fix before rev 6:** compare as `|a-b| <= rtol*|b| + atol` with `atol` set per
+> quantity from its gate bar (e.g. `atol = 1e-6 * PILE_TOL`), and judge gate
+> quantities by *margin to the bar*, not by relative deviation. As written, the
+> 1e-9 bar is also too tight for a full-dose run: it was calibrated on a 30 s
+> probe, and round-off grows with step count.
+
+#### MATRIX-PC2 is 12–15× slower per row, and that is why 55 of its rows starved
+
+The three re-run rows took 132 / 271 / 194 s on MATRIX-PC2 against 10 / 18 / 16 s
+on the Mac — **12–15×**. Averaged over the campaign it spent **261 of the pool's
+503 core-hours (52 %) to produce 14 of its 74 admissible rows (19 %)**.
+
+`--timeout-s` is a single global constant, so a value tuned on the fast machine
+silently truncates runs on the slow one: **55 of machine 3's 147 rows (37 %) are
+dose-starved**, i.e. they hit the wall before reaching 0.1 dpa. They are
+correctly rejected by the gate, so they do not corrupt anything — they are simply
+261 core-hours largely wasted.
+
+Three consequences for rev 6, all in §(e4):
+
+1. **`--timeout-s` must be per machine**, derived from that machine's measured
+   throughput, not from a round number chosen on the fastest host.
+2. **`--weights` must be set from measured throughput.** Uniform `row_id % M`
+   assignment gives the slowest machine the same share as the fastest; here that
+   is a 13× mismatch.
+3. **A starved row is a scheduling failure, not a result.** The worker should
+   report the starved fraction per machine as it runs, so a machine starving 37 %
+   of its rows is visible within the hour rather than at the merge.

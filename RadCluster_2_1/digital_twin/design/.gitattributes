@@ -1,0 +1,6 @@
+# Design CSVs are byte-hash-guarded: run_ensemble.py refuses to run if the file's
+# raw sha256 differs from design_sha256 in the .meta.json (Saltelli pairing check).
+# They were generated and committed LF-only. On a machine with core.autocrlf=true,
+# git otherwise rewrites LF->CRLF on checkout, changing the bytes and tripping the
+# guard. Pin them to LF on every checkout so the hash always matches.
+*.csv text eol=lf

@@ -88,6 +88,30 @@ FIELDS = ["Di_eff", "Dv_eff", "conv_psuccess", "conv_psuccess_abs",
 RTOL = 1e-6      # = PROBE["rtol"]; see module docstring -- the gate cannot be
                  # tighter than the integration tolerance it is checking
 
+# PER-FIELD ABSOLUTE FLOOR.  A pure relative comparison is meaningless for a
+# quantity that is legitimately near zero, and two of the FIELDS above are:
+# delta_FP is a conservation RESIDUAL (reference 1.4e-07) and conv_psuccess is a
+# small probability (2.2e-06).
+#
+# This is not hypothetical.  Re-running three MATRIX-PC2 design rows on the Mac
+# (plan S11(l)) gave delta_FP agreeing to 6.9e-13 ABSOLUTE while differing by
+# 1.5e-05 RELATIVE -- 15x past RTOL.  The same comparison put pile_100 at 54 %
+# relative disagreement between two values that were both ~1e-9 against a 0.05
+# bar.  Judged relatively, a build in excellent agreement looks broken; a naive
+# max-relative-deviation over all quantities returns "NOT POOLABLE" from data
+# that agrees to 3e-8 on everything that matters.
+#
+# So each entry is "the largest ABSOLUTE difference that provably cannot change
+# a downstream decision", derived from the bar that field is judged against:
+#   delta_FP       admissibility bar is 1e-2 (run_ensemble.DFP_TOL); 1e-9 is
+#                  seven orders below it, so it cannot flip any row's verdict,
+#                  while a real 10x shift (1.4e-7 -> 1.4e-6) is still caught.
+#   conv_psuccess  a probability feeding N_100 multiplicatively; 1e-12 is six
+#                  orders below the reference value.
+# Everything else is a physical observable at its natural scale: no floor, pure
+# relative, unchanged behaviour.
+ATOL = {"delta_FP": 1e-9, "conv_psuccess": 1e-12}
+
 
 def sha256_file(p: Path) -> str:
     try:
@@ -221,8 +245,18 @@ def main(argv=None):
             continue
         den = max(abs(r), 1e-300)
         rel = abs(g - r) / den
-        flag = "" if rel <= RTOL else "   <-- MISMATCH"
-        if rel > RTOL:
+        atol = ATOL.get(k, 0.0)
+        ok = abs(g - r) <= RTOL * abs(r) + atol
+        # Say so when a field passes ONLY because of its absolute floor.  The
+        # floor exists to stop noise-level differences failing the gate, not to
+        # hide them -- if delta_FP starts riding its floor on a new machine that
+        # is worth seeing, even though it is not a failure.
+        if ok and rel > RTOL:
+            flag = f"   (within atol {atol:g})"
+        elif ok:
+            flag = ""
+        else:
+            flag = "   <-- MISMATCH"
             bad.append((k, g, r, rel))
         print(f"  {k:20s} {g:16.9e} {r:16.9e} {rel:11.2e}{flag}")
 

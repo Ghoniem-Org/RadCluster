@@ -64,7 +64,7 @@ if [ -d "$REPO/.git" ]; then
     echo "   (pull skipped -- resolve by hand if it diverged)"
 else
   echo "== cloning repo -> $REPO"
-  git clone https://github.com/<<<SET: your org>>>/RadCluster.git "$REPO"
+  git clone https://github.com/Ghoniem-Org/RadCluster.git "$REPO"
 fi
 
 # ── 3. solver ───────────────────────────────────────────────────────────────
@@ -90,15 +90,21 @@ python3 -m pip install --user -q -r "$REPO/requirements.txt" 2>&1 | tail -3 || \
 echo
 echo "== check_machine (agreement gate) =="
 cd "$REPO/RadCluster_2_1/digital_twin"
-python3 check_machine.py; rc=$?
+# NOT 'python3 check_machine.py; rc=$?' -- under `set -e` a nonzero exit kills
+# the script before rc is ever read, so a FAILED gate would look like a crashed
+# setup instead of a recorded verdict.
+rc=0
+python3 check_machine.py || rc=$?
 if [ $rc -eq 0 ]; then echo ok > .agree.ok; else echo FAIL > .agree.ok; fi
 echo "   check_machine rc=$rc"
 echo
-echo "NOTE: check_machine compares 12 quantities at rtol=1e-9 with NO absolute"
-echo "floor. Two of them (delta_FP, pile) are legitimately ~1e-8/1e-9, where a"
-echo "relative comparison is meaningless -- plan S11(l) saw a 54% 'disagreement'"
-echo "between two values that were both ~1e-9 against a 0.05 bar. If this failed"
-echo "ONLY on those, it is the known defect (gate S11(i)-7), not a bad build."
+echo "check_machine compares 12 quantities at rtol=1e-6, WITH a per-field"
+echo "absolute floor added 2026-08-03 (gate S11(i)-7 -- delta_FP 1e-9,"
+echo "conv_psuccess 1e-12). Without it, delta_FP would be compared relatively at"
+echo "a reference value of 1.4e-07: real build-to-build data (plan S11(l)) shows"
+echo "1.5e-05 RELATIVE agreement there while the ABSOLUTE difference is 6.9e-13,"
+echo "which would have failed this build for nothing. A field passing only via"
+echo "its floor is printed as '(within atol ...)' rather than hidden."
 echo
 echo "Now measure the row cost HERE before setting weights or --timeout-s:"
 echo "  cores are Xeon Gold 6338N @ 2.20GHz, likely slower per core than the Mac,"

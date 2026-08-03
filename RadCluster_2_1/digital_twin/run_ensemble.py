@@ -590,9 +590,14 @@ def main(argv=None):
         print(f"  *** design carries REVISION_PENDING parameters: "
               f"{meta['revision_pending']}")
 
-    cfg = {"I": a.I, "V": a.V, "dose": a.dose, "equations": a.equations,
-           "rtol": a.rtol, "atol": 1e-20, "n_points": 40, "C_floor": 1e-25,
-           "timeout_s": a.timeout_s, "i_mobile_default": 10, "v_mobile_default": 5}
+    # DERIVED from run_cfg, never rebuilt by hand.  These were two separate
+    # literals -- run_cfg for the provenance hash, cfg for the workers -- and
+    # they had to be edited in lockstep.  Adding solver_mode/preconditioner to
+    # run_cfg alone made every row die with KeyError: 'solver_mode'.  Deriving
+    # one from the other makes that class of drift impossible, and also
+    # guarantees that what the workers actually ran is exactly what run_cfg_sha
+    # hashed -- which is the whole point of the restart-safety check.
+    cfg = dict(run_cfg)
 
     # GRACEFUL STOP.  submit/as_completed rather than ex.map: map() has no way
     # to stop feeding work, so a stop request could only be honoured by killing

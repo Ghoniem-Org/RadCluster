@@ -1782,3 +1782,98 @@ Given (e), this is now **moot rather than resolved**: `active_window` makes
 fallback and the ⟨100⟩ refinement study is not worth re-running. Recorded here
 so the open question is not mistaken for a closed one if the fallback is ever
 reconsidered.
+
+### (j) The vacancy axis was never checked — and delta_FP's blindness is axis-specific
+
+§(b) recorded that `δ_FP` is blind to grid truncation. That is **half true**,
+and the half that is false was found on 2026-08-02 by chasing a single number:
+`check_machine` reported `δ_FP = 4.1e-3`, above CLAUDE.md §8's own
+"coding error" threshold.
+
+It was neither of the obvious suspects. Conversion OFF gives 4.126e-3 against
+conversion ON at 4.114e-3 — a 0.3 % difference, so not the conversion path.
+And it was flat at 1.595e-3 across `I = 300 / 600 / 1200` — so not the SIA
+grid either.
+
+It was the **vacancy** grid. The probe ran `V = 120` while mean cavity size is
+~153 vacancies: the typical cavity did not fit on its own grid.
+
+| `V` | 120 | 240 | 480 | 960 |
+|---|---|---|---|---|
+| `δ_FP` | 1.595e-3 | 8.31e-4 | **1.43e-7** | 1.44e-7 |
+| `mean_n_v` | 18.71 | 136.38 | **153.27** | 153.27 |
+| `N_voids` | 8.56e19 | 6.94e20 | **9.10e20** | 9.10e20 |
+
+`mean_n_v` was wrong by **719 %** and `N_voids` by **964 %**.
+
+**The rule, stated properly:**
+
+| truncated population | `δ_FP` sees it? | why |
+|---|---|---|
+| ⟨100⟩ loops | **no** | sessile, one-way; the `if (n < I)` guard halts growth *without losing atoms* |
+| ½⟨111⟩ loops | **yes** | mobile; truncation removes them from the SIA inventory `S_I` |
+| vacancy clusters | **yes** | the identity `S = S_I + ΔJ^d` has the vacancy inventory `S` on the left |
+
+So `δ_FP` is a genuine guard on two of the three axes and useless on the third
+— which is exactly backwards from how it was being relied on, since ⟨100⟩ is
+the population that actually saturates.
+
+**Three fixes, all in `run_ensemble.py` / `check_machine.py`:**
+1. `pile_v` and `occ_v` recorded per row; `pile_v` is a reject criterion.
+   `occ_v` deliberately is **not** — the probe converges at `mean_n_v = 153`
+   with `occ_v = 0.319`, so an `occ_v > 0.10` bar would demand `V ≳ 1600` to
+   accept an answer already converged at 480.
+2. `δ_FP` admissibility bar **1e-3 → 1e-6**. The old bar only rejected the
+   "coding error" band: `V = 240` passed it at 8.3e-4 while `mean_n_v` was
+   still 11 % from converged.
+3. Probe refitted `I=150, V=120, full_system` → `I=300, V=480, active_window`.
+   All three were wrong: `V` for the above; `I` because `mean_n_111 = 35.9` on
+   a 150-point grid is occupancy 0.24, giving `δ_FP` 4–5e-3 *regardless of V*;
+   and `full_system` because it validated a path the campaign will not run.
+   Now `δ_FP = 1.4e-7` in ~35 s, self-check 12/12 at rtol 1e-9.
+
+**The campaign grid itself is fine, and now demonstrated rather than assumed:**
+
+| `V` (at `I=800`, 0.1 dpa) | 600 | 1200 | 2400 |
+|---|---|---|---|
+| `mean_n_v` | 168.00 | 168.00 | 168.00 |
+| `N_voids` | 9.119e20 | 9.119e20 | 9.119e20 |
+| `δ_FP` | 7.00e-12 | 7.51e-12 | 7.72e-12 |
+
+A 4× increase moves the void observables by **0.0 %**.
+
+### (k) Final campaign grid — measured at both box corners
+
+| `I` | 800 | 1600 | 2400 | 3200 | 6400 |
+|---|---|---|---|---|---|
+| `pile` nominal (h=0.273) | 0.4642 | 0.1474 | — | **0.0000** | 0.0000 |
+| `pile` corner (h=0.260) | 0.5965 | 0.3608 | 0.1018 | **0.0037** | — |
+| `d100` nominal | 5.50 | 6.45 | — | **6.55** | 6.55 |
+| `d100` corner | 5.67 | 6.98 | 7.37 | **7.42** | — |
+
+Both corners clear the 0.05 bar at `I = 3200`, and `d100` has stopped moving
+(6.55 at 3200 and at 6400). **`I_GRID = 3200`, `V_GRID = 600`.**
+
+`active_window` agreement, `OMP_NUM_THREADS=1` on both sides:
+
+| | nominal `I=1600` | corner `I=2400` |
+|---|---|---|
+| agreement vs `full_system` | identical to printed precision | worst rel dev **4.1e-4** |
+| speed-up | 2.4× (1176 s vs 2875 s) | 3.2× (1205 s vs 3858 s) |
+| `δ_FP` | 6.4e-12 vs 1.2e-08 | 4.8e-12 vs 5.5e-09 |
+
+### (l) Harness defects found by the pre-freeze smoke test
+
+Running the harness end-to-end before freezing caught two things that no unit
+check would have:
+
+- **`cfg` / `run_cfg` drift.** Two near-identical dicts — one hashed for
+  provenance, one handed to the workers — had to be edited in lockstep. Adding
+  `solver_mode` to the provenance one alone made **every row** die with
+  `KeyError: 'solver_mode'`. `cfg` is now *derived* from `run_cfg`, which also
+  guarantees that what the workers ran is exactly what `run_cfg_sha` hashed —
+  the whole point of the restart-safety check.
+- **Unknown constructor kwargs silently dropped** (§(i)) — now a `TypeError`.
+
+Both were introduced or exposed by this session's own edits, which is the
+argument for the smoke test being a standing gate rather than a one-off.

@@ -1,0 +1,147 @@
+{
+  "schema_version": "1",
+  "written_at_unix": 1785723703.126688,
+  "written_at": "2026-08-02 19:21:43",
+  "campaign": {
+    "design_file": "/Users/ghoni/Documents/GitHub/RadCluster/RadCluster_2_1/digital_twin/design/T2_design_v2.csv",
+    "design_sha256": "9f212a959e477e86a529ccd314655159b8ec9980ea9936efd71bfebf73ccfc63",
+    "tier": 2,
+    "N": 16,
+    "p": 21,
+    "conditions": [
+      "N2",
+      "N5",
+      "I1"
+    ],
+    "parameters": [
+      "eta",
+      "f_cl_i",
+      "f_cl_v",
+      "E_m_i",
+      "E_m_v",
+      "E_m_h",
+      "L_hat",
+      "i_mobile",
+      "v_mobile",
+      "gamma_s",
+      "E_b_v2",
+      "lambda",
+      "B_111",
+      "E_b_i2",
+      "E_b_hV_1",
+      "Z_i",
+      "Z_i_loop",
+      "E_a0_conv",
+      "dH2_conv",
+      "phi_max_junc",
+      "dH2_abs_conv"
+    ],
+    "parameters_version": "T2_v1",
+    "revision_pending": [],
+    "rows_total": 1104
+  },
+  "machine": {
+    "index": 2,
+    "of": 4,
+    "weights": null,
+    "rows_assigned": 276,
+    "machine_id": "Mac.san.rr.com",
+    "platform": "macOS-15.7.4-arm64-arm-64bit",
+    "python": "3.9.6",
+    "cpu_count": 8,
+    "workers": 6,
+    "omp_num_threads": "1"
+  },
+  "code": {
+    "git_sha": "a9e512b9b8eb530bd24c2389f7331dbb0abc2b28",
+    "solver_sha256": "unavailable",
+    "solver_path": "/Users/ghoni/Documents/GitHub/RadCluster/RadCluster_2_1/build/Release/solver.exe",
+    "workbook_sha256": "9253e7a0370af966"
+  },
+  "run_config": {
+    "I": 3200,
+    "V": 600,
+    "dose": 0.1,
+    "equations": "discrete",
+    "rtol": 1e-06,
+    "atol": 1e-20,
+    "C_floor": 1e-25,
+    "solver_mode": "active_window",
+    "linsol": "gmres",
+    "preconditioner": "Jacobi",
+    "loop_conversion": 1,
+    "i_mobile_default": 10,
+    "v_mobile_default": 5,
+    "n_points": 40,
+    "timeout_s": 10800.0
+  },
+  "run_cfg_sha": "1feb7079ec957978",
+  "conditions_file": "/Users/ghoni/Documents/GitHub/RadCluster/RadCluster_2_1/digital_twin/conditions.json",
+  "conditions": {
+    "_comment": [
+      "Run grid for the Tier-2 screening ensemble (plan S4/Tier 2).",
+      "",
+      "Three conditions only: two neutron points spanning the temperature window",
+      "plus one ion point, so the dose-rate-sensitive parameters (L_hat, i_mobile)",
+      "are actually exercised.  All three sit inside the T0.4 envelope.",
+      "",
+      "T_K is the ACTUAL temperature of the experiment.  The -60 C ion shift",
+      "(T_eq = T - 60) is a data-side plotting device (plan S3.2) and is exactly",
+      "collinear with an ion dummy; it must NEVER reach the simulator.  It is",
+      "absent from this file by construction and run_ensemble asserts on it.",
+      "",
+      "G is the NRT displacement rate in dpa/s BEFORE the survival factor eta;",
+      "leave null to take the workbook value.  The ion point's higher dose rate is",
+      "physics the model is supposed to reproduce, not a correction to apply."
+    ],
+    "N2": {
+      "label": "neutron 300 C",
+      "T_K": 573.15,
+      "cascade": "fission",
+      "G": null,
+      "rho_d": 100000000000000.0
+    },
+    "N5": {
+      "label": "neutron 350 C",
+      "T_K": 623.15,
+      "cascade": "fission",
+      "G": null,
+      "rho_d": 100000000000000.0
+    },
+    "I1": {
+      "label": "ion 350 C, high dose rate",
+      "T_K": 623.15,
+      "cascade": "fission",
+      "G": 0.0001,
+      "rho_d": 100000000000000.0
+    }
+  },
+  "rows": {
+    "assigned": 276,
+    "completed": 276,
+    "admissible": 0,
+    "inadmissible": 0,
+    "failed": 276,
+    "not_started": 0
+  },
+  "timing": {
+    "session_wall_s": 0.0,
+    "row_wall_mean_s": 0.18115942028985507,
+    "row_wall_median_s": 0.2,
+    "row_wall_p90_s": 0.2,
+    "core_hours": 0.01388888888888896
+  },
+  "stopped": null,
+  "admissibility_rule": {
+    "pile_tol": 0.05,
+    "occ_tol": 0.1,
+    "delta_FP_tol": 1e-06,
+    "pile_top_frac": 0.02,
+    "axes": [
+      "sia_111",
+      "sia_100",
+      "vacancy"
+    ],
+    "note": "delta_FP is blind to SIA-axis truncation (the <100> pile-up held delta_FP at 1e-8 while 96% of content sat at n=I), so grid adequacy is judged by pile/occupancy. It is NOT blind to the VACANCY axis -- delta_FP rests on the swelling identity S = S_I + Delta J^d and S is the vacancy inventory. The vacancy axis was unchecked until 2026-08-02; at the check_machine probe (V=120) mean_n_v moved 18.7->136 and swelling 58x on going to V=240."
+  }
+}

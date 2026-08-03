@@ -2687,3 +2687,113 @@ not have been made before it was measured.
 99.8 % artefact at 1 dpa, so the usable figure is **≥ 1 h/row**: 1008 rows
 ≈ **1000 core-hours** ≈ 3 days on the Mac's 14 workers. MATRIX-PC2 contributes
 little at 12–15× slower unless `--weights` gives it a much smaller share.
+
+### (n) Heterogeneous campaign layout — weights, and Hoffman2 replacing machine 2
+
+#### Weights must be measured, and per-row wall time is the wrong measure
+
+`run_ensemble` already implements weighted assignment (Sainte-Laguë
+highest-averages, interleaved). What was missing is how to *set* the weights.
+
+The tempting measure — mean `wall_s` per row — is wrong under oversubscription.
+`wall_s` is elapsed time, so a machine running 16 workers on 4 cores reports a
+4× inflated per-row time at unchanged throughput. The v2 pool shows exactly this
+ambiguity, and it is not resolvable after the fact:
+
+- On the same three design rows, MATRIX-PC2 took 132/271/194 s against the Mac's
+  10/18/16 s — **12–15×**.
+- Averaged over its whole set it is **2.7×** slower per row (1.78 vs 0.66
+  core-h/row), or ~1.6× excluding its 55 starved rows.
+
+Those cannot both be capacity. The measure that is invariant to oversubscription
+is `throughput = rows_completed / session_wall_s`, and the manifest records both.
+
+**Only machine 2 pushed a manifest**, so it is the only participant whose
+capacity is known:
+
+| | host | workers/cores | rows | session wall | throughput |
+|---|---|---|---|---|---|
+| machine 2 | Mac (8-core) | 4 / 8 | 94 | 13.96 h | **6.73 rows/h** (1.68/worker) |
+| machine 1 | Mac (16-core) | 14 / 16 | 274 | ~13.4 h | ~20.4 rows/h (1.46/worker) |
+| machine 3 | MATRIX-PC2 | **unknown** | 147 | **unknown** | **cannot be computed** |
+
+The two Macs agree at ~1.5–1.7 rows/h per worker, so for identical hardware
+**weight = worker count** is right. MATRIX-PC2's weight has to be *declared*
+until it pushes a manifest — and `campaign_layout.py` labels declared capacity
+`DECLARED`, never `MEASURED`, so an assumption is not later mistaken for data.
+
+> **Push the manifests, not just the rows.** `*.manifest.json` carries
+> `session_wall_s`, `completed`, `workers` and `cpu_count` — everything needed to
+> size the next round. Machine 3's never arrived, which is the entire reason its
+> weight cannot be measured.
+
+#### `campaign_layout.py` — compute the layout once, commit it, generate the commands
+
+New module. It reads the manifests, takes declared capacity for participants
+that have none, and emits `campaign_layout.json` plus a ready-to-paste command
+for every participant.
+
+`--weights` now also accepts **`@campaign_layout.json`**. This matters more than
+it looks: the weight list must be byte-identical on every participant, and with
+Hoffman2 as an array job that list is 18 entries — or 66 if the array is
+single-core tasks. A retyped list on six hosts is a silent row collision. The
+`@` form reads one committed file and records its SHA per row; `weights_sha` and
+`of` are now in the provenance block and in `merge_and_sobol`'s split check.
+
+That check matters because a weights disagreement fails in a *disguised* way:
+the machines do not partition the design, so some rows are computed twice and
+others by nobody — which surfaces at merge time as "rows MISSING", reading like
+a machine that never reported rather than the misconfiguration it is.
+
+Verified on 1008 rows at `of=18`: every row owned exactly once, per-machine
+counts within **±1.3 %** of the weighted expectation, and — the property that
+matters for Saltelli — if the heaviest machine died, all 48 base points lose a
+few rows each (worst 5 of 21) rather than any base point being wiped out.
+
+Example layout (Mac 14 workers, MATRIX-PC2 declared at 4 slots × 0.4 speed,
+Hoffman2 as 16 tasks × 4 cores):
+
+| participant | slots | weight | share | rows |
+|---|---|---|---|---|
+| mac-16core | 14 | 14.0 | 17.6 % | 177 |
+| MATRIX-PC2 | 4 | 1.6 | 2.0 % | 20 |
+| hoffman2 × 16 | 4 each | 4.0 each | 5.0 % each | 51 each |
+
+At ~1 h/row this is **ETA ≈ 12.7 h** against ~3 days on the Mac alone. All
+participants finish together, which is the point of weighting.
+
+#### Hoffman2: an array job, one task per machine index
+
+`hoffman2_array.sh` (UGE/SGE). **One array task = one machine index**, each
+writing its own results file, so tasks never touch the same bytes — the property
+that lets four workstations share a campaign, applied to N cluster tasks.
+
+Design decisions worth stating:
+
+- **Array of small tasks, not one big job.** A 64-core job queues behind
+  everything on a shared cluster and, at `h_rt`, dies whole. Sixteen 4-core
+  tasks backfill into gaps and die one at a time. There is nothing to gain from
+  a shared-memory job: `OMP_NUM_THREADS=1` and §(m) shows OpenMP does not engage
+  under `bin_moment` regardless.
+- **`--stop-after-s`** (new). A job killed at `h_rt` loses every in-flight row —
+  with 4 workers that is 4 rows of up to an hour, silently, on every task.
+  The worker now parks itself early, lets running rows land, and records the
+  shortfall in the manifest. Set it to `h_rt` minus ~1.5 rows.
+- **Resumption is the design.** Rows append and a restart skips completed
+  `row_id`s, so resubmitting the identical script is always safe and always
+  makes progress. Expect several submissions.
+- **Build lock.** 16 tasks landing on the same node would race on one `build/`
+  directory; the script serialises with `flock`.
+- **Agreement gate before contributing rows.** Hoffman2's compiler and SUNDIALS
+  make a **third** binary. §(l) measured Mac vs MATRIX-PC2 at 2.95e-08 and
+  judged them poolable — but that was *measured*. Task 1 runs `check_machine.py`
+  and the rest refuse to start unless it passed. **This depends on gate
+  §(i)-7**: `check_machine` needs its absolute floor first, or it will fail on
+  near-zero quantities and block a build that is actually fine.
+- **Transport from the login node.** Compute nodes generally have no outbound
+  network; `git push` from the login node after the array drains.
+
+**Open items the operator must fill** (marked `<<<SET>>>` in the script): repo
+path, module versions, `h_rt` for the allocation, the array range, and
+`--timeout-s` from a p99 measured **on Hoffman2**, not inherited from the Mac —
+that inheritance is precisely what starved 55 of MATRIX-PC2's rows (§(l)).

@@ -128,7 +128,13 @@ def load_results(res_dir: Path) -> dict[int, dict]:
 
 def check_provenance(recs: dict[int, dict]) -> None:
     """Four machines must have run the SAME code against the SAME design."""
-    for field in ("git_sha", "solver_sha256", "workbook_sha256", "design_sha256"):
+    # weights_sha / of describe the row->machine MAP rather than the physics.
+    # A split on those is a different and nastier failure: the machines did not
+    # partition the design, so some rows were computed twice and others by
+    # nobody. That shows up at merge time as "rows MISSING", which reads like a
+    # machine that never reported rather than the misconfiguration it is.
+    for field in ("git_sha", "solver_sha256", "workbook_sha256", "design_sha256",
+                  "weights_sha", "of"):
         vals = defaultdict(list)
         for r in recs.values():
             vals[r.get(field, "missing")].append(r.get("machine_id", "?"))

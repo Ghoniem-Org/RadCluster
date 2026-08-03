@@ -690,11 +690,15 @@ def main(argv=None):
     ap.add_argument("--of", type=int, required=True, help="total machines M")
     ap.add_argument("--workers", type=int, default=max(1, (os.cpu_count() or 4) - 2))
     ap.add_argument("--weights", default=None,
-                    help="comma-separated relative capacity of EACH machine, "
-                         "e.g. '6,14,22,22' (normally each machine's --workers). "
-                         "Splits the design in proportion to capacity instead of "
-                         "evenly, so heterogeneous machines finish together. "
-                         "MUST be given identically on every machine. "
+                    help="relative capacity of EACH machine, either a comma list "
+                         "('6,14,22,22', normally each machine's --workers) or "
+                         "'@path' to a campaign_layout.json written by "
+                         "campaign_layout.py. Splits the design in proportion to "
+                         "capacity instead of evenly, so heterogeneous machines "
+                         "finish together. MUST be identical on every machine -- "
+                         "prefer '@' form: a 66-entry list retyped on six hosts is "
+                         "a silent row collision waiting to happen, whereas the "
+                         "file is committed once and its hash is recorded per row. "
                          "Omit for the default even split (row_id %% M).")
     ap.add_argument("--out", type=Path, default=None)
     ap.add_argument("--conditions", type=Path, default=HERE / "conditions.json")
@@ -737,6 +741,13 @@ def main(argv=None):
     ap.add_argument("--rtol", type=float, default=1e-6)
     ap.add_argument("--timeout-s", type=float, default=3600)
     ap.add_argument("--limit", type=int, default=0, help="run only the first n rows (smoke test)")
+    ap.add_argument("--stop-after-s", type=float, default=0.0,
+                    help="stop SUBMITTING new rows after this many seconds and exit "
+                         "cleanly (0 = no limit). For batch schedulers: set it to "
+                         "the job's walltime minus one row's p99, so the worker "
+                         "parks itself before the scheduler SIGKILLs it mid-row. "
+                         "Rows already running are allowed to finish and are "
+                         "written; a resubmission resumes by skipping them.")
     ap.add_argument("--allow-mixed", action="store_true",
                     help="resume even though git/solver/workbook/design changed "
                          "since the existing rows (see RESTART SAFETY)")
@@ -750,7 +761,25 @@ def main(argv=None):
               "I1": {"T_K": 623.15, "cascade": "fission"}})
 
     weights = None
+    weights_sha = ""
     if a.weights:
+        if a.weights.startswith("@"):
+            lay_p = Path(a.weights[1:])
+            if not lay_p.exists():
+                raise SystemExit(f"--weights {a.weights}: {lay_p} does not exist. "
+                                 f"Generate it with campaign_layout.py and commit "
+                                 f"it, so every machine reads the same file.")
+            lay = json.loads(lay_p.read_text(encoding="utf-8"))
+            a.weights = lay["weights"]
+            weights_sha = sha256_file(lay_p)[:16]
+            if int(lay.get("of", 0)) != a.of:
+                raise SystemExit(
+                    f"--of {a.of} but {lay_p.name} was built for "
+                    f"of={lay['of']}. They must agree, or the machines disagree "
+                    f"about how many participants exist and rows are both "
+                    f"duplicated and dropped. Re-run campaign_layout.py.")
+            print(f"  weights from {lay_p.name} (sha {weights_sha}): "
+                  f"{len(lay['participants'])} participants")
         weights = [float(w) for w in a.weights.split(",")]
         if len(weights) != a.of:
             raise SystemExit(f"--weights has {len(weights)} entries but --of is "
@@ -853,6 +882,13 @@ def main(argv=None):
                 REPO / "RadCluster_2_1" / "input" / "input_parameters.xlsx")[:16],
             "design_sha256": meta.get("design_sha256", "")[:16],
             "run_cfg_sha": run_cfg_sha,
+            # The row->machine map is a function of (of, weights).  If two
+            # machines disagree about it they silently compute overlapping rows
+            # AND leave a hole, which looks like "some rows missing" at merge
+            # time rather than like the configuration error it is.  Carried per
+            # row so merge_and_sobol can say which it was.
+            "weights_sha": weights_sha,
+            "of": a.of,
             # carried per row (not only in run_cfg_sha) so merge_and_sobol can
             # apply the per-mode observable-fidelity restriction without having
             # to resolve the hash back to a configuration
@@ -957,6 +993,22 @@ def main(argv=None):
                 print(f"\n  STOP requested ({stopped.get('reason')}) -- not "
                       f"submitting further rows; {len(inflight)} in flight will "
                       f"finish and be written.\n", flush=True)
+            # SELF-IMPOSED DEADLINE, for batch schedulers.  A job killed at its
+            # walltime loses every in-flight row -- with 4 workers that is 4 rows
+            # of up to an hour each, silently, on every task of an array job.
+            # Parking one row's-worth of time early costs a fraction of that and
+            # makes the shortfall visible in the manifest instead.  Same path as
+            # the STOP sentinel: stop SUBMITTING, let the running rows land.
+            if stopped is None and a.stop_after_s > 0:
+                el = time.time() - t0
+                if el >= a.stop_after_s:
+                    stopped = {"reason": f"--stop-after-s {a.stop_after_s:.0f} "
+                                         f"reached at {el:.0f}s (scheduler "
+                                         f"walltime guard)"}
+                    print(f"\n  DEADLINE reached ({el:.0f}s of "
+                          f"{a.stop_after_s:.0f}s) -- not submitting further "
+                          f"rows; {len(inflight)} in flight will finish and be "
+                          f"written. Resubmit to resume.\n", flush=True)
             if stopped is None:
                 while pending and len(inflight) < a.workers:
                     inflight.add(submit(pending.pop(0)))
@@ -1037,8 +1089,16 @@ def main(argv=None):
     if stopped:
         print(f"  {len(pending)} row(s) were never started and remain assigned "
               f"to this machine.")
-        print("  Clear the flag (campaign_ops.clear_stop()) and re-run the same "
-              "command to resume; completed rows are skipped automatically.")
+        if "walltime guard" in str(stopped.get("reason", "")):
+            # No sentinel was written, so telling the operator to clear one sends
+            # them looking for a file that does not exist -- and on a cluster
+            # this message is read by whoever is debugging a resubmission loop.
+            print("  No STOP flag was set: this was the --stop-after-s deadline. "
+                  "Resubmit the SAME command to resume; completed rows are "
+                  "skipped automatically.")
+        else:
+            print("  Clear the flag (campaign_ops.clear_stop()) and re-run the same "
+                  "command to resume; completed rows are skipped automatically.")
     return 0
 
 

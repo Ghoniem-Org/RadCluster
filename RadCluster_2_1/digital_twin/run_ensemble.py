@@ -521,7 +521,18 @@ def main(argv=None):
             prior.append(r)
     todo = [r for r in mine if r["row_id"] not in done]
 
-    solver = REPO / "RadCluster_2_1" / "build" / "Release" / "solver.exe"
+    # Provenance only -- the run itself resolves the binary via py_utils.cpp_bridge.
+    # Must match cpp_bridge's search order, otherwise solver_sha256 records
+    # 'unavailable' on every non-Windows machine and the whole point of hashing
+    # the binary (proving four machines ran the SAME solver) is lost.
+    _build = REPO / "RadCluster_2_1" / "build"
+    for _cand in (_build / "Release" / "solver.exe", _build / "solver.exe",
+                  _build / "solver"):
+        if _cand.exists():
+            solver = _cand
+            break
+    else:
+        solver = _build / "solver"
     # RUN CONFIGURATION IS PROVENANCE.  I/V/dose/equations/rtol are NOT part of
     # theta, so without recording them here nothing in the result row would show
     # that the numerics moved between two batches — and a grid change silently

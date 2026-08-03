@@ -1,0 +1,275 @@
+FIT SUMMARY -- group-separated analysis (neutron and ion never pooled)
+==============================================================================
+
+--- neutron_loop_density_T.png   n plotted = 19, n fitted = 19
+    note: alloy family colours the markers only: no grouping tested reduces the leave-one-out error below the T-only model, so a single line is fitted
+    geometric mean = 5.164e+21   GSD (about the mean) = 3.298
+    ln y = a + b*(T)   b = -0.00092967 +/- 0.00364   (t = -0.26)
+    intercept 'all'  a = 50.5484 +/- 2.18
+    s^2 = 1.5018   s = 1.2255   GSD about fit = 3.406   R^2 = 0.004   adj R^2 = -0.055
+    AICc = 10.4   LOO rms = 1.368
+
+--- neutron_loop_density_invT.png   n plotted = 19, n fitted = 19
+    geometric mean = 5.164e+21   GSD (about the mean) = 3.298
+    ln y = a + b*(1000/T)   b = +0.51287 +/- 0.859   (t = +0.60)
+    intercept 'all'  a = 49.1120 +/- 1.51
+    s^2 = 1.4766   s = 1.2151   GSD about fit = 3.371   R^2 = 0.021   adj R^2 = -0.037
+    AICc = 10.0   LOO rms = 1.548
+    Arrhenius  y = y0 exp(-E/kT):  E_eff = -0.0442 +/- 0.0740 eV
+
+--- neutron_loop_size_T.png   n plotted = 20, n fitted = 19
+    note: alloy family is the selected model for this panel
+    geometric mean = 8.532   GSD (about the mean) = 1.873
+    ln y = a + b*(T)   b = +0.0028218 +/- 0.00162   (t = +1.74)
+    intercept '9Cr F/M'  a = 0.1085 +/- 0.99
+      offset '12Cr F/M' = +0.8675 +/- 0.274  -> x2.38   (t = +3.17)
+      offset 'ODS' = +1.1893 +/- 0.323  -> x3.28   (t = +3.68)
+      offset 'pure Fe' = +0.9153 +/- 0.406  -> x2.5   (t = +2.26)
+    s^2 = 0.1779   s = 0.4217   GSD about fit = 1.525   R^2 = 0.649   adj R^2 = 0.548
+    AICc = -24.0   LOO rms = 0.569
+    vs T only:  s^2 0.3942 -> 0.1779  (55 % of the variance removed),  F test p = 0.0025
+
+--- neutron_cavity_density_T.png   n plotted = 8, n fitted = 7
+    geometric mean = 4.915e+21   GSD (about the mean) = 11.327
+    ln y = a + b*(T)   b = -0.019063 +/- 0.0034   (t = -5.61)
+    intercept 'all'  a = 61.2948 +/- 2.06
+    s^2 = 0.9697   s = 0.9847   GSD about fit = 2.677   R^2 = 0.863   adj R^2 = 0.835
+    AICc = 4.4   LOO rms = 3.285
+
+--- neutron_cavity_density_invT.png   n plotted = 8, n fitted = 7
+    geometric mean = 4.915e+21   GSD (about the mean) = 11.327
+    ln y = a + b*(1000/T)   b = +4.2286 +/- 0.617   (t = +6.85)
+    intercept 'all'  a = 42.4522 +/- 1.14
+    s^2 = 0.6811   s = 0.8253   GSD about fit = 2.282   R^2 = 0.904   adj R^2 = 0.884
+    AICc = 2.0   LOO rms = 4.051
+    Arrhenius  y = y0 exp(-E/kT):  E_eff = -0.3644 +/- 0.0532 eV
+
+--- neutron_cavity_size_T.png   n plotted = 9, n fitted = 7
+    geometric mean = 2.144   GSD (about the mean) = 1.636
+    ln y = a + b*(T)   b = +0.003136 +/- 0.00128   (t = +2.45)
+    intercept 'all'  a = -1.0698 +/- 0.762
+    s^2 = 0.1325   s = 0.3640   GSD about fit = 1.439   R^2 = 0.545   adj R^2 = 0.453
+    AICc = -9.5   LOO rms = 0.408
+
+--- ion_loop_density_T.png   n plotted = 10, n fitted = 10
+    note: dose split at 15 dpa
+    geometric mean = 3.564e+22   GSD (about the mean) = 1.663
+    ln y = a + b*(T)   b = -0.0023155 +/- 0.00319   (t = -0.73)
+    intercept '$\leq$ 15 dpa'  a = 53.6840 +/- 2.16
+      offset '> 15 dpa' = -0.8018 +/- 0.37  -> x0.449   (t = -2.17)
+    s^2 = 0.1926   s = 0.4389   GSD about fit = 1.551   R^2 = 0.422   adj R^2 = 0.256
+    AICc = -10.0   LOO rms = 0.454
+    vs T only:  s^2 0.2818 -> 0.1926  (32 % of the variance removed),  F test p = 0.0668
+
+--- ion_loop_density_invT.png   n plotted = 10, n fitted = 10
+    geometric mean = 3.564e+22   GSD (about the mean) = 1.663
+    ln y = a + b*(1000/T)   b = +0.89046 +/- 1.14   (t = +0.78)
+    intercept '$\leq$ 15 dpa'  a = 50.7998 +/- 1.71
+      offset '> 15 dpa' = -0.8096 +/- 0.366  -> x0.445   (t = -2.21)
+    s^2 = 0.1907   s = 0.4367   GSD about fit = 1.548   R^2 = 0.427   adj R^2 = 0.264
+    AICc = -10.1   LOO rms = 0.445
+    vs T only:  s^2 0.2833 -> 0.1907  (33 % of the variance removed),  F test p = 0.0627
+    Arrhenius  y = y0 exp(-E/kT):  E_eff = -0.0767 +/- 0.0986 eV
+
+--- ion_loop_size_T.png   n plotted = 14, n fitted = 14
+    note: dose split at 30 dpa
+    geometric mean = 6.29   GSD (about the mean) = 1.600
+    ln y = a + b*(T)   b = -8.3065e-05 +/- 0.00178   (t = -0.05)
+    intercept '$\leq$ 30 dpa'  a = 1.7715 +/- 1.14
+      offset '> 30 dpa' = +0.8449 +/- 0.297  -> x2.33   (t = +2.84)
+    s^2 = 0.1501   s = 0.3874   GSD about fit = 1.473   R^2 = 0.425   adj R^2 = 0.320
+    AICc = -21.5   LOO rms = 0.443
+    vs T only:  s^2 0.2385 -> 0.1501  (37 % of the variance removed),  F test p = 0.0160
+
+--- ion_cavity_density_T.png   n plotted = 12, n fitted = 12
+    note: CONFOUNDED: in this panel the six He-bubble rows are exactly the six rows at dose <= 30 dpa, so 'He bubble' and 'low dose' are the same split
+    geometric mean = 4.739e+21   GSD (about the mean) = 12.260
+    ln y = a + b*(T)   b = +0.0014863 +/- 0.00869   (t = +0.17)
+    intercept 'void'  a = 46.6291 +/- 5.78
+      offset 'He bubble' = +4.4893 +/- 0.735  -> x89.1   (t = +6.11)
+    s^2 = 0.6653   s = 0.8156   GSD about fit = 2.261   R^2 = 0.913   adj R^2 = 0.894
+    AICc = 0.7   LOO rms = 0.918
+    vs T only:  s^2 3.0791 -> 0.6653  (78 % of the variance removed),  F test p = 0.0002
+
+--- ion_cavity_density_invT.png   n plotted = 12, n fitted = 12
+    geometric mean = 4.739e+21   GSD (about the mean) = 12.260
+    ln y = a + b*(1000/T)   b = -0.76544 +/- 4.41   (t = -0.17)
+    intercept 'void'  a = 48.7687 +/- 6.64
+      offset 'He bubble' = +4.4860 +/- 0.744  -> x88.8   (t = +6.03)
+    s^2 = 0.6652   s = 0.8156   GSD about fit = 2.261   R^2 = 0.913   adj R^2 = 0.894
+    AICc = 0.7   LOO rms = 0.921
+    vs T only:  s^2 3.0182 -> 0.6652  (78 % of the variance removed),  F test p = 0.0002
+    Arrhenius  y = y0 exp(-E/kT):  E_eff = +0.0660 +/- 0.3801 eV
+
+--- ion_cavity_size_T.png   n plotted = 17, n fitted = 16
+    note: dose split at 30 dpa; He-bubble / void is a different and weaker split on this panel (see fit_summary)
+    geometric mean = 5.893   GSD (about the mean) = 2.341
+    ln y = a + b*(T)   b = +0.0040073 +/- 0.00207   (t = +1.94)
+    intercept '$\leq$ 30 dpa'  a = -1.5599 +/- 1.43
+      offset '> 30 dpa' = +1.3538 +/- 0.248  -> x3.87   (t = +5.46)
+    s^2 = 0.2403   s = 0.4902   GSD about fit = 1.633   R^2 = 0.712   adj R^2 = 0.668
+    AICc = -18.1   LOO rms = 0.528
+    vs T only:  s^2 0.7355 -> 0.2403  (67 % of the variance removed),  F test p = 0.0001
+
+--- ion_cavity_size_bubble_T.png   n plotted = 17, n fitted = 17
+    note: the He-bubble / void split of the same panel
+    geometric mean = 5.977   GSD (about the mean) = 2.283
+    ln y = a + b*(T)   b = +0.0050133 +/- 0.00262   (t = +1.91)
+    intercept 'void'  a = -1.1294 +/- 1.78
+      offset 'He bubble' = -1.1067 +/- 0.305  -> x0.331   (t = -3.63)
+    s^2 = 0.3799   s = 0.6163   GSD about fit = 1.852   R^2 = 0.512   adj R^2 = 0.443
+    AICc = -11.9   LOO rms = 0.656
+    vs T only:  s^2 0.6879 -> 0.3799  (45 % of the variance removed),  F test p = 0.0027
+
+
+MODEL SELECTION -- every grouping tested on each panel
+(ranked by leave-one-out prediction error in ln y; `p_vs_T` is the nested
+ F test against the T-only model. Rows without a reported dose, and
+ spallation rows, are excluded so that every candidate sees the same data.)
+==============================================================================
+
+neutron loops -- density   n = 19
+            model  k    s2  GSD    R2  adjR2  AICc   LOO  p_vs_T
+T + dose > 15 dpa  2 1.326 3.16 0.172  0.068   9.7 1.318  0.0903
+T + dose > 20 dpa  2 1.514 3.42 0.055 -0.064  12.2 1.344  0.3680
+T + dose > 30 dpa  2 1.514 3.42 0.055 -0.064  12.2 1.344  0.3680
+           T only  1 1.502 3.41 0.004 -0.055  10.4 1.368     NaN
+     T + ODS flag  2 1.595 3.54 0.004 -0.120  13.2 1.374  0.9519
+       T + Cr wt%  2 1.565 3.49 0.023 -0.099  12.8 1.399  0.5838
+ T + alloy family  4 1.764 3.77 0.037 -0.239  19.6 1.509  0.9224
+     T + ln(dose)  2 1.461 3.35 0.088 -0.026  11.5 1.522  0.2415
+T + dose > 10 dpa  2 1.370 3.22 0.144  0.037  10.3 1.612  0.1244
+
+ion loops -- density   n = 10
+            model  k    s2  GSD    R2  adjR2  AICc   LOO  p_vs_T
+     T + ln(dose)  2 0.147 1.47 0.558  0.431 -12.7 0.405  0.0236
+T + dose > 20 dpa  2 0.193 1.55 0.422  0.256 -10.0 0.454  0.0668
+T + dose > 15 dpa  2 0.193 1.55 0.422  0.256 -10.0 0.454  0.0668
+T + dose > 10 dpa  2 0.195 1.55 0.415  0.248  -9.9 0.463  0.0697
+T + dose > 30 dpa  2 0.196 1.56 0.413  0.245  -9.9 0.465  0.0708
+           T only  1 0.282 1.70 0.033 -0.088  -9.2 0.545     NaN
+     T + ODS flag  2 0.311 1.75 0.065 -0.202  -5.2 0.548  0.6380
+       T + Cr wt%  2 0.299 1.73 0.101 -0.156  -5.6 0.584  0.4904
+ T + alloy family  3 0.348 1.80 0.105 -0.342   0.3 0.636  0.7927
+
+neutron loops -- size   n = 19
+            model  k    s2  GSD    R2  adjR2  AICc   LOO  p_vs_T
+ T + alloy family  4 0.178 1.52 0.649  0.548 -24.0 0.569  0.0025
+     T + ODS flag  2 0.314 1.75 0.291  0.202 -17.7 0.680  0.0345
+T + dose > 15 dpa  2 0.337 1.79 0.240  0.145 -16.3 0.710  0.0656
+           T only  1 0.394 1.87 0.054 -0.001 -15.0 0.746     NaN
+     T + ln(dose)  2 0.408 1.89 0.078 -0.037 -12.7 0.748  0.5304
+T + dose > 10 dpa  2 0.398 1.88 0.101 -0.011 -13.2 0.761  0.3753
+       T + Cr wt%  2 0.415 1.90 0.063 -0.054 -12.4 0.771  0.7012
+T + dose > 20 dpa  2 0.414 1.90 0.066 -0.050 -12.4 0.778  0.6582
+T + dose > 30 dpa  2 0.414 1.90 0.066 -0.050 -12.4 0.778  0.6582
+
+ion loops -- size   n = 14
+            model  k    s2  GSD    R2  adjR2  AICc   LOO  p_vs_T
+T + dose > 30 dpa  2 0.150 1.47 0.425  0.320 -21.5 0.443  0.0160
+     T + ODS flag  2 0.217 1.59 0.170  0.019 -16.4 0.508  0.1648
+           T only  1 0.239 1.63 0.003 -0.080 -17.1 0.530     NaN
+     T + ln(dose)  2 0.211 1.58 0.192  0.045 -16.8 0.557  0.1374
+T + dose > 10 dpa  2 0.246 1.64 0.057 -0.114 -14.6 0.576  0.4423
+ T + alloy family  3 0.238 1.63 0.170 -0.079 -12.3 0.579  0.3997
+T + dose > 20 dpa  2 0.236 1.63 0.094 -0.071 -15.2 0.587  0.3155
+T + dose > 15 dpa  2 0.236 1.63 0.094 -0.071 -15.2 0.587  0.3155
+       T + Cr wt%  2 0.254 1.65 0.028 -0.149 -14.2 0.611  0.6052
+
+neutron cavities -- density   n = 7
+            model  k    s2  GSD    R2  adjR2  AICc    LOO  p_vs_T
+           T only  1 0.970 2.68 0.863  0.835   4.4  3.285     NaN
+T + dose > 15 dpa  2 1.063 2.80 0.880  0.820  10.5  3.481  0.4950
+T + dose > 20 dpa  2 1.193 2.98 0.865  0.798  11.3  3.591  0.8121
+T + dose > 30 dpa  2 1.193 2.98 0.865  0.798  11.3  3.591  0.8121
+       T + Cr wt%  2 1.210 3.00 0.863  0.795  11.4  4.529  0.9438
+     T + ln(dose)  2 1.212 3.01 0.863  0.794  11.4  5.304  0.9670
+T + dose > 10 dpa  2 1.201 2.99 0.864  0.796  11.4  7.981  0.8590
+ T + alloy family  3 1.325 3.16 0.888  0.775  24.0 10.189  0.7422
+
+ion cavities -- density   n = 12
+             model  k    s2  GSD    R2  adjR2  AICc   LOO  p_vs_T
+ T + dose > 30 dpa  2 0.665 2.26 0.913  0.894   0.7 0.918  0.0002
+T + He-bubble flag  2 0.665 2.26 0.913  0.894   0.7 0.918  0.0002
+ T + dose > 15 dpa  2 1.035 2.77 0.865  0.835   6.0 1.168  0.0014
+ T + dose > 20 dpa  2 1.035 2.77 0.865  0.835   6.0 1.168  0.0014
+      T + ln(dose)  2 1.536 3.45 0.800  0.755  10.7 1.398  0.0089
+      T + ODS flag  2 2.300 4.56 0.700  0.634  15.5 1.606  0.0657
+ T + dose > 10 dpa  2 2.527 4.90 0.671  0.598  16.7 1.668  0.1080
+  T + alloy family  3 2.342 4.62 0.729  0.627  19.1 1.732  0.1371
+            T only  1 3.079 5.78 0.554  0.510  16.6 1.846     NaN
+        T + Cr wt%  2 3.051 5.74 0.603  0.514  18.9 1.915  0.3233
+
+neutron cavities -- size   n = 7
+            model  k    s2  GSD    R2  adjR2  AICc   LOO  p_vs_T
+T + dose > 15 dpa  2 0.018 1.14 0.951  0.927 -18.2 0.354  0.0044
+T + dose > 20 dpa  2 0.126 1.43 0.654  0.481  -4.4 0.394  0.3245
+T + dose > 30 dpa  2 0.126 1.43 0.654  0.481  -4.4 0.394  0.3245
+           T only  1 0.133 1.44 0.545  0.453  -9.5 0.408     NaN
+       T + Cr wt%  2 0.075 1.31 0.794  0.691  -8.1 0.853  0.0923
+     T + ln(dose)  2 0.072 1.31 0.803  0.705  -8.4 1.113  0.0834
+T + dose > 10 dpa  2 0.086 1.34 0.764  0.646  -7.1 1.367  0.1257
+ T + alloy family  3 0.098 1.37 0.797  0.594   5.8 1.459  0.2973
+
+ion cavities -- size   n = 16
+             model  k    s2  GSD    R2  adjR2  AICc   LOO  p_vs_T
+ T + dose > 30 dpa  2 0.240 1.63 0.712  0.668 -18.1 0.528  0.0001
+T + He-bubble flag  2 0.393 1.87 0.530  0.457 -10.3 0.669  0.0030
+      T + ln(dose)  2 0.361 1.82 0.568  0.501 -11.6 0.681  0.0017
+  T + alloy family  3 0.332 1.78 0.633  0.542 -10.6 0.691  0.0033
+      T + ODS flag  2 0.434 1.93 0.480  0.400  -8.7 0.719  0.0060
+ T + dose > 10 dpa  2 0.609 2.18 0.270  0.158  -3.2 0.837  0.0700
+ T + dose > 20 dpa  2 0.600 2.17 0.281  0.170  -3.5 0.865  0.0626
+ T + dose > 15 dpa  2 0.600 2.17 0.281  0.170  -3.5 0.865  0.0626
+            T only  1 0.735 2.36 0.051 -0.017  -2.1 0.946     NaN
+        T + Cr wt%  2 0.792 2.44 0.051 -0.095   0.9 1.019  0.9933
+
+
+LOOP CHARACTER FRACTIONS -- logit f = a + b T_eq
+==============================================================================
+(panels with the `_eurofer97` suffix drop the EUROFER-ODS measurements.)
+(f is the <100> percentage of the loop population; s is on the logit
+ scale. The quoted fit uses only measurements strictly between 0 and 100 %;
+ `sensitivity` adds the boundary measurements under a 0.5 pp continuity
+ correction, which is an arbitrary choice and changes the significance.)
+
+--- loop_fraction_neutron_T.png   n plotted = 21, n fitted = 17
+    a = -5.0289 +/- 5.1862   b = +0.00794 +/- 0.00845  (t = +0.94)
+    s = 1.5047 (logit)   R^2 = 0.056   T(f = 50 %) = 633 K = 360 C
+    sensitivity (0 %/100 % included, eps = 0.5 pp): n = 21, b = +0.030781 +/- 0.00919 (t = +3.35), R^2 = 0.371, T50 = 357 C
+
+--- loop_fraction_ion_T.png   n plotted = 5, n fitted = 5
+    a = -9.8491 +/- 14.4708   b = +0.01648 +/- 0.02413  (t = +0.68)
+    s = 1.5105 (logit)   R^2 = 0.135   T(f = 50 %) = 597 K = 324 C
+    sensitivity (0 %/100 % included, eps = 0.5 pp): n = 5, b = +0.016485 +/- 0.0241 (t = +0.68), R^2 = 0.135, T50 = 324 C
+
+--- loop_fraction_neutron_T_eurofer97.png   n plotted = 13, n fitted = 12
+    a = -11.0464 +/- 4.2811   b = +0.01883 +/- 0.00708  (t = +2.66)
+    s = 1.0404 (logit)   R^2 = 0.415   T(f = 50 %) = 587 K = 313 C
+    sensitivity (0 %/100 % included, eps = 0.5 pp): n = 13, b = +0.025128 +/- 0.0116 (t = +2.16), R^2 = 0.298, T50 = 333 C
+
+--- loop_fraction_ion_T_eurofer97.png   n plotted = 3, n fitted = 3
+    a = -10.3076 +/- 23.1433   b = +0.01733 +/- 0.03918  (t = +0.44)
+    s = 2.2391 (logit)   R^2 = 0.164   T(f = 50 %) = 595 K = 322 C
+    sensitivity (0 %/100 % included, eps = 0.5 pp): n = 3, b = +0.017329 +/- 0.0392 (t = +0.44), R^2 = 0.164, T50 = 322 C
+
+within-source fits (>= 3 interior points at >= 2 temperatures):
+   [39] Dethloff 2018          n = 5, b = -0.04903 +/- 0.03253 (t = -1.51), R^2 = 0.431, T50 = 325 C
+   [41] Klimenkov 2020         n = 5, b = +0.02448 +/- 0.00484 (t = +5.06), R^2 = 0.895, T50 = 331 C
+   [42] Klimenkov 2021         n = 3, b = +0.00979 +/- 0.00401 (t = +2.44), R^2 = 0.856, T50 = 601 C
+
+
+LEVERAGE CHECKS
+==============================================================================
+neutron cavity number density: all n = 7, b = -0.019063, R^2 = 0.863  |  F/M steels only n = 5, b = +0.02323, R^2 = 0.711, T range 603-650 K
+neutron mean cavity diameter: all n = 7, b = +0.003136, R^2 = 0.545  |  F/M steels only n = 5, b = -0.0026307, R^2 = 0.194, T range 573-650 K
+ion cavity density: He-bubble rows = [0.2, 0.2, 11.0, 30.0, 30.0, 30.0] dpa; void rows = [31.6, 140.0, 140.0, 220.8, 220.8, 220.8] dpa -> the two partitions are identical, the effect cannot be attributed
+
+LOG-NORMAL LOOP SIZE-DISTRIBUTION FITS
+==============================================================================
+         350C_3dpa |    EUROFER97 | 350 C | 3 dpa | all loops | mu = 2.1682  sigma = 0.5002 | mean = 9.91 nm  median = 8.74  mode = 6.81  SD = 5.28 | R^2 = 0.915
+  300C_15dpa_area1 |    EUROFER97 | 300 C | 15 dpa | ½⟨111⟩ (Area1, g={3̄10}) | mu = 1.4178  sigma = 0.4909 | mean = 4.66 nm  median = 4.13  mode = 3.24  SD = 2.43 | R^2 = 0.985
+  300C_15dpa_area2 |    EUROFER97 | 300 C | 15 dpa | ⟨100⟩ (Area2, g={2̄11}) | mu = 1.0795  sigma = 0.5428 | mean = 3.41 nm  median = 2.94  mode = 2.19  SD = 2.00 | R^2 = 0.993
+  300C_15dpa_area3 |    EUROFER97 | 300 C | 15 dpa | ½⟨111⟩ (Area2, g={200}) | mu = 1.4138  sigma = 0.5294 | mean = 4.73 nm  median = 4.11  mode = 3.11  SD = 2.69 | R^2 = 0.966
+    350C_16dpa_100 |  EUROFER-ODS | 350 C | 16.3 dpa | ⟨100⟩ | mu = 2.7697  sigma = 0.3904 | mean = 17.22 nm  median = 15.95  mode = 13.70  SD = 6.99 | R^2 = 0.919
+    350C_16dpa_111 |  EUROFER-ODS | 350 C | 16.3 dpa | ½⟨111⟩ | mu = 3.1669  sigma = 0.4838 | mean = 26.68 nm  median = 23.73  mode = 18.78  SD = 13.70 | R^2 = 0.877

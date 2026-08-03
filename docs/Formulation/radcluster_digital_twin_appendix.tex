@@ -1,0 +1,739 @@
+%===================================================================
+\appendix
+\section{Digital-Twin Construction for Ferritic--Martensitic Steel Microstructure}
+\label{app:radcluster_digital_twin}
+%===================================================================
+
+This appendix gives a detailed plan for constructing a RadCluster-based
+\emph{digital twin} of irradiated ferritic--martensitic (F/M) steel
+microstructure.  The twin is intended to transform the existing experimental
+microstructure database into a calibrated, uncertainty-aware predictive model
+for loop and cavity evolution under fission, ion, and ultimately fusion-relevant
+irradiation conditions.  The guiding principle is that the digital twin is not a
+single optimized RadCluster calculation; it is a probability distribution over
+RadCluster inputs and predictions, constrained by measured loop and cavity
+statistics and by physical conservation laws.
+
+Digital twins have increasingly been formulated as hybrid physics--data systems
+whose predictive value depends on uncertainty quantification (UQ), calibration,
+validation, and sequential updating.  Recent reviews emphasize that uncertainty
+quantification and optimization are enabling technologies for digital-twin
+credibility, especially when the physical twin is only partially observable and
+when the simulator must extrapolate beyond the measured data
+\citep{Thelen2022DigitalTwinUQ}.  In materials science, related work has used
+Bayesian learning and physics-informed surrogate models to combine simulations
+with sparse experiments, calibrate uncertain parameters, and propagate
+prediction uncertainty in additive-manufacturing and microstructure-sensitive
+applications \citep{Wang2020AMUQ,Kim2022BayesianAM,Robertson2026VDMN}.
+The present RadCluster twin follows the same philosophy but applies it to the
+irradiation microstructure of F/M steels: the forward model is the cluster
+dynamics simulator, the uncertain parameters are physically bounded production,
+transport, binding, sink, and loop-conversion quantities, and the data are the
+measured loop and cavity densities, mean diameters, and size distributions.
+
+The need for this construction follows directly from the main text.  RadCluster
+is already formulated as a size- and composition-resolved cluster dynamics model
+for SIA clusters, vacancy clusters/cavities, helium--vacancy complexes, loop
+character conversion, sinks, and conservation diagnostics.  Section~2.4 defines
+a UQ workflow based on space-filling design, Sobol sensitivity screening,
+multi-fidelity Gaussian-process emulation, Bayesian calibration, Wasserstein
+comparison of size distributions, and cost-aware active refinement.  Appendix~G
+then supplies the statistical target: an experimental microstructure database
+containing neutron and ion irradiation data for loop number density, mean loop
+diameter, cavity number density, mean cavity diameter, and selected loop-size
+distributions.  The purpose of this appendix is to turn those ingredients into a
+concrete digital-twin algorithm.
+
+%===================================================================
+\subsection{Definition of the Digital Twin}
+\label{app:dt_definition}
+%===================================================================
+
+Let the RadCluster state at dose $d$ and temperature $T$ be
+\begin{equation}
+    \mathbf{x}(d,T;\boldsymbol{\theta})
+    =
+    \left[
+      \{c^I_{n,\alpha}\},
+      \{c^V_{m,\boldsymbol{\ell},\beta}\},
+      \{c^g_\mu\},
+      \rho_{\mathrm{net}},
+      \Delta J_i^{\mathrm{fix}},
+      \Delta J_v^{\mathrm{fix}},
+      \Delta J_g^{\mathrm{fix}}
+    \right]^{\top},
+    \label{eq:dt_state}
+\end{equation}
+where $c^I_{n,\alpha}$ are interstitial-cluster populations,
+$c^V_{m,\boldsymbol{\ell},\beta}$ are vacancy-cluster/cavity populations,
+$c^g_\mu$ are matrix gas reservoirs, $\rho_{\mathrm{net}}$ is the evolving
+dislocation-network density when activated, and the $\Delta J$ variables are
+cumulative sink-flux diagnostics.
+
+The uncertain RadCluster parameter vector is denoted by
+\begin{equation}
+    \boldsymbol{\theta}
+    =
+    \left(
+      \theta_1,\theta_2,\ldots,\theta_p
+    \right),
+    \qquad p\simeq 16\text{--}20 .
+    \label{eq:dt_theta}
+\end{equation}
+For a given irradiation condition
+\begin{equation}
+    \boldsymbol{\xi}
+    =
+    \left(T,d,\dot d,\eta_{\mathrm{He}},\eta_{\mathrm{H}},
+    \mathrm{alloy},\mathrm{irradiation\ type}\right),
+\end{equation}
+where $\eta_{\mathrm{He}}$ and $\eta_{\mathrm{H}}$ are the gas-production ratios
+in appm/dpa, RadCluster defines a deterministic map
+\begin{equation}
+    \mathbf{y}_{\mathrm{sim}}
+    =
+    H\!ig[\mathbf{x}(d,T;\boldsymbol{\theta})\big]
+    =
+    \mathcal{M}(\boldsymbol{\theta};\boldsymbol{\xi}),
+    \label{eq:dt_forward_map}
+\end{equation}
+where $H$ is the observation operator that maps the full cluster population
+to experimentally measured quantities.  The standard observable vector is
+\begin{equation}
+    \mathbf{y}_{\mathrm{sim}}
+    =
+    \left[
+      N_\ell,
+      \bar d_\ell,
+      N_c,
+      \bar d_c,
+      f_{111},
+      f_{100},
+      S,
+      p_\ell(d_\ell),
+      p_c(d_c)
+    \right].
+    \label{eq:dt_observables}
+\end{equation}
+Here $N_\ell$ and $\bar d_\ell$ are the loop number density and mean loop
+diameter, $N_c$ and $\bar d_c$ are the cavity number density and mean cavity
+diameter, $f_{111}$ and $f_{100}$ are loop-character fractions, $S$ is swelling,
+and $p_\ell$ and $p_c$ are loop and cavity size distributions.
+
+The digital twin is defined by the posterior distribution
+\begin{equation}
+    p(\boldsymbol{\theta}\mid \mathcal{D}_{\mathrm{exp}})
+    \propto
+    p(\mathcal{D}_{\mathrm{exp}}\mid \boldsymbol{\theta})
+    p(\boldsymbol{\theta}),
+    \label{eq:dt_posterior}
+\end{equation}
+and by the posterior predictive distribution
+\begin{equation}
+    p(\mathbf{y}_{\ast}\mid\mathcal{D}_{\mathrm{exp}},\boldsymbol{\xi}_\ast)
+    =
+    \int
+    p(\mathbf{y}_{\ast}\mid\boldsymbol{\theta},\boldsymbol{\xi}_\ast)
+    p(\boldsymbol{\theta}\mid\mathcal{D}_{\mathrm{exp}})
+    \,d\boldsymbol{\theta} .
+    \label{eq:dt_posterior_predictive}
+\end{equation}
+Thus, the twin reports medians, credible intervals, and risk probabilities,
+not only best-fit predictions.
+
+%===================================================================
+\subsection{Uncertain Parameter Vector}
+\label{app:dt_parameter_vector}
+%===================================================================
+
+The first-generation twin should use a restricted but physically interpretable
+parameter vector.  A representative 18-parameter set is
+\begin{equation}
+\begin{split}
+\boldsymbol{\theta}=ig[&
+\eta_{\mathrm{FP}},
+ f_I^{\mathrm{cl}},
+ f_V^{\mathrm{cl}},
+ E_m^I,
+ E_m^V,
+ E_m^{\mathrm{He}},
+ L_{1D},
+ i_{\mathrm{mob}},
+ v_{\mathrm{mob}},
+ A_V,
+ B_V,
+ A_I,
+ B_I,
+ A_{\mathrm{HeV}},
+ Z_i^d,
+ Z_i^{\mathrm{loop}},
+ T^*,
+ K_{\mathrm{rec}}
+\big].
+\end{split}
+\label{eq:dt_theta_18}
+\end{equation}
+The parameters fall into five mechanism groups:
+\begin{enumerate}
+    \item \emph{Production:} cascade survival efficiency and fractions of
+    SIAs and vacancies born as clusters.
+    \item \emph{Mobility:} migration energies, the effective one-dimensional
+    glide length, and the maximum mobile cluster sizes.
+    \item \emph{Dissociation energetics:} binding-law amplitudes and exponents
+    controlling SIA, vacancy, and gas emission.
+    \item \emph{Sinks and bias:} dislocation bias and loop bias factors.
+    \item \emph{Loop conversion and network evolution:} the
+    $\frac{1}{2}\langle111\rangle\rightarrow\langle100\rangle$ crossover
+    temperature and the dislocation-network recovery constant.
+\end{enumerate}
+
+Each parameter is assigned a bounded prior distribution.  Energies are most
+naturally represented by truncated normal priors,
+\begin{equation}
+    E_i \sim \mathcal{N}_{[E_i^{-},E_i^{+}]}
+    \left(\bar E_i,\sigma_{E_i}^2\right),
+\end{equation}
+positive rate or density parameters by log-normal priors,
+\begin{equation}
+    \rho_d,
+    K_{\mathrm{rec}},
+    L_{1D}
+    \sim
+    \mathrm{Lognormal}(\mu,\sigma^2),
+\end{equation}
+and bounded fractions by beta or uniform priors,
+\begin{equation}
+    f_I^{\mathrm{cl}}, f_V^{\mathrm{cl}}
+    \sim
+    \mathrm{Beta}(a,b)
+    \quad\mathrm{or}\quad
+    \mathcal{U}(0,1).
+\end{equation}
+Discrete quantities such as $i_{\mathrm{mob}}$, $v_{\mathrm{mob}}$, and possible
+conversion-onset sizes should be treated either as categorical model variants
+or as integer-valued sampled parameters.
+
+%===================================================================
+\subsection{Experimental Target Representation}
+\label{app:dt_targets}
+%===================================================================
+
+Let the experimental database be
+\begin{equation}
+    \mathcal{D}_{\mathrm{exp}}
+    =
+    \left\{
+      \boldsymbol{\xi}_j,
+      \mathbf{z}_j,
+      \boldsymbol{\sigma}_j,
+      g_j
+    \right\}_{j=1}^{N_{\mathrm{data}}},
+\end{equation}
+where $\boldsymbol{\xi}_j$ contains irradiation conditions, $\mathbf{z}_j$
+contains measured observables, $\boldsymbol{\sigma}_j$ contains measurement
+or fitted statistical uncertainties, and $g_j$ is the grouping variable used in
+Appendix~G, such as irradiation type, alloy family, dose group, or
+bubble/void classification.
+
+For scalar positive observables, Appendix~G uses log-linear statistical fits,
+\begin{equation}
+    \ln y
+    =
+    a
+    +
+    \sum_g c_g\delta_g
+    +
+    b x
+    +
+    \epsilon,
+    \qquad
+    \epsilon\sim\mathcal{N}(0,s^2),
+    \label{eq:dt_database_fit}
+\end{equation}
+where $x$ is either $T_{\mathrm{eq}}$ or $1000/T_{\mathrm{eq}}$.  Therefore, the
+natural comparison between RadCluster and the database is in log space:
+\begin{equation}
+    r_j(\boldsymbol{\theta})
+    =
+    \frac{
+    \ln y^{\mathrm{sim}}_j(\boldsymbol{\theta})
+    -
+    \ln y^{\mathrm{exp}}_j
+    }{
+    \sigma_{\ln y,j}
+    } .
+    \label{eq:dt_log_residual}
+\end{equation}
+When the comparison is made to the fitted trend rather than to an individual
+experimental row,
+\begin{equation}
+    y_{j,\mathrm{fit}}
+    =
+    \exp(a+c_{g,j}+b x_j),
+    \qquad
+    \sigma_{\ln y,j}=s_j .
+\end{equation}
+A simulation is statistically consistent with the fitted database band if
+\begin{equation}
+    \left|\ln y^{\mathrm{sim}}_j-\ln y_{j,\mathrm{fit}}\right|
+    \lesssim
+    2s_j .
+    \label{eq:dt_band_acceptance}
+\end{equation}
+Equivalently, $y_j^{\mathrm{sim}}$ lies within the multiplicative interval
+$[e^{-2s_j},e^{2s_j}]$ about the fitted median.
+
+For full loop or cavity size distributions, the discrepancy should not be
+reduced to mean diameter alone.  Let $p_j^{\mathrm{exp}}(R)$ and
+$p_j^{\mathrm{sim}}(R;\boldsymbol{\theta})$ be the measured and simulated size
+distributions.  The distributional contribution to the likelihood is measured
+by an optimal-transport distance,
+\begin{equation}
+    \mathcal{W}_j(\boldsymbol{\theta})
+    =
+    W_1\!ig[
+      p_j^{\mathrm{sim}}(R;\boldsymbol{\theta}),
+      p_j^{\mathrm{exp}}(R)
+    \big],
+    \label{eq:dt_wasserstein}
+\end{equation}
+which penalizes both shifts in the location of the distribution and changes in
+its width or shape.
+
+%===================================================================
+\subsection{Likelihood, Model Discrepancy, and Conservation Penalties}
+\label{app:dt_likelihood}
+%===================================================================
+
+The experimental observation model is written as
+\begin{equation}
+    \ln y_j^{\mathrm{exp}}
+    =
+    \ln y_j^{\mathrm{sim}}(\boldsymbol{\theta})
+    +
+    \delta_j^{\mathrm{model}}
+    +
+    \epsilon_j^{\mathrm{exp}},
+    \label{eq:dt_obs_model}
+\end{equation}
+where $\epsilon_j^{\mathrm{exp}}$ is measurement noise and
+$\delta_j^{\mathrm{model}}$ is structural model discrepancy.  The total variance
+used in calibration is
+\begin{equation}
+    \sigma_j^2
+    =
+    \sigma_{\mathrm{exp},j}^2
+    +
+    \sigma_{\mathrm{db},j}^2
+    +
+    \sigma_{\mathrm{em},j}^2
+    +
+    \sigma_{\mathrm{model},j}^2,
+    \label{eq:dt_uncertainty_sum}
+\end{equation}
+where the four terms represent measurement uncertainty, database scatter,
+emulator uncertainty, and irreducible model-form discrepancy.
+
+The negative log-likelihood is then
+\begin{equation}
+\begin{split}
+    -\log p(\mathcal{D}_{\mathrm{exp}}\mid\boldsymbol{\theta})
+    =&
+    \frac{1}{2}
+    \sum_{j\in\mathcal{S}}
+    w_j
+    \left[
+      \frac{
+      \ln y_j^{\mathrm{sim}}(\boldsymbol{\theta})
+      -
+      \ln y_j^{\mathrm{exp}}
+      }{
+      \sigma_j
+      }
+    \right]^2
+    \\
+    &+
+    w_W
+    \sum_{k\in\mathcal{D}}
+    W_1\!\left[
+      p_k^{\mathrm{sim}}(R;\boldsymbol{\theta}),
+      p_k^{\mathrm{exp}}(R)
+    \right]
+    +
+    \Phi_{\mathrm{phys}} .
+\end{split}
+\label{eq:dt_neg_log_likelihood}
+\end{equation}
+Here $\mathcal{S}$ is the set of scalar observables, $\mathcal{D}$ is the set
+of distributional observables, and $w_j$ and $w_W$ are user-assigned or
+hierarchically inferred weights.
+
+The physical penalty is
+\begin{equation}
+    \Phi_{\mathrm{phys}}
+    =
+    \lambda_{\mathrm{FP}}\delta_{\mathrm{FP}}^2
+    +
+    \lambda_{\mathrm{gas}}\sum_\mu \delta_{g_\mu}^2
+    +
+    \lambda_{\mathrm{bounds}}\Phi_{\mathrm{bounds}} .
+    \label{eq:dt_physical_penalty}
+\end{equation}
+The quantities $\delta_{\mathrm{FP}}$ and $\delta_{g_\mu}$ are conservation
+diagnostics for signed Frenkel-pair content and gas inventory.  In accepted
+high-fidelity calculations these errors should remain below $10^{-6}$; values
+above $10^{-3}$ should trigger rejection of the run unless the loss is due to a
+modeled external sink.
+
+%===================================================================
+\subsection{Multi-Fidelity Simulation and Emulation}
+\label{app:dt_multifidelity}
+%===================================================================
+
+Direct Bayesian calibration on the full RadCluster simulator is not practical
+for $p\simeq16$--20 uncertain inputs.  The twin therefore uses a two-level
+multi-fidelity hierarchy.  The low-fidelity simulator,
+$\mathcal{M}_{\mathrm{LF}}$, uses coarse size-bin moments, a reduced cluster grid,
+and a shorter dose horizon, but preserves verified solver tolerances.  The
+high-fidelity simulator, $\mathcal{M}_{\mathrm{HF}}$, uses the full bin resolution,
+the full loop-conversion and network model, and is integrated to reactor or
+fusion-relevant dose.
+
+A space-filling design is generated in the prior parameter domain,
+\begin{equation}
+    \left\{
+      \boldsymbol{\theta}^{(k)}
+    \right\}_{k=1}^{N_{\mathrm{LF}}}
+    \sim
+    \mathrm{Sobol}(p),
+    \qquad
+    N_{\mathrm{LF}}\simeq 20p\text{--}50p .
+\end{equation}
+A smaller high-fidelity design is then selected,
+\begin{equation}
+    N_{\mathrm{HF}}\simeq 3p\text{--}8p,
+\end{equation}
+using either a nested space-filling subset or active-learning criteria.
+
+The low- and high-fidelity outputs are fused using an autoregressive
+multi-fidelity Gaussian-process emulator,
+\begin{equation}
+    \widehat{\mathcal{M}}_{\mathrm{HF}}(\boldsymbol{\theta},\boldsymbol{\xi})
+    =
+    \rho
+    \widehat{\mathcal{M}}_{\mathrm{LF}}(\boldsymbol{\theta},\boldsymbol{\xi})
+    +
+    \delta(\boldsymbol{\theta},\boldsymbol{\xi}),
+    \label{eq:dt_multifidelity_gp}
+\end{equation}
+where $\delta$ is a Gaussian-process correction.  The emulator reports both
+mean predictions and predictive variances, so emulator uncertainty enters the
+likelihood through Eq.~\eqref{eq:dt_uncertainty_sum}.
+
+%===================================================================
+\subsection{Sensitivity Screening and Identifiability}
+\label{app:dt_sensitivity}
+%===================================================================
+
+Before full calibration, the Sobol ensemble is used to compute first-order,
+interaction, and total-effect sensitivity indices,
+\begin{equation}
+    S_i
+    =
+    \frac{\mathrm{Var}_{\theta_i}
+    \left[\mathbb{E}(Y\mid\theta_i)\right]}{\mathrm{Var}(Y)},
+    \qquad
+    S_i^T
+    =
+    1-
+    \frac{\mathrm{Var}_{\boldsymbol{\theta}_{\sim i}}
+    \left[\mathbb{E}(Y\mid\boldsymbol{\theta}_{\sim i})\right]}
+    {\mathrm{Var}(Y)} .
+\end{equation}
+Parameters with small total-effect indices over all measured observables are
+not eliminated from the physics model, but they are demoted during inverse
+calibration.  This prevents weakly identifiable parameters from absorbing
+experimental scatter or model discrepancy.  The active calibration subset is
+therefore
+\begin{equation}
+    \boldsymbol{\theta}_{\mathrm{act}}
+    =
+    \left\{
+      \theta_i:
+      \max_Y S_i^T(Y) > S_{\mathrm{tol}}
+    \right\},
+\end{equation}
+while inactive parameters are either fixed at nominal values or marginalized
+with their prior uncertainty.
+
+%===================================================================
+\subsection{Sequential Updating and Digital-Twin Assimilation}
+\label{app:dt_sequential_update}
+%===================================================================
+
+When measurements arrive sequentially along a dose trajectory, the twin is
+updated recursively.  Let
+\begin{equation}
+    \mathbf{z}_k
+    =
+    H(\mathbf{x}_k)
+    +
+    \boldsymbol{\epsilon}_k
+\end{equation}
+be a measurement at dose step $k$.  The prior at step $k$ is the posterior
+from step $k-1$ propagated through RadCluster:
+\begin{equation}
+    p(\boldsymbol{\theta},\mathbf{x}_k\mid\mathbf{z}_{1:k-1})
+    =
+    \int
+    p(\mathbf{x}_k\mid\mathbf{x}_{k-1},\boldsymbol{\theta})
+    p(\boldsymbol{\theta},\mathbf{x}_{k-1}\mid\mathbf{z}_{1:k-1})
+    d\mathbf{x}_{k-1} .
+\end{equation}
+The update is
+\begin{equation}
+    p(\boldsymbol{\theta},\mathbf{x}_k\mid\mathbf{z}_{1:k})
+    \propto
+    p(\mathbf{z}_k\mid\mathbf{x}_k,\boldsymbol{\theta})
+    p(\boldsymbol{\theta},\mathbf{x}_k\mid\mathbf{z}_{1:k-1}) .
+\end{equation}
+For high-dimensional ensembles, this update can be approximated by ensemble
+Kalman inversion or an ensemble smoother.  This converts RadCluster from a
+one-shot calibrated code into a living digital twin whose parameter posterior
+and microstructural state are continually revised as new irradiation data are
+obtained.
+
+%===================================================================
+\subsection{Active Refinement and Experiment Selection}
+\label{app:dt_active_refinement}
+%===================================================================
+
+The surrogate should be refined only where additional RadCluster runs or new
+experiments most reduce uncertainty in the predicted microstructure.  Define
+an information-per-cost acquisition function
+\begin{equation}
+    \mathcal{A}(\boldsymbol{\theta},\boldsymbol{\xi})
+    =
+    \frac{
+      \mathcal{I}(\boldsymbol{\theta},\boldsymbol{\xi})
+    }{
+      C_{\mathrm{CPU}}(\boldsymbol{\theta},\boldsymbol{\xi})
+    },
+\end{equation}
+where $\mathcal{I}$ may be the expected reduction in posterior entropy, the
+expected reduction in predictive variance at fusion conditions, or the expected
+improvement in validation likelihood.  The next simulation is chosen by
+\begin{equation}
+    (\boldsymbol{\theta}_{\mathrm{next}},\boldsymbol{\xi}_{\mathrm{next}})
+    =
+    \arg\max_{\boldsymbol{\theta},\boldsymbol{\xi}}
+    \mathcal{A}(\boldsymbol{\theta},\boldsymbol{\xi}) .
+\end{equation}
+The same criterion can be used to recommend new irradiation experiments:
+select the temperature, dose, dose rate, and gas-production ratio that most
+reduce the uncertainty in predictions at DEMO-relevant conditions.
+
+%===================================================================
+\subsection{Workflow Summary}
+\label{app:dt_workflow_summary}
+%===================================================================
+
+Figure~\ref{fig:dt_workflow} summarizes the offline construction of the
+RadCluster digital twin.  Figure~\ref{fig:dt_assimilation} shows the online or
+sequential assimilation mode.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+    node distance=1.8cm and 1.7cm,
+    block/.style={draw, rounded corners, align=center, minimum width=3.0cm,
+                  minimum height=0.95cm, font=\small},
+    smallblock/.style={draw, rounded corners, align=center, minimum width=2.6cm,
+                  minimum height=0.85cm, font=\small},
+    arrow/.style={->, thick}
+]
+\node[block] (priors) {Physics-based\\priors and bounds\\$p(\boldsymbol{\theta})$};
+\node[block, right=of priors] (design) {Sobol/LHS design\\$\{\boldsymbol{\theta}^{(k)}\}$};
+\node[block, right=of design] (runs) {RadCluster ensemble\\LF and HF runs};
+\node[block, below=of runs] (features) {Observation operator\\$H[\mathbf{x}]$\\extracts $N_\ell,\bar d_\ell,N_c,\bar d_c,p(R)$};
+\node[block, left=of features] (emu) {Multi-fidelity GP\\emulator\\$\widehat{\mathcal{M}}_{\rm HF}$};
+\node[block, left=of emu] (cal) {Bayesian calibration\\$p(\boldsymbol{\theta}|\mathcal{D}_{\rm exp})$};
+\node[smallblock, below=of cal] (targets) {Appendix G targets\\trend bands + histograms};
+\node[smallblock, below=of emu] (cons) {Conservation checks\\$\delta_{\rm FP},\delta_g$};
+\node[block, right=of features] (pred) {Posterior prediction\\fusion-relevant\\microstructure};
+\node[block, above=of pred] (active) {Active refinement\\information/cost};
+
+\draw[arrow] (priors) -- (design);
+\draw[arrow] (design) -- (runs);
+\draw[arrow] (runs) -- (features);
+\draw[arrow] (features) -- (emu);
+\draw[arrow] (emu) -- (cal);
+\draw[arrow] (targets) -- (cal);
+\draw[arrow] (cons) -- (cal);
+\draw[arrow] (cal) -- (pred);
+\draw[arrow] (pred) -- (active);
+\draw[arrow] (active) |- (runs);
+\end{tikzpicture}
+\caption{Offline construction of the RadCluster digital twin.  Physical priors define the
+uncertain parameter space, a space-filling design generates RadCluster ensembles, the
+observation operator extracts experimental observables, a multi-fidelity emulator enables
+Bayesian calibration, and active refinement requests additional simulations where they
+most reduce predictive uncertainty per unit computational cost.}
+\label{fig:dt_workflow}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+    node distance=1.65cm and 1.6cm,
+    block/.style={draw, rounded corners, align=center, minimum width=3.0cm,
+                  minimum height=0.9cm, font=\small},
+    arrow/.style={->, thick}
+]
+\node[block] (post0) {Prior/posterior at dose $d_{k-1}$\\$p(\boldsymbol{\theta},\mathbf{x}_{k-1}|\mathbf{z}_{1:k-1})$};
+\node[block, right=of post0] (prop) {RadCluster propagation\\$\mathbf{x}_{k-1}\rightarrow\mathbf{x}_k$};
+\node[block, right=of prop] (pred) {Predict measurement\\$\hat{\mathbf{z}}_k=H(\mathbf{x}_k)$};
+\node[block, below=of pred] (data) {New experiment\\$\mathbf{z}_k$};
+\node[block, left=of data] (update) {Bayesian/EnKF update\\assimilate residual};
+\node[block, left=of update] (post1) {Updated twin\\$p(\boldsymbol{\theta},\mathbf{x}_k|\mathbf{z}_{1:k})$};
+\node[block, below=of update] (decision) {Prediction, validation,\\or new experiment selection};
+
+\draw[arrow] (post0) -- (prop);
+\draw[arrow] (prop) -- (pred);
+\draw[arrow] (pred) -- (data);
+\draw[arrow] (data) -- (update);
+\draw[arrow] (update) -- (post1);
+\draw[arrow] (post1) |- (decision);
+\draw[arrow] (decision) -| (prop);
+\end{tikzpicture}
+\caption{Sequential digital-twin assimilation.  New measurements at dose step $k$ are
+compared with RadCluster predictions through the observation operator.  The residual is
+used to update the joint posterior over model parameters and microstructural state, after
+which the twin is propagated to the next dose or used to design the next informative
+experiment.}
+\label{fig:dt_assimilation}
+\end{figure}
+
+%===================================================================
+\subsection{Acceptance Criteria for a Validated Twin}
+\label{app:dt_acceptance_criteria}
+%===================================================================
+
+A RadCluster digital twin should be accepted only if it satisfies the following
+conditions.
+\begin{enumerate}
+    \item \textbf{Statistical consistency:} scalar predictions fall within the
+    appropriate Appendix~G log-normal prediction bands, preferably within
+    $\pm 2s$ in log space.
+    \item \textbf{Distributional consistency:} predicted loop and cavity size
+    distributions match measured histograms within an agreed Wasserstein
+    tolerance.
+    \item \textbf{Conservation consistency:} high-fidelity accepted runs satisfy
+    $\delta_{\mathrm{FP}}<10^{-6}$ and $\delta_{g_\mu}<10^{-6}$, unless a
+    modeled external sink explicitly removes material.
+    \item \textbf{Predictive validation:} posterior predictive intervals cover
+    withheld validation data at approximately their nominal credibility level.
+    \item \textbf{Extrapolation discipline:} fusion-relevant predictions are
+    reported as posterior predictive distributions, not deterministic curves.
+\end{enumerate}
+
+Once these criteria are met, the calibrated twin can be used to predict
+microstructure under fusion-relevant conditions,
+\begin{equation}
+    T=300\text{--}550^\circ\mathrm{C},
+    \qquad
+    d=0.1\text{--}150~\mathrm{dpa},
+    \qquad
+    \eta_{\mathrm{He}}=10\text{--}15~\mathrm{appm/dpa},
+    \qquad
+    \eta_{\mathrm{H}}=40\text{--}50~\mathrm{appm/dpa},
+\end{equation}
+with credible intervals for loop density, loop size, cavity density, cavity
+size, swelling, loop-character fractions, and the probability of entering a
+bimodal cavity-growth regime.
+
+%===================================================================
+\subsection{Implementation Checklist}
+\label{app:dt_implementation_checklist}
+%===================================================================
+
+A practical implementation should contain the following files or modules:
+\begin{enumerate}
+    \item \texttt{parameters.yaml}: symbols, units, nominal values, bounds,
+    prior types, and active/inactive flags for every uncertain parameter.
+    \item \texttt{experiments.yaml} or a database reader for
+    \texttt{RadiationDatabase.xlsx}: irradiation conditions, observables,
+    uncertainty estimates, grouping variables, and distributional data.
+    \item \texttt{run\_ensemble.py}: low- and high-fidelity RadCluster ensemble
+    execution with conservation diagnostics and solver-status logging.
+    \item \texttt{extract\_observables.py}: maps cluster distributions to
+    $N_\ell$, $\bar d_\ell$, $N_c$, $\bar d_c$, swelling, loop-character
+    fractions, and histograms.
+    \item \texttt{surrogate.py}: multi-fidelity Gaussian-process training,
+    prediction, and emulator uncertainty estimation.
+    \item \texttt{calibrate.py}: posterior inference using MCMC, sequential
+    Monte Carlo, variational inference, or ensemble Kalman inversion.
+    \item \texttt{active\_refinement.py}: selection of additional RadCluster
+    runs or proposed experiments by information gain per computational cost.
+    \item \texttt{predict\_fusion.py}: posterior predictive simulation under
+    fusion-relevant temperature, dose, dose-rate, He/dpa, and H/dpa histories.
+\end{enumerate}
+
+%===================================================================
+\subsection{BibTeX Entries for Digital-Twin/UQ Citations}
+\label{app:dt_bibtex_entries}
+%===================================================================
+
+The following entries may be added to the project bibliography if they are not
+already present.
+
+\begin{verbatim}
+@article{Thelen2022DigitalTwinUQ,
+  author  = {Thelen, Adam and Zhang, Xiaoge and Fink, Olga and Lu, Yan and
+             Ghosh, Sayan and Youn, Byeng D. and Todd, Michael D. and
+             Mahadevan, Sankaran and Hu, Chao and Hu, Zhen},
+  title   = {A comprehensive review of digital twin---part 2: roles of
+             uncertainty quantification and optimization, a battery digital
+             twin, and perspectives},
+  journal = {Structural and Multidisciplinary Optimization},
+  year    = {2022},
+  volume  = {66},
+  pages   = {1},
+  doi     = {10.1007/s00158-022-03410-x}
+}
+
+@article{Wang2020AMUQ,
+  author  = {Wang, Zhuo and Jiang, Chen and Liu, Pengwei and Yang, Wenhua and
+             Chen, Lei},
+  title   = {Uncertainty quantification and reduction in metal additive
+             manufacturing},
+  journal = {npj Computational Materials},
+  year    = {2020},
+  volume  = {6},
+  pages   = {175},
+  doi     = {10.1038/s41524-020-00444-x}
+}
+
+@article{Kim2022BayesianAM,
+  author  = {Kim, Jee Yun and Garcia, David and Zhu, Yunhui and Higdon, David M.
+             and others},
+  title   = {A Bayesian learning framework for fast prediction and uncertainty
+             quantification of additively manufactured multi-material components},
+  journal = {Journal of Materials Processing Technology},
+  year    = {2022},
+  volume  = {303},
+  pages   = {117528},
+  doi     = {10.1016/j.jmatprotec.2022.117528}
+}
+
+@article{Robertson2026VDMN,
+  author  = {Robertson, Andreas E. and Inman, Samuel B. and Lenau, Ashley T. and
+             Lebensohn, Ricardo A. and Shin, Dongil and Boyce, Brad L. and
+             Dingreville, Remi M.},
+  title   = {Microstructure-based variational deep material networks for robust
+             uncertainty quantification in materials digital twins},
+  journal = {npj Computational Materials},
+  year    = {2026},
+  doi     = {10.1038/s41524-026-02054-5}
+}
+\end{verbatim}

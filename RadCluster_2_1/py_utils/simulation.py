@@ -179,6 +179,28 @@ class RadClusterSimulation:
         if v_mobile is None and 'm_max_v' in legacy_kw:
             v_mobile = legacy_kw.pop('m_max_v')
 
+        # Anything still in legacy_kw is a name this constructor does not
+        # know.  Silently dropping it is dangerous: on 2026-08-02 a nine-case
+        # bin-moment refinement study passed i_discrete=/I_bin=/shape_function=
+        # here, had all nine silently ignored, produced nine bit-identical
+        # runs, and was very nearly reported as a structural failure of the
+        # bin-moment closure.  Fail loudly instead.
+        if legacy_kw:
+            _BIN_CFG = {'i_discrete', 'v_discrete', 'I_bin', 'V_bin',
+                        'shape_function', 'bin_ratio'}
+            bad = sorted(legacy_kw)
+            msg = (f"RadClusterSimulation() got unexpected keyword argument(s): "
+                   f"{', '.join(bad)}")
+            if _BIN_CFG.intersection(bad):
+                msg += (
+                    "\n  Bin-moment configuration is NOT a constructor argument. "
+                    "Set it on the workbook dict and rebuild:\n"
+                    "      sim.input_data.reactions['i_discrete'] = ...\n"
+                    "      sim.input_data._calculate_derived(); sim.rebuild_rates()\n"
+                    "  Read the values back from sim.rate_equations (NOT "
+                    "sim.reaction_rates) to confirm they took effect.")
+            raise TypeError(msg)
+
         # Resolve (equations, cascade) → physics_option.  Either form is
         # accepted, but not both at once.
         if equations is not None or cascade is not None:

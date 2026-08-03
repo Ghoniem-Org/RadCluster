@@ -22,10 +22,18 @@ The check deliberately uses a SMALL, FAST configuration.  It is verifying that
 the toolchain agrees, not that the physics is right -- the run is expected to be
 inadmissible (the grid is far too coarse), and that is fine.
 
-Tolerance: 1e-9 relative.  CVODE with fixed tolerances is deterministic for a
-fixed binary; anything above ~1e-12 means a genuinely different build, not
-floating-point noise.  OMP_NUM_THREADS is pinned to 1 so reduction order cannot
-vary.
+Tolerance: 1e-6 relative -- the campaign's own integration rtol.  CVODE with
+fixed tolerances is bit-deterministic for a FIXED BINARY, so an earlier 1e-9
+bar was right as long as every machine ran the same build.  It is unreachable
+across ARCHITECTURES: Windows/x86 (MSVC + MKL, /arch:AVX2) and macOS/arm64
+(AppleClang + Accelerate, -march=native) reassociate and vectorise the same
+reductions differently, which shows up as ~1e-7 drift on the CVODE-integrated
+fields while the closed-form fields (Di_eff, Dv_eff, conv_*) still match to
+0.0 exactly.  Holding the gate tighter than the integrator's own accuracy
+rejects machines whose physics is identical, so the bar is set AT the
+integration tolerance: anything above it is a real discrepancy, anything below
+it is beneath the resolution the solver claims in the first place.
+OMP_NUM_THREADS is pinned to 1 so reduction order cannot vary within a build.
 """
 from __future__ import annotations
 
@@ -77,7 +85,8 @@ PRECOND = {"full_system": "Woodbury", "active_window": "Jacobi"}
 FIELDS = ["Di_eff", "Dv_eff", "conv_psuccess", "conv_psuccess_abs",
           "N_loops_100", "N_loops_111", "mean_n_100", "mean_n_111",
           "C_SIA_tot", "C_VAC_tot", "swelling", "delta_FP"]
-RTOL = 1e-9
+RTOL = 1e-6      # = PROBE["rtol"]; see module docstring -- the gate cannot be
+                 # tighter than the integration tolerance it is checking
 
 
 def sha256_file(p: Path) -> str:
@@ -167,7 +176,7 @@ def main(argv=None):
     print(f"workbook  {e['workbook_sha256'][:16]}")
     if not e["solver_exists"]:
         print("\n  solver binary NOT FOUND. Build it first:")
-        print("      cd RadCluster_2_1 && cmake -S . -B build && "
+        print("      cd RadCluster_2_1 && cmake -S cpp_utils -B build && "
               "cmake --build build --config Release")
         return 2
 

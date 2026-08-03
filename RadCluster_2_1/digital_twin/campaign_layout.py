@@ -97,7 +97,7 @@ def main(argv=None):
                          "one at a time.")
     ap.add_argument("--out", type=Path, default=HERE / "campaign_layout.json")
     ap.add_argument("--n-rows", type=int, default=1008)
-    ap.add_argument("--row-cost-s", type=float, default=3600.0,
+    ap.add_argument("--row-cost-s", type=float, default=5580.0,
                     help="measured seconds per row on the REFERENCE machine")
     a = ap.parse_args(argv)
 

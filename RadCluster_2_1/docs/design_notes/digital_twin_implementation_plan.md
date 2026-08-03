@@ -2159,7 +2159,7 @@ median means the tail, not the typical row, sets the wall clock.
 | setting | v2 (stopped) | **rev 6** | why |
 |---|---|---|---|
 | `equations` | `discrete` | **`bin_moment`** | decouples cost from `I`; see §(c)-4 |
-| `I` | 3200 | **≥ 50000 — see §(m)** | 10000 was measured INSUFFICIENT at 1 dpa (`topbin_100 = 0.998`). With log bins the ceiling costs closure accuracy, not `N_eq`. |
+| `I` | 3200 | **50000** (candidate — §(o)) | 10000 measured INSUFFICIENT at 1 dpa (`topbin_100 = 0.998`, `δ_FP = 0.91`); 50000 clean (`6.9e-15`, `1.7e-4`). One θ only — gate §(i)-3 must confirm over 32. |
 | `V` | 600 | **10000** | probe 3: V = 600 corrupted `N_100` by 20 %. Confirmed generous at 1 dpa (`occ_v = 0.028`). |
 | `i_mobile` | sampled, INT 1–100 | **fixed 50** | see below |
 | `v_mobile` | sampled, INT 1–5 | **fixed 5** | at its nominal already |
@@ -2797,3 +2797,76 @@ Design decisions worth stating:
 path, module versions, `h_rt` for the allocation, the array range, and
 `--timeout-s` from a p99 measured **on Hoffman2**, not inherited from the Mac —
 that inheritance is precisely what starved 55 of MATRIX-PC2's rows (§(l)).
+
+### (o) The rev-6 grid: `I = 50000` clears at 1 dpa — and the `f₁₀₀` trap, quantified
+
+Same layout throughout (`i_mobile=50, v_mobile=5, i_discrete=50, v_discrete=5`,
+26+26 realised bins, `linear`), design row 24, N2, 1 dpa, single core:
+
+| `I` | wall | `topbin_100` | `δ_FP` | `f_100_tem_1` | `d_100` nm | verdict |
+|---|---|---|---|---|---|---|
+| 5 000 | 16 min | 1.00 | 8.9e-01 | 0.9527 | 15.58 | truncated |
+| 10 000 | 30 min | 0.998 | 9.1e-01 | 0.7011 | 21.26 | truncated |
+| **50 000** | **93 min** | **6.9e-15** | **1.7e-04** | **0.009464** | 26.51 | **CLEAN — admissible** |
+
+`V = 10000` throughout, and it was never the constraint: `topbin_v ~ 1e-24`,
+`occ_v = 0.034` even at the largest cavity size seen (`mean_n_v = 343`).
+
+**Three things this settles.**
+
+**1. `δ_FP` was reporting the truncation all along.** 0.907 → **1.71e-04** across
+the same grid change, with nothing else altered. Rev-5 §(j) established that
+`δ_FP` is blind to ⟨100⟩ truncation in `discrete` mode — the `if (n < I)` growth
+guard halts growth without losing atoms. **That does not carry over to
+`bin_moment`:** here the top bin's moment closure cannot absorb the overflow, so
+truncation shows up in the conservation residual directly. `δ_FP` is therefore a
+*stronger* diagnostic under binning than under discretisation, which is the
+opposite of the discrete-mode rule and must not be assumed either way.
+
+**2. Cost grows as roughly `I^0.7`.** 5× the ceiling for 3.08× the wall. `N_eq`
+is genuinely `I`-independent (165 everywhere), so this is stiffness — the top
+bins reach much larger `n` and the rate constants scale as `n^{1/2}` and
+`n^{1/3}`. Sub-linear, and nothing like `discrete`'s 14× for 8× at a
+bit-identical trajectory (§(c)-4). Raising the ceiling is affordable; it is just
+not free, and §(m) said "free" before it was measured.
+
+**3. The `f₁₀₀` trap is real and it is severe.** §(m) flagged that the truncated
+`I = 10000` run reported `f_100_tem_1 = 0.7011` against an experimental target of
+**0.72** — an apparent 3 % match. The converged answer at the same θ is
+**0.009464**, i.e. **76× below the target**:
+
+| | `f_100_tem_1` | vs target 0.72 |
+|---|---|---|
+| truncated, `I = 10000` | 0.7011 | −2.6 % — looks like agreement |
+| **converged, `I = 50000`** | **0.009464** | **76× low** |
+
+The best-looking agreement with experiment anywhere in this study was produced
+entirely by grid truncation, and the converged model at that θ is nowhere near
+the data. Two consequences, both of which outrank any scheduling question:
+
+- **§(g)'s "compare at 1 dpa directly to the band" is only meaningful for rows
+  that passed the gate first.** A pre-gate comparison would have read this θ as a
+  success and, worse, would have made the truncated grid look *validated*.
+- The 0.72 target sits inside the `f₁₀₀` range a truncated ⟨100⟩ channel
+  naturally produces (it saturates towards 1 as content piles up), so this is a
+  systematic hazard at every θ, not a coincidence at one.
+
+#### Grid decision, and what is still owed
+
+**`I_GRID = 50000`, `V_GRID = 10000` is the candidate**, replacing §(f)'s
+`I = V = 10000`. `I = 200000` is still integrating and will bound the other side
+(it should agree with 50000; if it does not, the closure is `r`-sensitive and the
+bin count must rise with `I`).
+
+**This is one θ.** That is exactly the mistake §(b) is about: rev 5 certified
+`I = 3200` at nominal plus one corner of a single parameter, and 64 % of the
+campaign then truncated. **Gate §(i)-3 stands unchanged** — 32 θ chosen by the
+v2 truncation predictor, all required to clear `topbin ≤ 0.02`, before this
+number is fixed. Row 24 is a *lower* bound on the requirement, not the answer.
+
+#### Revised cost
+
+At 93 min/row: **1008 rows ≈ 1560 core-hours**. Against the §(n) layout
+(79.6 slot-equivalents) that is **≈ 20 h wall**, or ~4.6 days on the Mac alone —
+which is the argument for Hoffman2 in one number. `campaign_layout.py`'s
+`--row-cost-s` should be run at **5580**, not the 3600 placeholder.

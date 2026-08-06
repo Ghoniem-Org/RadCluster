@@ -148,12 +148,109 @@ saturate the grid. Every row therefore carries:
 | `d_over_ceiling_100` | `d_100 / d(n=I)` |
 | `dose_reached`, `starved` | did it reach the requested dose |
 | `delta_FP`, `delta_He` | conservation |
-| `admissible` | all of the above passed |
+| `topbin_111`, `topbin_100`, `topbin_v` | `bin_moment`: content fraction in the **top bin**, from raw μ₁ |
+| `grid_limited`, `grid_converged` | did any truncation measure trip |
+| `admissible` | **since 2026-08-05: the row ran and reached the dose. Nothing else.** |
+
+> ## ⚠ Truncation no longer gates anything — author's decision, 2026-08-05, plan §12(q)
+>
+> **The campaign estimates the relative RANKING of parameters, not the absolute
+> value of any observable, and a ranking survives a truncated tail.** Every field
+> in the table above is still measured and written on every row; none of them may
+> reject a row. `admissible` now means `not starved`. The grid is fixed at
+> **`I = 30000`, `V = 5000`** for all T2/T3 runs and no further convergence study
+> will be run — plan §11(i)-1/2/3 are **withdrawn, not deferred**.
+>
+> **`δ_FP` was withdrawn with them.** Kept as a gate at `1e-2` it would have gone
+> on rejecting truncated rows under a different name — **341 of the 459 pooled
+> rows (74 %) sit at `δ_FP ≥ 1e-2`**.
+>
+> **`δ_FP` is not a proxy for truncation on either axis** — measured 2026-08-05,
+> and this corrects an earlier claim in this file that it tracked ⟨100⟩
+> truncation:
+>
+> | run | `topbin_100` | `topbin_v` | `δ_FP` |
+> |---|---|---|---|
+> | row 24, I=10000, V=10000 | 0.998 | 3.6e-24 | **0.907** |
+> | row 825, I=30000, V=5000 | 0.975 | 4.3e-24 | **9.85e-04** |
+> | row 229, I=30000, V=5000 | 0.995 | **0.565** | **3.95e-01** |
+>
+> Rows 24 and 825 are both near-totally ⟨100⟩-truncated with no vacancy
+> truncation, and their `δ_FP` differs by three orders of magnitude. What moves
+> it here is the **vacancy** axis — consistent with plan §11(j), "`δ_FP` is blind
+> to ⟨100⟩ truncation". Its response is θ- and condition-dependent, which is a
+> reason to record it, not to gate on it.
+>
+> **Re-scoring the 516 pooled v2 rows, at zero CPU:** 12 admissible as shipped →
+> 74 under the corrected rules → **459** with truncation ungated.
+>
+> **Before publishing any ranking, run the report both ways:**
+> ```bash
+> python merge_and_sobol.py --design design/T3_rev6.csv --results results/
+> python merge_and_sobol.py --design design/T3_rev6.csv --results results/ --require-converged
+> ```
+> `--require-converged` restores the pre-2026-08-05 rule exactly. If the ranking
+> is unchanged, truncation did not buy it anything — that is the empirical form
+> of the claim this decision rests on. The default report prints what fraction of
+> the rows it used are truncated, so a ranking is never read without that number.
+>
+> ## ⚠ A timed-out row is KEPT — author's decision, 2026-08-05, plan §12(s)
+>
+> `--timeout-s` does not kill the solver: `cpp_bridge` sends a graceful
+> interrupt and the solver **flushes its trajectory**, so a row that runs out of
+> time returns everything up to the dose it reached. Discarding those was
+> throwing away finished work — 57 of the 516 pooled v2 rows died for this alone.
+>
+> **But such a row must not be read at whatever dose it stopped at.** Dose moves
+> the observables far harder than any numerical choice we have measured — for
+> row 24, `d_100` goes 5.36 nm → 26.505 nm from 0.1 to 1.0 dpa (**5×**), against
+> the **0.03 %** the whole `I=50000 → 200000` grid refinement moved it. And a row
+> is slow *because of its physics*, so `dose_reached` is correlated with θ:
+> pooling end-of-run values across doses would attribute "how far this run got"
+> to the parameters. That is a worse failure than the truncation above, because
+> it is aligned with the estimand.
+>
+> **So every row records a dose ladder** (`at_dose`, rungs 0.1 … 1.0 dpa) —
+> free, because the `n_points = 40` trajectory is already computed. Screen at a
+> common dose:
+> ```bash
+> python merge_and_sobol.py --design design/T3_rev6.csv --results results/ --at-dose 0.8
+> ```
+> A timed-out row then contributes to every rung it reached and is absent above
+> that — **pairwise, exactly like a missing `AB` row**, which the estimator
+> already handles and reports through `n_eff`. The report prints the ladder
+> coverage before estimating anything, so you can see which rung is worth using.
+>
+> Without `--at-dose` a starved row is still excluded rather than silently
+> pooled at the wrong dose, and the report names the rung to use instead.
+>
+> **The timeout is now a budget knob, not a cliff.** Below it a row used to be
+> worth 100 % and above it 0 %; now it degrades gracefully. Choose it from the
+> cost distribution so the common rung lands high, rather than chasing a p99.
+>
+> **The residual risk, stated plainly:** truncation depth is strongly θ-dependent
+> (at `I = 3200`, row 825 sits at `pile_100 = 1.3e-09` and row 229 at `0.616` —
+> same grid, same dose), so it is not a uniform distortion. Where it saturates an
+> observable it compresses variance for large-loop θ. The ⟨100⟩ observables are
+> **already withheld** under `bin_moment` for an unrelated closure bias
+> (`BIN_MOMENT_BLOCKED`), leaving `N_loops_111`, `d_111_nm`, `N_voids`,
+> `d_cavity_nm`.
+>
+> **Only half of those are truncation-safe** — corrected 2026-08-05, plan §12(t2).
+> The ½⟨111⟩ pair is: `topbin_111 ≤ 1.2e-02` on every row measured, because that
+> block is populated across its range rather than peaked and advecting. **The
+> void pair is not.** Row 229 reaches `mean_n_v = 2847` against `V = 5000` —
+> 1.8× headroom, `topbin_v = 0.565`, `d_cavity = 4.00 nm` against a 4.83 nm
+> ceiling — and `mean_n_v` has never converged on the vacancy axis
+> (276 → 709 → 2847 at `V` = 600 → 2400 → 5000). So `N_voids` and `d_cavity_nm`
+> will be ranked partly from rows sitting against the vacancy ceiling.
+> `--require-converged` matters most for exactly those two.
 
 A row that is **inadmissible is not a failed row** — it ran fine and conserves,
 but its observables measure the grid rather than the physics. The smoke test at
 `I = 150` produced exactly this: `pile = 0.996`, correctly rejected.
 
+> **Superseded by §12(q) above — retained because it explains the fields.**
 > **Revised 2026-08-03 after the T2-v2 stop — plan §11(c).** Two of these gates
 > were rejecting good rows. Of 275 completed v2 rows, 100 were genuinely
 > grid-converged and only 12 were scored admissible.

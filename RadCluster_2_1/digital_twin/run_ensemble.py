@@ -50,6 +50,7 @@ import json
 import math
 import os
 import platform
+import re
 import subprocess
 import sys
 import time
@@ -105,6 +106,46 @@ TOPBIN_TOL = 0.02        # bin_moment: max content fraction in the TOP BIN.
 # That is not a nicety: re-scoring the stopped v2 campaign under the corrected
 # rules moved it from 12 admissible rows to 52 at zero CPU cost.
 DFP_TOL = 1e-2
+
+# ---------------------------------------------------------------------------
+# TRUNCATION IS NO LONGER A GATE -- author decision, 2026-08-05 (plan S11(q)).
+#
+# The campaign's question is the RELATIVE RANKING of parameters, not the
+# absolute value of any observable, and a ranking survives a truncated tail.
+# Every truncation quantity below is still MEASURED AND RECORDED on every row;
+# what changed is that none of them may reject a row.
+#
+# delta_FP is included in this withdrawal, and that is the non-obvious part.
+# Under `discrete` it is an honest conservation check.  Under `bin_moment` it is
+# not independent of truncation: the top bin's closure cannot absorb overflow,
+# so delta_FP tracks <100> truncation almost exactly -- 1.71e-04 on the
+# converged I=50000 row against 0.907 on the truncated I=10000 one, the same row
+# and the same theta.  Leaving it as a gate at 1e-2 would go on rejecting
+# precisely the truncated rows this decision keeps, under a different name.
+#
+# What still rejects a row: the solver failed outright.  Everything else is a
+# recorded covariate.
+TRUNCATION_GATES = False
+
+# ---------------------------------------------------------------------------
+# A TIMED-OUT ROW IS KEPT -- author decision, 2026-08-05 (plan S12(s)).
+#
+# `--timeout-s` does not kill the solver: cpp_bridge sends a graceful interrupt
+# and the solver flushes the trajectory it has, so a row that runs out of time
+# still returns everything up to the dose it reached.  Discarding that was
+# throwing away finished work -- 57 of the 516 pooled v2 rows were dropped for
+# this alone.
+#
+# It is NOT, however, sound to read such a row at whatever dose it happened to
+# reach: dose moves the observables far harder than any numerical choice we have
+# measured, and how far a row gets is a function of theta.  So the observables
+# are recorded on a fixed DOSE LADDER (below) and screened at a common dose.
+# `starved` stays recorded, and stops rejecting.
+STARVED_GATE = False
+
+# Dose ladder for the rev-6 1 dpa campaign.  Must be ascending and should end at
+# the campaign dose.  A row contributes to every rung it reached.
+DOSE_CHECKPOINTS = (0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0)
 
 
 # ------------------------------------------------------------------- utilities
@@ -491,6 +532,49 @@ def observe(res, sim, cfg, d_min_nm):
     # VISIBLE cavity population.  They are different numbers (plan S3.1-3).
     out["S_inventory"] = float(ser("swelling")[-1])
 
+    # ── DOSE LADDER ──────────────────────────────────────────────────────────
+    # Accepting a timed-out row AT WHATEVER DOSE IT REACHED would be a mistake
+    # of a different order than accepting a truncated tail.  Row 24 gives
+    # d_100 = 5.36 nm at 0.1 dpa and 26.505 nm at 1.0 dpa -- a factor of 5 in
+    # the primary observable from dose alone, against the ~2 % the whole
+    # I=50000 -> 200000 grid refinement moved it.  And because a row is
+    # expensive for PHYSICS reasons, `dose_reached` is correlated with theta:
+    # it is a confound aligned with the quantity being estimated, not noise.
+    #
+    # The fix costs nothing, because the trajectory is already here (n_points).
+    # Record the observables on a fixed dose ladder as well as at the end, so
+    # merge_and_sobol can screen every row at a COMMON dose.  A timed-out row
+    # is then not discarded -- it contributes to every checkpoint it actually
+    # reached, and only drops out above that, pairwise, per checkpoint.
+    #
+    # f_100_* is deliberately absent: it needs the per-size reconstruction at
+    # that time index, and every f_100 variant is already withheld under
+    # bin_moment by BIN_MOMENT_BLOCKED, so there is nothing to screen with it.
+    dose_t = t * G
+    ladder = {}
+    for dck in DOSE_CHECKPOINTS:
+        if out["dose_reached"] < dck * (1.0 - 1e-9):
+            continue                      # never got here; not an error
+        j = int(np.searchsorted(dose_t, dck, side="right")) - 1
+        if j < 0:
+            continue
+        n111c = float(ser("mean_n_111")[j])
+        n100c = float(ser("mean_n_100")[j])
+        nvc = float(ser("mean_n_v")[j])
+        ladder[f"{dck:g}"] = {
+            "dose": float(dose_t[j]),
+            "N_loops_111": float(ser("N_loops_111")[j]),
+            "N_loops_100": float(ser("N_loops_100")[j]),
+            "d_111_nm": float(2*np.sqrt(max(n111c, 0)*Om/(np.pi*b111))*1e9),
+            "d_100_nm": float(2*np.sqrt(max(n100c, 0)*Om/(np.pi*b100))*1e9),
+            "N_voids": float(ser("N_voids")[j]),
+            "mean_n_v": nvc,
+            "d_cavity_nm": float(
+                2.0*(3.0*max(nvc, 0.0)*Om/(4.0*np.pi))**(1.0/3.0)*1e9),
+            "delta_FP": float(ser("delta_FP")[j]),
+        }
+    out["at_dose"] = ladder or None
+
     # --- admissibility -----------------------------------------------------
     out["occ_111"] = n111 / I
     out["occ_100"] = n100 / I
@@ -619,9 +703,22 @@ def observe(res, sim, cfg, d_min_nm):
                        if topbin.get(ax) is None]
     out["unmeasured_gates"] = unmeasured or None
 
+    # Still COMPUTED and RECORDED -- it is the covariate the ranking-stability
+    # check needs (merge_and_sobol --require-converged) and the only way to say
+    # afterwards how deep the truncation ran.  It simply no longer rejects.
     out["grid_limited"] = bool(bad_pile or bad_topbin or unmeasured)
-    out["admissible"] = bool((not out["starved"]) and (not out["grid_limited"])
-                             and abs(out["delta_FP"]) < DFP_TOL)
+    out["grid_converged"] = not out["grid_limited"]      # explicit, for clarity
+
+    if TRUNCATION_GATES:
+        out["admissible"] = bool((not out["starved"]) and (not out["grid_limited"])
+                                 and abs(out["delta_FP"]) < DFP_TOL)
+    elif STARVED_GATE:
+        out["admissible"] = not out["starved"]
+    else:
+        # A row is admissible if it EXISTS.  The solver returned a trajectory;
+        # how far up the dose ladder that trajectory reaches is recorded in
+        # `at_dose` and decided per-checkpoint downstream, not here.
+        out["admissible"] = True
     return out
 
 
@@ -669,6 +766,102 @@ def _weighted_pattern(of, weights):
     return pattern
 
 
+MACHINES_FILE = HERE / "machines.json"
+
+
+def _host_facts() -> dict:
+    """Everything the registry is allowed to match on."""
+    import subprocess as _sp
+    hw_model = ""
+    if platform.system() == "Darwin":
+        try:
+            hw_model = _sp.run(["sysctl", "-n", "hw.model"], capture_output=True,
+                               text=True, timeout=5).stdout.strip()
+        except Exception:
+            pass
+    return {"system": platform.system(), "node": platform.node(),
+            "hw_model": hw_model, "cpu_count": os.cpu_count() or 0,
+            "env": set(os.environ)}
+
+
+def _matches(rule: dict, f: dict) -> bool:
+    if "system" in rule and rule["system"] != f["system"]:
+        return False
+    if "hw_model_prefix" in rule and not f["hw_model"].startswith(rule["hw_model_prefix"]):
+        return False
+    if "cpu_count" in rule and int(rule["cpu_count"]) != f["cpu_count"]:
+        return False
+    if "node_regex" in rule and not re.search(rule["node_regex"], f["node"], re.I):
+        return False
+    if "env_any" in rule and not any(v in f["env"] for v in rule["env_any"]):
+        return False
+    # A rule with no clause at all would match everything -- refuse it.
+    return bool(rule)
+
+
+def load_registry(path: Path = None) -> dict:
+    p = path or MACHINES_FILE
+    if not p.exists():
+        raise SystemExit(f"--machine auto needs {p}, which does not exist.")
+    return json.loads(p.read_text(encoding="utf-8"))
+
+
+def detect_machine(reg: dict, facts: dict = None):
+    """Which registry entry is this host?  Returns the entry, or raises.
+
+    FAILS LOUDLY ON NO MATCH, and equally loudly on an AMBIGUOUS match.  Both
+    are the same underlying hazard: an index chosen wrongly means two machines
+    compute the same rows and some other rows are computed by nobody, and that
+    surfaces at merge time as "rows MISSING" -- which reads like a machine that
+    never reported rather than the misconfiguration it is.  A campaign is
+    cheaper to start late than to re-run.
+    """
+    f = facts or _host_facts()
+    hits = [m for m in reg["machines"]
+            if any(_matches(rule, f)
+                   for rule in [m.get("match", {})] + m.get("match_alternatives", []))]
+    if len(hits) == 1:
+        return hits[0]
+    where = (f"node={f['node']!r} system={f['system']!r} "
+             f"hw_model={f['hw_model']!r} cpu_count={f['cpu_count']}")
+    if not hits:
+        raise SystemExit(
+            f"\n*** machine detection FAILED -- this host matches no entry in "
+            f"{MACHINES_FILE.name}.\n    {where}\n"
+            f"    Known: " + ", ".join(f"{m['index']}={m['name']}"
+                                       for m in reg["machines"]) + "\n"
+            f"    Fix it in ONE of two ways, never by guessing an index:\n"
+            f"      python run_ensemble.py --register <index>   # pin this host\n"
+            f"      python run_ensemble.py --machine <index> ... # one-off override\n")
+    raise SystemExit(
+        f"\n*** machine detection AMBIGUOUS -- this host matches "
+        f"{[m['index'] for m in hits]}.\n    {where}\n"
+        f"    Tighten the match rules in {MACHINES_FILE.name}; two machines "
+        f"sharing an index compute the same rows.\n")
+
+
+def register_host(index: int, path: Path = None) -> None:
+    """Pin THIS host to a registry index, by writing a fingerprint it will match.
+
+    Deliberately narrow: node + system + cpu_count.  A loose rule is how two
+    hosts end up sharing an index.
+    """
+    p = path or MACHINES_FILE
+    reg = load_registry(p)
+    f = _host_facts()
+    ent = next((m for m in reg["machines"] if m["index"] == index), None)
+    if ent is None:
+        raise SystemExit(f"--register {index}: no such index in {p.name}")
+    rule = {"system": f["system"], "node_regex": "^" + re.escape(f["node"]) + "$",
+            "cpu_count": f["cpu_count"]}
+    if f["hw_model"]:
+        rule["hw_model_prefix"] = f["hw_model"]
+    ent.setdefault("match_alternatives", []).append(rule)
+    p.write_text(json.dumps(reg, indent=2), encoding="utf-8")
+    print(f"registered this host to machine {index} ({ent['name']}): {rule}")
+    print(f"*** COMMIT AND PUSH {p.name} -- every participant reads it.")
+
+
 def assign_machine(row_id, of, weights=None):
     """Which machine owns this row_id.
 
@@ -686,8 +879,28 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--design", type=Path, required=True)
-    ap.add_argument("--machine", type=int, required=True, help="this machine's index k")
-    ap.add_argument("--of", type=int, required=True, help="total machines M")
+    # DETECTED, not typed.  `auto` reads machines.json, matches this host, and
+    # takes index/of/weights/workers from it, so the one value whose mistyping
+    # silently corrupts a campaign is no longer typed at all.  An integer still
+    # works and still overrides.
+    ap.add_argument("--machine", default="auto",
+                    help="this machine's index k, or 'auto' (default) to detect "
+                         "it from machines.json")
+    ap.add_argument("--of", type=int, default=0,
+                    help="total machines M; taken from machines.json under --machine auto")
+    ap.add_argument("--registry", type=Path, default=MACHINES_FILE,
+                    help="the machine registry (default machines.json)")
+    ap.add_argument("--register", type=int, default=None, metavar="INDEX",
+                    help="pin THIS host to a registry index and exit. Use once "
+                         "per new participant, then commit machines.json.")
+    # Hoffman2 is ONE machine index (3) but runs as a 16-task array job, so its
+    # share is split a second time INSIDE the index.  Each subtask takes every
+    # Kth row of machine 3's assignment and writes its own results file, so
+    # tasks never collide and a task killed at h_rt costs only its own rows.
+    ap.add_argument("--subtask", type=int, default=0,
+                    help="this array task's 0-based id within the machine")
+    ap.add_argument("--of-subtasks", type=int, default=1,
+                    help="number of array tasks sharing this machine index")
     ap.add_argument("--workers", type=int, default=max(1, (os.cpu_count() or 4) - 2))
     ap.add_argument("--weights", default=None,
                     help="relative capacity of EACH machine, either a comma list "
@@ -702,9 +915,18 @@ def main(argv=None):
                          "Omit for the default even split (row_id %% M).")
     ap.add_argument("--out", type=Path, default=None)
     ap.add_argument("--conditions", type=Path, default=HERE / "conditions.json")
-    ap.add_argument("--I", type=int, default=800)
-    ap.add_argument("--V", type=int, default=600)
-    ap.add_argument("--dose", type=float, default=0.1)
+    # Rev-6 BASELINE, author 2026-08-05 (plan S11(q)): I=30000, V=5000 for every
+    # run.  Sized from the measured EUROFER97 band, not from a convergence
+    # study -- with truncation withdrawn as a gate the grid no longer has to
+    # contain the tail, only to reach far enough past the DATA that the ranking
+    # is not decided by the ceiling:
+    #   I=30000 -> d_ceiling(<100>) = 39.7 nm = 2.27x the measured <100> mean
+    #   V= 5000 -> d_ceiling(cavity) =  4.8 nm = 2.16x the measured cavity mean
+    # Cost: ~3100 s/row against 5581 s at I=50000/V=10000, i.e. ~875 core-h for
+    # a 1008-row design instead of ~1563.
+    ap.add_argument("--I", type=int, default=30000)
+    ap.add_argument("--V", type=int, default=5000)
+    ap.add_argument("--dose", type=float, default=1.0)
     ap.add_argument("--equations", default="discrete",
                     choices=["discrete", "bin_moment"])
     # --- bin_moment layout (ignored unless --equations bin_moment) -----------
@@ -739,6 +961,13 @@ def main(argv=None):
                          "and 3 orders better delta_FP. Preconditioner follows "
                          "this choice automatically.")
     ap.add_argument("--rtol", type=float, default=1e-6)
+    # A BUDGET, NOT A CLIFF, since 2026-08-05 (plan S12(s)).  On expiry the
+    # solver is asked to finalize gracefully and its partial trajectory is KEPT;
+    # the row then contributes to every rung of the dose ladder it reached.  So
+    # this no longer needs to cover the p99 to avoid losing work -- pick it from
+    # the cost distribution so the COMMON RUNG lands high.  3600 s is a smoke-
+    # test default and is far below the ~3130 s median / long tail of the rev-6
+    # baseline grid; the campaign scripts set it explicitly.
     ap.add_argument("--timeout-s", type=float, default=3600)
     ap.add_argument("--limit", type=int, default=0, help="run only the first n rows (smoke test)")
     ap.add_argument("--stop-after-s", type=float, default=0.0,
@@ -752,6 +981,37 @@ def main(argv=None):
                     help="resume even though git/solver/workbook/design changed "
                          "since the existing rows (see RESTART SAFETY)")
     a = ap.parse_args(argv)
+
+    # ── who am I? ────────────────────────────────────────────────────────────
+    if a.register is not None:
+        register_host(a.register, a.registry)
+        return 0
+    detected = None
+    if str(a.machine).lower() == "auto":
+        reg = load_registry(a.registry)
+        detected = detect_machine(reg)
+        a.machine = int(detected["index"])
+        a.of = a.of or int(reg["of"])
+        if a.weights is None:
+            a.weights = "@" + str(a.registry)
+        if a.of_subtasks == 1 and detected.get("subtasks"):
+            a.of_subtasks = int(detected["subtasks"])
+        # Slots come from the registry too: a machine whose --workers does not
+        # match the slot count its WEIGHT was computed from will finish out of
+        # step with everyone else, which is the thing the weights exist to stop.
+        a.workers = int(detected.get("slots", a.workers))
+        if a.of_subtasks > 1:
+            a.workers = max(1, a.workers // a.of_subtasks)
+        print(f"  detected machine {a.machine} = {detected['name']} "
+              f"({detected.get('speed_source','?')} speed "
+              f"{detected.get('speed')}), {a.workers} worker(s)"
+              + (f", subtask {a.subtask}/{a.of_subtasks}" if a.of_subtasks > 1 else ""))
+    else:
+        a.machine = int(a.machine)
+        if not a.of:
+            raise SystemExit("--of is required when --machine is given explicitly")
+    if not 0 <= a.subtask < a.of_subtasks:
+        raise SystemExit(f"--subtask {a.subtask} outside 0..{a.of_subtasks-1}")
 
     spec = json.loads((HERE / "parameters.json").read_text(encoding="utf-8"))
     rows, meta = read_design(a.design)
@@ -778,8 +1038,9 @@ def main(argv=None):
                     f"of={lay['of']}. They must agree, or the machines disagree "
                     f"about how many participants exist and rows are both "
                     f"duplicated and dropped. Re-run campaign_layout.py.")
+            n_part = len(lay.get("participants") or lay.get("machines") or [])
             print(f"  weights from {lay_p.name} (sha {weights_sha}): "
-                  f"{len(lay['participants'])} participants")
+                  f"{n_part} participants")
         weights = [float(w) for w in a.weights.split(",")]
         if len(weights) != a.of:
             raise SystemExit(f"--weights has {len(weights)} entries but --of is "
@@ -788,9 +1049,20 @@ def main(argv=None):
         if min(weights) <= 0:
             raise SystemExit("--weights entries must all be > 0.")
     mine = [r for r in rows if assign_machine(r["row_id"], a.of, weights) == a.machine]
+    # SECOND-LEVEL SPLIT, for a machine that runs as a scheduler array job.
+    # Deterministic and stateless: task t takes every of_subtasks-th row of this
+    # machine's assignment, in design order.  Nothing is shared between tasks,
+    # so they cannot collide, and a task killed at the walltime limit costs only
+    # its own in-flight rows.  of_subtasks=1 is the identity.
+    if a.of_subtasks > 1:
+        n_before = len(mine)
+        mine = mine[a.subtask::a.of_subtasks]
+        print(f"  subtask {a.subtask}/{a.of_subtasks}: {len(mine)} of this "
+              f"machine's {n_before} rows")
     if a.limit:
         mine = mine[:a.limit]
-    out = a.out or (HERE / "results" / f"{a.design.stem}_machine{a.machine}.jsonl")
+    _sfx = f"_machine{a.machine}" + (f"_t{a.subtask}" if a.of_subtasks > 1 else "")
+    out = a.out or (HERE / "results" / f"{a.design.stem}{_sfx}.jsonl")
     out.parent.mkdir(parents=True, exist_ok=True)
 
     # resume: skip row_ids already present

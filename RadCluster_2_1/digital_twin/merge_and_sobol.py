@@ -190,9 +190,61 @@ def grid_ok(r: dict):
     return True, None
 
 
-def usable(r: dict, dfp_tol: float = DFP_TOL_DEFAULT) -> bool:
+def obs_value(r: dict, observable: str, at_dose=None):
+    """The observable, read either at end-of-run or off the dose ladder.
+
+    at_dose=None reads the end of the trajectory -- correct only when every row
+    ran to the same dose.  Passing a rung reads `at_dose[rung]`, which is what
+    makes a timed-out row comparable with a complete one instead of merely
+    present alongside it.
+    """
+    if at_dose is None:
+        return r.get(observable)
+    lad = r.get("at_dose") or {}
+    cell = lad.get(f"{at_dose:g}")
+    return None if cell is None else cell.get(observable)
+
+
+def dose_ladder_coverage(recs, design_row_ids):
+    """rung -> how many of the design's rows reached it. Picks the common dose."""
+    out = {}
+    for rid in design_row_ids:
+        r = recs.get(rid)
+        if not r or r.get("solver_rc"):
+            continue
+        for rung in (r.get("at_dose") or {}):
+            out[rung] = out.get(rung, 0) + 1
+    return dict(sorted(out.items(), key=lambda kv: float(kv[0])))
+
+
+def usable(r: dict, dfp_tol: float = DFP_TOL_DEFAULT,
+           require_converged: bool = False, at_dose=None) -> bool:
+    """Does this row enter a Sobol index?
+
+    DEFAULT POLICY since 2026-08-05 (author, plan S11(q)): a row is usable if it
+    ran and reached the dose.  Truncation of the size tail does not disqualify
+    it, because the campaign estimates a RANKING of parameters, not an absolute
+    observable, and the ranking tolerates a truncated tail.
+
+    require_converged=True restores the pre-2026-08-05 rule (grid_ok + delta_FP).
+    Keep it working: re-estimating the indices both ways is the cheap empirical
+    answer to "did truncation change the ranking", and it costs no CPU because
+    every gate quantity is still recorded per row.  See --require-converged.
+    """
     if not r or r.get("solver_rc"):
         return False
+    if at_dose is not None:
+        # A timed-out row is not rejected -- it is simply absent from the rungs
+        # it never reached, pairwise, exactly like a missing AB row.
+        if f"{at_dose:g}" not in (r.get("at_dose") or {}):
+            return False
+    elif r.get("starved"):
+        # No common dose was requested, so this row's observables sit at a
+        # DIFFERENT dose from everyone else's.  Refuse rather than silently
+        # pool doses; --at-dose is the way to include it (plan S12(s)).
+        return False
+    if not require_converged:
+        return True
     # Rows too old to carry the gate quantities cannot be re-scored; fall back
     # to the worker's verdict rather than guessing, and let the caller report
     # them separately instead of silently pooling two scoring rules.
@@ -205,7 +257,8 @@ def usable(r: dict, dfp_tol: float = DFP_TOL_DEFAULT) -> bool:
     return dfp is not None and abs(dfp) < dfp_tol
 
 
-def sobol_indices(recs, design_rows, p_keys, observable, n_boot=200, seed=0):
+def sobol_indices(recs, design_rows, p_keys, observable, n_boot=200, seed=0,
+                  dfp_tol=None, require_converged=False, at_dose=None):
     """Saltelli/Jansen estimators with pairwise deletion.
 
     S_j    = mean_i f(B_i) [ f(AB_i^j) - f(A_i) ] / V        (Saltelli 2010)
@@ -222,9 +275,10 @@ def sobol_indices(recs, design_rows, p_keys, observable, n_boot=200, seed=0):
         if rid is None:
             return None
         r = recs.get(rid)
-        if not usable(r):
+        if not usable(r, dfp_tol if dfp_tol is not None else DFP_TOL_DEFAULT,
+                      require_converged, at_dose):
             return None
-        v = r.get(observable)
+        v = obs_value(r, observable, at_dose)
         if v is None:
             return None
         v = float(v)
@@ -280,9 +334,30 @@ def main(argv=None):
     ap.add_argument("--dfp-tol", type=float, default=DFP_TOL_DEFAULT,
                     help="delta_FP admissibility bar, applied HERE not in the "
                          "worker, so it can be changed without re-running "
-                         "anything (plan S11(h)). Default 1e-2.")
+                         "anything (plan S11(h)). Only has an effect together "
+                         "with --require-converged. Default 1e-2.")
+    ap.add_argument("--require-converged", action="store_true",
+                    help="restore the pre-2026-08-05 rule: reject rows whose "
+                         "size tail is truncated (pile/top-bin) or whose "
+                         "delta_FP exceeds --dfp-tol. OFF by default -- "
+                         "truncation is recorded, not gated (plan S11(q)). Run "
+                         "the report BOTH ways: if the parameter RANKING is the "
+                         "same, truncation did not buy the ranking anything, "
+                         "which is the claim the default policy rests on.")
+    ap.add_argument("--at-dose", type=float, default=None,
+                    help="screen every row at this COMMON dose, read off the "
+                         "per-row `at_dose` ladder, instead of at the end of "
+                         "each trajectory. This is what lets a timed-out row "
+                         "contribute: it enters every rung it reached and is "
+                         "absent above that, pairwise. Without it, rows that "
+                         "stopped early are excluded, because their "
+                         "observables sit at a different dose from everyone "
+                         "else's and dose moves them far harder than any "
+                         "numerical choice (plan S12(s)).")
     a = ap.parse_args(argv)
     DFP_TOL_DEFAULT = a.dfp_tol
+    RC = a.require_converged
+    AD = a.at_dose
 
     meta = json.loads(a.design.with_suffix(".meta.json").read_text(encoding="utf-8"))
     p_keys = meta["parameters"]
@@ -300,21 +375,58 @@ def main(argv=None):
 
     total = len(design)
     have = sum(1 for d in design if d["row_id"] in recs)
-    ok = sum(1 for d in design if usable(recs.get(d["row_id"])))
+    ok = sum(1 for d in design if usable(recs.get(d["row_id"]), a.dfp_tol, RC, AD))
     failed = sum(1 for d in design
                  if d["row_id"] in recs and recs[d["row_id"]].get("solver_rc"))
     inadm = have - ok - failed
-    print(f"\n  coverage: {have}/{total} rows present, {ok} admissible, "
+    print(f"\n  policy: {'require-converged (pre-2026-08-05)' if RC else 'truncation RECORDED, NOT GATED (plan S11(q))'}"
+          f"{f'; screened at COMMON dose {AD:g} dpa' if AD is not None else '; screened at END OF RUN'}")
+    print(f"  coverage: {have}/{total} rows present, {ok} admissible, "
           f"{inadm} inadmissible, {failed} failed, {total-have} MISSING")
-    # The delta_FP bar is the one gate whose right value is a judgement call, so
-    # show what the alternatives would buy BEFORE any index is read.  A large
-    # spread here means the result depends on the threshold and the threshold
-    # needs an argument, not a default.
-    alts = [t for t in (1e-2, 1e-3, 1e-4, 1e-6) if t != a.dfp_tol]
-    counts = "   ".join(
-        f"{t:.0e}: {sum(1 for d in design if usable(recs.get(d['row_id']), t))}"
-        for t in sorted([a.dfp_tol] + alts, reverse=True))
-    print(f"  admissible vs delta_FP bar   {counts}      (in use: {a.dfp_tol:.0e})")
+
+    # The dose ladder decides which common dose is worth screening at, so print
+    # it before anything is estimated.  A rung nearly every row reaches costs
+    # nothing to use; one reached by half of them halves n_eff everywhere.
+    cov = dose_ladder_coverage(recs, [d["row_id"] for d in design])
+    if cov:
+        print(f"  dose ladder (rows reaching each rung, of {have} present):")
+        print("    " + "  ".join(f"{k}:{v}" for k, v in cov.items()))
+    n_starved = sum(1 for r in recs.values() if r.get("starved"))
+    if AD is None and n_starved:
+        if cov:
+            best = max(float(k) for k, v in cov.items() if v == max(cov.values()))
+            print(f"    *** {n_starved} timed-out row(s) EXCLUDED. Re-run with "
+                  f"--at-dose {best:g} to include them at a common dose.")
+        else:
+            # Rows predating the dose ladder (plan S12(s)) carry no `at_dose`
+            # block, so --at-dose cannot rescue them; only a re-run can.
+            print(f"    *** {n_starved} timed-out row(s) EXCLUDED, and these rows "
+                  f"carry NO dose ladder -- they predate plan S12(s), so "
+                  f"--at-dose cannot recover them.")
+    if RC:
+        # The delta_FP bar is the one gate whose right value is a judgement
+        # call, so show what the alternatives would buy BEFORE any index is
+        # read.  A large spread here means the result depends on the threshold
+        # and the threshold needs an argument, not a default.
+        alts = [t for t in (1e-2, 1e-3, 1e-4, 1e-6) if t != a.dfp_tol]
+        counts = "   ".join(
+            f"{t:.0e}: {sum(1 for d in design if usable(recs.get(d['row_id']), t, True))}"
+            for t in sorted([a.dfp_tol] + alts, reverse=True))
+        print(f"  admissible vs delta_FP bar   {counts}      (in use: {a.dfp_tol:.0e})")
+    else:
+        # Truncation is not a gate, but it is not invisible either: say how much
+        # of the pool carries it, so a ranking read off this report is read in
+        # the knowledge of how much of it came from truncated rows.
+        pool = [recs[d["row_id"]] for d in design
+                if usable(recs.get(d["row_id"]), a.dfp_tol, False, AD)]
+        if pool:
+            trunc = sum(1 for r in pool if not grid_ok(r)[0])
+            hi_dfp = sum(1 for r in pool if abs(r.get("delta_FP") or 0) >= a.dfp_tol)
+            print(f"  of the {len(pool)} rows used: {trunc} ({100*trunc/len(pool):.0f}%) "
+                  f"have a truncated size tail, {hi_dfp} ({100*hi_dfp/len(pool):.0f}%) "
+                  f"have delta_FP >= {a.dfp_tol:g}")
+            print(f"  -> re-run with --require-converged and compare the RANKING, "
+                  f"not the values")
     if total - have:
         miss = sorted(d["row_id"] for d in design if d["row_id"] not in recs)
         by_mach = defaultdict(int)
@@ -329,7 +441,13 @@ def main(argv=None):
     # here would report the superseded rule.
     reasons = defaultdict(int)
     for r in recs.values():
-        if r.get("solver_rc") or usable(r, a.dfp_tol):
+        if r.get("solver_rc") or usable(r, a.dfp_tol, RC, AD):
+            continue
+        if not RC:
+            # Under the default policy the only way to be inadmissible without
+            # having failed is to have not reached the dose.
+            reasons["dose-starved (use --at-dose)" if AD is None
+                    else f"did not reach {AD:g} dpa"] += 1
             continue
         ok, why = grid_ok(r)
         if not ok:
@@ -362,7 +480,9 @@ def main(argv=None):
     for cond in meta["conditions"]:
         dc = [d for d in design if d["condition"] == cond]
         for obs in obs_list:
-            r = sobol_indices(recs, dc, p_keys, obs, n_boot=a.n_boot)
+            r = sobol_indices(recs, dc, p_keys, obs, n_boot=a.n_boot,
+                              dfp_tol=a.dfp_tol, require_converged=RC,
+                              at_dose=AD)
             if r is None:
                 print(f"  {cond:>4s} {obs:16s} -- too few usable base points")
                 continue

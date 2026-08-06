@@ -1,0 +1,58 @@
+{
+  "design": "design/T3_rev6.csv",
+  "of": 4,
+  "weights": "14.0,1.6,7.0,13.7",
+  "participants": [
+    {
+      "name": "MacBook-Pro",
+      "group": "MacBook-Pro",
+      "task": 1,
+      "n_tasks": 1,
+      "slots": 14,
+      "speed": 1.0,
+      "weight": 14.0
+    },
+    {
+      "name": "Matrix-PC",
+      "group": "Matrix-PC",
+      "task": 1,
+      "n_tasks": 1,
+      "slots": 4,
+      "speed": 0.4,
+      "weight": 1.6
+    },
+    {
+      "name": "Nasr-Workstation",
+      "group": "Nasr-Workstation",
+      "task": 1,
+      "n_tasks": 1,
+      "slots": 14,
+      "speed": 0.5,
+      "weight": 7.0
+    },
+    {
+      "name": "Hoffman2",
+      "group": "Hoffman2",
+      "task": 1,
+      "n_tasks": 1,
+      "slots": 64,
+      "speed": 0.214,
+      "weight": 13.7
+    }
+  ],
+  "n_rows": 1008,
+  "row_cost_s": 3780.0,
+  "eta_hours": 29.16,
+  "measured": {
+    "2": {
+      "machine_id": "Mac.san.rr.com",
+      "workers": 4,
+      "cpu_count": 8,
+      "completed": 94,
+      "session_wall_s": 50247.1,
+      "rows_per_hour": 6.734717028445423,
+      "core_s_per_row": 2303.4074468085105,
+      "source": "MEASURED"
+    }
+  }
+}

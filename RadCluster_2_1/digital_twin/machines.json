@@ -1,0 +1,93 @@
+{
+  "_comment": [
+    "THE CAMPAIGN'S MACHINE REGISTRY -- one entry per participant, frozen 2026-08-05.",
+    "",
+    "WHY THIS FILE EXISTS.  --machine k was passed by hand on every launch, and a",
+    "typo there is the worst failure the harness has: two machines silently claim",
+    "the same rows and leave a hole somewhere else, which shows up at merge time",
+    "as 'rows MISSING' -- indistinguishable from a machine that never reported.",
+    "Detection removes the hand-typed index.",
+    "",
+    "DETECTION FAILS LOUDLY, NEVER GUESSES.  An unrecognised host is an error, not",
+    "a default, for exactly the reason above.  To bring a new host online, run",
+    "    python run_ensemble.py --register <index>",
+    "which appends this host's fingerprint to the matching entry.",
+    "",
+    "WHY NOT HOSTNAME ALONE.  platform.node() on the Macs returns the DHCP name",
+    "'Mac.san.rr.com', and the v2 pool shows TWO PHYSICALLY DIFFERENT Macs (16-core",
+    "and 8-core) reporting that same string.  Hostname is matched only where it is",
+    "actually distinctive; the Macs are pinned on hw.model + core count as well.",
+    "",
+    "WEIGHTS ARE FROZEN.  Changing a weight re-partitions the design, so rows",
+    "already computed change owner and get recomputed by somebody else.  Do not",
+    "edit `weight` mid-campaign; add capacity with --subtask instead.",
+    "",
+    "SPEED PROVENANCE -- measured unless stated:",
+    "  0 MacBook Pro   1.000  reference. 3780 s/row mean at the rev-6 grid,",
+    "                         over design rows 825/24/229 (2642/3420/5276 s).",
+    "  1 Matrix-PC     0.400  DECLARED. Its manifest never arrived; the v2 pool",
+    "                         gives 2.7x-15x slower depending on how it is read.",
+    "  2 Workstation   0.500  DECLARED by the author 2026-08-05. Never contributed",
+    "                         a row. Replace with a measurement when it has.",
+    "  3 Hoffman2      0.214  measured: job 14223957 ran the reference row in",
+    "                         26059.6 s against the Mac's 5580.6 s, observables",
+    "                         matching to printed precision (plan S12(r))."
+  ],
+  "of": 4,
+  "weights": "14.0,1.6,7.0,13.7",
+  "design": "design/T3_rev6.csv",
+  "frozen": "2026-08-05",
+  "machines": [
+    {
+      "index": 0,
+      "name": "MacBook Pro",
+      "slots": 14,
+      "speed": 1.0,
+      "weight": 14.0,
+      "speed_source": "MEASURED",
+      "match": {
+        "system": "Darwin",
+        "hw_model_prefix": "Mac15",
+        "cpu_count": 16
+      }
+    },
+    {
+      "index": 1,
+      "name": "Matrix-PC",
+      "slots": 4,
+      "speed": 0.4,
+      "weight": 1.6,
+      "speed_source": "DECLARED",
+      "match": {
+        "node_regex": "^matrix-pc"
+      }
+    },
+    {
+      "index": 2,
+      "name": "Nasr Workstation",
+      "slots": 14,
+      "speed": 0.5,
+      "weight": 7.0,
+      "speed_source": "DECLARED",
+      "match": {
+        "node_regex": "^(nasr|workstation|ghoniem-ws)"
+      }
+    },
+    {
+      "index": 3,
+      "name": "Hoffman2",
+      "slots": 64,
+      "speed": 0.214,
+      "weight": 13.7,
+      "speed_source": "MEASURED",
+      "subtasks": 16,
+      "match": {
+        "env_any": [
+          "SGE_ROOT",
+          "SGE_CELL"
+        ],
+        "node_regex": "^(login\\d+|n\\d+)"
+      }
+    }
+  ]
+}

@@ -2929,3 +2929,355 @@ Hoffman2. **That factor must be measured before the weights are trusted**: run
 one known row on a compute node and compare against the Mac's 5580 s. Weighting
 a participant by declared rather than measured capacity is the same mistake as
 MATRIX-PC2's (§(n)), and here it would misallocate 80 % of the campaign.
+
+---
+
+## 12. Revision 7 — truncation withdrawn as an admissibility criterion (2026-08-05)
+
+### (q) The decision, and what it rests on
+
+**Author's decision, 2026-08-05:** the campaign estimates the **relative ranking
+of parameters**, not the absolute value of any observable, and a ranking
+survives a truncated size tail. Truncation is therefore **recorded on every row
+and gates nothing**. The grid is fixed at **`I = 30000`, `V = 5000`** for every
+run in T2 and T3, and no further convergence study will be run.
+
+This reverses the direction of §11(i)-1/2/3, which required certifying the grid
+over 32 θ before launch. Those gates are withdrawn, not deferred.
+
+**What still rejects a row:** the solver failed, or it did not reach the dose.
+Neither is a statement about accuracy — they are statements that the row does
+not exist.
+
+### (q1) Sizing, against the measured EUROFER97 band rather than a convergence study
+
+With no convergence criterion left, `I` and `V` are declared constants. They are
+sized off the experimental diameters, inverted through the code's own
+conversions (`run_ensemble.observe`: `n = πb d²/4Ω`, `m = (π/6)d³/Ω`, with
+Ω=1.180e-29 m³, b₁₀₀=0.2867 nm, b₁₁₁=0.2482 nm).
+
+EUROFER97, neutron, T ≤ 400 °C — note the whole band sits at **13–32 dpa**;
+there is **no 1 dpa neutron data**, which is why §(g) compares the 1 dpa
+simulation to it directly rather than extrapolating:
+
+| population | mean | median | 2× mean → size | 5× mean → size |
+|---|---|---|---|---|
+| ⟨100⟩ loops | 17.47 nm | 5.60 nm | 34.9 nm → I = 23,300 | 87.4 nm → I = 145,700 |
+| ½⟨111⟩ loops | 10.38 nm | 6.15 nm | 20.8 nm → I = 7,100 | 51.9 nm → I = 44,500 |
+| cavities | 2.23 nm | 2.50 nm | 4.47 nm → V = 3,950 | 11.2 nm → V = 61,800 |
+
+`I` is shared by both loop families, so ⟨100⟩ governs it. The chosen baseline
+sits just above the 2× bracket:
+
+- `I = 30000` → `d_ceiling(⟨100⟩)` = **39.7 nm = 2.27×** the measured ⟨100⟩ mean
+- `V = 5000` → `d_ceiling(cavity)` = **4.8 nm = 2.16×** the measured cavity mean
+
+**The mean is not robust and the choice depends on which statistic is named.**
+Mean 17.47 nm against median 5.60 nm is a factor of 3, driven by a single 110 nm
+point at 400 °C. Off the median the same arithmetic gives 2× → I=2,400 and
+5× → I=15,000; off the 7.9 nm in `targets.json`, 4,800 and 29,800. **Mean vs
+median swings `I` by 6×.** The baseline is sized off the **mean**.
+
+### (q2) `delta_FP` had to be withdrawn with it — the non-obvious part
+
+Under `discrete`, `δ_FP` is an honest conservation check. Under `bin_moment` it
+is **not independent of truncation**: the top bin's closure cannot absorb
+overflow, so `δ_FP` tracks ⟨100⟩ truncation almost exactly. Same θ, same row:
+
+| grid | `topbin_100` | `δ_FP` |
+|---|---|---|
+| I = 10000 | 0.998 | **0.907** |
+| I = 50000 | 6.9e-15 | **1.71e-04** |
+
+Left as a gate at 1e-2, `δ_FP` would have gone on rejecting precisely the
+truncated rows this decision keeps — the campaign would have discarded ~74 % of
+its rows for a differently-named reason. It is now recorded, not gated.
+
+This is the mirror image of §11(j), which found `δ_FP` *blind* to ⟨100⟩
+truncation under `discrete` (the `if (n < I)` guard loses no atoms). The same
+diagnostic is blind in one mode and saturated in the other.
+
+### (q3) The residual risk, stated plainly
+
+Truncation depth is **strongly θ-dependent**, not a uniform distortion: at
+I=3200 the v2 pool shows row 825 at `pile_100`=1.3e-09 and row 229 at 0.616 —
+same grid, same dose. The ranking is therefore estimated partly from a variable
+that encodes "did this θ hit the ceiling". Where truncation saturates an
+observable it **compresses variance** for the large-loop θ, which can suppress
+the apparent sensitivity of any parameter acting beyond the ceiling. §11(o)
+quantifies the sharp end of this: truncated I=10000 gives `f_100_tem_1` = 0.7011
+against the 0.72 experimental target, while the converged value is 0.009464 —
+truncation manufactures the best agreement in the whole study.
+
+**Three things bound that risk without spending CPU:**
+
+1. **The ⟨100⟩ observables are already withheld** under `bin_moment`
+   (`BIN_MOMENT_BLOCKED`, §11 closure bias — a separate defect from truncation,
+   still open as the withdrawn gate §11(i)-1). What actually gets screened is
+   `N_loops_111`, `d_111_nm`, `N_voids`, `d_cavity_nm` — the ½⟨111⟩ block is
+   populated across its range rather than peaked and advecting, and the void
+   axis has ~15× headroom in `m` at V=5000. **The observables that survive are
+   the ones truncation bites least.**
+2. **`merge_and_sobol --require-converged`** restores the pre-2026-08-05 rule
+   exactly. Every gate quantity is still recorded per row, so re-estimating the
+   indices both ways costs nothing. If the ranking is the same, truncation did
+   not buy it anything — that is the empirical form of the claim this decision
+   rests on, and it should be run before the T2 ranking is published.
+3. The default report prints what fraction of the pool it used is truncated, so
+   a ranking is never read without that number next to it.
+
+### (q4) Cost
+
+Scaling the measured 5580.6 s at I=50000/V=10000 as `wall ~ I^0.7 · V^0.32`:
+
+| grid | s/row (Mac) | 1008 rows |
+|---|---|---|
+| I=50000, V=10000 | 5,581 (measured) | 1,563 core-h |
+| **I=30000, V=5000** | **~3,130 (estimate)** | **~875 core-h** |
+
+**a 44 % saving.** The `V` exponent is inferred from one confounded two-point
+comparison (the I=200000/V=20000 retry moved both axes at once), so the 3,130 s
+is an estimate; three rows are in calibration to replace it, which is needed for
+`--timeout-s` in any case.
+
+### (q5) Re-scoring the existing pool under the new policy
+
+Applied to the 516 pooled v2 rows, at zero CPU:
+
+| policy | admissible |
+|---|---|
+| as shipped 2026-08-02 | 12 |
+| corrected rules, §11(a) | 74 |
+| **truncation not gated** | **459** |
+
+The remaining 57 are dose-starved. Of the 459 used, **329 (72 %) carry a
+truncated size tail and 341 (74 %) have `δ_FP` ≥ 1e-2** — the honest measure of
+how much of this decision's yield comes from rows the old rule rejected. Those
+rows remain unusable for a *different* reason: only 516 of 1104 exist, so
+`n_eff` runs 4–6 of 16 base points and the v2 indices are coverage-limited, not
+truncation-limited.
+
+### (q6) Harness changes landed 2026-08-05
+
+- `run_ensemble.py`: `TRUNCATION_GATES = False`. `grid_limited` /
+  `grid_converged` / all `pile_*` / `topbin_*` / `δ_FP` still computed and
+  written per row; `admissible` is now `not starved`. Baseline defaults moved to
+  `--I 30000 --V 5000 --dose 1.0`.
+- `merge_and_sobol.py`: `usable()` defaults to "ran and reached the dose";
+  `--require-converged` restores the old rule; the report states its policy,
+  and under the default prints the truncated / high-`δ_FP` fraction of the pool
+  it used.
+- `campaign_layout.py`: grid is a constant in the emitted commands, not
+  `<SET_BY_GATE_i3>`; `--row-cost-s` default 5580 → 3130; `--solver-mode`
+  `full_system` → `active_window`, so the emitted command matches the mode every
+  timing on record was measured in.
+- `hoffman2_array.sh`: grid fixed; `STOP_AFTER_S` 81000 → 68000 (see §(r)).
+
+### (r) Hoffman2 per-core speed — MEASURED, and it is 4.67× slower
+
+§(n) and §(p) both assumed `speed = 1.0` for Hoffman2 pending measurement. Job
+`14223957` (2026-08-04, `pod_smp.q@n6670`) ran the reference row at exactly the
+Mac's configuration:
+
+```
+HOFFMAN2 wall = 26059.6 s      MAC wall = 5580.6 s      RATIO = 4.670
+  topbin_100 = 6.877e-15   (Mac 6.88e-15)
+  delta_FP   = 1.713e-04   (Mac 1.71e-04)
+  d_100_nm   = 26.5053     (Mac 26.505)
+  N_loops_100= 3.00420e+21 (Mac 3.0042e+21)
+```
+
+All four observables match to printed precision, so this is **slower hardware,
+not a divergent trajectory** — and the run held 99.4 % cpu/wall, so it is not
+node contention in the ordinary sense. The obvious build explanation was checked
+and is **wrong**: CentOS 7 ships a 2017 netlib `liblapack.so.3.4.2`, but the
+solver links `libopenblas.so.0`, against the Mac's Accelerate. 4.67× is above
+the ~2.5–3× an M3 Max vs Xeon Gold 6240 single-core comparison predicts; shared
+memory bandwidth on `pod_smp.q` is the best remaining explanation, and it would
+not show in cpu/wall. **The pool is heterogeneous** (this node was a 6240; the
+login probe saw a 6338N), so 0.214 is one draw, adequate for `--speed` and *not*
+adequate for a p99 `--timeout-s`.
+
+**`--speed hoffman2:0.214`.** Consequences:
+
+- 64 slots are worth **13.7 Mac-slot-equivalents**, not 64 — roughly one extra
+  Mac, against the ~80 % of campaign capacity §(n) assumed. Layout becomes
+  mac-16core 47.8 %, MATRIX-PC2 5.5 %, hoffman2 46.7 %, total 29.3
+  slot-equivalents, ETA ~53 h at the old grid.
+- A row costs ~14,600 s at the rev-6 baseline grid, so a 24 h task completes
+  **4–5 rows per worker** and the resume path carries the campaign.
+- `STOP_AFTER_S=81000` reserved 5400 s — less than half a row. Corrected to
+  **68000**.
+- **A structural limit, not just arithmetic:** with `h_rt` capped at 24 h, any
+  row costing more than 86400 s on Hoffman2 — about **18,500 s on the Mac** —
+  can never complete there regardless of resubmission, and will only ever be
+  finished by a Mac. Because row cost is driven by the same physics that makes a
+  row expensive, that is **missingness correlated with θ**, which biases Sobol
+  indices rather than merely thinning them. Pairwise deletion assumes holes are
+  independent of θ. Open: have Hoffman2 tasks decline rows whose predicted cost
+  exceeds the ceiling *by design*, so the exclusion is deterministic and
+  recorded rather than emergent.
+
+### (s) A wall-clock limit per row, and partial runs are kept — 2026-08-05
+
+**Author's decision:** every row gets a time limit; a row that does not finish
+is **accepted, not discarded**.
+
+**The mechanism already existed.** `--timeout-s` does not kill the solver.
+`cpp_bridge` sends a graceful interrupt and waits `GRACEFUL_SHUTDOWN_TIMEOUT_S`
+for the solver to flush its current output step, only escalating to `kill` if
+that fails. A timed-out row therefore returns a complete trajectory up to the
+dose it reached — which is why `dose_reached` and `starved` are meaningful
+fields rather than error flags. Discarding those rows was throwing away finished
+work: **57 of the 516 pooled v2 rows were rejected for this alone.**
+
+#### (s1) But a partial row cannot be read at the dose it happens to stop at
+
+This is where accepting partials differs, in kind, from accepting truncation.
+
+| effect | size, on `d_100` at row 24 |
+|---|---|
+| grid refinement `I=50000 → 200000`, `V=10000 → 20000` | **0.03 %** |
+| dose `0.1 → 1.0 dpa` | **5.0×** (5.36 nm → 26.505 nm) |
+
+Truncation distorts the tail of a distribution at a fixed dose. A dose mismatch
+changes the observable **wholesale**, and it does so along the axis the campaign
+is trying to decompose. Worse, it is not noise: a row is slow because of its
+physics, so `dose_reached` is **correlated with θ**. Feeding end-of-run values
+from rows that stopped at different doses into one Saltelli estimator would
+attribute "how far this run got" to the parameters — a confound aligned with the
+estimand, which is a strictly worse failure than the truncation this revision
+already accepted.
+
+#### (s2) The fix is free: a dose ladder
+
+`n_points = 40` output steps are already computed and already in memory, so
+recording the observables on a fixed dose ladder costs nothing:
+
+```
+DOSE_CHECKPOINTS = (0.1, 0.2, ..., 1.0)      # run_ensemble.py
+out["at_dose"]["0.6"] = {N_loops_111, d_111_nm, N_voids, mean_n_v,
+                         d_cavity_nm, N_loops_100, d_100_nm, delta_FP, dose}
+```
+
+`merge_and_sobol --at-dose 0.8` then screens **every row at the same dose**. A
+timed-out row contributes to every rung it reached and is absent above that —
+**pairwise, exactly like a missing `AB` row**, which the estimator already
+handles correctly and reports through `n_eff`. Nothing is discarded for
+stopping early; it is simply used where it is comparable.
+
+`f_100_*` is deliberately not on the ladder: it needs the per-size
+reconstruction at that time index, and every `f_100` variant is already withheld
+under `bin_moment` by `BIN_MOMENT_BLOCKED`, so there is nothing to screen with.
+
+#### (s3) The timeout becomes a cost knob with graceful degradation
+
+Previously `--timeout-s` was a cliff: below it a row was worth 100 %, above it
+0 %. With the ladder it is a **budget** — a row that runs out of time still
+contributes every rung it reached. That changes how to choose it: set it from
+the cost distribution so the *common rung* lands high, rather than trying to
+cover the p99 so nothing is ever lost.
+
+It also softens, though does not remove, §(r)'s Hoffman2 problem. Rows too
+expensive to finish inside `h_rt = 24 h` there now return partial trajectories
+instead of nothing, so the θ-correlated hole becomes a θ-correlated *shortfall
+in dose reached*. That is visible in the ladder coverage and bounded by
+screening at a lower rung — but the correlation with θ is still real and still
+needs the "decline rows above the cost ceiling by design" fix.
+
+#### (s4) What the report now does
+
+- states its policy and whether it screened at a common dose or at end-of-run;
+- prints the **dose-ladder coverage** — how many rows reached each rung — before
+  estimating anything, because that is what decides which common dose is worth
+  using; a rung nearly every row reaches costs nothing, one reached by half of
+  them halves `n_eff` everywhere;
+- if rows timed out and `--at-dose` was not given, says so and names the rung to
+  use;
+- refuses to silently pool doses: without `--at-dose`, a starved row is still
+  excluded, because its observables sit at a different dose from everyone
+  else's.
+
+Rows produced before this revision carry no `at_dose` block, so `--at-dose`
+cannot recover the 57 starved v2 rows; the report says exactly that rather than
+reporting them as "did not reach the dose".
+
+#### (s5) Harness changes
+
+- `run_ensemble.py`: `STARVED_GATE = False`, `DOSE_CHECKPOINTS`, and the
+  `at_dose` ladder in `observe()`. `admissible` is now simply "the solver
+  returned a trajectory".
+- `merge_and_sobol.py`: `obs_value()`, `dose_ladder_coverage()`, `--at-dose`
+  threaded through `usable()` and `sobol_indices()`.
+
+### (t) Baseline grid measured, 2026-08-05 — and two earlier claims corrected
+
+Three design rows at `I=30000, V=5000, 1 dpa` on the M3 Max:
+
+| row / condition | wall | `d_100` | `mean_n_v` | `topbin_100` | `topbin_v` | `δ_FP` | grid-limited |
+|---|---|---|---|---|---|---|---|
+| 825 / I1 | 2642 s | 39.03 | 36.6 | **0.975** | 4.3e-24 | **9.85e-04** | yes |
+| 24 / N2 | 3420 s | 26.484 | 339.5 | 1.7e-09 | 3.0e-24 | 1.71e-04 | no |
+| 229 / N2 | 5276 s | 32.87 | 2847.3 | **0.995** | **0.565** | **3.95e-01** | yes |
+
+**Cost: mean 3780 s/row** (min 2642, max 5276, spread 2.0×) → **1058 core-h** for
+1008 rows against 1563 at `I=50000/V=10000`, a **32 % saving**. §(q4) estimated
+3130 s and 44 %; the `V^0.32` exponent it extrapolated from was too generous.
+`campaign_layout --row-cost-s` default corrected 3130 → 3780.
+
+**The baseline is not a compromise at row 24.** Same θ, three grids:
+
+| grid | `d_100` | `N_100` | `mean_n_v` | `δ_FP` |
+|---|---|---|---|---|
+| I=30000, V=5000 | 26.484 | 3.0037e21 | 339.5 | 1.71e-04 |
+| I=50000, V=10000 | 26.505 | 3.0042e21 | 342.7 | 1.71e-04 |
+| I=200000, V=20000 | 26.514 | 3.0038e21 | 337.4 | 1.71e-04 |
+
+0.08 % on `d_100` across a 6.7× range in `I`. The cheaper grid costs 39 % less
+than the certified one and returns the same answer *at this θ*.
+
+#### (t1) CORRECTION to §(q2): `δ_FP` does NOT track ⟨100⟩ truncation
+
+§(q2) generalised from a single pair (row 24 at `I=10000` vs `I=50000`) to the
+claim that under `bin_moment` the top bin's closure cannot absorb overflow, so
+`δ_FP` tracks ⟨100⟩ truncation almost exactly. **The new rows refute that:**
+
+| run | `topbin_100` | `topbin_v` | `δ_FP` |
+|---|---|---|---|
+| row 24, I=10000, V=10000 | 0.998 | 3.6e-24 | **0.907** |
+| row 825, I=30000, V=5000 | 0.975 | 4.3e-24 | **9.85e-04** |
+| row 229, I=30000, V=5000 | 0.995 | **0.565** | **3.95e-01** |
+
+Rows 24 and 825 are both near-totally ⟨100⟩-truncated with no vacancy
+truncation, and their `δ_FP` differs by **three orders of magnitude**. What
+actually moves `δ_FP` in this set is the **vacancy** axis — consistent with
+§11(j) ("`δ_FP` is blind to ⟨100⟩ truncation") and with the §10(j) vacancy
+study, and *inconsistent* with §(q2) as written.
+
+The correct statement: **`δ_FP` is not a proxy for truncation on either axis.**
+Its response is θ- and condition-dependent across three decades at comparable
+`topbin_100`. This strengthens rather than weakens the decision to withdraw it
+as a gate — it was rejecting rows on a quantity that does not measure what the
+gate was for — but §(q2)'s mechanism is wrong, and the empirical observation
+(341/459 pooled rows sit at `δ_FP ≥ 1e-2`) is all that survives of it.
+
+#### (t2) CORRECTION to §(q3): the void observables are NOT truncation-safe
+
+§(q3) argued that the four observables surviving `BIN_MOMENT_BLOCKED`
+(`N_loops_111`, `d_111_nm`, `N_voids`, `d_cavity_nm`) are the ones truncation
+bites least, citing ~15× headroom in `m` at `V=5000`. **That was read off row 24
+and does not generalise.** Row 229 reaches `mean_n_v = 2847` against `V = 5000`
+— 1.8× headroom, `topbin_v = 0.565`, `d_cavity = 4.00 nm` against a 4.83 nm
+ceiling. **Two of the four screenable observables are strongly grid-limited on
+that row**, and `mean_n_v` has never converged on the vacancy axis anyway
+(276 → 709 → 2847 at V = 600 → 2400 → 5000; withdrawn gate §11(i)-2).
+
+So the ranking for `N_voids` and `d_cavity_nm` will be estimated partly from
+rows sitting against the vacancy ceiling. That is inside the accepted policy —
+truncation is recorded, not gated — but it is a materially weaker position than
+§(q3) claimed, and `--require-converged` matters most for exactly these two
+observables. The ½⟨111⟩ pair is unaffected: `topbin_111` ≤ 1.2e-02 on all three
+rows.
+
+Raising `V` is the only fix, and its cost is unmeasured — no V-only pair exists,
+since the `I=200000` comparison moved both axes.

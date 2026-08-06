@@ -97,8 +97,13 @@ def main(argv=None):
                          "one at a time.")
     ap.add_argument("--out", type=Path, default=HERE / "campaign_layout.json")
     ap.add_argument("--n-rows", type=int, default=1008)
-    ap.add_argument("--row-cost-s", type=float, default=5580.0,
-                    help="measured seconds per row on the REFERENCE machine")
+    ap.add_argument("--row-cost-s", type=float, default=3780.0,
+                    help="MEAN measured seconds per row on the REFERENCE "
+                         "machine. Default is the rev-6 baseline grid "
+                         "(I=30000, V=5000, 1 dpa) on the M3 Max, measured "
+                         "2026-08-05 over 3 design rows: 2642 / 3420 / 5276 s, "
+                         "mean 3780. The I=50000/V=10000 grid it replaced "
+                         "measured 5580.6 s on the middle row.")
     a = ap.parse_args(argv)
 
     meas = read_manifests(a.results)
@@ -143,7 +148,12 @@ def main(argv=None):
             parts.append({"name": f"{name}[{i+1}/{k}]" if k > 1 else name,
                           "group": name, "task": i + 1, "n_tasks": k,
                           "slots": per, "speed": sp,
-                          "weight": round(per * sp, 4)})
+                          # 2 dp, not 4.  The weight string must be BYTE-
+                          # IDENTICAL to machines.json, and 64*0.214 = 13.696
+                          # vs 13.7 is a different Sainte-Lague partition --
+                          # two files disagreeing in the 4th decimal would send
+                          # the same row to two different machines.
+                          "weight": round(per * sp, 2)})
 
     total_w = sum(p["weight"] for p in parts)
     # Wall-clock estimate: the campaign finishes when the LAST participant does,
@@ -175,11 +185,16 @@ def main(argv=None):
     print("  participant. Copy from here; do not retype. A single typo gives two")
     print("  machines the same rows and leaves a hole somewhere else.")
     print("=" * 78)
+    # Rev-6 BASELINE grid, fixed by the author 2026-08-05 (plan S11(q)).  No
+    # longer "<SET_BY_GATE_i3>": with truncation withdrawn as an admissibility
+    # criterion there is no convergence gate left to set it, so it is a declared
+    # constant sized off the measured EUROFER97 band (2.27x the <100> mean,
+    # 2.16x the cavity mean) and identical on every participant.
     phys = " ".join([
-        "--equations bin_moment --I <SET_BY_GATE_i3> --V 10000",
+        "--equations bin_moment --I 30000 --V 5000",
         "--i-discrete 50 --v-discrete 5 --i-bin 25 --v-bin 25",
         "--i-mobile-default 50 --v-mobile-default 5",
-        "--dose 1.0 --rtol 1e-6 --solver-mode full_system"])
+        "--dose 1.0 --rtol 1e-6 --solver-mode active_window"])
     seen = set()
     for k, p in enumerate(parts):
         grp = p.get("group", p["name"])

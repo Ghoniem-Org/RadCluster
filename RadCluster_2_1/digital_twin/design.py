@@ -75,6 +75,30 @@ def active_params(spec: dict, tier: int) -> list[dict]:
     return sorted(ps, key=lambda p: p["id"])
 
 
+def apply_exclusions(params: list[dict], exclude: list[str]) -> list[dict]:
+    """Drop parameters this campaign holds FIXED rather than samples.
+
+    Kept out of active_params/parameters.json deliberately: an excluded
+    parameter is excluded *by this design*, not deleted from the model, and it
+    keeps its prior and its documentation.  The exclusion is recorded in the
+    design's .meta.json, so a Sobol table can never be read as though the
+    parameter had been varied and found unimportant.
+
+    Rev 6 excludes i_mobile and v_mobile: bin_moment fixes them at 50 and 5
+    (they set the discrete/binned boundary, so sampling them would change the
+    DISCRETISATION between rows, not just the physics), and run_ensemble refuses
+    to run bin_moment against a design that still carries them.
+    """
+    if not exclude:
+        return params
+    keys = {q["key"] for q in params}
+    unknown = [e for e in exclude if e not in keys]
+    if unknown:
+        raise SystemExit(f"--exclude: not active at this tier: {unknown}\n"
+                         f"    active: {sorted(keys)}")
+    return [q for q in params if q["key"] not in set(exclude)]
+
+
 # ------------------------------------------------------------- prior transform
 def to_physical(u: np.ndarray, p: dict) -> np.ndarray:
     """Map u ~ U[0,1)^n onto the parameter's prior support.
@@ -154,10 +178,14 @@ def main(argv=None):
                     help="condition ids; the design is replicated across these")
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--spec", type=Path, default=None)
+    ap.add_argument("--exclude", nargs="*", default=[],
+                    help="parameters this campaign HOLDS FIXED rather than "
+                         "samples. Recorded in the .meta.json so the exclusion "
+                         "travels with the design. Rev 6: i_mobile v_mobile.")
     a = ap.parse_args(argv)
 
     spec = load_spec(a.spec)
-    params = active_params(spec, a.tier)
+    params = apply_exclusions(active_params(spec, a.tier), a.exclude)
     p = len(params)
 
     pending = [q["key"] for q in params if q.get("REVISION_PENDING")]
@@ -196,6 +224,7 @@ def main(argv=None):
     digest = hashlib.sha256(a.out.read_bytes()).hexdigest()
     meta = {
         "tier": a.tier, "N": a.N, "p": p, "seed": a.seed,
+        "excluded": list(a.exclude),
         "conditions": a.conditions,
         "rows_per_condition": per_cond, "rows_total": len(out_rows),
         "parameters": [q["key"] for q in params],

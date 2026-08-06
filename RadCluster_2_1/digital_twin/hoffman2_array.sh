@@ -3,10 +3,12 @@
 #
 #   qsub hoffman2_array.sh
 #
-# ONE ARRAY TASK == ONE MACHINE INDEX.  Each task writes its own
-# results/<design>_machine<K>.jsonl, so tasks never touch the same bytes and can
-# never merge-conflict -- the same property that lets four workstations share a
-# campaign, applied to N cluster tasks.
+# ONE ARRAY TASK == ONE SUBTASK OF MACHINE INDEX 3.  Hoffman2 is a single
+# participant in a four-machine campaign (0 MacBook Pro, 1 Matrix-PC,
+# 2 Nasr Workstation, 3 Hoffman2); its 381-row share is split a second time
+# across the 16 array tasks by --subtask, and each writes its own
+# results/<design>_machine3_t<K>.jsonl.  Tasks never touch the same bytes, so
+# they cannot merge-conflict and a task killed at h_rt costs only its own rows.
 #
 # WHY AN ARRAY OF SMALL TASKS RATHER THAN ONE BIG JOB
 #   A single 64-core job queues behind everything on a shared cluster and, when
@@ -21,8 +23,11 @@
 #   Expect to submit it several times; see the resubmission loop at the bottom.
 #
 # ---------------------------------------------------------------------------
-#  VALUES YOU MUST SET -- all marked <<<SET>>>.  Do not guess the physics ones:
-#  take them from campaign_layout.py's generated command and from gate S11(i)-3.
+#  NOTHING TO SET.  Every value below is either detected (the machine index, via
+#  machines.json) or frozen by plan S12(q)/(r)/(t).  This block used to carry
+#  five <<<SET>>> placeholders; each was an opportunity to give two machines the
+#  same index, which is the one misconfiguration the merge cannot distinguish
+#  from a machine that never reported.
 # ---------------------------------------------------------------------------
 
 #$ -cwd
@@ -38,29 +43,59 @@
 #  raise --workers to match AND re-run campaign_layout.py -- the weights depend
 #  on it.
 #$ -pe shared 4
-#  Array range = number of tasks. MUST equal the K you passed to
-#  campaign_layout.py --split hoffman2:K
+#  Array range = number of tasks. MUST equal --of-subtasks below (16).
 #$ -t 1-16
 
 set -euo pipefail
 
 # ── settings from campaign_layout.py ────────────────────────────────────────
-REPO=<<<SET: /u/home/.../RadCluster>>>
+REPO=${REPO:-$HOME/RadCluster}
 DESIGN=design/T3_rev6.csv
-OF=<<<SET: total machine indices, from campaign_layout.py>>>
-WEIGHTS=<<<SET: the --weights string, byte-identical everywhere>>>
-BASE=<<<SET: this group's first machine index, from campaign_layout.py>>>
+# NOTHING TO SET.  Hoffman2 is machine index 3 of 4 and run_ensemble detects
+# that from machines.json (env SGE_ROOT + node login<N>/n<N>), so the index,
+# --of and --weights are no longer typed here.  That removes the failure this
+# block used to invite: a mistyped index means two machines compute the same
+# rows and some rows are computed by nobody.
+#
+# The 16 array tasks share machine index 3 and split its 381 rows a second time
+# by --subtask, 23-24 rows each, each writing its own results file.
 
-# ── grid, from gate S11(i)-3 -- NOT the S11(f) placeholder ──────────────────
-GRID="--equations bin_moment --I <<<SET>>> --V 10000 \
+# ── grid: the rev-6 BASELINE, fixed by the author 2026-08-05 (plan S11(q)) ──
+# Not "from gate S11(i)-3" any more -- truncation was withdrawn as an
+# admissibility criterion, so there is no convergence gate left to set I and V.
+# They are declared constants, sized off the measured EUROFER97 band:
+#   I=30000 -> d_ceiling(<100>)  = 39.7 nm = 2.27x the measured <100> mean
+#   V= 5000 -> d_ceiling(cavity) =  4.8 nm = 2.16x the measured cavity mean
+# active_window (not full_system): every timing on record -- the Mac's 5580.6 s
+# reference and the 26059.6 s Hoffman2 comparison -- was measured in it, so
+# switching modes would invalidate both STOP_AFTER_S and TIMEOUT_S below.
+GRID="--equations bin_moment --I 30000 --V 5000 \
       --i-discrete 50 --v-discrete 5 --i-bin 25 --v-bin 25 \
       --i-mobile-default 50 --v-mobile-default 5 \
-      --dose 1.0 --rtol 1e-6 --solver-mode full_system"
+      --dose 1.0 --rtol 1e-6 --solver-mode active_window"
 
-# Park 1.5 rows before h_rt so the scheduler never SIGKILLs a row in flight.
-# h_rt 24 h = 86400 s; at ~1 h/row that is 86400 - 5400.
-STOP_AFTER_S=81000
-TIMEOUT_S=<<<SET: p99 row cost measured ON HOFFMAN2, not on the Mac>>>
+# ── walltime arithmetic, from the MEASURED Hoffman2 speed ───────────────────
+# 2026-08-04: job 14223957 ran the reference row here in 26059.6 s against the
+# Mac's 5580.6 s -> Hoffman2 is 4.67x SLOWER PER CORE (--speed hoffman2:0.214),
+# uncontended (99.4 % cpu/wall) on a Xeon Gold 6240.  Observables matched the
+# Mac to printed precision, so this is hardware, not a divergent trajectory.
+#
+# At the rev-6 baseline grid that is ~3130 s x 4.67 = ~14600 s/row HERE.
+# The previous STOP_AFTER_S=81000 assumed ~1 h/row and reserved 5400 s; that
+# would have SIGKILLed a row in flight on nearly every task.  Reserve one whole
+# row instead: a row starting just under 68000 finishes by ~82600 < 86400.
+# STOP_AFTER_S + TIMEOUT_S must stay under h_rt (86400), or the scheduler
+# SIGKILLs a row that the timeout would otherwise have retired gracefully --
+# and a SIGKILL loses the partial trajectory that plan S12(s) exists to keep.
+#   56000 + 30000 = 86000 < 86400.
+# At ~17650 s/row here (3780 Mac-s x 4.67) each of the 4 workers starts a row at
+# roughly 0 / 17650 / 35300 / 52950 and the last finishes by ~70600.
+STOP_AFTER_S=56000
+# 30000 s = 6424 Mac-equivalent seconds, above the 5276 s slowest of the three
+# calibrated rows, so most rows finish fully.  A row that does not is KEPT: the
+# solver is asked to finalize, flushes its trajectory, and the row contributes
+# to every rung of the dose ladder it reached (plan S12(s)).
+TIMEOUT_S=30000
 
 # ── environment ─────────────────────────────────────────────────────────────
 # ALL VERSIONS PINNED, and all three corrected from the 2026-08-03 probe:
@@ -90,8 +125,7 @@ cd "$REPO/RadCluster_2_1"
 # builds poolable at all (plan S11(l)).
 export OMP_NUM_THREADS=1
 
-MACHINE=$(( BASE + SGE_TASK_ID - 1 ))
-echo "=== task $SGE_TASK_ID -> machine index $MACHINE of $OF on $(hostname) ==="
+echo "=== task $SGE_TASK_ID -> subtask $(( SGE_TASK_ID - 1 ))/16 of machine 3 on $(hostname) ==="
 
 # ── solver: each machine builds its own; git does not carry build/ ──────────
 # Serialise the build across tasks landing on the same node, or 64 tasks race
@@ -126,8 +160,8 @@ fi
 # ── run ─────────────────────────────────────────────────────────────────────
 python run_ensemble.py \
     --design "$DESIGN" \
-    --machine "$MACHINE" --of "$OF" --weights "$WEIGHTS" \
-    --workers 4 \
+    --machine auto \
+    --subtask $(( SGE_TASK_ID - 1 )) --of-subtasks 16 \
     $GRID \
     --timeout-s "$TIMEOUT_S" \
     --stop-after-s "$STOP_AFTER_S"

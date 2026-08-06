@@ -1108,14 +1108,16 @@ def main(argv=None):
                "preconditioner": precond, "loop_conversion": 1,
                "i_mobile_default": a.i_mobile_default,
                "v_mobile_default": a.v_mobile_default,
-               "n_points": 40}
-    # timeout_s is DELIBERATELY NOT in run_cfg.  It is a wall-clock budget, not
-    # a model setting: it changes how far a row gets, never what it computes.
-    # Two machines with different budgets -- and they must differ, since a
-    # Hoffman2 core is 4.67x slower and its h_rt caps a task at 24 h -- would
-    # otherwise produce different run_cfg_sha values for the same physics, which
-    # is exactly the false alarm that teaches people to ignore the check.
-    # Recorded per row below, just not hashed.  Same for stop_after_s/workers.
+               "n_points": 40, "timeout_s": a.timeout_s}
+    # run_cfg is BOTH the runtime config handed to evaluate() AND the source of
+    # run_cfg_sha.  timeout_s must stay IN it -- cpp_bridge needs it -- but must
+    # be left OUT of the hash: it is a wall-clock budget, not a model setting,
+    # and the budgets have to differ between a Mac and a 4.67x-slower cluster
+    # node whose h_rt caps a task at 24 h.  Hashing it made identical physics
+    # produce different hashes, which is the false alarm that teaches people to
+    # ignore the check.  Excluded at the hash, not removed from the dict:
+    # deleting the key made every row die with KeyError: 'timeout_s' (2026-08-05).
+    SHA_EXCLUDE = {"timeout_s"}
     # The bin layout changes the numerics as much as I/V do, so it belongs in
     # run_cfg_sha.  Added only in bin_moment mode so an existing discrete
     # campaign's hash -- and therefore its resume check -- is unchanged.
@@ -1153,8 +1155,9 @@ def main(argv=None):
                 f"not be comparable (plan S11(f)).\n"
                 f"  Use a design with {'/'.join(sampled)} withdrawn from theta, "
                 f"or pass --allow-mixed if you have a specific reason.")
-    run_cfg_sha = hashlib.sha256(
-        json.dumps(run_cfg, sort_keys=True).encode()).hexdigest()[:16]
+    run_cfg_sha = hashlib.sha256(json.dumps(
+        {k: v for k, v in run_cfg.items() if k not in SHA_EXCLUDE},
+        sort_keys=True).encode()).hexdigest()[:16]
     prov = {"git_sha": git_sha(), "machine_id": platform.node(),
             "solver_sha256": sha256_file(solver)[:16],
             "workbook_sha256": sha256_file(

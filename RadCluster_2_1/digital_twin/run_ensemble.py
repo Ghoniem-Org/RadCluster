@@ -145,7 +145,13 @@ STARVED_GATE = False
 
 # Dose ladder for the rev-6 1 dpa campaign.  Must be ascending and should end at
 # the campaign dose.  A row contributes to every rung it reached.
-DOSE_CHECKPOINTS = (0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0)
+# Low rungs added 2026-08-06.  Dose accrues very late in wall-clock terms: a
+# 300 s cut of a row that reaches 1.0 dpa in 1700 s sat at 0.003 dpa and filled
+# ZERO of the old 0.1-1.0 rungs, so the partial trajectory the deadline exists
+# to preserve contributed nothing. Rungs are free -- the trajectory is already
+# computed -- so cover the decades a cut row can actually land in.
+DOSE_CHECKPOINTS = (0.005, 0.01, 0.02, 0.05,
+                    0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0)
 
 
 # ------------------------------------------------------------------- utilities

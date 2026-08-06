@@ -190,11 +190,17 @@ def main(argv=None):
     # criterion there is no convergence gate left to set it, so it is a declared
     # constant sized off the measured EUROFER97 band (2.27x the <100> mean,
     # 2.16x the cavity mean) and identical on every participant.
+    # Read from machines.json["grid"] -- the ONE source of the frozen
+    # grid. Never duplicate it here; a second copy is a second thing to
+    # forget when it changes.
+    _G = json.loads((HERE / "machines.json").read_text())["grid"]
     phys = " ".join([
-        "--equations bin_moment --I 30000 --V 5000",
-        "--i-discrete 50 --v-discrete 5 --i-bin 25 --v-bin 25",
-        "--i-mobile-default 50 --v-mobile-default 5",
-        "--dose 1.0 --rtol 1e-6 --solver-mode active_window"])
+        f'--equations {_G["equations"]} --I {_G["I"]} --V {_G["V"]}',
+        f'--i-discrete {_G["i_discrete"]} --v-discrete {_G["v_discrete"]}',
+        f'--i-bin {_G["i_bin"]} --v-bin {_G["v_bin"]}',
+        f'--i-mobile-default {_G["i_mobile_default"]}',
+        f'--v-mobile-default {_G["v_mobile_default"]}',
+        f'--dose {_G["dose"]} --rtol {_G["rtol"]} --solver-mode {_G["solver_mode"]}'])
     seen = set()
     for k, p in enumerate(parts):
         grp = p.get("group", p["name"])

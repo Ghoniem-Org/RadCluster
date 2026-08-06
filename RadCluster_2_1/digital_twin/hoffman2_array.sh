@@ -69,10 +69,7 @@ DESIGN=design/T3_rev6.csv
 # active_window (not full_system): every timing on record -- the Mac's 5580.6 s
 # reference and the 26059.6 s Hoffman2 comparison -- was measured in it, so
 # switching modes would invalidate both STOP_AFTER_S and TIMEOUT_S below.
-GRID="--equations bin_moment --I 30000 --V 5000 \
-      --i-discrete 50 --v-discrete 5 --i-bin 25 --v-bin 25 \
-      --i-mobile-default 50 --v-mobile-default 5 \
-      --dose 1.0 --rtol 1e-6 --solver-mode active_window"
+GRID="--equations bin_moment --I 10000 --V 5000 --i-discrete 40 --v-discrete 5 --i-bin 20 --v-bin 20 --i-mobile-default 40 --v-mobile-default 5 --dose 1.0 --rtol 1e-06 --solver-mode active_window"
 
 # ── walltime arithmetic, from the MEASURED Hoffman2 speed ───────────────────
 # 2026-08-04: job 14223957 ran the reference row here in 26059.6 s against the

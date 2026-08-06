@@ -86,5 +86,23 @@
         "node_regex": "^macbook-?air"
       }
     }
-  ]
+  ],
+  "grid": {
+    "I": 10000,
+    "V": 5000,
+    "dose": 1.0,
+    "equations": "bin_moment",
+    "solver_mode": "active_window",
+    "rtol": 1e-06,
+    "i_discrete": 40,
+    "v_discrete": 5,
+    "i_bin": 20,
+    "v_bin": 20,
+    "shape_function": "linear",
+    "i_mobile_default": 40,
+    "v_mobile_default": 5
+  },
+  "run_cfg_sha": "482d59556632dff8",
+  "timeout_s": 12000,
+  "grid_note": "FROZEN by the author 2026-08-06 for a 24-48 h campaign. Every participant reads THIS block -- the notebook builds its command line from it, so the grid is never retyped per machine. Measured 2026-08-06 at 10-way concurrency on the M3 Max, same design row (21), against the I=30000/V=5000 /b25/i_mobile=50 base at 4171 s: I=10000 alone is 1838 s (2.3x) and moves the FOUR SCREENED observables by <=6% (d_111 +2%, N_111 +4%, mean_n_v +2%); it truncates <100>, which is already withheld by BIN_MOMENT_BLOCKED. V stays 5000: V=2000 collapses mean_n_v 2682->816 (-70%) and V=1000 to 362, and N_voids/d_cavity_nm are two of the four screened observables. dose stays 1.0: halving it saves only 17% (4171->3467 s), and 0-7% at the smaller grids -- 0.5->1.0 dpa is one time doubling out of ~8 decades of a stiff integration -- while a linear 0.1-0.5 dpa extrapolation mispredicts the run's OWN 1.0 dpa value by 30-85%, systematically in sign. i_mobile 50->40 and bins 25->20 are the author's call. i_mobile is PHYSICS, not a numerical knob: at 30 it moved N_100 +109%, N_111 -18%, d_111 -9%, so results here are NOT comparable with anything run at i_mobile=50. i_discrete follows i_mobile (must be >= it)."
 }

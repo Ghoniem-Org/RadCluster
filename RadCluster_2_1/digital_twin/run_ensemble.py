@@ -915,16 +915,16 @@ def main(argv=None):
                          "Omit for the default even split (row_id %% M).")
     ap.add_argument("--out", type=Path, default=None)
     ap.add_argument("--conditions", type=Path, default=HERE / "conditions.json")
-    # Rev-6 BASELINE, author 2026-08-05 (plan S11(q)): I=30000, V=5000 for every
-    # run.  Sized from the measured EUROFER97 band, not from a convergence
-    # study -- with truncation withdrawn as a gate the grid no longer has to
-    # contain the tail, only to reach far enough past the DATA that the ranking
-    # is not decided by the ceiling:
-    #   I=30000 -> d_ceiling(<100>) = 39.7 nm = 2.27x the measured <100> mean
-    #   V= 5000 -> d_ceiling(cavity) =  4.8 nm = 2.16x the measured cavity mean
-    # Cost: ~3100 s/row against 5581 s at I=50000/V=10000, i.e. ~875 core-h for
-    # a 1008-row design instead of ~1563.
-    ap.add_argument("--I", type=int, default=30000)
+    # FROZEN GRID, author 2026-08-06 (plan S12(u)).  The single source of truth
+    # is machines.json["grid"]; these defaults mirror it so a bare invocation
+    # cannot silently run something else.  Measured at 10-way concurrency
+    # against the I=30000/V=5000/b25/i_mobile=50 base (4171 s on design row 21):
+    #   I=10000            1838 s (2.3x), screened observables move <=6%
+    #   V stays 5000       V=2000 collapses mean_n_v by 70%
+    #   dose stays 1.0     halving it saves 17%, not 50%
+    # i_mobile 40 and bins 20 are the author's call; i_mobile is PHYSICS, so
+    # these rows are NOT comparable with anything run at i_mobile=50.
+    ap.add_argument("--I", type=int, default=10000)
     ap.add_argument("--V", type=int, default=5000)
     ap.add_argument("--dose", type=float, default=1.0)
     ap.add_argument("--equations", default="discrete",
@@ -935,13 +935,13 @@ def main(argv=None):
     # plan S11(f) rev-6 campaign values, NOT the library defaults -- the library
     # default (i_discrete=10, I_bin=6) is the coarse binning plan S10(i) warns
     # about, and silently running it is the failure this whole block prevents.
-    ap.add_argument("--i-discrete", type=int, default=50,
+    ap.add_argument("--i-discrete", type=int, default=40,
                     help="max individually-tracked SIA size; must be >= i_mobile")
     ap.add_argument("--v-discrete", type=int, default=5,
                     help="max individually-tracked vacancy size; must be >= v_mobile")
-    ap.add_argument("--i-bin", type=int, default=25,
+    ap.add_argument("--i-bin", type=int, default=20,
                     help="target SIA bin count; r=(I/i_discrete)^(1/I_bin) is DERIVED")
-    ap.add_argument("--v-bin", type=int, default=25,
+    ap.add_argument("--v-bin", type=int, default=20,
                     help="target vacancy bin count; r derived the same way")
     ap.add_argument("--shape-function", default="linear",
                     choices=["constant", "linear", "lognormal"],
@@ -950,7 +950,12 @@ def main(argv=None):
     # Rev 6 withdraws both from theta (plan S11(f)) precisely because a sampled
     # i_mobile would change the bin layout row to row, so under rev 6 these are
     # the campaign values, not fallbacks.
-    ap.add_argument("--i-mobile-default", type=int, default=10)
+    # 40, frozen 2026-08-06. This is PHYSICS, not a numerical knob: it is the
+    # maximum mobile SIA cluster size, and it was a Tier-2 theta with a prior
+    # before bin_moment required it fixed. Measured at 30 vs 50 it moved
+    # N_100 +109%, N_111 -18%, d_111 -9%, so rows produced here CANNOT be
+    # pooled with anything run at i_mobile=50 -- run_cfg_sha enforces that.
+    ap.add_argument("--i-mobile-default", type=int, default=40)
     ap.add_argument("--v-mobile-default", type=int, default=5)
     ap.add_argument("--solver-mode", default="active_window",
                     choices=["active_window", "full_system"],

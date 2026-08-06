@@ -1,7 +1,7 @@
 {
   "design": "design/T3_rev6.csv",
   "of": 4,
-  "weights": "14.0,1.6,7.0,13.7",
+  "weights": "14.0,1.6,7.0,6.8",
   "participants": [
     {
       "name": "MacBook-Pro",
@@ -31,18 +31,18 @@
       "weight": 7.0
     },
     {
-      "name": "Hoffman2",
-      "group": "Hoffman2",
+      "name": "MacBook-Air",
+      "group": "MacBook-Air",
       "task": 1,
       "n_tasks": 1,
-      "slots": 64,
-      "speed": 0.214,
-      "weight": 13.7
+      "slots": 8,
+      "speed": 0.85,
+      "weight": 6.8
     }
   ],
   "n_rows": 1008,
   "row_cost_s": 3780.0,
-  "eta_hours": 29.16,
+  "eta_hours": 36.0,
   "measured": {
     "2": {
       "machine_id": "Mac.san.rr.com",

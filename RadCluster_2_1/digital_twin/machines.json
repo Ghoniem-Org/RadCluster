@@ -34,9 +34,9 @@
     "                         matching to printed precision (plan S12(r))."
   ],
   "of": 4,
-  "weights": "14.0,1.6,7.0,13.7",
+  "weights": "14.0,1.6,7.0,6.8",
   "design": "design/T3_rev6.csv",
-  "frozen": "2026-08-05",
+  "frozen": "2026-08-05 (rev 2: Hoffman2 withdrawn, MacBook Air added)",
   "machines": [
     {
       "index": 0,
@@ -47,7 +47,7 @@
       "speed_source": "MEASURED",
       "match": {
         "system": "Darwin",
-        "hw_model_prefix": "Mac15",
+        "hw_model_prefix": "Mac15,9",
         "cpu_count": 16
       }
     },
@@ -75,18 +75,15 @@
     },
     {
       "index": 3,
-      "name": "Hoffman2",
-      "slots": 64,
-      "speed": 0.214,
-      "weight": 13.7,
-      "speed_source": "MEASURED",
-      "subtasks": 16,
+      "name": "MacBook Air",
+      "slots": 8,
+      "speed": 0.85,
+      "weight": 6.8,
+      "speed_source": "DECLARED",
+      "_note": "Replaces Hoffman2, withdrawn 2026-08-05 after every row failed on its compute nodes at the production grid (TypeError: NoneType not subscriptable, 5-8 s per row) while the same code ran clean on the login node and at I=300/V=480 on a compute node. hoffman2_array.sh and hoffman2_setup.sh are retained for when it returns; with no registry entry, running there now fails loudly, which is the correct behaviour. speed 0.85 is DECLARED, and is a THROTTLED estimate: the Air is fanless and this campaign is a 30+ h all-core load, so its burst figure would overstate it. Measure it from the first manifest and do NOT edit the weight mid-campaign -- that repartitions the design.",
       "match": {
-        "env_any": [
-          "SGE_ROOT",
-          "SGE_CELL"
-        ],
-        "node_regex": "^(login\\d+|n\\d+)"
+        "system": "Darwin",
+        "node_regex": "^macbook-?air"
       }
     }
   ]

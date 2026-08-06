@@ -1184,6 +1184,18 @@ def main(argv=None):
             # time rather than like the configuration error it is.  Carried per
             # row so merge_and_sobol can say which it was.
             "weights_sha": weights_sha,
+            # weights_sha above is sha256 of the machines.json FILE, so it moves
+            # when anything in that file moves -- timeout_s, a match rule, a
+            # comment -- none of which change which machine owns which row.
+            # Setting timeout_s 12000 -> 3600 duly reported a PROVENANCE SPLIT
+            # between two machines whose partition was verified identical over
+            # all 1008 rows.  A checker that cries wolf is worse than no checker:
+            # the real split it exists to catch arrives in the same list as the
+            # noise.  So hash the MAP -- (of, weights) and nothing else -- and
+            # leave the file hash beside it as a record of which file was read.
+            "weights_map_sha": hashlib.sha256(json.dumps(
+                {"of": a.of, "weights": weights}, sort_keys=True
+            ).encode()).hexdigest()[:16],
             "of": a.of,
             # carried per row (not only in run_cfg_sha) so merge_and_sobol can
             # apply the per-mode observable-fidelity restriction without having

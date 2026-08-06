@@ -893,6 +893,17 @@ class RadClusterSimulation:
         else:
             checkpoints = np.linspace(t_begin, t_end, n_segments + 1)
 
+        # ROW-LEVEL DEADLINE, not a per-segment one.  timeout_s used to be handed
+        # to EVERY segment unchanged, so a run could legally take
+        # n_segments x timeout_s: measured 2026-08-06, rows of 16108-20503 s
+        # completed under a 12000 s setting, and the "time limit" the campaign
+        # was designed around never bit.  Budget it across the whole run instead
+        # and let the last segment be cut gracefully -- the solver flushes what
+        # it has, so the row still contributes every dose-ladder rung it reached
+        # (plan S12(s)).
+        import time as _time
+        _deadline = (_time.monotonic() + timeout_s) if timeout_s else None
+
         accumulated  = None
         self._accumulated_results = None   # expose for graceful interrupt
         current_t    = t_begin
@@ -921,11 +932,23 @@ class RadClusterSimulation:
             seg_config['t_span']   = (current_t, seg_t_end)
             seg_config['n_points'] = points_per_segment
 
+            # Whatever is LEFT of the row's budget, not the full budget again.
+            if _deadline is not None:
+                _left = _deadline - _time.monotonic()
+                if _left <= 0:
+                    print(f"  Row budget of {timeout_s:.0f}s exhausted after "
+                          f"{seg_count-1} segment(s) — stopping with what is "
+                          f"integrated so far.")
+                    interrupted = True
+                    break
+            else:
+                _left = None
+
             results = self.run(
                 solver_config=seg_config,
                 save_output=False,
                 progress_callback=progress_callback,
-                timeout_s=timeout_s,
+                timeout_s=_left,
                 y0_override=y0_override,
             )
 

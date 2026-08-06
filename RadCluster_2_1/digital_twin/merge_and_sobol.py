@@ -102,12 +102,37 @@ def equations_mode_of(recs: dict) -> str | None:
     return None if not modes else "MIXED"
 
 
-def load_results(res_dir: Path) -> dict[int, dict]:
+def _same_design(row_sha, design_sha) -> bool:
+    """Compare design hashes that may be stored at different lengths.
+
+    The rows carry a 16-char prefix (run_ensemble truncates for compactness)
+    while design/<name>.meta.json holds the full 64-char digest.  A naive ==
+    is therefore always False, which silently rejects EVERY row -- the
+    filter's failure mode is to discard the whole campaign rather than to let
+    a stale one through, so it must be prefix-aware.
+    """
+    if not design_sha or not row_sha:
+        return True
+    n = min(len(row_sha), len(design_sha))
+    return row_sha[:n] == design_sha[:n]
+
+
+def load_results(res_dir: Path, design_sha: str | None = None) -> dict[int, dict]:
+    """Rows from results/*.jsonl, restricted to ONE design when design_sha is
+    given -- and it always should be from a CLI that knows the design.
+
+    row_id is unique within a design, NOT across designs.  A superseded
+    campaign's file left in results/ therefore does not merely add noise: its
+    row 25 overwrites the current design's row 25, and the Sobol estimator
+    then attributes that value to a completely different theta.  check_provenance
+    would report the design_sha256 split, but only as a printed warning after
+    the rows had already been merged.  Filtering here makes it structural.
+    """
     recs: dict[int, dict] = {}
     files = sorted(res_dir.glob("*.jsonl"))
     if not files:
         raise SystemExit(f"no .jsonl files in {res_dir}")
-    dup = 0
+    dup = other = 0
     for f in files:
         for ln in f.read_text(encoding="utf-8").splitlines():
             if not ln.strip():
@@ -116,13 +141,19 @@ def load_results(res_dir: Path) -> dict[int, dict]:
                 r = json.loads(ln)
             except json.JSONDecodeError:
                 continue                       # truncated final line after a crash
+            if design_sha and not _same_design(r.get("design_sha256"), design_sha):
+                other += 1
+                continue
             rid = r["row_id"]
             if rid in recs:
                 dup += 1
                 # keep the later record: a resumed run supersedes a crashed one
             recs[rid] = r
     print(f"  loaded {len(recs)} unique rows from {len(files)} file(s)"
-          + (f"  ({dup} duplicate row_id(s) superseded)" if dup else ""))
+          + (f"  ({dup} duplicate row_id(s) superseded)" if dup else "")
+          + (f"  ({other} row(s) from a DIFFERENT design ignored)" if other else ""))
+    if not recs:
+        raise SystemExit(f"no rows in {res_dir} match design_sha256={design_sha}")
     return recs
 
 
@@ -376,7 +407,9 @@ def main(argv=None):
                        "base_idx": int(v["base_idx"]), "matrix": v["matrix"],
                        "param_j": int(v["param_j"])})
 
-    recs = load_results(a.results)
+    meta_p = a.design.with_suffix('.meta.json')
+    dmeta = json.loads(meta_p.read_text(encoding='utf-8')) if meta_p.exists() else {}
+    recs = load_results(a.results, dmeta.get('design_sha256'))
     check_provenance(recs)
 
     total = len(design)

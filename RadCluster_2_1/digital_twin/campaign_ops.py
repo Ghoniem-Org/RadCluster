@@ -185,6 +185,98 @@ def stop_requested() -> dict | None:
         return {"reason": "unreadable STOP file"}
 
 
+# ══════════════════════════════════════════════════════════ sync ═════════════
+# Git is the transport between campaign machines: results/*.jsonl are committed
+# on purpose (see RadCluster_2_1/.gitignore) so the rows travel with the very
+# hashes that decide whether they may be pooled.  That only works if each
+# machine actually pushes, and doing it by hand is the step that gets skipped.
+#
+# A machine only ever stages ITS OWN files -- results/<design>_machine<k>*.
+# Because the filenames are disjoint by construction, two machines pushing at
+# the same moment cannot produce a content conflict, and `pull --rebase`
+# resolves the ref race.  Staging anything wider would let one machine commit
+# another's half-written file, or its own uncommitted source edits.
+
+def _git(*args, check=True):
+    r = subprocess.run(["git", *args], cwd=REPO, capture_output=True, text=True)
+    if check and r.returncode:
+        raise RuntimeError(f"git {' '.join(args)} failed:\n{r.stderr.strip()}")
+    return r.stdout.strip()
+
+
+def sync_results(machine: int | None = None, design_stem: str | None = None,
+                 push: bool = True, verbose: bool = True) -> dict:
+    """Commit this machine's result files and exchange them with the remote.
+
+    Safe to call while the campaign is running: run_ensemble appends to the
+    .jsonl, so the worst case is that the newest row lands in the next sync.
+    Returns a dict rather than printing only, so the notebook can assert on it.
+    """
+    import run_ensemble as RE
+
+    reg = json.loads((HERE / "machines.json").read_text(encoding="utf-8"))
+    if machine is None:
+        machine = RE.detect_machine(reg)["index"]
+    stem = design_stem or Path(reg["design"]).stem
+
+    rel = f"RadCluster_2_1/digital_twin/results"
+    mine = sorted(Path(HERE / "results").glob(f"{stem}_machine{machine}*"))
+    mine = [p for p in mine if p.suffix in (".jsonl", ".json")]
+    if not mine:
+        if verbose:
+            print(f"  machine {machine}: no {stem}_machine{machine}* files yet "
+                  f"- nothing to send.")
+        return {"machine": machine, "pushed": False, "files": [], "reason": "no files"}
+
+    # Pull FIRST.  Rebasing after committing would replay our commit over the
+    # others' -- same result, but a pull that fails for an unrelated reason
+    # then leaves a local commit stranded, which is harder to reason about.
+    before = _git("rev-parse", "HEAD")
+    _git("fetch", "origin", check=False)
+
+    for p in mine:
+        _git("add", "-f", f"{rel}/{p.name}")
+    staged = _git("diff", "--cached", "--name-only")
+    if staged:
+        n = {}
+        for p in mine:
+            if p.suffix == ".jsonl":
+                n[p.name] = sum(1 for ln in p.read_text(encoding="utf-8").splitlines()
+                                if ln.strip())
+        msg = (f"results: machine {machine} ({reg['machines'][machine]['name']}) "
+               f"{sum(n.values())} rows\n\n"
+               + "\n".join(f"  {k}: {v} rows" for k, v in sorted(n.items())))
+        _git("commit", "-m", msg)
+
+    # A rebase with a dirty tree aborts, and a campaign machine very often has
+    # a dirty notebook.  Autostash keeps the pull from becoming a manual
+    # cleanup job on a machine the user is not sitting at.
+    pull = subprocess.run(["git", "pull", "--rebase", "--autostash", "origin", "main"],
+                          cwd=REPO, capture_output=True, text=True)
+    if pull.returncode:
+        return {"machine": machine, "pushed": False, "files": [p.name for p in mine],
+                "error": f"pull --rebase failed, NOTHING pushed:\n{pull.stderr.strip()}"}
+
+    out = {"machine": machine, "files": [p.name for p in mine],
+           "committed": bool(staged), "pushed": False}
+    if push:
+        pr = subprocess.run(["git", "push", "origin", "HEAD:main"],
+                            cwd=REPO, capture_output=True, text=True)
+        out["pushed"] = pr.returncode == 0
+        if pr.returncode:
+            out["error"] = pr.stderr.strip()
+    out["head"] = _git("rev-parse", "--short", "HEAD")
+    out["moved"] = before != _git("rev-parse", "HEAD")
+
+    if verbose:
+        if out.get("error"):
+            print(f"  *** machine {machine}: {out['error']}")
+        else:
+            print(f"  machine {machine}: {'pushed' if out['pushed'] else 'committed'}"
+                  f" {len(mine)} file(s) at {out['head']}")
+    return out
+
+
 # ══════════════════════════════════════════════════════════ status ═══════════
 def load_targets(path: Path | None = None) -> dict:
     p = path or (HERE / "targets.json")
@@ -205,8 +297,33 @@ def read_design(design: Path) -> tuple[list[dict], dict]:
     return rows, meta
 
 
-def load_results(results_dir: Path) -> dict[int, dict]:
+def _same_design(row_sha, design_sha) -> bool:
+    """Compare design hashes that may be stored at different lengths.
+
+    The rows carry a 16-char prefix (run_ensemble truncates for compactness)
+    while design/<name>.meta.json holds the full 64-char digest.  A naive ==
+    is therefore always False, which silently rejects EVERY row -- the
+    filter's failure mode is to discard the whole campaign rather than to let
+    a stale one through, so it must be prefix-aware.
+    """
+    if not design_sha or not row_sha:
+        return True
+    n = min(len(row_sha), len(design_sha))
+    return row_sha[:n] == design_sha[:n]
+
+
+def load_results(results_dir: Path, design_sha: str | None = None) -> dict[int, dict]:
+    """Rows from results/*.jsonl, optionally restricted to ONE design.
+
+    design_sha matters more than it looks.  row_id is unique within a design
+    but not across designs, so pooling every .jsonl in the directory lets a
+    superseded campaign's row 25 overwrite the current one's -- silently, and
+    with a plausible-looking value.  Before this filter, T2_design_v2_* rows
+    left in results/ made the T3 campaign report 234 of 480 rows done on
+    machine 0 when 4 existed.
+    """
     recs: dict[int, dict] = {}
+    skipped = 0
     for f in sorted(Path(results_dir).glob("*.jsonl")):
         for ln in f.read_text(encoding="utf-8").splitlines():
             if not ln.strip():
@@ -215,14 +332,19 @@ def load_results(results_dir: Path) -> dict[int, dict]:
                 r = json.loads(ln)
             except json.JSONDecodeError:
                 continue          # truncated last line after a hard kill
+            if design_sha and not _same_design(r.get("design_sha256"), design_sha):
+                skipped += 1
+                continue
             recs[r["row_id"]] = r
+    if skipped:
+        print(f"  ignored {skipped} row(s) belonging to a different design")
     return recs
 
 
 def campaign_status(design: Path, results_dir: Path, n_machines: int = 4,
                     workers_per_machine: int | None = None) -> dict:
     design_rows, meta = read_design(design)
-    recs = load_results(results_dir)
+    recs = load_results(results_dir, meta.get("design_sha256"))
     total = len(design_rows)
     done = [r for r in recs.values()]
     failed = [r for r in done if r.get("solver_rc")]
@@ -234,9 +356,25 @@ def campaign_status(design: Path, results_dir: Path, n_machines: int = 4,
     med_w = float(np.median(walls)) if walls else None
     p90_w = float(np.percentile(walls, 90)) if walls else None
 
+    # WEIGHTED assignment, read from machines.json -- not row_id % n_machines.
+    # The even split stopped being the truth when the four machines were given
+    # capacity weights (14.0/1.6/7.0/6.8): under it this function told the
+    # notebook that Matrix-PC owned 252 rows when it owns 55, so "remaining"
+    # and every ETA derived from it were wrong for three machines out of four.
+    # Falls back to the modulo only when no registry is present, which is the
+    # one case where the modulo IS what run_ensemble used.
+    try:
+        import run_ensemble as RE
+        _reg = json.loads((HERE / "machines.json").read_text(encoding="utf-8"))
+        _w = [float(x) for x in str(_reg["weights"]).split(",")]
+        n_machines = int(_reg["of"])
+        _owner = lambda rid: RE.assign_machine(rid, n_machines, _w)
+    except Exception:
+        _owner = lambda rid: rid % n_machines
+
     per_machine = {}
     for k in range(n_machines):
-        mine = [d for d in design_rows if d["row_id"] % n_machines == k]
+        mine = [d for d in design_rows if _owner(d["row_id"]) == k]
         got = [d for d in mine if d["row_id"] in recs]
         ids = {recs[d["row_id"]].get("machine_id") for d in got}
         per_machine[k] = {"assigned": len(mine), "done": len(got),

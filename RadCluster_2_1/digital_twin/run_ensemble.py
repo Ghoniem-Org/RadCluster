@@ -1245,6 +1245,23 @@ def main(argv=None):
     # left off -- no row lost, none recomputed.
     from concurrent.futures import ProcessPoolExecutor, FIRST_COMPLETED, wait
     t0 = time.time()
+
+    # LIVE START MARKER.  The manifest is written at the END of a run, so while
+    # a campaign is in flight there is nothing on disk that says when it began
+    # -- and without a true elapsed, the only throughput a status tool can form
+    # is sum(row_wall)/workers over the rows that HAVE landed.  That is biased
+    # low exactly when it matters: early, with the slow rows still running and
+    # contributing nothing to the numerator OR the denominator.  Every wrong
+    # ETA this campaign produced came from that estimator.  Six lines here make
+    # completions-per-hour a division by real wall instead.
+    started_p = out.with_suffix(".started.json")
+    started_p.write_text(json.dumps({
+        "unix": t0, "at": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "machine": a.machine, "workers": a.workers,
+        "rows_assigned": len(mine), "rows_already_done": len(mine) - len(todo),
+        "rows_to_run": len(todo), "machine_id": platform.node(),
+    }, indent=2), encoding="utf-8")
+
     n_ok = n_bad = n_inadm = 0
     stopped = None
     pending = list(todo)

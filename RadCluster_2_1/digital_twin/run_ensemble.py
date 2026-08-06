@@ -1277,8 +1277,28 @@ def main(argv=None):
     n_ok = n_bad = n_inadm = 0
     stopped = None
     pending = list(todo)
-    with ProcessPoolExecutor(max_workers=a.workers) as ex, \
-            out.open("a", encoding="utf-8") as fh:
+    # WRITE BY PATH, NOT BY HELD HANDLE.  This used to be
+    #     with ProcessPoolExecutor(...) as ex, out.open("a") as fh:
+    # holding one file object open for the whole multi-day run.  A file handle
+    # names an INODE, not a path, so anything that replaces the file underneath
+    # -- and `git pull --rebase --autostash` does exactly that when the results
+    # file is dirty, which it always is while a worker is running -- leaves the
+    # worker appending to an unlinked inode that nothing can ever read.  It is
+    # silent: the log keeps printing completed rows, the .jsonl stops growing,
+    # and the rows are unrecoverable once the process exits (macOS volfs cannot
+    # open an unlinked inode).  Measured 2026-08-06: 5 rows, 6.2 core-hours,
+    # written into a dead inode over three hours before anyone noticed.
+    #
+    # Re-opening per row costs one open()/close() against ~3000 s of solve, and
+    # makes a swapped file cost nothing: the next row simply appends to whatever
+    # now lives at that path.
+    def append_row(rec):
+        with out.open("a", encoding="utf-8") as fh:
+            fh.write(json.dumps(rec) + "\n")
+            fh.flush()
+            os.fsync(fh.fileno())
+
+    with ProcessPoolExecutor(max_workers=a.workers) as ex:
 
         def submit(r):
             return ex.submit(evaluate,
@@ -1294,8 +1314,7 @@ def main(argv=None):
             for fut in finished:
                 rec = fut.result()
                 rec.update(prov)
-                fh.write(json.dumps(rec) + "\n")
-                fh.flush()
+                append_row(rec)
                 if rec.get("solver_rc"):
                     n_bad += 1
                 elif not rec.get("admissible"):

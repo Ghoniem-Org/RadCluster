@@ -128,7 +128,7 @@ def main(argv=None):
     a = ap.parse_args(argv)
 
     design, meta, dcols = read_design(a.design)
-    recs = load_results(a.results)
+    recs = load_results(a.results, meta.get('design_sha256'))
     targets = json.loads(a.targets.read_text(encoding="utf-8"))
     theta_keys = meta["parameters"]
     a.out.mkdir(parents=True, exist_ok=True)

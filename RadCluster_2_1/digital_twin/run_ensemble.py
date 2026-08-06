@@ -145,7 +145,13 @@ STARVED_GATE = False
 
 # Dose ladder for the rev-6 1 dpa campaign.  Must be ascending and should end at
 # the campaign dose.  A row contributes to every rung it reached.
-DOSE_CHECKPOINTS = (0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0)
+# Low rungs added 2026-08-06.  Dose accrues very late in wall-clock terms: a
+# 300 s cut of a row that reaches 1.0 dpa in 1700 s sat at 0.003 dpa and filled
+# ZERO of the old 0.1-1.0 rungs, so the partial trajectory the deadline exists
+# to preserve contributed nothing. Rungs are free -- the trajectory is already
+# computed -- so cover the decades a cut row can actually land in.
+DOSE_CHECKPOINTS = (0.005, 0.01, 0.02, 0.05,
+                    0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0)
 
 
 # ------------------------------------------------------------------- utilities
@@ -1239,6 +1245,23 @@ def main(argv=None):
     # left off -- no row lost, none recomputed.
     from concurrent.futures import ProcessPoolExecutor, FIRST_COMPLETED, wait
     t0 = time.time()
+
+    # LIVE START MARKER.  The manifest is written at the END of a run, so while
+    # a campaign is in flight there is nothing on disk that says when it began
+    # -- and without a true elapsed, the only throughput a status tool can form
+    # is sum(row_wall)/workers over the rows that HAVE landed.  That is biased
+    # low exactly when it matters: early, with the slow rows still running and
+    # contributing nothing to the numerator OR the denominator.  Every wrong
+    # ETA this campaign produced came from that estimator.  Six lines here make
+    # completions-per-hour a division by real wall instead.
+    started_p = out.with_suffix(".started.json")
+    started_p.write_text(json.dumps({
+        "unix": t0, "at": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "machine": a.machine, "workers": a.workers,
+        "rows_assigned": len(mine), "rows_already_done": len(mine) - len(todo),
+        "rows_to_run": len(todo), "machine_id": platform.node(),
+    }, indent=2), encoding="utf-8")
+
     n_ok = n_bad = n_inadm = 0
     stopped = None
     pending = list(todo)

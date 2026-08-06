@@ -1,0 +1,11 @@
+{
+  "unix": 1786035332.0,
+  "at": "2026-08-06 09:55:32",
+  "machine": 0,
+  "workers": 14,
+  "rows_assigned": 480,
+  "rows_already_done": 0,
+  "rows_to_run": 480,
+  "machine_id": "MacBook-Pro.local",
+  "note": "back-filled from PID 77460 lstart; this run predates the marker"
+}

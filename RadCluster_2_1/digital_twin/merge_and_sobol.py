@@ -133,8 +133,14 @@ def check_provenance(recs: dict[int, dict]) -> None:
     # partition the design, so some rows were computed twice and others by
     # nobody. That shows up at merge time as "rows MISSING", which reads like a
     # machine that never reported rather than the misconfiguration it is.
+    # run_cfg_sha covers I, V, dose, equations, rtol, solver_mode, the bin
+    # layout and the mobility defaults -- i.e. THE GRID.  Its absence here was a
+    # hole: every other hash could match while two machines ran different grids,
+    # because the grid arrives on the command line and nothing compared it.
+    # It excludes timeout_s/stop_after_s/workers by construction, which must
+    # differ between a Mac and a 4.67x-slower cluster node (plan S12(r)).
     for field in ("git_sha", "solver_sha256", "workbook_sha256", "design_sha256",
-                  "weights_sha", "of"):
+                  "run_cfg_sha", "weights_sha", "of"):
         vals = defaultdict(list)
         for r in recs.values():
             vals[r.get(field, "missing")].append(r.get("machine_id", "?"))

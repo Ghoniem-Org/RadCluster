@@ -1108,7 +1108,14 @@ def main(argv=None):
                "preconditioner": precond, "loop_conversion": 1,
                "i_mobile_default": a.i_mobile_default,
                "v_mobile_default": a.v_mobile_default,
-               "n_points": 40, "timeout_s": a.timeout_s}
+               "n_points": 40}
+    # timeout_s is DELIBERATELY NOT in run_cfg.  It is a wall-clock budget, not
+    # a model setting: it changes how far a row gets, never what it computes.
+    # Two machines with different budgets -- and they must differ, since a
+    # Hoffman2 core is 4.67x slower and its h_rt caps a task at 24 h -- would
+    # otherwise produce different run_cfg_sha values for the same physics, which
+    # is exactly the false alarm that teaches people to ignore the check.
+    # Recorded per row below, just not hashed.  Same for stop_after_s/workers.
     # The bin layout changes the numerics as much as I/V do, so it belongs in
     # run_cfg_sha.  Added only in bin_moment mode so an existing discrete
     # campaign's hash -- and therefore its resume check -- is unchanged.
@@ -1154,6 +1161,9 @@ def main(argv=None):
                 REPO / "RadCluster_2_1" / "input" / "input_parameters.xlsx")[:16],
             "design_sha256": meta.get("design_sha256", "")[:16],
             "run_cfg_sha": run_cfg_sha,
+            # Recorded, not hashed -- resource policy, not physics.
+            "timeout_s": a.timeout_s, "stop_after_s": a.stop_after_s,
+            "workers": a.workers,
             # The row->machine map is a function of (of, weights).  If two
             # machines disagree about it they silently compute overlapping rows
             # AND leave a hole, which looks like "some rows missing" at merge

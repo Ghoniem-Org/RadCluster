@@ -1,0 +1,92 @@
+  detected machine 0 = MacBook Pro (MEASURED speed 1.0), 14 worker(s)
+  weights from machines.json (sha a8b9fa917fb3f581): 4 participants
+machine 0/4  rows 480 (0 done, 480 to run)  workers 14
+  provenance {"git_sha": "1d652999fae45a3e79ba8557f9eb366763d45e15", "machine_id": "MacBook-Pro.local", "solver_sha256": "00c68d242b46e8b9", "workbook_sha256": "9253e7a0370af966", "design_sha256": "3461603bdf7818e3", "run_cfg_sha": "482d59556632dff8", "timeout_s": 3600.0, "stop_after_s": 0.0, "workers": 14, "weights_sha": "a8b9fa917fb3f581", "of": 4, "equations": "bin_moment", "python": "3.11.7"}
+  row     25   N2 AB  ok   d100= 21.99 N100=4.929e+22 pile=0.9991986737994171 dFP= 2.1e-01 1684s
+  row     24   N2 AB  ok   d100= 22.19 N100=3.882e+22 pile=0.9996656188638792 dFP= 2.7e-01 1696s
+  row     21   N2  A  ok   d100= 21.95 N100=5.075e+22 pile=0.9989820663814446 dFP= 1.9e-01 1707s
+  row     29   N2 AB  ok   d100= 22.68 N100=4.293e+22 pile=0.9997432756451381 dFP= 2.5e-01 1795s
+  row      3   N2 AB  ok   d100= 22.69 N100=8.659e+19 pile=0.9999982095206309 dFP= 2.2e-01 3661s
+  row      0   N2  A  ok   d100= 22.69 N100=8.420e+19 pile=0.9999980096781597 dFP= 2.3e-01 3661s
+  row     13   N2 AB  ok   d100= 22.69 N100=8.384e+19 pile=0.9999980111414826 dFP= 2.3e-01 3661s
+  row      7   N2 AB  ok   d100= 22.69 N100=8.420e+19 pile=0.9999980096638844 dFP= 2.3e-01 3661s
+  row     20   N2 AB  ok   d100= 22.70 N100=8.272e+19 pile=0.999998673460838 dFP= 2.2e-01 3661s
+  row      9   N2 AB  ok   d100= 22.58 N100=4.821e+19 pile=0.9999943157637504 dFP= 2.7e-01 3661s
+  row     16   N2 AB  ok   d100= 22.62 N100=7.093e+19 pile=0.9999974972759434 dFP= 2.3e-01 3661s
+  row     12   N2 AB  ok   d100= 22.69 N100=8.242e+19 pile=0.9999980085133324 dFP= 2.3e-01 3661s
+  row     17   N2 AB  ok   d100= 22.88 N100=3.855e+19 pile=0.9999993211567034 dFP= 2.2e-01 3661s
+  row      4   N2 AB  ok   d100= 22.64 N100=7.142e+19 pile=0.9999974522946202 dFP= 2.1e-01 3661s
+  row     30   N2 AB  ok   d100= 22.81 N100=2.369e+22 pile=0.9999980184671783 dFP= 4.1e-01 2921s
+  row     33   N2 AB  ok   d100= 21.93 N100=5.584e+22 pile=0.9988339063483853 dFP= 1.5e-01 3026s
+  row     34   N2 AB  ok   d100= 21.95 N100=4.267e+22 pile=0.9983209429885634 dFP= 2.5e-01 3102s
+  row     36   N2 AB  ok   d100= 21.97 N100=5.098e+22 pile=0.999018267189287 dFP= 1.9e-01 3036s
+  row     38   N2 AB  ok   d100=  5.19 N100=1.899e+24 pile=1.0401580735274236e-17 dFP= 4.6e-03 1852s
+  row     40   N2 AB  ok   d100= 21.93 N100=4.701e+22 pile=0.999080993160173 dFP= 2.1e-01 2850s
+  row     42   N2  A  ok   d100= 22.46 N100=6.996e+20 pile=0.9999827655794129 dFP= 6.2e-01 3661s
+  row     44   N2 AB  ok   d100= 22.47 N100=6.988e+20 pile=0.999982328694056 dFP= 6.2e-01 3661s
+  row     47   N2 AB  ok   d100= 22.46 N100=1.091e+21 pile=0.9999808845268086 dFP= 6.4e-01 3661s
+  row     49   N2 AB  ok   d100= 22.46 N100=6.996e+20 pile=0.999982765579246 dFP= 6.2e-01 3661s
+  row     51   N2 AB  ok   d100= 22.09 N100=4.492e+20 pile=0.9999455143288164 dFP= 6.3e-01 3661s
+  row     53   N2 AB  ok   d100= 22.48 N100=7.174e+20 pile=0.9999833642188551 dFP= 6.2e-01 3661s
+  row     55   N2 AB  ok   d100= 22.31 N100=4.005e+21 pile=0.9999582062142295 dFP= 6.7e-01 3661s
+  row     57   N2 AB  ok   d100= 22.46 N100=6.982e+20 pile=0.9999827479827215 dFP= 6.1e-01 3661s
+  row     63   N2  A  ok   d100= 22.89 N100=6.510e+20 pile=0.9997292531358328 dFP= 9.0e-01 2518s
+  row     66   N2 AB  ok   d100= 22.89 N100=1.228e+21 pile=0.9995853693324167 dFP= 9.0e-01 2798s
+  row     68   N2 AB  ok   d100= 22.89 N100=6.500e+20 pile=0.9997275853226496 dFP= 9.0e-01 2510s
+  row     59   N2 AB  ok   d100= 22.64 N100=9.306e+19 pile=0.999992363776449 dFP= 5.8e-01 3661s
+  row     61   N2 AB  ok   d100= 22.48 N100=7.256e+20 pile=0.9999835741677875 dFP= 6.2e-01 3661s
+  row     70   N2 AB  ok   d100= 22.89 N100=6.510e+20 pile=0.9997292533428269 dFP= 9.0e-01 2528s
+  row     85   N2  B  ok   d100= 14.77 N100=2.446e+24 pile=0.9793661646666365 dFP= 6.9e-01 2198s
+  row     87   N2 AB  ok   d100= 22.89 N100=2.470e+20 pile=0.9999145327813374 dFP= 4.7e-01 2292s
+  row     80   N2 AB  ok   d100= 22.89 N100=6.480e+20 pile=0.9997119585625494 dFP= 9.0e-01 2527s
+  row     78   N2 AB  ok   d100= 22.89 N100=6.534e+20 pile=0.9997281269362068 dFP= 9.0e-01 2529s
+  row     76   N2 AB  ok   d100= 22.89 N100=6.476e+20 pile=0.9997215658446315 dFP= 9.0e-01 2559s
+  row     74   N2 AB  ok   d100= 22.89 N100=6.542e+20 pile=0.9997556063948806 dFP= 8.9e-01 2568s
+  row     83   N2 AB  ok   d100= 22.89 N100=6.513e+20 pile=0.999661457317646 dFP= 9.0e-01 2603s
+  row     89   N2 AB  ok   d100= 22.89 N100=4.223e+20 pile=0.999850789546267 dFP= 5.5e-01 2685s
+  row     91   N2 AB  ok   d100= 22.89 N100=4.269e+20 pile=0.9998502929390262 dFP= 5.5e-01 2477s
+  row     72   N2 AB  ok   d100= 22.89 N100=7.184e+20 pile=0.999880254719182 dFP= 8.6e-01 2879s
+  row     95   N2 AB  ok   d100= 22.89 N100=4.236e+20 pile=0.9998488960025953 dFP= 5.5e-01 2470s
+  row     93   N2 AB  ok   d100= 22.89 N100=4.225e+20 pile=0.9998457182667335 dFP= 5.6e-01 2863s
+  row     97   N2 AB  ok   d100= 22.89 N100=4.270e+20 pile=0.9998503103758055 dFP= 5.5e-01 2570s
+  row     99   N2 AB  ok   d100= 22.89 N100=4.471e+20 pile=0.9998479734830293 dFP= 5.8e-01 3672s
+  row    104   N2 AB  ok   d100= 22.89 N100=4.301e+20 pile=0.9997659465034809 dFP= 5.4e-01 6284s
+  row    102   N2 AB  ok   d100= 22.89 N100=2.189e+20 pile=0.9998563268620888 dFP= 5.3e-01 7042s
+  detected machine 0 = MacBook Pro (MEASURED speed 1.0), 14 worker(s)
+  weights from machines.json (sha a8b9fa917fb3f581): 4 participants
+machine 0/4  rows 480 (19 done, 461 to run)  workers 14
+  provenance {"git_sha": "f704409db6cc94f318e22f46949f3ba11836b4e7", "machine_id": "MacBook-Pro.local", "solver_sha256": "00c68d242b46e8b9", "workbook_sha256": "9253e7a0370af966", "design_sha256": "3461603bdf7818e3", "run_cfg_sha": "482d59556632dff8", "timeout_s": 3600.0, "stop_after_s": 0.0, "workers": 14, "weights_sha": "a8b9fa917fb3f581", "weights_map_sha": "87969710596d7511", "of": 4, "equations": "bin_moment", "python": "3.11.7"}
+
+  *** REFUSING TO RESUME - the environment changed since the existing rows were written:
+        git_sha: was ['1d652999fae45a3e79ba8557f9eb366763d45e15'] -> now f704409db6cc94f318e22f46949f3ba11836b4e7
+
+  Those rows are not comparable to the ones this process would produce.
+  Choose one:
+    - restore the previous state (git checkout / rebuild), or
+    - archive the old results and start clean:
+        mv T3_rev6_machine0.jsonl T3_rev6_machine0_pre-change.jsonl
+    - or, only if you are certain the change cannot affect results
+      (e.g. a comment or README edit), re-run with --allow-mixed.
+  detected machine 0 = MacBook Pro (MEASURED speed 1.0), 14 worker(s)
+  weights from machines.json (sha a8b9fa917fb3f581): 4 participants
+machine 0/4  rows 480 (19 done, 461 to run)  workers 14
+  provenance {"git_sha": "f704409db6cc94f318e22f46949f3ba11836b4e7", "machine_id": "MacBook-Pro.local", "solver_sha256": "00c68d242b46e8b9", "workbook_sha256": "9253e7a0370af966", "design_sha256": "3461603bdf7818e3", "run_cfg_sha": "482d59556632dff8", "timeout_s": 3600.0, "stop_after_s": 0.0, "workers": 14, "weights_sha": "a8b9fa917fb3f581", "weights_map_sha": "87969710596d7511", "of": 4, "equations": "bin_moment", "python": "3.11.7"}
+  WARNING: resuming across an environment change (git_sha) because --allow-mixed was given.
+  row     63   N2  A  ok   d100= 22.89 N100=6.510e+20 pile=0.9997292531358328 dFP= 9.0e-01 1548s
+  row     68   N2 AB  ok   d100= 22.89 N100=6.500e+20 pile=0.9997275853226496 dFP= 9.0e-01 1564s
+  row     66   N2 AB  ok   d100= 22.89 N100=1.228e+21 pile=0.9995853693324167 dFP= 9.0e-01 1718s
+  row     40   N2 AB  ok   d100= 21.93 N100=4.701e+22 pile=0.999080993160173 dFP= 2.1e-01 1726s
+  row     70   N2 AB  ok   d100= 22.89 N100=6.510e+20 pile=0.9997292533428269 dFP= 9.0e-01 1661s
+  row     74   N2 AB  ok   d100= 22.89 N100=6.542e+20 pile=0.9997556063948806 dFP= 8.9e-01 1700s
+  row     76   N2 AB  ok   d100= 22.89 N100=6.476e+20 pile=0.9997215658446315 dFP= 9.0e-01 1694s
+  row     72   N2 AB  ok   d100= 22.89 N100=7.184e+20 pile=0.999880254719182 dFP= 8.6e-01 1884s
+  row     55   N2 AB  ok   d100= 22.62 N100=5.877e+21 pile=0.9999949852752922 dFP= 7.5e-01 3661s
+  row     57   N2 AB  ok   d100= 22.58 N100=8.911e+20 pile=0.999993677393715 dFP= 5.6e-01 3661s
+  row     47   N2 AB  ok   d100= 22.58 N100=1.346e+21 pile=0.9999932203835681 dFP= 6.1e-01 3661s
+  row     49   N2 AB  ok   d100= 22.58 N100=8.925e+20 pile=0.9999936824052494 dFP= 5.7e-01 3661s
+  row     61   N2 AB  ok   d100= 22.59 N100=9.159e+20 pile=0.9999939178286215 dFP= 5.7e-01 3661s
+  row     59   N2 AB  ok   d100= 22.66 N100=1.147e+20 pile=0.999996526900668 dFP= 4.5e-01 3661s
+  row     51   N2 AB  ok   d100= 22.50 N100=8.004e+20 pile=0.9999920194718752 dFP= 5.2e-01 3661s
+  row     44   N2 AB  ok   d100= 22.68 N100=1.149e+21 pile=0.9999975663423067 dFP= 5.4e-01 3661s
+  row     53   N2 AB  ok   d100= 22.69 N100=1.179e+21 pile=0.9999976752017876 dFP= 5.5e-01 3661s
+  row     42   N2  A  ok   d100= 22.58 N100=8.925e+20 pile=0.9999936824054568 dFP= 5.7e-01 3661s

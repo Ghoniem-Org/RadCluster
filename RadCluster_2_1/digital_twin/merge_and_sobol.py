@@ -170,16 +170,67 @@ def check_provenance(recs: dict[int, dict]) -> None:
     # because the grid arrives on the command line and nothing compared it.
     # It excludes timeout_s/stop_after_s/workers by construction, which must
     # differ between a Mac and a 4.67x-slower cluster node (plan S12(r)).
-    for field in ("git_sha", "solver_sha256", "workbook_sha256", "design_sha256",
-                  "run_cfg_sha", "weights_sha", "of"):
+    #
+    # TWO CLASSES OF FIELD, and conflating them made this check useless.
+    #
+    # BLOCKING ones must agree or the rows cannot be pooled.
+    #
+    # ADVISORY ones cannot agree across a heterogeneous fleet, by construction:
+    #   solver_sha256  - each machine COMPILES ITS OWN binary (it is not in
+    #                    git), so the bytes differ between a Mac and a PC even
+    #                    from identical source.  It split in the T2 campaign
+    #                    too (MATRIX-PC2 6d878b01 vs Mac 9366e576).  What
+    #                    actually establishes numerical equivalence is
+    #                    check_machine.py's 12-field agreement gate, not a
+    #                    hash of the executable.
+    #   weights_sha    - sha256 of the machines.json FILE, so editing
+    #                    timeout_s moves it while the row->machine map is
+    #                    untouched.  weights_map_sha is the blocking version.
+    #   git_sha        - a machine that started before a Python-only commit is
+    #                    not thereby incomparable.  Whether the diff matters is
+    #                    a judgement about the diff; the tool reports it and
+    #                    says what to look at.
+    #
+    # A checker that reports all seven as fatal trains you to ignore it, and
+    # the one real split then arrives in the same list as the noise.
+    BLOCKING = ("workbook_sha256", "design_sha256", "run_cfg_sha",
+                "weights_map_sha", "of")
+    ADVISORY = ("git_sha", "solver_sha256", "weights_sha")
+
+    def _split(field):
         vals = defaultdict(list)
         for r in recs.values():
             vals[r.get(field, "missing")].append(r.get("machine_id", "?"))
-        if len(vals) > 1:
+        return vals if len(vals) > 1 else None
+
+    for field in BLOCKING:
+        # A field added mid-campaign is absent from the earlier rows.  Comparing
+        # "missing" against a real hash would report a split that is only the
+        # field's own age -- and it would fire on the very rows the new field
+        # was added to protect.  Say so instead.
+        absent = sum(1 for r in recs.values() if field not in r)
+        if absent and absent < len(recs):
+            print(f"  note: {field} absent from {absent}/{len(recs)} rows "
+                  f"(predate the field); not compared")
+            continue
+        vals = _split(field)
+        if vals:
             print(f"  *** PROVENANCE SPLIT on {field}: results are NOT "
                   f"comparable across machines")
             for v, ms in vals.items():
                 print(f"        {v}  <- {sorted(set(ms))}")
+
+    notes = [(f, _split(f)) for f in ADVISORY]
+    notes = [(f, v) for f, v in notes if v]
+    for field, vals in notes:
+        print(f"  note: {field} differs across machines "
+              + ("(expected - each machine builds its own solver; "
+                 "check_machine.py is the real gate)" if field == "solver_sha256"
+                 else "(file hash, not the row->machine map)"
+                 if field == "weights_sha"
+                 else "(check whether the diff can move results)"))
+        for v, ms in vals.items():
+            print(f"        {v}  <- {sorted(set(ms))}")
 
 
 # Admissibility is applied HERE, not in the worker.  The worker records every

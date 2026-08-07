@@ -251,6 +251,14 @@ def sync_results(machine: int | None = None, design_stem: str | None = None,
     # A rebase with a dirty tree aborts, and a campaign machine very often has
     # a dirty notebook.  Autostash keeps the pull from becoming a manual
     # cleanup job on a machine the user is not sitting at.
+    #
+    # But autostash REPLACES every file it touches, and a live results file is
+    # dirty by definition -- a row may land between the commit above and this
+    # pull.  Stashing and reapplying it swaps the inode under the running
+    # worker, which then appends to an unlinked file forever.  The worker no
+    # longer holds a handle across rows (see run_ensemble.append_row), so this
+    # is survivable; keeping the window small is still worth it, so results are
+    # committed first and only then is the tree touched.
     pull = subprocess.run(["git", "pull", "--rebase", "--autostash", "origin", "main"],
                           cwd=REPO, capture_output=True, text=True)
     if pull.returncode:

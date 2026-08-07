@@ -1184,6 +1184,18 @@ def main(argv=None):
             # time rather than like the configuration error it is.  Carried per
             # row so merge_and_sobol can say which it was.
             "weights_sha": weights_sha,
+            # weights_sha above is sha256 of the machines.json FILE, so it moves
+            # when anything in that file moves -- timeout_s, a match rule, a
+            # comment -- none of which change which machine owns which row.
+            # Setting timeout_s 12000 -> 3600 duly reported a PROVENANCE SPLIT
+            # between two machines whose partition was verified identical over
+            # all 1008 rows.  A checker that cries wolf is worse than no checker:
+            # the real split it exists to catch arrives in the same list as the
+            # noise.  So hash the MAP -- (of, weights) and nothing else -- and
+            # leave the file hash beside it as a record of which file was read.
+            "weights_map_sha": hashlib.sha256(json.dumps(
+                {"of": a.of, "weights": weights}, sort_keys=True
+            ).encode()).hexdigest()[:16],
             "of": a.of,
             # carried per row (not only in run_cfg_sha) so merge_and_sobol can
             # apply the per-mode observable-fidelity restriction without having
@@ -1265,8 +1277,28 @@ def main(argv=None):
     n_ok = n_bad = n_inadm = 0
     stopped = None
     pending = list(todo)
-    with ProcessPoolExecutor(max_workers=a.workers) as ex, \
-            out.open("a", encoding="utf-8") as fh:
+    # WRITE BY PATH, NOT BY HELD HANDLE.  This used to be
+    #     with ProcessPoolExecutor(...) as ex, out.open("a") as fh:
+    # holding one file object open for the whole multi-day run.  A file handle
+    # names an INODE, not a path, so anything that replaces the file underneath
+    # -- and `git pull --rebase --autostash` does exactly that when the results
+    # file is dirty, which it always is while a worker is running -- leaves the
+    # worker appending to an unlinked inode that nothing can ever read.  It is
+    # silent: the log keeps printing completed rows, the .jsonl stops growing,
+    # and the rows are unrecoverable once the process exits (macOS volfs cannot
+    # open an unlinked inode).  Measured 2026-08-06: 5 rows, 6.2 core-hours,
+    # written into a dead inode over three hours before anyone noticed.
+    #
+    # Re-opening per row costs one open()/close() against ~3000 s of solve, and
+    # makes a swapped file cost nothing: the next row simply appends to whatever
+    # now lives at that path.
+    def append_row(rec):
+        with out.open("a", encoding="utf-8") as fh:
+            fh.write(json.dumps(rec) + "\n")
+            fh.flush()
+            os.fsync(fh.fileno())
+
+    with ProcessPoolExecutor(max_workers=a.workers) as ex:
 
         def submit(r):
             return ex.submit(evaluate,
@@ -1282,8 +1314,7 @@ def main(argv=None):
             for fut in finished:
                 rec = fut.result()
                 rec.update(prov)
-                fh.write(json.dumps(rec) + "\n")
-                fh.flush()
+                append_row(rec)
                 if rec.get("solver_rc"):
                     n_bad += 1
                 elif not rec.get("admissible"):

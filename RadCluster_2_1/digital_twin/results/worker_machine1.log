@@ -1,0 +1,4 @@
+  detected machine 1 = Matrix-PC (DECLARED speed 0.4), 4 worker(s)
+  weights from machines.json (sha f012339910f8f0ac): 4 participants
+machine 1/4  rows 55 (0 done, 55 to run)  workers 4
+  provenance {"git_sha": "1e97e743972dc757d8645815a94aa7e673933a81", "machine_id": "MATRIX-PC2", "solver_sha256": "6d878b0180b264d2", "workbook_sha256": "9253e7a0370af966", "design_sha256": "3461603bdf7818e3", "run_cfg_sha": "482d59556632dff8", "timeout_s": 12000.0, "stop_after_s": 0.0, "workers": 4, "weights_sha": "f012339910f8f0ac", "weights_map_sha": "87969710596d7511", "of": 4, "equations": "bin_moment", "python": "3.13.12"}

@@ -115,6 +115,49 @@ def owned_counts(design: Path, of: int, weights):
     return own, set(ids)
 
 
+def _warn_orphaned_output(res_dir: Path, stem: str, here_k):
+    """Is a local worker appending to a file that no longer exists?
+
+    A held file handle names an inode, not a path.  Anything that replaces the
+    results file -- `git pull --rebase --autostash` above all, because a live
+    results file is always dirty -- leaves the worker writing to an unlinked
+    inode.  It is completely silent: the worker log keeps reporting completed
+    rows while the .jsonl stops growing, and the rows die with the process.
+    That cost 5 rows and 6.2 core-hours on 2026-08-06 before the log and the
+    file were compared by hand.
+
+    run_ensemble no longer holds the handle, so this cannot recur.  The check
+    stays because it also catches the same shape from any other cause (a
+    checkout, a stash pop, an editor writing through a temp file), and because
+    the failure gives no other symptom.
+    """
+    if here_k is None:
+        return
+    try:
+        import subprocess as sp
+        pids = sp.run(["pgrep", "-f", "run_ensemble.py"],
+                      capture_output=True, text=True).stdout.split()
+        if not pids:
+            return
+        live = res_dir / f"{stem}_machine{here_k}.jsonl"
+        live_ino = live.stat().st_ino if live.exists() else None
+        out = sp.run(["lsof", "-p", ",".join(pids)],
+                     capture_output=True, text=True).stdout
+        for ln in out.splitlines():
+            if f"{stem}_machine" not in ln or ".jsonl" not in ln:
+                continue
+            parts = ln.split()
+            held = next((int(p) for p in parts if p.isdigit() and len(p) > 6), None)
+            if held and live_ino and held != live_ino:
+                print(f"\n  *** A WORKER IS WRITING TO A FILE THAT NO LONGER EXISTS.")
+                print(f"      holds inode {held}, but {live.name} is now inode "
+                      f"{live_ino}.")
+                print(f"      Every row it completes from here is unrecoverable.")
+                print(f"      Restart that worker; rows already in the .jsonl are safe.")
+    except Exception:
+        pass                       # a diagnostic must never break the tally
+
+
 def fmt_eta(hours):
     if hours is None:
         return "     -"
@@ -251,6 +294,8 @@ def main(argv=None):
     print("-" * len(hdr))
     print(f"{'':>2} {'TOTAL':<18} {tot_owned:>5} {tot_done:>5} "
           f"{100.0*tot_done/tot_owned if tot_owned else 0:>5.1f}%")
+
+    _warn_orphaned_output(a.results, design.stem, here_k)
 
     # Partition sanity: every design row owned exactly once, and nothing
     # reported that the design does not contain.

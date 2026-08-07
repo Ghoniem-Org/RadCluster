@@ -1,0 +1,10 @@
+{
+  "unix": 1786044329.688838,
+  "at": "2026-08-06 12:25:29",
+  "machine": 1,
+  "workers": 4,
+  "rows_assigned": 55,
+  "rows_already_done": 0,
+  "rows_to_run": 55,
+  "machine_id": "MATRIX-PC2"
+}

@@ -36,3 +36,6 @@ Thumbs.db
 # VSCode (keep settings.json, ignore local)
 .vscode/c_cpp_properties.json
 .vscode/launch.json
+
+# Campaign runtime state (pid of the detached worker; per-machine, never shared)
+RadCluster_2_1/digital_twin/results/*.pid

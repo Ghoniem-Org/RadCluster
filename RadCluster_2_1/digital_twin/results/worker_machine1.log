@@ -2,3 +2,4 @@
   weights from machines.json (sha 1404a829f1c70a37): 4 participants
 machine 1/4  rows 55 (0 done, 55 to run)  workers 20
   provenance {"git_sha": "479d529a4bdec95289675f0f04d50d04c7b6a4f1", "machine_id": "MATRIX-PC2", "solver_sha256": "6d878b0180b264d2", "workbook_sha256": "9253e7a0370af966", "design_sha256": "3461603bdf7818e3", "run_cfg_sha": "482d59556632dff8", "timeout_s": 50400.0, "stop_after_s": 0.0, "workers": 20, "weights_sha": "1404a829f1c70a37", "weights_map_sha": "87969710596d7511", "of": 4, "equations": "bin_moment", "python": "3.13.12"}
+  row    247   N2 AB  ok   d100= 18.99 N100=7.589e+23 pile=0.9989761073282996 dFP= 5.7e-01 14976s

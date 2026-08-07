@@ -1,0 +1,10 @@
+{
+  "unix": 1786142701.4788573,
+  "at": "2026-08-07 15:45:01",
+  "machine": 2,
+  "workers": 14,
+  "rows_assigned": 2,
+  "rows_already_done": 0,
+  "rows_to_run": 2,
+  "machine_id": "Nasr-Workstation"
+}

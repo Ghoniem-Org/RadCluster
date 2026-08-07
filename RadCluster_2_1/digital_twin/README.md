@@ -1,10 +1,21 @@
 # Digital-twin campaign harness — 4-machine protocol
 
-> **Start here: `campaign_control.ipynb`.** Open it on each machine. It
+> **Start here: `campaign_control_rev6.ipynb` — the ONLY driver.** Open it on
+> each machine. It
 > configures the run, auto-builds the solver, verifies this machine agrees with
 > the reference, launches the worker, gives a live monitor against the
 > experimental data, and provides graceful stop/restart. The command lines
 > below are what it drives — use them directly if you prefer a shell.
+>
+> **Keep it the only driver.** A second campaign notebook has twice appeared
+> beside it under a different name, and both times the copies drifted: the first
+> (2026-08-06, commit `11dc308`) still had `MACHINE = 2` hard-coded and pointed
+> at the superseded T2 design, so opening the obvious file would have launched
+> the wrong campaign with two machines claiming index 2; the second
+> (2026-08-07) lacked the per-machine `timeout_s` override and the Windows
+> detachment fix, so it would have relaunched Matrix-PC straight back into
+> 100 % starvation. Neither copy announced it was stale — they carried the same
+> title and both auto-detected. If you need a variant, branch; do not add a file.
 
 Three modules plus a validation test. Everything else in the plan's §3 listing
 (`surrogate.py`, `calibrate.py`, …) is downstream of these and not yet built.

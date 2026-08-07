@@ -1,8 +1,8 @@
 {
-  "unix": 1786129395.5258915,
-  "at": "2026-08-07 12:03:15",
+  "unix": 1786078460.3660216,
+  "at": "2026-08-06 21:54:20",
   "machine": 1,
-  "workers": 20,
+  "workers": 4,
   "rows_assigned": 55,
   "rows_already_done": 0,
   "rows_to_run": 55,

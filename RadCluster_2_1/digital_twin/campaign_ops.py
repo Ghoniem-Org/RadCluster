@@ -550,5 +550,18 @@ def watch(design: Path, results_dir: Path, n_machines: int = 4,
                 break
             time.sleep(interval)
     except KeyboardInterrupt:
-        print("\n  (stopped watching - the campaign itself is unaffected)")
+        # This used to claim the campaign was "unaffected".  It was not: on
+        # 2026-08-07 the kernel interrupt that left this loop was also delivered
+        # to the detached worker, which had no signal handler and died mid-pool,
+        # losing 6 in-flight rows.  run_ensemble now drains gracefully on a
+        # signal, so the cost is bounded -- but a worker that drains has still
+        # STOPPED, and only the launch cell restarts it.
+        print("\n  (stopped watching)")
+        print("  If the worker was launched from this kernel, check it is still"
+              " alive:")
+        print("      pgrep -fl run_ensemble.py")
+        print("  A kernel interrupt can reach it. It drains in-flight rows and"
+              " exits 0;")
+        print("  re-run the launch cell to resume -- completed rows are never"
+              " recomputed.")
     return st

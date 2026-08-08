@@ -60,10 +60,28 @@ from pathlib import Path
 
 # Force, do NOT setdefault: an inherited OMP_NUM_THREADS (the
 # workstation exports 24) would give every worker its own thread
-# pool -- 10 workers x 24 threads on 24 cores -- and would also
-# let reduction order vary between machines.  Many serial workers
-# beat few threaded ones for an ensemble anyway.
-os.environ["OMP_NUM_THREADS"] = "1"   # many serial jobs > few threaded
+# pool -- 10 workers x 24 threads on 24 cores.  Many serial workers
+# beat few threaded ones for an ensemble, so 1 stays the DEFAULT.
+#
+# The exception is a machine whose problem is the per-row DEADLINE rather
+# than throughput: there, cores spent inside a row buy dose that cores
+# spent on a neighbouring row do not, because a row that misses full dose
+# still lands in the pool -- it just never reaches the high rungs.  Such a
+# machine sets `omp_threads` in machines.json; main() puts the value in
+# RADCLUSTER_OMP_THREADS and this line hands it to solver.exe.
+#
+# Read from a HANDOFF VARIABLE, not set directly, because Windows spawns
+# (not forks) its pool: every worker re-imports this module and would run
+# this line again, resetting to 1 whatever the parent had chosen.  The
+# handoff survives because it is inherited as part of the child's env.
+#
+# Safe for pooling: the active_window kernels are `parallel for` loops in
+# which each iteration writes only its own dci[n]/dcv[m] (rate_kernels.cpp
+# ~281, ~433, ~801, ~920).  There is no reduction, so no summation order
+# depends on the thread count and the trajectory is unchanged by it.  That
+# is what makes this a resource knob and not a physics one -- which is also
+# why it stays OUT of run_cfg_sha, beside timeout_s.
+os.environ["OMP_NUM_THREADS"] = os.environ.get("RADCLUSTER_OMP_THREADS", "1")
 
 import numpy as np
 
@@ -908,7 +926,10 @@ def main(argv=None):
                     help="this array task's 0-based id within the machine")
     ap.add_argument("--of-subtasks", type=int, default=1,
                     help="number of array tasks sharing this machine index")
-    ap.add_argument("--workers", type=int, default=max(1, (os.cpu_count() or 4) - 2))
+    # Sentinel, as for --timeout-s: the registry's `slots` is authoritative for a
+    # production run, but an explicit --workers has to be able to win or a
+    # 2-row smoke test cannot ask for 2 workers -- it silently got all 14.
+    ap.add_argument("--workers", type=int, default=None)
     ap.add_argument("--weights", default=None,
                     help="relative capacity of EACH machine, either a comma list "
                          "('6,14,22,22', normally each machine's --workers) or "
@@ -980,7 +1001,19 @@ def main(argv=None):
     # the cost distribution so the COMMON RUNG lands high.  3600 s is a smoke-
     # test default and is far below the ~3130 s median / long tail of the rev-6
     # baseline grid; the campaign scripts set it explicitly.
-    ap.add_argument("--timeout-s", type=float, default=3600)
+    # default None, NOT 3600, so that "the user asked for a budget" is
+    # distinguishable from "nobody said".  Resolution order is
+    # --timeout-s  >  machines.json entry  >  3600.  Without the sentinel the
+    # registry override could never win, because the notebook always passes
+    # this flag.
+    ap.add_argument("--timeout-s", type=float, default=None)
+    # Same sentinel discipline as --timeout-s: CLI > machines.json > 1.  Exists
+    # so the registry value can be MEASURED (sweep it at --workers 1 and compare
+    # dose_reached at a fixed budget) instead of declared.
+    ap.add_argument("--omp-threads", type=int, default=None,
+                    help="OpenMP threads INSIDE each row's solver (active_window "
+                         "mode only). Trades rows-in-flight for per-row speed; "
+                         "cannot change results (no reductions in the kernels).")
     ap.add_argument("--limit", type=int, default=0, help="run only the first n rows (smoke test)")
     ap.add_argument("--stop-after-s", type=float, default=0.0,
                     help="stop SUBMITTING new rows after this many seconds and exit "
@@ -1011,17 +1044,52 @@ def main(argv=None):
         # Slots come from the registry too: a machine whose --workers does not
         # match the slot count its WEIGHT was computed from will finish out of
         # step with everyone else, which is the thing the weights exist to stop.
-        a.workers = int(detected.get("slots", a.workers))
+        if a.workers is None and detected.get("slots") is not None:
+            a.workers = int(detected["slots"])
         if a.of_subtasks > 1:
             a.workers = max(1, a.workers // a.of_subtasks)
+        # Per-machine ROW BUDGET.  machines.json has carried `timeout_s` on
+        # entries 1 and 3 since 2026-08-07 with a written rationale, but NOTHING
+        # READ IT: the notebook passes reg['timeout_s'] -- the GLOBAL value -- to
+        # --timeout-s for every participant, so those overrides took effect only
+        # when someone retyped them on the command line, and silently did not
+        # when they did not.  Honour the entry here.  An explicit --timeout-s
+        # still wins (default is None, so "explicit" is detectable), which keeps
+        # a smoke test able to ask for a short budget.
+        if a.timeout_s is None:
+            _to = detected.get("timeout_s", reg.get("timeout_s"))
+            if _to is not None:
+                a.timeout_s = float(_to)
+        # Per-machine INTRA-ROW threads; see the OMP_NUM_THREADS note at the top
+        # of this file for why this is a handoff variable and why it cannot move
+        # results.  Absent = 1 = the ensemble default, unchanged for everyone.
+        if a.omp_threads is None:
+            a.omp_threads = int(detected.get("omp_threads", 1) or 1)
         print(f"  detected machine {a.machine} = {detected['name']} "
               f"({detected.get('speed_source','?')} speed "
               f"{detected.get('speed')}), {a.workers} worker(s)"
-              + (f", subtask {a.subtask}/{a.of_subtasks}" if a.of_subtasks > 1 else ""))
+              + (f", subtask {a.subtask}/{a.of_subtasks}" if a.of_subtasks > 1 else "")
+              + f", {a.omp_threads} OMP thread(s)/row")
     else:
         a.machine = int(a.machine)
         if not a.of:
             raise SystemExit("--of is required when --machine is given explicitly")
+    # Fall back for --machine given explicitly, and for an auto machine whose
+    # entry carries no override.  3600 s was the argparse default before the
+    # registry could set it; keeping it here leaves every existing command line
+    # producing exactly the value it produced before.
+    if a.timeout_s is None:
+        a.timeout_s = 3600.0
+    if a.omp_threads is None:
+        a.omp_threads = 1
+    if a.workers is None:
+        a.workers = max(1, (os.cpu_count() or 4) - 2)
+    # Set BOTH: OMP_NUM_THREADS is what solver.exe reads, RADCLUSTER_OMP_THREADS
+    # is what a spawned pool worker re-reads at import to rebuild the former.
+    os.environ["RADCLUSTER_OMP_THREADS"] = str(a.omp_threads)
+    os.environ["OMP_NUM_THREADS"] = str(a.omp_threads)
+    print(f"  row budget {a.timeout_s:.0f} s, "
+          f"OMP_NUM_THREADS={os.environ['OMP_NUM_THREADS']}")
     if not 0 <= a.subtask < a.of_subtasks:
         raise SystemExit(f"--subtask {a.subtask} outside 0..{a.of_subtasks-1}")
 
@@ -1179,6 +1247,11 @@ def main(argv=None):
             # Recorded, not hashed -- resource policy, not physics.
             "timeout_s": a.timeout_s, "stop_after_s": a.stop_after_s,
             "workers": a.workers,
+            # Beside workers, because the two together are what a row's wall_s
+            # has to be read against: 14x1 and 6x2 are the same 12 busy cores
+            # but a different per-row speed, and comparing walls across them
+            # without this field is comparing two different experiments.
+            "omp_threads": a.omp_threads,
             # The row->machine map is a function of (of, weights).  If two
             # machines disagree about it they silently compute overlapping rows
             # AND leave a hole, which looks like "some rows missing" at merge
@@ -1309,7 +1382,17 @@ def main(argv=None):
               f"rows will finish and be written. Re-run to resume. Send {nm} "
               f"again to abort immediately.\n", flush=True)
 
-    for _sig in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
+    # getattr, not a bare name: SIGHUP is POSIX-only and does not exist on
+    # Windows, where referencing it raises AttributeError.  It was added bare on
+    # 2026-08-07 (f097c8d) and took BOTH Windows participants -- machines 1 and
+    # 2 -- off the campaign at the next relaunch: the traceback fires here, in
+    # main(), AFTER the provenance line has printed and BEFORE the first row is
+    # submitted, so a detached worker leaves a log that looks like a healthy
+    # start and a results file that never grows.  Absent signals are skipped;
+    # SIGINT/SIGTERM still work everywhere.
+    for _sig in (getattr(signal, n, None) for n in ("SIGINT", "SIGTERM", "SIGHUP")):
+        if _sig is None:
+            continue
         # NEVER un-ignore a signal.  `nohup` and most detached launchers set
         # SIGHUP to SIG_IGN precisely so a closing terminal cannot reach the
         # job; installing a handler over that would RE-ENABLE delivery and turn

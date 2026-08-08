@@ -51,6 +51,7 @@ import math
 import os
 import platform
 import re
+import signal
 import subprocess
 import sys
 import time
@@ -1274,6 +1275,50 @@ def main(argv=None):
         "rows_to_run": len(todo), "machine_id": platform.node(),
     }, indent=2), encoding="utf-8")
 
+    # A SIGNAL IS A STOP REQUEST, NOT A KILL -- 2026-08-07.
+    #
+    # There was a graceful-stop path (the STOP sentinel, below) and no way for a
+    # signal to reach it, so any signal unwound main() through the pool's
+    # __exit__ and every in-flight row died unwritten.  Measured 2026-08-07 on
+    # machine 3: interrupting the notebook kernel to leave `ops.watch` delivered
+    # SIGINT here as well -- `start_new_session=True` at launch is not the
+    # protection it looks like, because the interrupt was aimed at this pid, not
+    # at a process group -- and cost 6 in-flight rows, ~11 core-hours, at 89/233
+    # done.  campaign_ops.watch advertised that interrupt as safe.
+    #
+    # A signal now takes the SAME path as the sentinel: stop submitting, let the
+    # running rows finish and be written, exit 0, resume on the next launch.
+    # The SECOND signal aborts immediately, so a terminal user is never trapped.
+    #
+    # Scope: this protects a signal aimed at THIS process. A Ctrl-C in a
+    # foreground terminal goes to the whole process group, so the solver
+    # children get it too and the drained rows will carry solver_rc -- the
+    # sentinel (ops.stop()) is still the clean way to halt a run.
+    _sig_stop: dict = {}
+
+    def _on_signal(signum, _frame):
+        nm = signal.Signals(signum).name
+        if _sig_stop:
+            print(f"\n  second {nm} -- aborting NOW; in-flight rows are lost.\n",
+                  flush=True)
+            signal.signal(signum, signal.SIG_DFL)
+            os.kill(os.getpid(), signum)
+            return
+        _sig_stop["reason"] = f"{nm} (graceful; send again to abort)"
+        print(f"\n  {nm} received -- not submitting further rows; in-flight "
+              f"rows will finish and be written. Re-run to resume. Send {nm} "
+              f"again to abort immediately.\n", flush=True)
+
+    for _sig in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
+        # NEVER un-ignore a signal.  `nohup` and most detached launchers set
+        # SIGHUP to SIG_IGN precisely so a closing terminal cannot reach the
+        # job; installing a handler over that would RE-ENABLE delivery and turn
+        # "log out" into "campaign drains and stops" -- the opposite of what the
+        # launcher asked for.  Only take over signals that are still default.
+        if signal.getsignal(_sig) is signal.SIG_IGN:
+            continue
+        signal.signal(_sig, _on_signal)
+
     n_ok = n_bad = n_inadm = 0
     stopped = None
     pending = list(todo)
@@ -1329,6 +1374,11 @@ def main(argv=None):
                       f"pile={rec.get('pile_100')} "
                       f"dFP={rec.get('delta_FP', float('nan')):8.1e} "
                       f"{rec['wall_s']:.0f}s", flush=True)
+            if stopped is None and _sig_stop:
+                stopped = dict(_sig_stop)
+                print(f"\n  STOP on signal ({stopped.get('reason')}) -- "
+                      f"{len(inflight)} in flight will finish and be written.\n",
+                      flush=True)
             if stopped is None and STOP_FILE.exists():
                 try:
                     stopped = json.loads(STOP_FILE.read_text(encoding="utf-8"))
@@ -1433,11 +1483,14 @@ def main(argv=None):
     if stopped:
         print(f"  {len(pending)} row(s) were never started and remain assigned "
               f"to this machine.")
-        if "walltime guard" in str(stopped.get("reason", "")):
+        reason = str(stopped.get("reason", ""))
+        if "walltime guard" in reason or "graceful; send again" in reason:
             # No sentinel was written, so telling the operator to clear one sends
             # them looking for a file that does not exist -- and on a cluster
             # this message is read by whoever is debugging a resubmission loop.
-            print("  No STOP flag was set: this was the --stop-after-s deadline. "
+            what = ("a signal" if "graceful; send again" in reason
+                    else "the --stop-after-s deadline")
+            print(f"  No STOP flag was set: this was {what}. "
                   "Resubmit the SAME command to resume; completed rows are "
                   "skipped automatically.")
         else:

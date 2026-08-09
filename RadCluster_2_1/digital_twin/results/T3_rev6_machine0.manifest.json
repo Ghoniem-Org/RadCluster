@@ -1,7 +1,7 @@
 {
   "schema_version": "1",
-  "written_at_unix": 1786245963.3359869,
-  "written_at": "2026-08-08 20:26:03",
+  "written_at_unix": 1786305769.500167,
+  "written_at": "2026-08-09 13:02:49",
   "campaign": {
     "design_file": "design/T3_rev6.csv",
     "design_sha256": "3461603bdf7818e3ae5110527c2d1c710ec92ea1ef5ccd81237357ca68f0b345",
@@ -56,7 +56,7 @@
     "omp_num_threads": "1"
   },
   "code": {
-    "git_sha": "f704409db6cc94f318e22f46949f3ba11836b4e7",
+    "git_sha": "4107bc2778085b4c1f6c9a09f94ddefe44f4ef5c",
     "solver_sha256": "00c68d242b46e8b9",
     "solver_path": "/Users/ghoni/Documents/GitHub/RadCluster/RadCluster_2_1/build/solver",
     "workbook_sha256": "9253e7a0370af966"
@@ -126,24 +126,20 @@
   },
   "rows": {
     "assigned": 480,
-    "completed": 354,
-    "admissible": 354,
+    "completed": 480,
+    "admissible": 480,
     "inadmissible": 0,
     "failed": 0,
-    "not_started": 126
+    "not_started": 0
   },
   "timing": {
-    "session_wall_s": 192571.9,
-    "row_wall_mean_s": 7754.185875706215,
-    "row_wall_median_s": 5862.0,
-    "row_wall_p90_s": 16314.429999999998,
-    "core_hours": 762.4949444444449
+    "session_wall_s": 24154.2,
+    "row_wall_mean_s": 6406.81125,
+    "row_wall_median_s": 3660.8,
+    "row_wall_p90_s": 14227.5,
+    "core_hours": 854.2415000000001
   },
-  "stopped": {
-    "reason": "raise timeout_s 16200 -> 28800 before the I1 block (measured 33% full dose at 16200; I1 median ~19-20ks sits just above that cap)",
-    "requested_at": 1786244480.7683702,
-    "by": "Nasr-Workstation"
-  },
+  "stopped": null,
   "admissibility_rule": {
     "pile_tol": 0.05,
     "occ_tol": 0.1,

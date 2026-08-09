@@ -302,3 +302,25 @@ machine 0/4  rows 480 (51 done, 429 to run)  workers 14
   row    709   I1 AB  ok   d100= 20.69 N100=5.499e+22 pile=0.8653928019449314 dFP= 1.4e-01 7532s
   row    705   I1 AB  ok   d100= 19.04 N100=7.717e+22 pile=0.09100806134570935 dFP= 2.2e-01 7556s
   row    701   I1 AB  ok   d100= 22.61 N100=4.217e+22 pile=0.9980971004503189 dFP= 8.1e-02 7650s
+  row    722   I1 AB  ok   d100= 13.07 N100=2.241e+24 pile=3.161259475044173e-05 dFP= 5.6e-01 7632s
+
+  STOP requested (raise timeout_s 16200 -> 28800 before the I1 block (measured 33% full dose at 16200; I1 median ~19-20ks sits just above that cap)) -- not submitting further rows; 13 in flight will finish and be written.
+
+  row    735   I1  A  ok   d100= 22.65 N100=3.038e+21 pile=0.9944760005092164 dFP= 1.3e-03 5719s
+  row    739   I1 AB  ok   d100= 22.74 N100=2.650e+21 pile=0.9965729555798812 dFP= 1.3e-03 5195s
+  row    742   I1 AB  ok   d100= 22.65 N100=3.038e+21 pile=0.9944760150923092 dFP= 1.3e-03 5245s
+  row    714   I1  A  ok   d100= 22.54 N100=3.403e+21 pile=0.9999923741580249 dFP= 7.9e-01 12681s
+  row    717   I1 AB  ok   d100= 22.52 N100=3.969e+21 pile=0.999990704793245 dFP= 8.0e-01 12492s
+  row    738   I1 AB  ok   d100= 22.17 N100=5.771e+21 pile=0.9720689203742734 dFP= 1.0e-03 5471s
+  row    721   I1 AB  ok   d100= 22.54 N100=3.403e+21 pile=0.9999923741581473 dFP= 7.9e-01 10391s
+  row    727   I1 AB  ok   d100= 22.41 N100=1.754e+22 pile=0.9999841434408964 dFP= 8.1e-01 7873s
+  row    725   I1 AB  ok   d100= 22.55 N100=3.470e+21 pile=0.9999926509670216 dFP= 7.9e-01 8523s
+  row    718   I1 AB  ok   d100= 22.57 N100=4.963e+21 pile=0.9999871646632824 dFP= 7.5e-01 12733s
+  row    730   I1 AB  ok   d100= 22.51 N100=3.578e+21 pile=0.9999902435542194 dFP= 7.7e-01 7036s
+  row    731   I1 AB  ok   d100= 22.65 N100=5.009e+20 pile=0.9999959044715863 dFP= 7.4e-01 6862s
+  row    734   I1 AB  ok   d100= 22.58 N100=3.618e+21 pile=0.9999936699513506 dFP= 8.0e-01 6849s
+
+STOPPED in 192572s: 335 admissible, 0 inadmissible, 0 failed -> /Users/ghoni/Documents/GitHub/RadCluster/RadCluster_2_1/digital_twin/results/T3_rev6_machine0.jsonl
+  manifest -> T3_rev6_machine0.manifest.json
+  126 row(s) were never started and remain assigned to this machine.
+  Clear the flag (campaign_ops.clear_stop()) and re-run the same command to resume; completed rows are skipped automatically.

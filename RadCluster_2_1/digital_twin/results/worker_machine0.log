@@ -324,3 +324,41 @@ STOPPED in 192572s: 335 admissible, 0 inadmissible, 0 failed -> /Users/ghoni/Doc
   manifest -> T3_rev6_machine0.manifest.json
   126 row(s) were never started and remain assigned to this machine.
   Clear the flag (campaign_ops.clear_stop()) and re-run the same command to resume; completed rows are skipped automatically.
+  detected machine 0 = MacBook Pro (MEASURED speed 1.0), 14 worker(s), 1 OMP thread(s)/row
+  row budget 3600 s, OMP_NUM_THREADS=1
+  weights from machines.json (sha e92a351a6efb7627): 4 participants
+machine 0/4  rows 480 (354 done, 126 to run)  workers 14
+  provenance {"git_sha": "4107bc2778085b4c1f6c9a09f94ddefe44f4ef5c", "machine_id": "MacBook-Pro.local", "solver_sha256": "00c68d242b46e8b9", "workbook_sha256": "9253e7a0370af966", "design_sha256": "3461603bdf7818e3", "run_cfg_sha": "482d59556632dff8", "timeout_s": 3600.0, "stop_after_s": 0.0, "workers": 14, "omp_threads": 1, "weights_sha": "e92a351a6efb7627", "weights_map_sha": "87969710596d7511", "of": 4, "equations": "bin_moment", "python": "3.11.7"}
+  WARNING: resuming across an environment change (git_sha) because --allow-mixed was given.
+  row    764   I1 AB  ok   d100= 15.27 N100=9.223e+22 pile=2.645637136963698e-13 dFP= 1.6e-03 948s
+  row    760   I1 AB  ok   d100= 22.89 N100=1.580e+21 pile=0.9998208189232748 dFP= 8.9e-01 1058s
+  row    751   I1 AB  ok   d100= 22.67 N100=3.034e+21 pile=0.9948478265624983 dFP= 1.3e-03 1109s
+  row    755   I1 AB  ok   d100= 22.18 N100=3.039e+21 pile=0.973748434552601 dFP= 5.3e-04 1112s
+  row    748   I1 AB  ok   d100= 22.66 N100=3.015e+21 pile=0.994459887265014 dFP= 1.4e-03 1113s
+  row    747   I1 AB  ok   d100= 22.65 N100=3.036e+21 pile=0.994467762962165 dFP= 1.3e-03 1116s
+  row    752   I1 AB  ok   d100= 22.67 N100=3.020e+21 pile=0.9943594836343607 dFP= 1.3e-03 1117s
+  row    759   I1 AB  ok   d100= 22.89 N100=1.295e+21 pile=0.9996289961433207 dFP= 8.4e-01 1175s
+  row    765   I1 AB  ok   d100= 22.89 N100=2.207e+21 pile=0.9993809426531074 dFP= 3.2e-01 1238s
+  row    768   I1 AB  ok   d100= 22.89 N100=2.229e+21 pile=0.9993944083162288 dFP= 3.3e-01 1239s
+  row    756   I1  A  ok   d100= 22.89 N100=2.230e+21 pile=0.9993945087983863 dFP= 3.3e-01 1240s
+  row    769   I1 AB  ok   d100= 22.89 N100=2.231e+21 pile=0.9993945225559077 dFP= 3.3e-01 1246s
+  row    771   I1 AB  ok   d100= 22.89 N100=2.256e+21 pile=0.99939186560326 dFP= 3.2e-01 1247s
+  row    744   I1 AB  ok   d100= 22.86 N100=3.364e+21 pile=0.9989023772750166 dFP= 5.9e-02 1307s
+  row    773   I1 AB  ok   d100= 20.18 N100=4.601e+22 pile=0.9986387211081352 dFP= 1.2e-01 1216s
+  row    775   I1 AB  ok   d100= 22.89 N100=2.430e+21 pile=0.9993926064536833 dFP= 3.2e-01 1250s
+  row    782   I1 AB  ok   d100= 21.31 N100=7.145e+22 pile=0.9997411926479949 dFP= 6.7e-01 1246s
+  row    777   I1  A  ok   d100= 21.39 N100=5.121e+22 pile=0.9997881669912998 dFP= 7.1e-01 1292s
+  row    784   I1 AB  ok   d100= 21.39 N100=5.121e+22 pile=0.9997881670403177 dFP= 7.1e-01 1302s
+  row    779   I1 AB  ok   d100= 21.42 N100=5.264e+22 pile=0.9998036369609986 dFP= 7.2e-01 1314s
+  row    788   I1 AB  ok   d100= 21.35 N100=5.065e+22 pile=0.9997746660673775 dFP= 7.1e-01 1290s
+  row    794   I1 AB  ok   d100= 22.46 N100=1.082e+20 pile=0.9999738521804663 dFP= 9.3e-01 1260s
+  row    790   I1 AB  ok   d100= 21.27 N100=7.475e+22 pile=0.9997277490777892 dFP= 6.6e-01 1267s
+  row    796   I1 AB  ok   d100= 21.39 N100=5.118e+22 pile=0.9997880090984571 dFP= 7.1e-01 1311s
+  row    792   I1 AB  ok   d100= 21.39 N100=5.121e+22 pile=0.9997881808640208 dFP= 7.1e-01 1410s
+  row    786   I1 AB  ok   d100= 19.89 N100=2.024e+23 pile=0.9995226857370484 dFP= 3.7e-01 1785s
+  row    822   I1 AB  ok   d100= 15.77 N100=1.268e+24 pile=0.9134979460664596 dFP= 2.2e-02 931s
+  row    824   I1 AB  ok   d100= 14.88 N100=1.514e+24 pile=0.771576640994356 dFP= 8.1e-03 1853s
+  row    820   I1  B  ok   d100= 20.73 N100=6.764e+21 pile=0.9981111148242829 dFP= 4.4e-03 2191s
+  row    798   I1  A  ok   d100= 22.89 N100=7.759e+19 pile=0.9999687156903767 dFP= 2.3e-01 3901s
+  row    826   I1 AB  ok   d100= 14.94 N100=1.499e+24 pile=0.7768895018441901 dFP= 8.3e-03 2637s
+  row    801   I1 AB  ok   d100= 22.89 N100=1.174e+20 pile=0.9999475109080596 dFP= 3.0e-01 4243s

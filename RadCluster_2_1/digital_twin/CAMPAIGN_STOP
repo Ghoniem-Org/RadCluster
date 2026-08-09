@@ -1,5 +1,0 @@
-{
-  "reason": "raise timeout_s 16200 -> 28800 before the I1 block (measured 33% full dose at 16200; I1 median ~19-20ks sits just above that cap)",
-  "requested_at": 1786244480.7683702,
-  "by": "Nasr-Workstation"
-}

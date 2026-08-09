@@ -1,0 +1,159 @@
+{
+  "schema_version": "1",
+  "written_at_unix": 1786260048.4382277,
+  "written_at": "2026-08-09 00:20:48",
+  "campaign": {
+    "design_file": "design\\T3_rev6.csv",
+    "design_sha256": "3461603bdf7818e3ae5110527c2d1c710ec92ea1ef5ccd81237357ca68f0b345",
+    "tier": 2,
+    "N": 16,
+    "p": 19,
+    "conditions": [
+      "N2",
+      "N5",
+      "I1"
+    ],
+    "parameters": [
+      "eta",
+      "f_cl_i",
+      "f_cl_v",
+      "E_m_i",
+      "E_m_v",
+      "E_m_h",
+      "L_hat",
+      "gamma_s",
+      "E_b_v2",
+      "lambda",
+      "B_111",
+      "E_b_i2",
+      "E_b_hV_1",
+      "Z_i",
+      "Z_i_loop",
+      "E_a0_conv",
+      "dH2_conv",
+      "phi_max_junc",
+      "dH2_abs_conv"
+    ],
+    "parameters_version": "T2_v1",
+    "revision_pending": [],
+    "rows_total": 1008
+  },
+  "machine": {
+    "index": 2,
+    "of": 4,
+    "weights": [
+      14.0,
+      1.6,
+      7.0,
+      6.8
+    ],
+    "rows_assigned": 240,
+    "machine_id": "Nasr-Workstation",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.14.3",
+    "cpu_count": 24,
+    "workers": 12,
+    "omp_num_threads": "1"
+  },
+  "code": {
+    "git_sha": "9ff85037c44e32491769dd792b55cef5995dd9fb",
+    "solver_sha256": "c28893e7d4a119e2",
+    "solver_path": "D:\\GitHub\\RadCluster\\RadCluster_2_1\\build\\Release\\solver.exe",
+    "workbook_sha256": "9253e7a0370af966"
+  },
+  "run_config": {
+    "I": 10000,
+    "V": 5000,
+    "dose": 1.0,
+    "equations": "bin_moment",
+    "rtol": 1e-06,
+    "atol": 1e-20,
+    "C_floor": 1e-25,
+    "solver_mode": "active_window",
+    "linsol": "gmres",
+    "preconditioner": "Jacobi",
+    "loop_conversion": 1,
+    "i_mobile_default": 40,
+    "v_mobile_default": 5,
+    "n_points": 40,
+    "timeout_s": 16200.0,
+    "i_discrete": 40,
+    "v_discrete": 5,
+    "I_bin": 20,
+    "V_bin": 20,
+    "shape_function": "linear"
+  },
+  "run_cfg_sha": "482d59556632dff8",
+  "conditions_file": "D:\\GitHub\\RadCluster\\RadCluster_2_1\\digital_twin\\conditions.json",
+  "conditions": {
+    "_comment": [
+      "Run grid for the Tier-2 screening ensemble (plan S4/Tier 2).",
+      "",
+      "Three conditions only: two neutron points spanning the temperature window",
+      "plus one ion point, so the dose-rate-sensitive parameters (L_hat, i_mobile)",
+      "are actually exercised.  All three sit inside the T0.4 envelope.",
+      "",
+      "T_K is the ACTUAL temperature of the experiment.  The -60 C ion shift",
+      "(T_eq = T - 60) is a data-side plotting device (plan S3.2) and is exactly",
+      "collinear with an ion dummy; it must NEVER reach the simulator.  It is",
+      "absent from this file by construction and run_ensemble asserts on it.",
+      "",
+      "G is the NRT displacement rate in dpa/s BEFORE the survival factor eta;",
+      "leave null to take the workbook value.  The ion point's higher dose rate is",
+      "physics the model is supposed to reproduce, not a correction to apply."
+    ],
+    "N2": {
+      "label": "neutron 300 C",
+      "T_K": 573.15,
+      "cascade": "fission",
+      "G": null,
+      "rho_d": 100000000000000.0
+    },
+    "N5": {
+      "label": "neutron 350 C",
+      "T_K": 623.15,
+      "cascade": "fission",
+      "G": null,
+      "rho_d": 100000000000000.0
+    },
+    "I1": {
+      "label": "ion 350 C, high dose rate",
+      "T_K": 623.15,
+      "cascade": "fission",
+      "G": 0.0001,
+      "rho_d": 100000000000000.0
+    }
+  },
+  "rows": {
+    "assigned": 240,
+    "completed": 136,
+    "admissible": 136,
+    "inadmissible": 0,
+    "failed": 0,
+    "not_started": 104
+  },
+  "timing": {
+    "session_wall_s": 32522.0,
+    "row_wall_mean_s": 12638.510294117646,
+    "row_wall_median_s": 12062.1,
+    "row_wall_p90_s": 16257.2,
+    "core_hours": 477.4548333333333
+  },
+  "stopped": {
+    "reason": "raise timeout_s 16200 -> 28800 before the I1 block (measured 33% full dose at 16200; I1 median ~19-20ks sits just above that cap)",
+    "requested_at": 1786244480.7683702,
+    "by": "Nasr-Workstation"
+  },
+  "admissibility_rule": {
+    "pile_tol": 0.05,
+    "occ_tol": 0.1,
+    "delta_FP_tol": 0.01,
+    "pile_top_frac": 0.02,
+    "axes": [
+      "sia_111",
+      "sia_100",
+      "vacancy"
+    ],
+    "note": "delta_FP is blind to SIA-axis truncation (the <100> pile-up held delta_FP at 1e-8 while 96% of content sat at n=I), so grid adequacy is judged by pile/occupancy. It is NOT blind to the VACANCY axis -- delta_FP rests on the swelling identity S = S_I + Delta J^d and S is the vacancy inventory. The vacancy axis was unchecked until 2026-08-02; at the check_machine probe (V=120) mean_n_v moved 18.7->136 and swelling 58x on going to V=240."
+  }
+}

@@ -1,62 +1,16 @@
-  detected machine 1 = Matrix-PC (DECLARED speed 0.4), 20 worker(s)
-  weights from machines.json (sha 1404a829f1c70a37): 4 participants
-machine 1/4  rows 55 (0 done, 55 to run)  workers 20
-  provenance {"git_sha": "479d529a4bdec95289675f0f04d50d04c7b6a4f1", "machine_id": "MATRIX-PC2", "solver_sha256": "6d878b0180b264d2", "workbook_sha256": "9253e7a0370af966", "design_sha256": "3461603bdf7818e3", "run_cfg_sha": "482d59556632dff8", "timeout_s": 50400.0, "stop_after_s": 0.0, "workers": 20, "weights_sha": "1404a829f1c70a37", "weights_map_sha": "87969710596d7511", "of": 4, "equations": "bin_moment", "python": "3.13.12"}
-  row    247   N2 AB  ok   d100= 18.99 N100=7.589e+23 pile=0.9989761073282996 dFP= 5.7e-01 14976s
-  row    193   N2 AB  ok   d100= 20.44 N100=8.222e+22 pile=0.9993944976194457 dFP= 5.3e-01 18050s
-  row    100   N2 AB  ok   d100= 22.89 N100=4.324e+20 pile=0.9998613226338517 dFP= 5.6e-01 20069s
-  row     82   N2 AB  ok   d100= 22.89 N100=8.827e+20 pile=0.9997226706168341 dFP= 8.9e-01 20672s
-  row    211   N2  B  ok   d100= 22.82 N100=8.892e+22 pile=0.9999896754534175 dFP= 1.2e-01 20830s
-  row    321   N2 AB  ok   d100= 22.89 N100=3.958e+20 pile=0.9998771032540592 dFP= 8.5e-01 25825s
-  row    119   N2 AB  ok   d100= 22.21 N100=1.918e+22 pile=0.9999722302302668 dFP= 7.8e-01 26603s
-  row    285   N2 AB  ok   d100= 22.73 N100=3.616e+21 pile=0.9998370314807564 dFP= 8.3e-02 28585s
-  row     27   N2 AB  ok   d100= 21.90 N100=5.290e+22 pile=0.9984207102651752 dFP= 1.8e-01 28768s
-  row    302   N2 AB  ok   d100= 22.35 N100=8.841e+21 pile=0.9999813959537233 dFP= 7.9e-01 29872s
-  row    155   N2 AB  ok   d100= 22.56 N100=1.961e+22 pile=0.9999855671474018 dFP= 8.4e-01 32268s
-  row    358   N5  B  ok   d100= 12.10 N100=2.657e+24 pile=0.1593461995321828 dFP= 8.3e-04 32338s
-  row    376   N5 AB  ok   d100=  7.15 N100=8.984e+22 pile=1.1281370921301888e-16 dFP= 3.0e-01 21246s
-  row      8   N2 AB  ok   d100= 22.68 N100=2.644e+20 pile=0.9999986899352773 dFP= 2.6e-01 37049s
-  row    174   N2 AB  ok   d100= 22.89 N100=9.146e+20 pile=0.9999391638202001 dFP= 6.9e-01 37380s
-  row    487   N5 AB  ok   d100= 11.84 N100=3.007e+24 pile=0.6480597382696547 dFP= 3.1e-01 17722s
-  row    413   N5 AB  ok   d100= 22.80 N100=4.707e+20 pile=0.9999926599065919 dFP= 7.1e-01 27288s
-  row    229   N2 AB  ok   d100= 22.81 N100=1.844e+17 pile=0.9999993255140931 dFP= 1.0e-02 50463s
-  row     64   N2  B  ok   d100= 22.89 N100=2.667e+19 pile=0.9999999604424785 dFP= 1.9e-01 50463s
-  row    138   N2 AB  ok   d100= 22.84 N100=1.368e+19 pile=0.9999998947547256 dFP= 7.0e-02 50463s
-  row     46   N2 AB  ok   d100= 22.65 N100=1.526e+21 pile=0.999986877842557 dFP= 5.3e-01 50463s
-  row    340   N5 AB  ok   d100= 22.80 N100=6.901e+20 pile=0.9999994857298168 dFP= 2.8e-01 50463s
-  row    266   N2 AB  ok   d100= 22.81 N100=1.977e+20 pile=0.9999997807711962 dFP= 1.6e-01 50463s
-  row    579   N5 AB  ok   d100= 15.05 N100=1.924e+24 pile=0.9721104010167443 dFP= 7.8e-03 18865s
-  row    432   N5 AB  ok   d100= 22.89 N100=3.077e+20 pile=0.9999430612742842 dFP= 2.8e-01 35035s
-  row    596   N5 AB  ok   d100= 17.67 N100=9.013e+23 pile=0.9978762485355867 dFP= 2.7e-01 20109s
-  row    541   N5 AB  ok   d100= 20.90 N100=3.295e+23 pile=0.9993956915156608 dFP= 4.0e-01 34084s
-  row    743   I1 AB  ok   d100= 22.89 N100=1.433e+20 pile=0.999951962612034 dFP= 4.8e-01 15846s
-  row    523   N5 AB  ok   d100= 22.86 N100=7.954e+20 pile=0.999999406049976 dFP= 7.4e-02 37696s
-  row    615   N5 AB  ok   d100= 22.67 N100=2.378e+22 pile=0.9999948427709485 dFP= 7.8e-01 31210s
-  row    394   N5 AB  ok   d100= 22.42 N100=2.555e+22 pile=0.9999845893801607 dFP= 6.9e-01 50461s
-  row    835   I1 AB  ok   d100= 14.92 N100=1.501e+24 pile=0.7681034614451868 dFP= 8.0e-03 12539s
-  row    505   N5  B  ok   d100= 18.28 N100=7.984e+23 pile=0.9957687260883678 dFP= 4.8e-02 40710s
-  row    707   I1 AB  ok   d100= 19.44 N100=6.489e+22 pile=0.11857004293888877 dFP= 1.5e-01 19182s
-  row    688   I1 AB  ok   d100= 22.61 N100=2.471e+20 pile=0.9999938335702571 dFP= 7.0e-01 19249s
-  row    781   I1 AB  ok   d100= 21.36 N100=5.483e+22 pile=0.9997393985184079 dFP= 6.9e-01 20319s
-  row    449   N5 AB  ok   d100= 22.73 N100=4.363e+20 pile=0.9999982797423309 dFP= 2.6e-01 50461s
-  row    762   I1 AB  ok   d100= 22.89 N100=1.111e+22 pile=0.9997141208123724 dFP= 3.4e-01 25381s
-  row    468   N5 AB  ok   d100= 22.84 N100=1.768e+20 pile=0.9999998782379671 dFP= 1.3e-01 50461s
-  row    634   N5 AB  ok   d100= 22.49 N100=2.910e+22 pile=0.9999908117147627 dFP= 6.1e-01 40313s
-  row    799   I1  B  ok   d100= 22.88 N100=2.122e+21 pile=0.9981160404005139 dFP= 2.6e-02 28419s
-  row    890   I1 AB  ok   d100=  6.40 N100=7.945e+22 pile=1.6399028166826633e-16 dFP= 1.5e-01 13343s
-  row    726   I1 AB  ok   d100= 22.48 N100=8.466e+21 pile=0.9999892399695718 dFP= 8.1e-01 29735s
-  row    909   I1 AB  ok   d100= 13.66 N100=4.618e+23 pile=0.0011184036614795402 dFP= 6.3e-05 13370s
-  row    873   I1 AB  ok   d100= 16.47 N100=2.242e+23 pile=0.9191461122402224 dFP= 1.4e-02 16143s
-  row    560   N5 AB  ok   d100= 22.58 N100=2.231e+17 pile=0.9999954745847748 dFP= 2.2e-02 50462s
-  row    652   N5  B  ok   d100= 22.88 N100=1.663e+22 pile=0.9999844797827011 dFP= 4.0e-01 41740s
-  row    964   I1 AB  ok   d100= 21.25 N100=4.784e+21 pile=0.9918326300520687 dFP= 4.3e-02 18447s
-  row    817   I1 AB  ok   d100= 22.89 N100=6.891e+19 pile=0.9999697424705604 dFP= 2.2e-01 32320s
-  row    982   I1 AB  ok   d100= 21.94 N100=4.640e+21 pile=0.9999423086888916 dFP= 8.0e-01 19271s
-  row    854   I1 AB  ok   d100= 22.89 N100=6.655e+21 pile=0.9996887408269334 dFP= 7.7e-02 26217s
-  row    670   N5 AB  ok   d100= 22.84 N100=1.639e+22 pile=0.9999991574551058 dFP= 7.2e-01 43537s
-  row    928   I1 AB  ok   d100= 22.52 N100=1.720e+20 pile=0.999992820477162 dFP= 4.7e-01 22609s
-  row   1001   I1 AB  ok   d100= 22.86 N100=6.902e+21 pile=0.999186206922475 dFP= 2.9e-02 21591s
-  row    946   I1  B  ok   d100= 22.75 N100=7.172e+20 pile=0.9999992311499338 dFP= 3.3e-01 34688s
+  detected machine 1 = Matrix-PC (DECLARED speed 0.4), 20 worker(s), 1 OMP thread(s)/row
+  row budget 3600 s, OMP_NUM_THREADS=1
+  weights from machines.json (sha 031387b714302de6): 4 participants
+machine 1/4  rows 55 (55 done, 0 to run)  workers 20
+  provenance {"git_sha": "006e40da000ffcb9382efbfee7db9c69632e2780", "machine_id": "MATRIX-PC2", "solver_sha256": "6d878b0180b264d2", "workbook_sha256": "9253e7a0370af966", "design_sha256": "3461603bdf7818e3", "run_cfg_sha": "482d59556632dff8", "timeout_s": 3600.0, "stop_after_s": 0.0, "workers": 20, "omp_threads": 1, "weights_sha": "031387b714302de6", "weights_map_sha": "87969710596d7511", "of": 4, "equations": "bin_moment", "python": "3.13.12"}
 
-done in 103559s: 55 admissible, 0 inadmissible, 0 failed -> D:\Repos\RadCluster\RadCluster_2_1\digital_twin\results\T3_rev6_machine1.jsonl
-  manifest -> T3_rev6_machine1.manifest.json
+  *** REFUSING TO RESUME - the environment changed since the existing rows were written:
+        git_sha: was ['479d529a4bdec95289675f0f04d50d04c7b6a4f1'] -> now 006e40da000ffcb9382efbfee7db9c69632e2780
+
+  Those rows are not comparable to the ones this process would produce.
+  Choose one:
+    - restore the previous state (git checkout / rebuild), or
+    - archive the old results and start clean:
+        mv T3_rev6_machine1.jsonl T3_rev6_machine1_pre-change.jsonl
+    - or, only if you are certain the change cannot affect results
+      (e.g. a comment or README edit), re-run with --allow-mixed.

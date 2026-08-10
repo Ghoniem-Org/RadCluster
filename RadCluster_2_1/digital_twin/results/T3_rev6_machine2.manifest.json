@@ -1,7 +1,7 @@
 {
   "schema_version": "1",
-  "written_at_unix": 1786260048.4382277,
-  "written_at": "2026-08-09 00:20:48",
+  "written_at_unix": 1786316865.5378823,
+  "written_at": "2026-08-09 16:07:45",
   "campaign": {
     "design_file": "design\\T3_rev6.csv",
     "design_sha256": "3461603bdf7818e3ae5110527c2d1c710ec92ea1ef5ccd81237357ca68f0b345",
@@ -56,7 +56,7 @@
     "omp_num_threads": "1"
   },
   "code": {
-    "git_sha": "9ff85037c44e32491769dd792b55cef5995dd9fb",
+    "git_sha": "1f81c778c256f125118739a8b660501f7e490ae0",
     "solver_sha256": "c28893e7d4a119e2",
     "solver_path": "D:\\GitHub\\RadCluster\\RadCluster_2_1\\build\\Release\\solver.exe",
     "workbook_sha256": "9253e7a0370af966"
@@ -76,7 +76,7 @@
     "i_mobile_default": 40,
     "v_mobile_default": 5,
     "n_points": 40,
-    "timeout_s": 16200.0,
+    "timeout_s": 28800.0,
     "i_discrete": 40,
     "v_discrete": 5,
     "I_bin": 20,
@@ -126,22 +126,22 @@
   },
   "rows": {
     "assigned": 240,
-    "completed": 136,
-    "admissible": 136,
+    "completed": 165,
+    "admissible": 165,
     "inadmissible": 0,
     "failed": 0,
-    "not_started": 104
+    "not_started": 75
   },
   "timing": {
-    "session_wall_s": 32522.0,
-    "row_wall_mean_s": 12638.510294117646,
-    "row_wall_median_s": 12062.1,
-    "row_wall_p90_s": 16257.2,
-    "core_hours": 477.4548333333333
+    "session_wall_s": 56609.0,
+    "row_wall_mean_s": 14335.380606060606,
+    "row_wall_median_s": 12062.2,
+    "row_wall_p90_s": 24413.239999999998,
+    "core_hours": 657.0382777777777
   },
   "stopped": {
-    "reason": "raise timeout_s 16200 -> 28800 before the I1 block (measured 33% full dose at 16200; I1 median ~19-20ks sits just above that cap)",
-    "requested_at": 1786244480.7683702,
+    "reason": "splitting machine-2 rows 3 ways (subtask 0 here, 1 on Matrix-PC, 2 on MacBook Air)",
+    "requested_at": 1786303846.641377,
     "by": "Nasr-Workstation"
   },
   "admissibility_rule": {

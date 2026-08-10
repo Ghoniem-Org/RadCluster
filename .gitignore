@@ -39,3 +39,8 @@ Thumbs.db
 
 # Campaign runtime state (pid of the detached worker; per-machine, never shared)
 RadCluster_2_1/digital_twin/results/*.pid
+
+# Graceful-halt sentinel. LOCAL ONLY: it was committed in 8a600c7 and every
+# machine that pulled it halted at startup, because run_ensemble checks
+# STOP_FILE.exists() inside the submission loop. Never version this.
+RadCluster_2_1/digital_twin/CAMPAIGN_STOP

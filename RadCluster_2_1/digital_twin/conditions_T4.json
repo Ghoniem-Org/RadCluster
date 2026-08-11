@@ -1,0 +1,92 @@
+{
+  "_comment": [
+    "T4 CALIBRATION CONDITIONS -- one entry per EXPERIMENTAL POINT in",
+    "targets_T4.json, so every run is comparable to a measurement rather than",
+    "to a round-number grid point.  Ion and neutron are calibrated SEPARATELY",
+    "(two designs, two theta vectors); this file holds both families and the",
+    "design generator is pointed at one family at a time.",
+    "",
+    "DOSE RATE IS THE WHOLE POINT OF THE SPLIT.  Neutron is ~1e-7 dpa/s and ion",
+    "is ~1e-3 dpa/s -- four orders of magnitude.  G is taken from the SOURCE",
+    "ROW where the database reports it, not rounded to the family nominal: a",
+    "point measured at 7e-4 is not a 1e-3 point, and L_hat (the dose-rate",
+    "sensitive parameter, top-2 in the T3 screening) responds to exactly this.",
+    "",
+    "T_K is the ACTUAL temperature.  The -60 C ion shift is a data-side",
+    "plotting device and must never reach the simulator -- run_ensemble asserts",
+    "on T_eq, so do not add it here.",
+    "",
+    "DOSE IS NOT 1.0.  Each condition carries the dose of its measurement",
+    "(neutron 15-32 dpa, ion 4-30 dpa).  run_ensemble takes --dose globally, so",
+    "the ion and neutron families must be run as SEPARATE campaigns with their",
+    "own --dose, or the dose field here must be threaded through. The per-point",
+    "dose is recorded so the comparison is unambiguous either way.",
+    "",
+    "rho_d IS A PER-CONDITION OVERRIDE, not a sampled parameter (apply_theta",
+    "writes cond['rho_d'] verbatim).  It is left at 1e14 for the neutron family",
+    "-- the T3 value -- and exposed per ion point because the instruction is",
+    "explicitly that ion may take a different dislocation density and bias.",
+    "Z_i / Z_i_loop are SAMPLED parameters, so they differ between the ion and",
+    "neutron fits automatically by virtue of being separate calibrations; they",
+    "do not belong here."
+  ],
+
+  "_neutron_family": ["N330", "N335", "N350"],
+  "_ion_family": ["I300", "I350", "I420"],
+
+  "N330": {
+    "label": "EUROFER97 neutron 330 C, 15 dpa",
+    "T_K": 603.15,
+    "cascade": "fission",
+    "G": 1.0e-7,
+    "rho_d": 1.0e14,
+    "_dose_dpa": 15.0,
+    "_target_id": "EUROFER97_330C_15dpa"
+  },
+  "N335": {
+    "label": "EUROFER97 neutron 335 C, 32 dpa",
+    "T_K": 608.15,
+    "cascade": "fission",
+    "G": 1.0e-7,
+    "rho_d": 1.0e14,
+    "_dose_dpa": 32.0,
+    "_target_id": "EUROFER97_335C_32dpa"
+  },
+  "N350": {
+    "label": "EUROFER97 neutron 350 C, 16.3 dpa",
+    "T_K": 623.15,
+    "cascade": "fission",
+    "G": 1.0e-7,
+    "rho_d": 1.0e14,
+    "_dose_dpa": 16.3,
+    "_target_id": "EUROFER97_350C_16dpa"
+  },
+
+  "I300": {
+    "label": "F82H ion 300 C, 30 dpa (Ando 2018)",
+    "T_K": 573.15,
+    "cascade": "fission",
+    "G": 7.0e-4,
+    "rho_d": 1.0e14,
+    "_dose_dpa": 30.0,
+    "_target_id": "F82H_300C_30dpa"
+  },
+  "I350": {
+    "label": "CLAM ion 350 C, 11 dpa (Liu 2023)",
+    "T_K": 623.15,
+    "cascade": "fission",
+    "G": 1.0e-3,
+    "rho_d": 1.0e14,
+    "_dose_dpa": 11.0,
+    "_target_id": "CLAM_350_550C_11dpa"
+  },
+  "I420": {
+    "label": "HT9 ion 420 C, 4 dpa, in-situ Kr+ (Zheng 2018)",
+    "T_K": 693.15,
+    "cascade": "fission",
+    "G": 5.0e-4,
+    "rho_d": 1.0e14,
+    "_dose_dpa": 4.0,
+    "_target_id": "HT9_420C_4dpa"
+  }
+}

@@ -169,8 +169,18 @@ STARVED_GATE = False
 # ZERO of the old 0.1-1.0 rungs, so the partial trajectory the deadline exists
 # to preserve contributed nothing. Rungs are free -- the trajectory is already
 # computed -- so cover the decades a cut row can actually land in.
+#
+# EXTENDED FOR T4 (2026-08-11).  The rungs above 1.0 are the EXPERIMENTAL doses
+# in targets_T4.json -- ion 4/11/30 dpa, neutron 15/16.3/32 dpa, plus the 47 dpa
+# round-robin point -- so every calibration condition's target dose is itself a
+# rung.  That matters because a T4 row cut by the wall-clock budget can still be
+# compared against its measurement at the rung it did reach, instead of being
+# discarded the way 304 rows were in T3.  Rungs are free: the trajectory is
+# already computed.  Rows from the 1 dpa campaign are unaffected -- they simply
+# do not fill the new rungs.
 DOSE_CHECKPOINTS = (0.005, 0.01, 0.02, 0.05,
-                    0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0)
+                    0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,
+                    2.0, 4.0, 8.0, 11.0, 15.0, 16.3, 20.0, 30.0, 32.0, 47.0)
 
 
 # ------------------------------------------------------------------- utilities
@@ -394,7 +404,20 @@ def evaluate(args):
             sim.rebuild_rates()
             rec.update(bin_layout(sim, cfg))
             G = float(sim.input_data.reactions["G"])
-            scfg = {"t_span": (1e-6, cfg["dose"] / G), "n_points": cfg["n_points"],
+            # PER-CONDITION DOSE (T4).  Each calibration condition is one
+            # EXPERIMENTAL point and carries the dose that point was measured
+            # at -- 15, 32 and 16.3 dpa inside the neutron family alone -- so a
+            # single global --dose cannot express the campaign.  Falls back to
+            # --dose when the condition does not set one, which leaves every
+            # T2/T3 command line producing exactly what it produced before.
+            #
+            # NOT in run_cfg_sha, for the same reason T_K is not: it is a
+            # property of the CONDITION, not of the numerical configuration.
+            # Recorded per row as dose_target so the comparison to the
+            # measurement is unambiguous.
+            dose_target = float(cond.get("dose_dpa", cfg["dose"]))
+            rec["dose_target"] = dose_target
+            scfg = {"t_span": (1e-6, dose_target / G), "n_points": cfg["n_points"],
                     "log_time": True, "rtol": cfg["rtol"], "atol": cfg["atol"],
                     "timeout_s": cfg["timeout_s"],
                     "solver_method": {"linsol": "gmres",

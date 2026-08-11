@@ -1,7 +1,7 @@
 {
   "schema_version": "1",
-  "written_at_unix": 1786353002.3097763,
-  "written_at": "2026-08-10 02:10:02",
+  "written_at_unix": 1786374442.4884963,
+  "written_at": "2026-08-10 08:07:22",
   "campaign": {
     "design_file": "design\\T3_rev6.csv",
     "design_sha256": "3461603bdf7818e3ae5110527c2d1c710ec92ea1ef5ccd81237357ca68f0b345",
@@ -56,7 +56,7 @@
     "omp_num_threads": "1"
   },
   "code": {
-    "git_sha": "006e40da000ffcb9382efbfee7db9c69632e2780",
+    "git_sha": "6a8dad3644510221fa36f203bc59146231747a24",
     "solver_sha256": "c28893e7d4a119e2",
     "solver_path": "D:\\GitHub\\RadCluster\\RadCluster_2_1\\build\\Release\\solver.exe",
     "workbook_sha256": "9253e7a0370af966"
@@ -126,18 +126,18 @@
   },
   "rows": {
     "assigned": 80,
-    "completed": 71,
-    "admissible": 71,
+    "completed": 80,
+    "admissible": 80,
     "inadmissible": 0,
     "failed": 0,
     "not_started": 0
   },
   "timing": {
-    "session_wall_s": 35759.2,
-    "row_wall_mean_s": 14552.426760563378,
-    "row_wall_median_s": 12062.4,
-    "row_wall_p90_s": 23354.4,
-    "core_hours": 287.0061944444445
+    "session_wall_s": 11460.9,
+    "row_wall_mean_s": 13999.31875,
+    "row_wall_median_s": 12062.25,
+    "row_wall_p90_s": 22762.830000000005,
+    "core_hours": 311.0959722222222
   },
   "stopped": null,
   "admissibility_rule": {

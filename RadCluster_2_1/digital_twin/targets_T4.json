@@ -1,0 +1,137 @@
+{
+  "_comment": [
+    "T4 CALIBRATION TARGETS -- ion and neutron kept SEPARATE, derived 2026-08-11",
+    "from docs/Database/FerriticSteels_RadiationDatabase_Combined.xlsx (sheets",
+    "Neutron_DislocLoops, Neutron_Voids_Swelling, Ion_DislocLoops,",
+    "Ion_Voids_Swelling).  This is NOT targets.json: that file is a live monitor",
+    "with wide bands and says so itself.  Every number here carries its source.",
+    "",
+    "READ THE DOSE FIELD FIRST.  The T3 screening ran to 1.0 dpa.  NOTHING here",
+    "is measured at 1 dpa -- neutron loops are 15-32 dpa, ion loops 4-47 dpa,",
+    "ion cavities 75-650 dpa.  A calibration run must reach the dose of the",
+    "point it is being compared against, or the comparison is meaningless.",
+    "Cost is mild: the frozen-grid note measured dose 0.5->1.0 dpa as +17 % wall,",
+    "so 1 -> 30 dpa is roughly +40-60 %, NOT 30x -- it is ~1.5 more decades of a",
+    "stiff integration, not 30x the work.",
+    "",
+    "MODEL <-> EXPERIMENT MAPPING.  The database reports TOTAL loop density and",
+    "ONE TEM-visible mean diameter; it does not separate <100> from 1/2<111>",
+    "except through the 'dominant Burgers vector' column.  So:",
+    "    N_loop_total  <->  N_loops_100 + N_loops_111",
+    "    d_loop_mean   <->  number-weighted TEM mean over both populations,",
+    "                       ~ f_100_tem_1*d_100_nm + (1-f_100_tem_1)*d_111_nm",
+    "    dominant BV   <->  f_100_tem_1 > 0.5 (<100>) or < 0.5 (1/2<111>)",
+    "Comparing the model's d_100_nm directly against the database mean diameter",
+    "is WRONG whenever 1/2<111> is the dominant population, which it is at the",
+    "lower doses and temperatures.",
+    "",
+    "f_100 must be read in the TEM-FILTERED convention at d_min = 1.0 nm",
+    "(f_100_tem_1).  Number- and content-weighted conventions differ by ~2x on",
+    "one and the same run, which is larger than any conversion parameter inside",
+    "its prior.",
+    "",
+    "STATUS OF THE <100> CHANNEL.  As of the T3 campaign these observables were",
+    "WITHHELD in bin_moment mode (unvalidated closure, mean_n_100 +144 % vs a",
+    "discrete reference) AND the runs were grid-limited (topbin_100 = 1.0,",
+    "d_100 pinned at the 22.89 nm ceiling) because LOOP_NETWORK_LOSS was 0.",
+    "Do not calibrate on <100> until both are resolved."
+  ],
+
+  "neutron": {
+    "_note": [
+      "EUROFER97 only, T = 330-350 C, i.e. the T <= 400 C window the campaign",
+      "targets.  Dose rate for fast-reactor / HFR neutron is ~1e-7 dpa/s.",
+      "The 350 C point (10-15 nm, 0.8e22) is from a different heat and sits far",
+      "above the 330/335 C points; treat it as a separate point, not as scatter",
+      "on the same one."
+    ],
+    "G_dpa_per_s": 1e-7,
+    "points": [
+      {
+        "id": "EUROFER97_330C_15dpa",
+        "T_C": 330, "dose_dpa": 15.0,
+        "N_loop_total_m3": 1.4e22,
+        "d_loop_mean_nm": 3.4,
+        "dominant_bv": "111", "f_100_tem_1_expected": "<0.5",
+        "d_cavity_nm": 2.6, "N_cavity_m3": 1.4e21, "swelling_pct": "<0.01",
+        "He_appm": "<10",
+        "source": "Neutron_DislocLoops row 0 + Neutron_Voids_Swelling row 0"
+      },
+      {
+        "id": "EUROFER97_335C_32dpa",
+        "T_C": 335, "dose_dpa": 32.0,
+        "N_loop_total_m3": 1.7e22,
+        "d_loop_mean_nm": 4.8,
+        "dominant_bv": "100", "f_100_tem_1_expected": ">0.5",
+        "d_cavity_nm": 1.6, "N_cavity_m3": 1.1e21, "swelling_pct": "<0.01",
+        "He_appm": "<10",
+        "source": "Neutron_DislocLoops row 1 + Neutron_Voids_Swelling row 1"
+      },
+      {
+        "id": "EUROFER97_350C_16dpa",
+        "T_C": 350, "dose_dpa": 16.3,
+        "N_loop_total_m3": 8.0e21,
+        "d_loop_mean_nm": 12.5, "d_loop_mean_nm_range": [10.0, 15.0],
+        "dominant_bv": "100", "f_100_tem_1_expected": ">0.5",
+        "source": "Neutron_DislocLoops row 4"
+      }
+    ]
+  },
+
+  "ion": {
+    "_note": [
+      "F/M steels under self-ion / heavy-ion irradiation at 300-440 C.  Dose",
+      "rate is 5e-4 to 1e-3 dpa/s, i.e. ~1e4 times the neutron rate -- which is",
+      "the whole point of calibrating the two separately.",
+      "",
+      "The ion CAVITY data is NOT usable at 350 C: it sits at 440-460 C and",
+      "75-650 dpa, a different regime entirely.  Calibrate ion on the LOOP",
+      "channel only, and treat cavities as a health check.",
+      "",
+      "Per the instruction: share the ENERGY parameters with the neutron fit",
+      "(E_m_v, E_m_i, E_b_i2, E_b_v2, gamma_s, ...) and allow the microstructural",
+      "ones to differ (rho_d, Z_i, Z_i_loop, and the dose-rate-sensitive L_hat)."
+    ],
+    "G_dpa_per_s": 1e-3,
+    "points": [
+      {
+        "id": "F82H_300C_30dpa",
+        "T_C": 300, "dose_dpa": 30.0, "G_dpa_per_s": 7e-4,
+        "N_loop_total_m3": 3.0e22,
+        "d_loop_mean_nm": 6.0,
+        "dominant_bv": "mixed", "f_100_tem_1_expected": "~0.5",
+        "source": "Ion_DislocLoops row 4 (Ando 2018)"
+      },
+      {
+        "id": "T91_376C_47dpa",
+        "T_C": 376, "dose_dpa": 47.0, "G_dpa_per_s": 1e-3,
+        "N_loop_total_m3": null,
+        "d_loop_mean_nm": null,
+        "dominant_bv": "mixed",
+        "source": "Ion_DislocLoops row 8 (Was 2025, IAEA CRP round robin)",
+        "caution": "reported as WIDE SCATTER in both density and diameter -- it is the round-robin reproducibility study. Use as a consistency check, never as a fit point."
+      },
+      {
+        "id": "CLAM_350_550C_11dpa",
+        "T_C": 350, "T_C_range": [350, 550], "dose_dpa": 11.0,
+        "N_loop_total_m3": 5.0e22, "N_loop_total_m3_range": [1.0e22, 1.0e23],
+        "d_loop_mean_nm": 5.5, "d_loop_mean_nm_range": [3.0, 8.0],
+        "dominant_bv": "mixed",
+        "source": "Ion_DislocLoops row 12 (Liu 2023)"
+      },
+      {
+        "id": "HT9_420C_4dpa",
+        "T_C": 420, "dose_dpa": 4.0, "G_dpa_per_s": 5e-4,
+        "N_loop_total_m3": 5.0e22,
+        "d_loop_mean_nm": 6.5, "d_loop_mean_nm_range": [5.0, 8.0],
+        "dominant_bv": "111",
+        "source": "Ion_DislocLoops row 0 (Zheng 2018, in-situ Kr+)"
+      }
+    ],
+    "cavity_health_check_only": {
+      "_note": "440-460 C, 75-650 dpa -- outside the calibration window.",
+      "HT9_440C_140dpa": {"d_void_nm": 12.0, "N_void_m3": 3.0e20, "swelling_pct": 0.8,
+                          "source": "Ion_Voids_Swelling row 3"}
+    }
+  }
+}

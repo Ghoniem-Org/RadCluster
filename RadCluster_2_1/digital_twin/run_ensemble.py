@@ -424,7 +424,35 @@ def evaluate(args):
                                       "preconditioner": cfg["preconditioner"],
                                       "concentration_threshold": 1e-22},
                     "loop_conversion": 1}
-            res = sim.run(solver_config=scfg, save_output=False)
+            # LOOP_NETWORK_LOSS NEEDS run_adaptive, and not merely for the
+            # rho_net feedback -- the channel is DEAD without it.  Lambda_n^net
+            # = (v_net * rho_net * w_c) * P_ld, and v_net is built from
+            # ci1_seg / cv1_seg, the segment-frozen monomers.  Those default to
+            # 0.0 and are written ONLY by the inter-segment refresh in
+            # simulation._advance_network (rho_net/ci1_seg/cv1_seg + rebuild).
+            # Under plain run() they never exist, so v_net = 0 and Lambda_net is
+            # identically zero at every size.  Measured 2026-08-12: a 12-point
+            # sweep with chi 1->60, w_c 1->200 and K_rec 1e-6->1e-3 returned
+            # twelve BIT-IDENTICAL rows.  The workbook note said "requires
+            # sim.run_adaptive()" and meant it literally.
+            #
+            # max_doublings=0: take the operator splitting, refuse the domain
+            # doubling.  Growing I mid-row would leave rows of one design at
+            # different grids and contradict run_cfg_sha, which pins I.
+            #
+            # Gated on the flag so every T2/T3 command line still takes the
+            # single-shot run() path and reproduces bit-for-bit.
+            try:   # blank/NaN cell must read as OFF, not crash the row
+                _lnl = int(float(sim.input_data.reactions.get(
+                    "LOOP_NETWORK_LOSS", 0) or 0))
+            except (TypeError, ValueError):
+                _lnl = 0
+            if _lnl:
+                res = sim.run_adaptive(solver_config=scfg, save_output=False,
+                                       timeout_s=cfg["timeout_s"],
+                                       max_doublings=0)
+            else:
+                res = sim.run(solver_config=scfg, save_output=False)
         finally:
             sys.stdout, sys.stderr = _s
         rec["solver_rc"] = 0

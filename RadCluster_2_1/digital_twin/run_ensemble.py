@@ -1111,6 +1111,14 @@ def main(argv=None):
     # is what a spawned pool worker re-reads at import to rebuild the former.
     os.environ["RADCLUSTER_OMP_THREADS"] = str(a.omp_threads)
     os.environ["OMP_NUM_THREADS"] = str(a.omp_threads)
+    # STOP MEANS STOP NOW, not "after the budget expires".  The STOP file
+    # already told the SUBMIT loop to stop queueing rows, but the rows already
+    # in flight kept integrating to their full budget -- up to 8 h -- so a
+    # detached worker could not be wound down promptly and a machine going
+    # away took every in-flight row with it.  cpp_bridge polls this path while
+    # waiting on the solver and, when it appears, asks the solver to finalize
+    # at the dose it has reached and flush.  Inherited by the pool workers.
+    os.environ["RADCLUSTER_ABORT_FILE"] = str(STOP_FILE)
     print(f"  row budget {a.timeout_s:.0f} s, "
           f"OMP_NUM_THREADS={os.environ['OMP_NUM_THREADS']}")
     if not 0 <= a.subtask < a.of_subtasks:

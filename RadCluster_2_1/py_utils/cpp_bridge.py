@@ -32,6 +32,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+import time
 from pathlib import Path
 
 import numpy as np
@@ -62,6 +63,51 @@ def _send_graceful_interrupt(proc):
             proc.terminate()
         except Exception:
             pass
+
+#: Poll interval while waiting on the solver.  Short enough that an abort is
+#: acted on promptly, long enough to be free next to a multi-hour integration.
+_ABORT_POLL_S = 5.0
+
+
+def _wait_with_abort_file(proc, timeout_s):
+    """proc.wait(timeout=timeout_s), but also abortable from OUTSIDE the process.
+
+    WHY.  A detached campaign worker has no console, so Ctrl+C cannot reach it,
+    and on Windows Stop-Process is TerminateProcess -- uncatchable.  Before this,
+    the only way to stop such a run was to kill it, which threw away every
+    in-flight row: the solver never got its interrupt, so no partial trajectory
+    was finalized and nothing was written.  That is how a 12-row batch was lost
+    on 2026-08-11 after ~7 h of integration.
+
+    With this, dropping the abort file named by RADCLUSTER_ABORT_FILE asks the
+    solver to finish its CURRENT integration step and flush -- the same graceful
+    path the wall-clock budget already used, and the reason budget-cut rows keep
+    their dose ladder instead of vanishing.  The row comes back marked partial,
+    with every rung it reached intact.
+
+    Raises subprocess.TimeoutExpired on the wall-clock budget, exactly as
+    proc.wait did, so the caller's existing handling is unchanged.  With no
+    abort file configured this is proc.wait plus a 5 s poll, i.e. a no-op.
+    """
+    abort = os.environ.get('RADCLUSTER_ABORT_FILE')
+    if not abort:
+        return proc.wait(timeout=timeout_s)
+    deadline = None if not timeout_s else (time.monotonic() + float(timeout_s))
+    while True:
+        remaining = None if deadline is None else deadline - time.monotonic()
+        if remaining is not None and remaining <= 0:
+            raise subprocess.TimeoutExpired(proc.args, timeout_s)
+        try:
+            return proc.wait(timeout=min(_ABORT_POLL_S,
+                                         remaining if remaining is not None
+                                         else _ABORT_POLL_S))
+        except subprocess.TimeoutExpired:
+            pass
+        if os.path.exists(abort):
+            print(f"    abort file present ({abort}) -- asking the solver to "
+                  f"finalize at the dose reached so far and flush.")
+            raise subprocess.TimeoutExpired(proc.args, timeout_s)
+
 
 _SOLVER_MODE_MAP = {
     'full_system':   0,
@@ -627,7 +673,7 @@ def run_cpp_solver(sim, solver_config, base_dir=None, progress_callback=None,
         t_out.start()
         stdout_data = b''
         try:
-            proc.wait(timeout=timeout_s)
+            _wait_with_abort_file(proc, timeout_s)
         except subprocess.TimeoutExpired:
             print(f"C++ solver hit {timeout_s}s timeout -- asking it to finalize gracefully...")
             partial = True

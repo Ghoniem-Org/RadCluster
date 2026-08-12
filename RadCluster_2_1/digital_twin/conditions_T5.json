@@ -1,0 +1,24 @@
+{
+ "_comment": [
+  "T5 cost experiment: N2 (T3 baseline rate, G=1e-6, 300 C) and N330",
+  "(true neutron rate, G=1e-7, 330 C) side by side so the SAME theta",
+  "can be timed at both. Copied verbatim from conditions.json and",
+  "conditions_T4.json -- do not edit here, edit the sources."
+ ],
+ "N2": {
+  "label": "neutron 300 C",
+  "T_K": 573.15,
+  "cascade": "fission",
+  "G": null,
+  "rho_d": 100000000000000.0
+ },
+ "N330": {
+  "label": "EUROFER97 neutron 330 C, 15 dpa",
+  "T_K": 603.15,
+  "cascade": "fission",
+  "G": 1e-07,
+  "rho_d": 100000000000000.0,
+  "_dose_dpa": 15.0,
+  "_target_id": "EUROFER97_330C_15dpa"
+ }
+}

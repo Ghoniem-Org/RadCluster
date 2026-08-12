@@ -68,8 +68,22 @@ def misfit(model: dict, target: dict) -> tuple[float, list[str]]:
     measure so one channel cannot dominate purely by units.
     """
     terms, notes = [], []
-    for key, tkey in (("N_loop_total_m3", "N_loop_total_m3"),
-                      ("d_loop_mean_nm", "d_loop_mean_nm")):
+
+    # DENSITY IS DIAGNOSTIC ONLY, NOT SCORED (2026-08-12).  The model carries
+    # two independent <100> number densities that disagree: N_100_vis_1 (from
+    # the per-size y_sia100 array) exceeds N_loops_100 (from post_process, same
+    # m^-3 units after post_process.py:471) in 95.3 % of 1173 T3 rows, median
+    # 626x, max 65540x.  A detection-limit filter can only REMOVE loops, so one
+    # of the two is wrong by ~3 decades and it is not yet established which.
+    #
+    # Character and mean size are UNAFFECTED, and that is not a hope -- it is
+    # exact.  Both are built from the same two per-size sums a0 (<100>) and a1
+    # (1/2<111>), so the 1/Omega normalisation cancels identically:
+    #     f_100  = a0 / (a0 + a1)
+    #     d_mean = (a0 d100 + a1 d111) / (a0 + a1) = f_100 d100 + (1-f_100) d111
+    # Whatever scales a0 and a1 together cannot move either number.  So the
+    # calibration scores on these two and reports density beside them.
+    for key, tkey in (("d_loop_mean_nm", "d_loop_mean_nm"),):
         t = target.get(tkey)
         m = model.get(key)
         if t is None or m is None or not (m > 0) or not (t > 0):
@@ -77,6 +91,11 @@ def misfit(model: dict, target: dict) -> tuple[float, list[str]]:
         r = math.log10(m / t)
         terms.append(abs(r))
         notes.append(f"{tkey}: model {m:.4g} vs {t:.4g}  ({10**r:.2f}x)")
+
+    tN, mN = target.get("N_loop_total_m3"), model.get("N_loop_total_m3")
+    if tN and mN and mN > 0:
+        notes.append(f"[diagnostic, NOT scored] N_loop_total_m3: model {mN:.4g} "
+                     f"vs {tN:.4g}  ({mN/tN:.2f}x)")
     # character is a direction, not a number: score it as a hit/miss penalty
     exp_f = target.get("f_100_tem_1_expected")
     f = model.get("f_100_tem_1")

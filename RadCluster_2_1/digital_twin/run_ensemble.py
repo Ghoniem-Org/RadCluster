@@ -447,6 +447,11 @@ def evaluate(args):
                     "LOOP_NETWORK_LOSS", 0) or 0))
             except (TypeError, ValueError):
                 _lnl = 0
+            if cfg.get("lnl") is not None:      # CLI override beats the workbook
+                _lnl = int(cfg["lnl"])
+                sim.input_data.reactions["LOOP_NETWORK_LOSS"] = _lnl
+                sim.rebuild_rates()
+            rec["lnl"] = _lnl
             if _lnl:
                 res = sim.run_adaptive(solver_config=scfg, save_output=False,
                                        timeout_s=cfg["timeout_s"],
@@ -457,6 +462,29 @@ def evaluate(args):
             sys.stdout, sys.stderr = _s
         rec["solver_rc"] = 0
         rec.update(observe(res, sim, cfg, float(row.get("d_min_tem", 1.0))))
+        # LOOP_NETWORK_LOSS DIAGNOSTICS.  Without these the channel is not
+        # falsifiable from the row: a sweep over chi/w_c/K_rec that moves the
+        # observables by ~0 is indistinguishable from a channel that is wired
+        # but geometrically gated off, and the 2026-08-12 ion liveness check
+        # burned two 1 h rows before the cause could be read off at all.
+        # rho_net_end vs rho_d says whether the DYNAMIC network ever left the
+        # floor; Lambda_net_max says whether the loss term has any authority;
+        # d_lam_on is the smallest loop diameter the channel can touch, which
+        # is the quantity chi actually controls.
+        if _lnl:
+            try:
+                import numpy as _np
+                _rr = sim.reaction_rates
+                _L = _np.asarray(getattr(_rr, "Lambda_net_111", []), dtype=float)
+                _d = _np.asarray(getattr(_rr, "d_loop_111", []), dtype=float)
+                rec["rho_net_end"] = float(getattr(_rr, "rho_net", float("nan")))
+                rec["rho_net_floor"] = float(sim.input_data.reactions.get("rho_d", 0.0))
+                rec["Lambda_net_max"] = float(_L.max()) if _L.size else 0.0
+                _nz = _np.nonzero(_L)[0]
+                rec["d_lam_on_nm"] = (float(_d[_nz[0]] * 1e9)
+                                      if _nz.size and _d.size > _nz[0] else None)
+            except Exception as _e:          # diagnostics must never fail a row
+                rec["lnl_diag_error"] = f"{type(_e).__name__}: {_e}"[:120]
         rec["n_written"] = len(written)
     except Exception as exc:
         rec["solver_rc"] = 1
@@ -994,6 +1022,14 @@ def main(argv=None):
                          "Omit for the default even split (row_id %% M).")
     ap.add_argument("--out", type=Path, default=None)
     ap.add_argument("--conditions", type=Path, default=HERE / "conditions.json")
+    # LOOP_NETWORK_LOSS override.  The flag lives in the workbook, but it is not
+    # a physics constant -- it selects run_adaptive, which costs 4.6x the wall
+    # time per unit dose (measured 2026-08-12, 0.0997 vs 0.4624 dpa/hr on the
+    # same condition).  The whole T3 baseline was produced with it OFF and the
+    # T4 rows with it ON, so cost comparisons between them were confounded until
+    # this switch existed.  None = obey the workbook.
+    ap.add_argument("--lnl", type=int, choices=(0, 1), default=None,
+                    help="force LOOP_NETWORK_LOSS on(1)/off(0); default: workbook")
     # FROZEN GRID, author 2026-08-06 (plan S12(u)).  The single source of truth
     # is machines.json["grid"]; these defaults mirror it so a bare invocation
     # cannot silently run something else.  Measured at 10-way concurrency
@@ -1247,7 +1283,8 @@ def main(argv=None):
                "preconditioner": precond, "loop_conversion": 1,
                "i_mobile_default": a.i_mobile_default,
                "v_mobile_default": a.v_mobile_default,
-               "n_points": 40, "timeout_s": a.timeout_s}
+               "n_points": 40, "timeout_s": a.timeout_s,
+               "lnl": a.lnl}
     # run_cfg is BOTH the runtime config handed to evaluate() AND the source of
     # run_cfg_sha.  timeout_s must stay IN it -- cpp_bridge needs it -- but must
     # be left OUT of the hash: it is a wall-clock budget, not a model setting,

@@ -1,0 +1,68 @@
+{
+ "tier": "T8_calibration",
+ "kind": "latin_hypercube",
+ "n": 64,
+ "seed": 20260813,
+ "condition": "C_330_G6",
+ "sampled": {
+  "L_hat": {
+   "lo": 300.0,
+   "hi": 3500.0,
+   "scale": "log"
+  },
+  "E_a0_conv": {
+   "lo": 1.6,
+   "hi": 2.4,
+   "scale": "lin"
+  },
+  "phi_max_junc": {
+   "lo": 0.1,
+   "hi": 1.0,
+   "scale": "lin"
+  },
+  "Z_i": {
+   "lo": 1.02,
+   "hi": 1.15,
+   "scale": "lin"
+  },
+  "f_cl_v": {
+   "lo": 0.2,
+   "hi": 0.7,
+   "scale": "lin"
+  },
+  "f_cl_i": {
+   "lo": 0.05,
+   "hi": 0.25,
+   "scale": "lin"
+  },
+  "dH2_abs_conv": {
+   "lo": 0.26,
+   "hi": 0.45,
+   "scale": "lin"
+  }
+ },
+ "base_row": "T3_rev6.csv:38/N2",
+ "parameters": [
+  "eta",
+  "f_cl_i",
+  "f_cl_v",
+  "E_m_i",
+  "E_m_v",
+  "E_m_h",
+  "L_hat",
+  "gamma_s",
+  "E_b_v2",
+  "lambda",
+  "B_111",
+  "E_b_i2",
+  "E_b_hV_1",
+  "Z_i",
+  "Z_i_loop",
+  "E_a0_conv",
+  "dH2_conv",
+  "phi_max_junc",
+  "dH2_abs_conv"
+ ],
+ "design_sha256": "7913cb9bab7968f82f2c7a19d2db3f3aff80e78a330135bbac21a620140946a0",
+ "note": "Space-filling, NOT Saltelli: this design is for ESTIMATION (match the measurement), not attribution (Sobol indices), so it carries no A/B/AB_j pairing and merge_and_sobol must not be pointed at it."
+}

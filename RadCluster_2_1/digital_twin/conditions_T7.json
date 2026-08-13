@@ -4,7 +4,12 @@
   "conserving, d_100 already in the experimental range) at the four",
   "corners of (T, G).  T3 confounded these: rows 301/302 changed BOTH",
   "temperature and dose rate at once AND ran discrete, so the 107x cost",
-  "gap could not be attributed. bin_moment here, i.e. production mode."
+  "gap could not be attributed. bin_moment here, i.e. production mode.",
+  "",
+  "C_300_G7 / C_350_G7 added 2026-08-13: the two UNAMBIGUOUS ends of the",
+  "EUROFER97 character series. Per-condition dose_dpa carries each point to the",
+  "dose it was measured at (15.0 and 16.3), which run_ensemble reads in",
+  "preference to --dose."
  ],
  "C_300_G6": {
   "label": "300 C, G=1e-6 (T3 baseline)",
@@ -21,17 +26,27 @@
   "rho_d": 100000000000000.0
  },
  "C_300_G7": {
-  "label": "300 C, G=1e-7 (true neutron rate)",
+  "label": "EUROFER97 neutron 300 C, 15 dpa -- COLD END, data says 1/2<111>",
   "T_K": 573.15,
   "cascade": "fission",
   "G": 1e-07,
-  "rho_d": 100000000000000.0
+  "rho_d": 100000000000000.0,
+  "dose_dpa": 15.0
  },
  "C_330_G7": {
   "label": "330 C, G=1e-7 (the experiment)",
   "T_K": 603.15,
   "cascade": "fission",
   "G": 1e-07,
-  "rho_d": 100000000000000.0
+  "rho_d": 100000000000000.0,
+  "dose_dpa": 15.0
+ },
+ "C_350_G7": {
+  "label": "EUROFER97 neutron 350 C, 16.3 dpa -- HOT END, data says <100>",
+  "T_K": 623.15,
+  "cascade": "fission",
+  "G": 1e-07,
+  "rho_d": 100000000000000.0,
+  "dose_dpa": 16.3
  }
 }

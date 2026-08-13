@@ -1,0 +1,118 @@
+{
+ "tier": "T8_calibration",
+ "kind": "latin_hypercube",
+ "n_theta": 32,
+ "n_rows": 64,
+ "seed": 20260813,
+ "conditions": [
+  "C_300_G7",
+  "C_350_G7"
+ ],
+ "sampled": {
+  "L_hat": {
+   "lo": 300.0,
+   "hi": 3500.0,
+   "scale": "log",
+   "original_prior": null,
+   "widened": false
+  },
+  "E_a0_conv": {
+   "lo": 1.4,
+   "hi": 3.5,
+   "scale": "lin",
+   "original_prior": [
+    1.6,
+    2.4
+   ],
+   "widened": true
+  },
+  "phi_max_junc": {
+   "lo": 0.01,
+   "hi": 1.0,
+   "scale": "log",
+   "original_prior": [
+    0.1,
+    1.0
+   ],
+   "widened": true
+  },
+  "Z_i": {
+   "lo": 1.02,
+   "hi": 1.15,
+   "scale": "lin",
+   "original_prior": null,
+   "widened": false
+  },
+  "f_cl_v": {
+   "lo": 0.2,
+   "hi": 0.7,
+   "scale": "lin",
+   "original_prior": null,
+   "widened": false
+  },
+  "f_cl_i": {
+   "lo": 0.01,
+   "hi": 0.25,
+   "scale": "log",
+   "original_prior": [
+    0.05,
+    0.25
+   ],
+   "widened": true
+  },
+  "dH2_abs_conv": {
+   "lo": 0.26,
+   "hi": 0.7,
+   "scale": "lin",
+   "original_prior": [
+    0.26,
+    0.45
+   ],
+   "widened": true
+  },
+  "E_b_i2": {
+   "lo": 0.6,
+   "hi": 1.6,
+   "scale": "lin",
+   "original_prior": [
+    0.6,
+    1.2
+   ],
+   "widened": true
+  },
+  "B_111": {
+   "lo": 0.2,
+   "hi": 0.7,
+   "scale": "lin",
+   "original_prior": [
+    0.3,
+    0.7
+   ],
+   "widened": true
+  }
+ },
+ "base_row": "T3_rev6.csv:38/N2",
+ "parameters": [
+  "eta",
+  "f_cl_i",
+  "f_cl_v",
+  "E_m_i",
+  "E_m_v",
+  "E_m_h",
+  "L_hat",
+  "gamma_s",
+  "E_b_v2",
+  "lambda",
+  "B_111",
+  "E_b_i2",
+  "E_b_hV_1",
+  "Z_i",
+  "Z_i_loop",
+  "E_a0_conv",
+  "dH2_conv",
+  "phi_max_junc",
+  "dH2_abs_conv"
+ ],
+ "design_sha256": "bad4610eaa4d2420c5219fc2c735c1957fc13ac33114cf206b68c7cb9daa918c",
+ "note": "Space-filling, NOT Saltelli: this design is for ESTIMATION (match the measurement), not attribution (Sobol indices), so it carries no A/B/AB_j pairing and merge_and_sobol must not be pointed at it."
+}

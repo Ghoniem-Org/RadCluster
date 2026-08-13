@@ -55,14 +55,55 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 
 # key -> (lo, hi, scale).  "log" samples uniformly in log10.
+#
+# BOX WIDENED 2026-08-13, author-directed, after the T7 corners showed d_111
+# pinned at 0.79-0.85 nm at EVERY (T, G) -- and the whole T3 campaign sat at a
+# median of 0.88 nm across 19 parameters.  That invariance is the signature of a
+# box that does not contain the answer, not of a corner not yet sampled: the
+# 1/2<111> population is held below the 1.0 nm TEM cutoff, so it is invisible and
+# the numerous small <100> loops take the entire visible count.  That single fact
+# produces BOTH open misfits (inverted character, 158x excess density), so the
+# widened ranges all target it, from four independent directions:
+#
+#   (a) let 1/2<111> SURVIVE long enough to grow -- slow the conversion:
+#         E_a0_conv    up   (unary barrier; the crossover-temperature knob)
+#         phi_max_junc down (junction branching)
+#         dH2_abs_conv up   (absorption gate; 0.70 is the documented usable top,
+#                            vs 1.00 for the junction)
+#   (b) NUCLEATE FEWER loops so each grows bigger AND the density falls:
+#         f_cl_i       down (cascade cluster fraction)
+#   (c) make 1/2<111> STABLE against thermal emission:
+#         E_b_i2       up   (dimer binding; A_111 is derived from it)
+#         B_111        down (binding falls off more slowly with n)
+#   (d) keep the <100> axis unsaturated so the size readout is not a ceiling:
+#         L_hat        unchanged -- already the orthogonal lever (rho = +0.011
+#                      on d_111, -0.699 on pile_100)
+#
+# Ranges that LEAVE their prior: E_a0_conv 2.4 -> 3.5, phi_max_junc 0.1 -> 0.01,
+# dH2_abs_conv 0.45 -> 0.70, f_cl_i 0.05 -> 0.01, E_b_i2 1.2 -> 1.6,
+# B_111 0.3 -> 0.2.  Excursion factors recorded here so a fit that lands outside
+# the original priors is reported as such rather than quietly adopted.
 SAMPLED = {
     "L_hat":        (300.0,  3500.0, "log"),
-    "E_a0_conv":    (1.6,    2.4,    "lin"),
-    "phi_max_junc": (0.1,    1.0,    "lin"),
+    "E_a0_conv":    (1.4,    3.5,    "lin"),   # was (1.6, 2.4)
+    "phi_max_junc": (0.01,   1.0,    "log"),   # was (0.1, 1.0) lin
     "Z_i":          (1.02,   1.15,   "lin"),
     "f_cl_v":       (0.2,    0.7,    "lin"),
-    "f_cl_i":       (0.05,   0.25,   "lin"),
-    "dH2_abs_conv": (0.26,   0.45,   "lin"),
+    "f_cl_i":       (0.01,   0.25,   "log"),   # was (0.05, 0.25) lin
+    "dH2_abs_conv": (0.26,   0.70,   "lin"),   # was (0.26, 0.45)
+    "E_b_i2":       (0.6,    1.6,    "lin"),   # NEW -- was pinned
+    "B_111":        (0.2,    0.7,    "lin"),   # NEW -- was pinned
+}
+
+# Original prior bounds, for reporting how far a fitted value sits outside the
+# box the priors were elicited over.  None = the range was not widened.
+ORIGINAL_PRIOR = {
+    "E_a0_conv":    (1.6,  2.4),
+    "phi_max_junc": (0.1,  1.0),
+    "f_cl_i":       (0.05, 0.25),
+    "dH2_abs_conv": (0.26, 0.45),
+    "E_b_i2":       (0.6,  1.2),
+    "B_111":        (0.3,  0.7),
 }
 
 
@@ -85,8 +126,11 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--n", type=int, default=64)
     ap.add_argument("--condition", required=True,
-                    help="condition key; must exist in the --conditions file "
-                         "passed to run_ensemble")
+                    help="comma-separated condition keys; each sampled theta is "
+                         "emitted once PER CONDITION so the same parameter "
+                         "vector is evaluated at every one.  That pairing is the "
+                         "point when the target is a crossover: character is only "
+                         "constrained by 300 C AND 350 C together, never by one.")
     ap.add_argument("--seed", type=int, default=20260813)
     ap.add_argument("--base-design", type=Path, default=HERE / "design/T3_rev6.csv")
     ap.add_argument("--base-row", default="38")
@@ -109,22 +153,30 @@ def main(argv=None) -> int:
     keys = list(SAMPLED)
     pts = latin_hypercube(a.n, len(keys), rng)
 
+    conditions = [c.strip() for c in a.condition.split(",") if c.strip()]
     cols = ["row_id", "condition", "cond_row_id", "matrix", "base_idx",
-            "param_j"] + params
+            "param_j", "theta_id"] + params
     out = []
+    rid = 800
     for i, pt in enumerate(pts):
-        row = {"row_id": 800 + i, "condition": a.condition, "cond_row_id": 800 + i,
-               "matrix": "L", "base_idx": i, "param_j": -1}
+        theta = {}
         for p in params:
-            row[p] = base[p]                      # pinned unless sampled below
+            theta[p] = base[p]                    # pinned unless sampled below
         for u, k in zip(pt, keys):
             lo, hi, scale = SAMPLED[k]
             if scale == "log":
-                row[k] = repr(10.0 ** (math.log10(lo) + u * (math.log10(hi)
-                                                             - math.log10(lo))))
+                theta[k] = repr(10.0 ** (math.log10(lo) + u * (math.log10(hi)
+                                                               - math.log10(lo))))
             else:
-                row[k] = repr(lo + u * (hi - lo))
-        out.append(row)
+                theta[k] = repr(lo + u * (hi - lo))
+        # SAME theta at every condition, tagged by theta_id so the crossover can
+        # be evaluated per parameter vector rather than per row.
+        for cond in conditions:
+            row = {"row_id": rid, "condition": cond, "cond_row_id": rid,
+                   "matrix": "L", "base_idx": i, "param_j": -1, "theta_id": i}
+            row.update(theta)
+            out.append(row)
+            rid += 1
 
     a.out.parent.mkdir(parents=True, exist_ok=True)
     with a.out.open("w", newline="") as f:
@@ -136,10 +188,13 @@ def main(argv=None) -> int:
     meta = {
         "tier": "T8_calibration",
         "kind": "latin_hypercube",
-        "n": a.n,
+        "n_theta": a.n,
+        "n_rows": len(out),
         "seed": a.seed,
-        "condition": a.condition,
-        "sampled": {k: {"lo": v[0], "hi": v[1], "scale": v[2]}
+        "conditions": conditions,
+        "sampled": {k: {"lo": v[0], "hi": v[1], "scale": v[2],
+                        "original_prior": ORIGINAL_PRIOR.get(k),
+                        "widened": k in ORIGINAL_PRIOR}
                     for k, v in SAMPLED.items()},
         "base_row": f"{a.base_design.name}:{a.base_row}/{a.base_condition}",
         "parameters": params,

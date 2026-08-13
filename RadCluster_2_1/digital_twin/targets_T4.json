@@ -46,13 +46,55 @@
       "on the same one."
     ],
     "G_dpa_per_s": 1e-7,
+
+    "_character_series": {
+      "_note": [
+        "The character target is a CROSSOVER, not a value at one temperature.",
+        "EUROFER97 neutron, read off Neutron_DislocLoops 2026-08-13:",
+        "  250 C / 16.3 dpa  ->  1/2<111>          (d < 5 nm, N ~ 1.0e22)",
+        "  300 C / 15 dpa    ->  1/2<111>          (d < 5 nm, N > 1.4e22)",
+        "  330 C / 15 dpa    ->  transitional      (d = 3.4 nm, N = 1.4e22)",
+        "  335 C / 32 dpa    ->  <100> dominant    (d = 4.8 nm, N = 1.7e22)",
+        "  350 C / 16.3 dpa  ->  <100> dominant    (d = 10-15 nm, N = 0.8e22)",
+        "So a theta is CHARACTER-CORRECT if it gives f_100_tem_1 < 0.5 at 300 C",
+        "AND f_100_tem_1 > 0.5 at 350 C.  Neither point alone is sufficient:",
+        "the model can hit either end by converting uniformly too little or too",
+        "much, and only the pair pins the crossover, which is the physically",
+        "meaningful quantity (loop_conversion notes: crossover T is set by",
+        "E_a0_conv and dose)."
+      ],
+      "cold_end": {"T_C": 300, "dose_dpa": 15.0, "f_100_tem_1_expected": "<0.5",
+                   "d_loop_mean_nm_bound": "<5", "N_loop_total_m3": 1.4e22,
+                   "N_note": "reported as 'High (>1.4)' x1e22 -- a LOWER BOUND"},
+      "hot_end":  {"T_C": 350, "dose_dpa": 16.3, "f_100_tem_1_expected": ">0.5",
+                   "d_loop_mean_nm": 12.5, "d_loop_mean_nm_range": [10.0, 15.0],
+                   "N_loop_total_m3": 8.0e21}
+    },
+
     "points": [
       {
         "id": "EUROFER97_330C_15dpa",
         "T_C": 330, "dose_dpa": 15.0,
         "N_loop_total_m3": 1.4e22,
         "d_loop_mean_nm": 3.4,
-        "dominant_bv": "111", "f_100_tem_1_expected": "<0.5",
+        "dominant_bv": "TRANSITIONAL -- do not score character on this point",
+        "f_100_tem_1_expected": null,
+        "_character_correction": [
+          "CORRECTED 2026-08-13.  This entry previously read dominant_bv = '111'",
+          "with f_100_tem_1_expected = '<0.5'.  That was a MIS-TRANSCRIPTION: the",
+          "source cell (Neutron_DislocLoops, EUROFER97 330 C / 15 dpa) reads",
+          "    '1/2<111> dominant at <=300 C; <100> at >=350 C'",
+          "which is a CROSSOVER statement about the temperature series, not a",
+          "character assignment at 330 C.  330 C lies between the two regimes, so",
+          "the datum pins SIZE and DENSITY here but says nothing scoreable about",
+          "character.  Scoring f_100 against '<0.5' at 330 C was therefore",
+          "measuring the model against a target the data does not state.",
+          "",
+          "Character is scored instead on the two UNAMBIGUOUS ends of the series",
+          "(see _character_series below), which is also the better-posed",
+          "calibration: the crossover temperature is what E_a0_conv sets, so a",
+          "two-point trend constrains it where a single mid-series point cannot."
+        ],
         "d_cavity_nm": 2.6, "N_cavity_m3": 1.4e21, "swelling_pct": "<0.01",
         "He_appm": "<10",
         "source": "Neutron_DislocLoops row 0 + Neutron_Voids_Swelling row 0"

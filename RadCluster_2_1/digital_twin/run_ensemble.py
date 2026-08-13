@@ -835,22 +835,36 @@ def observe(res, sim, cfg, d_min_nm):
     # when <100> holds under 10 % of the SIA content, 0.30 once it dominates), so
     # the failures concentrate exactly on the population being calibrated.
     #
-    # Recorded separately as well as gated, so a rejected row still says why and
-    # merge_and_sobol can pool on it without re-deriving the threshold.
+    # RECORDED, NOT GATED -- author decision, 2026-08-13, reversing the gate this
+    # function carried for one commit (61923a0).
+    #
+    # delta_FP here is a SYMPTOM OF SIZE, not a validity test.  It is high
+    # precisely when the model's loops are too large for the grid, and the
+    # campaign data says so directly: rho(delta_FP, d_111_nm) = -0.462 -- the
+    # strongest correlate of any observable -- while the vacancy-axis truncation
+    # measures are flat (rho = -0.003 for pile_v, -0.041 for topbin_v).  Rows
+    # with 1/2<111> stuck below 1 nm have median delta_FP 0.506; rows near the
+    # experimental 2-6 nm have 0.153.  And pile_100 ~ 1.0 in essentially every
+    # row, i.e. the <100> axis is saturated campaign-wide.
+    #
+    # So a high delta_FP means "I is too small for the sizes these parameters
+    # produce", and the response is to move the parameters until the mean size
+    # matches experiment -- at which point conservation follows -- NOT to gate it
+    # away.  Gating rejected ~95 % of rows and would remove exactly the search
+    # space the calibration has to move through to get there.
     out["conserving"] = bool(abs(out["delta_FP"]) < DFP_TOL)
 
     if TRUNCATION_GATES:
         out["admissible"] = bool((not out["starved"]) and (not out["grid_limited"])
                                  and out["conserving"])
     elif STARVED_GATE:
-        out["admissible"] = bool((not out["starved"]) and out["conserving"])
+        out["admissible"] = not out["starved"]
     else:
-        # A row is admissible if it EXISTS **and conserves**.  The solver
-        # returned a trajectory; how far up the dose ladder that trajectory
-        # reaches is recorded in `at_dose` and decided per-checkpoint
-        # downstream, not here -- but "it ran" was never meant to certify a
-        # trajectory that loses a quarter of its Frenkel pairs.
-        out["admissible"] = out["conserving"]
+        # A row is admissible if it EXISTS.  The solver returned a trajectory;
+        # how far up the dose ladder that trajectory reaches is recorded in
+        # `at_dose` and decided per-checkpoint downstream, not here.  See the
+        # `conserving` note above for why delta_FP does not reject here either.
+        out["admissible"] = True
     return out
 
 

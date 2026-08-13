@@ -709,7 +709,14 @@ def observe(res, sim, cfg, d_min_nm):
             # 2026-08-03 on a binned run (N_eq=55, y_sia100 shape (200, 20)) --
             # so the <100> path needs no reconstruction.
             if y100.ndim == 2 and y100.shape[0] >= I:
-                    c100 = np.maximum(y100[:I, -1] - cfg["C_floor"], 0.0)
+                    # NO C_floor SUBTRACTION HERE.  cpp_bridge now removes the
+                    # floor at the MOMENT level before the closure reconstructs
+                    # y_sia100 (see the block guarded by `if _is_bin`), which is
+                    # the only correct order -- subtracting per-size afterwards
+                    # is what left the spurious large-n tail that inflated
+                    # N_100_vis_1 by a median 626x.  Subtracting again here would
+                    # double-floor an already-floored array.
+                    c100 = np.maximum(y100[:I, -1], 0.0)
                     k100 = n_ax * c100
                     if k100.sum() > 0:
                         pile100 = float(k100[top:].sum() / k100.sum())
@@ -813,16 +820,37 @@ def observe(res, sim, cfg, d_min_nm):
     out["grid_limited"] = bool(bad_pile or bad_topbin or unmeasured)
     out["grid_converged"] = not out["grid_limited"]      # explicit, for clarity
 
+    # CONSERVATION IS A CORRECTNESS GATE, NOT A TRUNCATION PREFERENCE.
+    # It used to live INSIDE the TRUNCATION_GATES branch, so the 2026-08-05
+    # decision to stop rejecting truncated rows -- a deliberate and correct call
+    # about tail resolution -- silently switched off the delta_FP check too.
+    # Those are different kinds of claim: a truncated row is a real solution
+    # observed over too small a grid, whereas a row that violates Frenkel-pair
+    # conservation is not a solution of the stated equations at all.
+    #
+    # The cost of the coupling, measured 2026-08-12 on the completed T3 campaign:
+    # delta_FP exceeded 1e-3 -- the value CLAUDE.md S8 calls a coding error -- in
+    # 95.8 % of 1008 admissible rows, median 0.277, max 0.934, and every one of
+    # them was certified admissible.  It tracks <100> content directly (3.5e-4
+    # when <100> holds under 10 % of the SIA content, 0.30 once it dominates), so
+    # the failures concentrate exactly on the population being calibrated.
+    #
+    # Recorded separately as well as gated, so a rejected row still says why and
+    # merge_and_sobol can pool on it without re-deriving the threshold.
+    out["conserving"] = bool(abs(out["delta_FP"]) < DFP_TOL)
+
     if TRUNCATION_GATES:
         out["admissible"] = bool((not out["starved"]) and (not out["grid_limited"])
-                                 and abs(out["delta_FP"]) < DFP_TOL)
+                                 and out["conserving"])
     elif STARVED_GATE:
-        out["admissible"] = not out["starved"]
+        out["admissible"] = bool((not out["starved"]) and out["conserving"])
     else:
-        # A row is admissible if it EXISTS.  The solver returned a trajectory;
-        # how far up the dose ladder that trajectory reaches is recorded in
-        # `at_dose` and decided per-checkpoint downstream, not here.
-        out["admissible"] = True
+        # A row is admissible if it EXISTS **and conserves**.  The solver
+        # returned a trajectory; how far up the dose ladder that trajectory
+        # reaches is recorded in `at_dose` and decided per-checkpoint
+        # downstream, not here -- but "it ran" was never meant to certify a
+        # trajectory that loses a quarter of its Frenkel pairs.
+        out["admissible"] = out["conserving"]
     return out
 
 

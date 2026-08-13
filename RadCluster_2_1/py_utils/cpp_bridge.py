@@ -803,6 +803,7 @@ def run_cpp_solver(sim, solver_config, base_dir=None, progress_callback=None,
             y        = y[:-_n_sia100, :]
             if _is_bin:
                 from .bin_moment_rates import reconstruct_distribution
+                from .post_process import _floor_bin_moments
                 _i_d   = int(getattr(re_obj, 'i_discrete', 0))
                 _Pm    = int(getattr(re_obj, 'n_mom', 2))
                 _sf    = getattr(re_obj, 'shape_function', 'linear')
@@ -810,16 +811,47 @@ def run_cpp_solver(sim, solver_config, base_dir=None, progress_callback=None,
                 _Ibin  = len(_bins)
                 _Ifull = int(sim.input_data.I)
                 _npts  = y_sia100.shape[1]
+                _Cf    = float(sim.input_data.reactions.get('C_floor', 1e-15))
                 _c100  = np.zeros((_Ifull, _npts))
+                # THE C_floor IC IS REMOVED AT THE MOMENT LEVEL, BEFORE the
+                # closure reconstructs per-size values -- the same rule
+                # post_process._floor_bin_moments enforces, and for the same
+                # reason (its docstring: an empty bin that still carries content
+                # is how mean_n_100 reached 2853 on a grid of I = 1000).
+                #
+                # Reconstructing from RAW moments and subtracting C_floor per
+                # size afterwards is NOT equivalent: the linear closure spreads a
+                # near-empty bin's floor residual across its sizes, so the clamp
+                # leaves a positive size-weighted tail at large n.  The <100>
+                # population sits near-empty for most of a run -- it exists only
+                # by conversion -- so it is in that regime continuously, and the
+                # tail is not a small correction.  Measured on the T3 campaign
+                # (2026-08-12): the resulting N_100_vis_1 exceeded the
+                # moment-level N_loops_100 in 95.3 % of 1173 rows, median 626x,
+                # max 65540x, and produced the d_100 = 22.87 nm ceiling pile-up
+                # and f_100 = 0.9999 character inversion.
+                #
+                # This view was documented as plot-only, but run_ensemble.observe
+                # reads it for N_100_vis_* / f_100_tem_*, i.e. for the numbers the
+                # calibration is scored on.  Flooring here fixes every consumer at
+                # once rather than in each caller.
                 for _j in range(_npts):
                     _col = np.maximum(y_sia100[:, _j], 0.0)
                     _c = np.zeros(_Ifull)
-                    _c[:_i_d] = _col[:_i_d]
+                    _c[:_i_d] = np.maximum(_col[:_i_d] - _Cf, 0.0)
                     if _Ibin > 0:
                         _mom = _col[_i_d:_i_d + _Pm * _Ibin]
-                        _mu0 = _mom[0::_Pm][:_Ibin]
-                        _mu1 = _mom[1::_Pm][:_Ibin] if _Pm >= 2 else None
+                        _mu0 = _mom[0::_Pm][:_Ibin].astype(float).copy()
+                        _mu1 = (_mom[1::_Pm][:_Ibin].astype(float).copy()
+                                if _Pm >= 2 else None)
                         _mu2 = _mom[2::_Pm][:_Ibin] if _Pm >= 3 else None
+                        for _kb, (_nlo, _nhi) in enumerate(_bins):
+                            _m0, _m1 = _floor_bin_moments(
+                                _mu0[_kb], _mu1[_kb] if _Pm >= 2 else 0.0,
+                                _nlo, _nhi, _Cf, _Pm)
+                            _mu0[_kb] = _m0
+                            if _Pm >= 2:
+                                _mu1[_kb] = _m1
                         _rec = reconstruct_distribution(_sf, _mu0, _mu1, _mu2,
                                                         _bins, _Ifull)
                         _c[_i_d:] = _rec[_i_d:]

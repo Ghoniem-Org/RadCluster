@@ -76,13 +76,26 @@ def misfit(model: dict, target: dict) -> tuple[float, list[str]]:
     # 626x, max 65540x.  A detection-limit filter can only REMOVE loops, so one
     # of the two is wrong by ~3 decades and it is not yet established which.
     #
-    # Character and mean size are UNAFFECTED, and that is not a hope -- it is
-    # exact.  Both are built from the same two per-size sums a0 (<100>) and a1
-    # (1/2<111>), so the 1/Omega normalisation cancels identically:
+    # Character and mean size are only PARTLY insulated, and the distinction
+    # matters.  Both are built from the same two per-size sums a0 (<100>) and a1
+    # (1/2<111>):
     #     f_100  = a0 / (a0 + a1)
     #     d_mean = (a0 d100 + a1 d111) / (a0 + a1) = f_100 d100 + (1-f_100) d111
-    # Whatever scales a0 and a1 together cannot move either number.  So the
-    # calibration scores on these two and reports density beside them.
+    # so a factor that scales a0 and a1 TOGETHER -- e.g. the 1/Omega
+    # normalisation -- cancels identically and cannot move either number.
+    #
+    # But the defect diagnosed on 2026-08-12 is NOT of that kind.  It is a
+    # spurious large-n tail in the <100> array ALONE (a per-size C_floor
+    # subtraction applied after the closure had already smeared the floor across
+    # a near-empty bin), so it inflates a0 without touching a1 and BOTH f_100 and
+    # d_mean move with it.  An earlier revision of this comment claimed the
+    # cancellation covered this case; the algebra was right but the premise was
+    # not.  Scoring on character and size is therefore the better-conditioned
+    # choice, not an immune one -- it drops the absolute scale, which is the
+    # worst-affected part, and keeps the ratio, which is merely affected.
+    #
+    # The tail itself is fixed at source in cpp_bridge (moment-level flooring
+    # before reconstruction); rows produced before that fix carry it.
     for key, tkey in (("d_loop_mean_nm", "d_loop_mean_nm"),):
         t = target.get(tkey)
         m = model.get(key)

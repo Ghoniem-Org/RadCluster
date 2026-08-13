@@ -3,7 +3,7 @@
  "kind": "latin_hypercube",
  "n": 64,
  "seed": 20260813,
- "condition": "C_330_G6",
+ "condition": "C_330_G7",
  "sampled": {
   "L_hat": {
    "lo": 300.0,
@@ -63,6 +63,6 @@
   "phi_max_junc",
   "dH2_abs_conv"
  ],
- "design_sha256": "7913cb9bab7968f82f2c7a19d2db3f3aff80e78a330135bbac21a620140946a0",
+ "design_sha256": "e2f9bc2d1440fc26fb7a4ad3aefd57ddd2e049e98ca3a92929a438b12be57907",
  "note": "Space-filling, NOT Saltelli: this design is for ESTIMATION (match the measurement), not attribution (Sobol indices), so it carries no A/B/AB_j pairing and merge_and_sobol must not be pointed at it."
 }

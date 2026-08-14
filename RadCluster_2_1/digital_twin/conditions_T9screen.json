@@ -1,0 +1,26 @@
+{
+ "_comment": [
+  "T9 SCREENING conditions: identical to C_300_G7 / C_350_G7 in",
+  "conditions_T7.json but with dose_dpa REMOVED so --dose governs.  The",
+  "experimental doses (15.0 / 16.3) are unreachable for most theta in the",
+  "widened box -- T9 batch 1 had median 0.89 dpa after a full 8 h -- and a",
+  "per-condition dose_dpa silently overrides --dose, which is how the first",
+  "smoke test ended up targeting 15 dpa with a 600 s budget and returned",
+  "nothing.  Screening runs point here; the full-dose verification of the",
+  "survivors points back at conditions_T7.json."
+ ],
+ "C_300_G7": {
+  "label": "EUROFER97 neutron 300 C, 15 dpa -- COLD END, data says 1/2<111>",
+  "T_K": 573.15,
+  "cascade": "fission",
+  "G": 1e-07,
+  "rho_d": 100000000000000.0
+ },
+ "C_350_G7": {
+  "label": "EUROFER97 neutron 350 C, 16.3 dpa -- HOT END, data says <100>",
+  "T_K": 623.15,
+  "cascade": "fission",
+  "G": 1e-07,
+  "rho_d": 100000000000000.0
+ }
+}

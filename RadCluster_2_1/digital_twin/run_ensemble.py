@@ -495,8 +495,17 @@ def evaluate(args):
     return rec
 
 
-def per_size_populations(res, sim, cfg):
-    """Return (c111, c_v, binned, topbin) at the FINAL time, per size.
+def per_size_populations(res, sim, cfg, idx=-1):
+    """Return (c111, c_v, binned, topbin) at time index `idx`, per size.
+
+    `idx` defaults to -1 (the final time), which is every legacy call site.  It
+    is a parameter because the CHARACTER has to be readable at a dose-ladder
+    checkpoint, not only at whatever dose a row happened to stop at: f_100 moves
+    strongly with dose (<100> is sessile and one-way, so it accumulates), and
+    two rows of the SAME theta that timed out at different doses cannot be
+    compared on it.  Measured 2026-08-13 on T9 batch 1: theta 4's two ends
+    stopped at 15.000 and 0.106 dpa, theta 0's at 2.813 and 0.020 -- a 140x dose
+    ratio masquerading as a temperature effect.
 
     One extraction that works in both modes, so every downstream gate is
     computed the same way and is comparable across the discrete/bin_moment
@@ -524,7 +533,7 @@ def per_size_populations(res, sim, cfg):
     y = np.asarray(y)
     if y.ndim != 2:
         return None, None, False, topbin
-    yj = np.maximum(y[:, -1], 0.0)
+    yj = np.maximum(y[:, idx], 0.0)
 
     re_obj = getattr(sim, "rate_equations", None)
     binned = cfg.get("equations") == "bin_moment" and hasattr(re_obj, "bins")
@@ -677,6 +686,40 @@ def observe(res, sim, cfg, d_min_nm):
                 2.0*(3.0*max(nvc, 0.0)*Om/(4.0*np.pi))**(1.0/3.0)*1e9),
             "delta_FP": float(ser("delta_FP")[j]),
         }
+        # CHARACTER ON THE LADDER (added 2026-08-13).  It used to be omitted
+        # here -- "f_100_* is deliberately absent: it needs the per-size
+        # reconstruction at that time index" -- which was true but left the one
+        # observable the character calibration turns on unavailable at a common
+        # dose.  The cost of that: in T9 batch 1 every theta's two temperature
+        # ends timed out at DIFFERENT doses (theta 4 at 15.000 vs 0.106 dpa),
+        # and since <100> accumulates monotonically, comparing their end-state
+        # f_100 measured the dose gap, not the temperature response.  One theta
+        # appeared to run the crossover BACKWARDS purely from this.
+        #
+        # The reconstruction is the same one the final-time path uses, at index
+        # j instead of -1, with the same floor treatment on each population:
+        # C_floor is subtracted from the 1/2<111> reconstruction here, while
+        # <100> is used as-is because cpp_bridge already floored it at the
+        # moment level (see the note at the c100 assignment below).
+        try:
+            _c111j, _, _, _ = per_size_populations(res, sim, cfg, idx=j)
+            _y100 = res.get("y_sia100")
+            if _c111j is not None and _y100 is not None:
+                _y100 = np.asarray(_y100)
+                if _y100.ndim == 2 and _y100.shape[0] >= I and _y100.shape[1] > j:
+                    _c111j = np.maximum(_c111j[:I] - cfg["C_floor"], 0.0)
+                    _c100j = np.maximum(_y100[:I, j], 0.0)
+                    _nax = np.arange(1, I + 1)
+                    _d100 = 2*np.sqrt(_nax*Om/(np.pi*b100))*1e9
+                    _d111 = 2*np.sqrt(_nax*Om/(np.pi*b111))*1e9
+                    _a0 = float(_c100j[_d100 >= d_min_nm].sum())
+                    _a1 = float(_c111j[_d111 >= d_min_nm].sum())
+                    ladder[f"{dck:g}"]["N_100_vis"] = _a0 / Om
+                    ladder[f"{dck:g}"]["N_111_vis"] = _a1 / Om
+                    ladder[f"{dck:g}"]["f_100_tem"] = (
+                        _a0 / (_a0 + _a1)) if (_a0 + _a1) > 0 else None
+        except Exception as _e:      # a ladder rung must never fail a row
+            ladder[f"{dck:g}"]["f_100_err"] = f"{type(_e).__name__}"[:40]
     out["at_dose"] = ladder or None
 
     # --- admissibility -----------------------------------------------------

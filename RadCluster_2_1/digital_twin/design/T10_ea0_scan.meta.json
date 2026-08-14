@@ -1,0 +1,48 @@
+{
+ "tier": "T10_E_a0_scan",
+ "kind": "1D_scan",
+ "scanned": "E_a0_conv",
+ "values": [
+  1.55,
+  1.5864,
+  1.6227,
+  1.6591,
+  1.6955,
+  1.7318,
+  1.7682,
+  1.8045,
+  1.8409,
+  1.8773,
+  1.9136,
+  1.95
+ ],
+ "conditions": [
+  "C_300_G7",
+  "C_350_G7"
+ ],
+ "n_rows": 24,
+ "base": "T9_crossover theta_id=1 (d_111 = 3.84 nm at its top rung, nearest the 3.4 nm datum)",
+ "parameters": [
+  "eta",
+  "f_cl_i",
+  "f_cl_v",
+  "E_m_i",
+  "E_m_v",
+  "E_m_h",
+  "L_hat",
+  "gamma_s",
+  "E_b_v2",
+  "lambda",
+  "B_111",
+  "E_b_i2",
+  "E_b_hV_1",
+  "Z_i",
+  "Z_i_loop",
+  "E_a0_conv",
+  "dH2_conv",
+  "phi_max_junc",
+  "dH2_abs_conv"
+ ],
+ "design_sha256": "f3714dca5a751431f4a679e9939099c487426f8c556e14c73ca5bc2b246da270",
+ "rationale": "E_a0_conv is the ONLY strong temperature lever: its unary channel is Arrhenius and gives a 300->350 C rate ratio of 9.7-295 across [1.4,3.5], while the absorption gate dH2_abs_conv gives 0.98-1.92 over its whole range and the junction gate 1.12.  T9 data sorts perfectly on E_a0_conv (converts at 1.601, does not at 1.709+) and not at all on dH2_abs_conv.  The crossover therefore lives in a ~0.2 eV window; T9 sampled [1.4,3.5] uniformly, i.e. 10% of draws, and hit it zero times in 13 rows.  This scan puts every point inside the window."
+}

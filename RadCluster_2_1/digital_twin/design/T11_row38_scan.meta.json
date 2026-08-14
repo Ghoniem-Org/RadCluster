@@ -1,0 +1,42 @@
+{
+ "tier": "T11_row38_E_a0_scan",
+ "kind": "1D_scan",
+ "scanned": "E_a0_conv",
+ "values": [
+  1.7,
+  1.8,
+  1.9,
+  2.0,
+  2.1,
+  2.2
+ ],
+ "conditions": [
+  "C_300_G7",
+  "C_350_G7"
+ ],
+ "n_rows": 12,
+ "parameters": [
+  "eta",
+  "f_cl_i",
+  "f_cl_v",
+  "E_m_i",
+  "E_m_v",
+  "E_m_h",
+  "L_hat",
+  "gamma_s",
+  "E_b_v2",
+  "lambda",
+  "B_111",
+  "E_b_i2",
+  "E_b_hV_1",
+  "Z_i",
+  "Z_i_loop",
+  "E_a0_conv",
+  "dH2_conv",
+  "phi_max_junc",
+  "dH2_abs_conv"
+ ],
+ "design_sha256": "fca34f4d260ca1056952f02634328b6dd73d6a413db8fe67f9bb90111e9e08e4",
+ "base": "T3_rev6 row 38 / N2 -- the ONLY base observed to give the CORRECT temperature direction",
+ "rationale": "T10 scanned E_a0_conv over [1.55,1.95] on the T9-theta1 base and got 0 crossover hits at all 12 values, with f_100 LOWER at 350 C than at 300 C everywhere -- the inverse of the measured trend.  Mechanism: raising T grows 1/2<111> faster than it converts it (d_111 = 10.39 nm at 350 C vs 1.10 nm at 300 C at E_a0=1.55), so more 1/2<111> clears the 1 nm TEM cutoff and dilutes the filtered ratio, beating the Arrhenius speed-up of conversion. The row-38 base instead gave f_100 0.4275 -> 0.8605 across 300->330 C at matched dose, i.e. the correct sign.  The two bases differ in nine parameters so the sign cannot be attributed from that pair; this scan first establishes whether row 38 keeps the correct sign at the 300/350 pair and G=1e-7, and if so locates its crossover E_a0."
+}

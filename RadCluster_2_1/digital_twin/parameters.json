@@ -1,140 +1,415 @@
 {
-  "_comment": [
-    "H.11-1 parameter specification for the RadCluster_2_1 digital twin.",
-    "",
-    "JSON rather than the plan's parameters.yaml because pyyaml is not in the",
-    "environment; the schema is identical and design.py prefers a .yaml sibling",
-    "if one appears.  Ranges and provenance follow the implementation plan",
-    "S2.1 (revision 4) unless a 'revised' note says otherwise.",
-    "",
-    "prior families:  U  uniform",
-    "                 TN truncated normal, mu=nominal, sigma=(hi-lo)/4, clipped",
-    "                 LN log-uniform (sampled uniform in log10)",
-    "                 INT uniform over integers (constructor kwargs)",
-    "",
-    "tier: 2 = screened in the LF Sobol ensemble",
-    "      3 = HF only (dose-driven; rho_net compounds and is invisible at 0.1 dpa)",
-    "      0 = held fixed, recorded for audit, never sampled",
-    "",
-    "sheet: the InputData attribute that run_ensemble writes to.  'ctor' means a",
-    "RadClusterSimulation constructor kwarg.  A list means write to ALL of them",
-    "(E_m_* and gamma_s are duplicated across sheets and BOTH are read)."
-  ],
-
-  "version": "T2_v1",
-  "reference": "docs/design_notes/digital_twin_implementation_plan.md S2.1 rev.4",
-
-  "parameters": [
-    {"id": 1,  "key": "eta",         "sheet": "production_fission", "tier": 2,
-     "lo": 0.20, "hi": 0.35, "nominal": 0.30, "prior": "TN", "units": "-",
-     "note": "cascade survival; Production sheet was a dead code path until 2026-07-30"},
-
-    {"id": 2,  "key": "f_cl_i",      "sheet": "production_fission", "tier": 2,
-     "lo": 0.05, "hi": 0.25, "nominal": 0.25, "prior": "U", "units": "-",
-     "note": "nominal sits ON the upper bound - see plan S2.3 three-way conflict"},
-
-    {"id": 3,  "key": "f_cl_v",      "sheet": "production_fission", "tier": 2,
-     "lo": 0.20, "hi": 0.70, "nominal": 0.30, "prior": "U", "units": "-",
-     "note": "workbook 0.05 and code 0.15 are BOTH outside this prior (plan S2.3); nominal moved inside"},
-
-    {"id": 4,  "key": "E_m_i",       "sheet": ["energetics", "diffusion"], "tier": 2,
-     "lo": 0.30, "hi": 0.80, "nominal": 0.34, "prior": "TN", "units": "eV"},
-
-    {"id": 5,  "key": "E_m_v",       "sheet": ["energetics", "diffusion"], "tier": 2,
-     "lo": 0.50, "hi": 1.00, "nominal": 0.67, "prior": "TN", "units": "eV"},
-
-    {"id": 6,  "key": "E_m_h",       "sheet": ["energetics", "diffusion"], "tier": 2,
-     "lo": 0.06, "hi": 0.09, "nominal": 0.06, "prior": "TN", "units": "eV"},
-
-    {"id": 7,  "key": "L_hat",       "sheet": "diffusion", "tier": 2,
-     "lo": 3.5, "hi": 3500.0, "nominal": 50.0, "prior": "LN", "units": "-",
-     "note": "L_hat = L/a; plan S2.1 unit change from L_1D in nm"},
-
-    {"id": 8,  "key": "i_mobile",    "sheet": "ctor", "tier": 2,
-     "lo": 1, "hi": 100, "nominal": 10, "prior": "INT", "units": "-",
-     "note": "also gates the junction via effective_n_j_min(n_j_min_junc, i_mobile, n_j_min_frac)"},
-
-    {"id": 9,  "key": "v_mobile",    "sheet": "ctor", "tier": 2,
-     "lo": 1, "hi": 5, "nominal": 5, "prior": "INT", "units": "-",
-     "note": "drives Woodbury rank, so it moves cost as well as physics"},
-
-    {"id": 10, "key": "gamma_s",     "sheet": ["energetics", "dissociation"], "tier": 2,
-     "lo": 1.7, "hi": 2.3, "nominal": 2.0, "prior": "TN", "units": "J/m^2"},
-
-    {"id": 11, "key": "E_b_v2",      "sheet": "dissociation", "tier": 2,
-     "lo": 0.10, "hi": 0.35, "nominal": 0.22, "prior": "TN", "units": "eV"},
-
-    {"id": 12, "key": "lambda",      "sheet": "dissociation", "tier": 2,
-     "lo": 0.40, "hi": 0.80, "nominal": 0.5756, "prior": "TN", "units": "1/vac",
-     "note": "blend decay; plan S2.2 flags this as currently hard-coded - VERIFY it is wired before trusting S_i"},
-
-    {"id": 13, "key": "B_111",       "sheet": "dissociation", "tier": 2,
-     "lo": 0.30, "hi": 0.70, "nominal": 0.3873, "prior": "TN", "units": "-",
-     "derived_partners": {"B_100": "B_111 * 0.9246"},
-     "note": "<100> carried as a FIXED offset so the character ratio cannot absorb f_100 data (plan S2.1)"},
-
-    {"id": 14, "key": "E_b_i2",      "sheet": "dissociation", "tier": 2,
-     "lo": 0.60, "hi": 1.20, "nominal": 0.90, "prior": "TN", "units": "eV",
-     "derived_partners": {"A_111": "reparameterised from E_b_i2 and B_111 (plan S2.2c)",
-                          "A_100": "A_111 * 0.9545"},
-     "note": "A_111 is DERIVED, not sampled - sampling both would double-count"},
-
-    {"id": 15, "key": "E_b_hV_1",    "sheet": "energetics", "tier": 2,
-     "lo": 1.5, "hi": 3.0, "nominal": 2.30, "prior": "TN", "units": "eV"},
-
-    {"id": 16, "key": "Z_i",         "sheet": "reactions", "tier": 2,
-     "lo": 1.02, "hi": 1.15, "nominal": 1.05, "prior": "U", "units": "-"},
-
-    {"id": 17, "key": "Z_i_loop",    "sheet": "reactions", "tier": 2,
-     "lo": 1.05, "hi": 1.30, "nominal": 1.10, "prior": "U", "units": "-",
-     "note": "de-aliased from Z_i (plan S2.2a). SHARED between 1/2<111> capture and <100> growth, so it cannot change the character ratio - verified 2026-08-01"},
-
-    {"id": 21, "key": "E_a0_conv",   "sheet": "reactions", "tier": 2,
-     "lo": 1.60, "hi": 2.40, "nominal": 2.25, "prior": "U", "units": "eV",
-     "note": "REVISED 2026-08-02, and DELIBERATELY LEFT WIDE. Two temperatures pull this parameter in opposite directions and it cannot satisfy both: N_100 at 350 C wants 2.25 (measured 1.08x target at that value), while the f_100(T) trend wants ~1.6 (the plan's own record: f_100 0.356 -> 0.824 across 300-400 C at E_a0 = 1.6). At 2.25 the modelled trend is 0.0002 -> 0.375 across the same span, against data that is roughly flat - because N_100 ~ exp(-E_a0/kT) EXACTLY (41.3x per 0.2 eV, matching 1/kT to three digits), giving a 665x swing where the data shows almost none. Narrowing to 2.25 would bake in that bad temperature dependence and HIDE the conflict, which is precisely what Tier 2/4 exist to expose. Prior widened to span both attractors; uniform rather than truncated-normal so neither end is favoured. The rev.4 range 1.45-1.85 is withdrawn: it was set with the <100> absorption channel throttled."},
-
-    {"id": 22, "key": "dH2_conv",    "sheet": "reactions", "tier": 2,
-     "lo": 0.35, "hi": 0.50, "nominal": 0.40, "prior": "TN", "units": "eV",
-     "note": "JUNCTION gate only, as of 2026-08-01; absorption has its own barrier (id 25)"},
-
-    {"id": 23, "key": "phi_max_junc", "sheet": "reactions", "tier": 2,
-     "lo": 0.10, "hi": 1.00, "nominal": 0.50, "prior": "U", "units": "-",
-     "canary": true,
-     "note": "SCREENING CANARY: was structurally inert whenever i_mobile < n_j_min_junc. If S_i^T ~ 0 after fix T0.5(c4), check n_j_min_frac reached the kernel BEFORE concluding the junction is unimportant - this parameter has already produced one false null"},
-
-    {"id": 25, "key": "dH2_abs_conv", "sheet": "reactions", "tier": 2,
-     "lo": 0.26, "hi": 0.45, "nominal": 0.273, "prior": "U", "units": "eV",
-     "note": "CALIBRATED 2026-08-02. Absorption-only success gate barrier; the parameter that unsticks <100> size. At 0.273 (gate 1.246, with psucc_abs_pref = 2.0) and E_a0_conv = 2.25, a converged I=3200 run at 350 C / 0.3 dpa gives d_100 = 7.83 nm against a 7.9 nm target (0.99x) and N_100 = 4.00e21 against 3.72e21 (1.08x), with pile = 0.0000 and delta_FP = 1.5e-08. THE LOWER BOUND IS NUMERICAL, NOT PHYSICAL: <100> has no size cap in the present model, so small dH2_abs opens the gate wide enough for unbounded growth - at 0.15 (gate 1.885) d_100 fails to converge on ANY grid tried (6.04/8.09/9.40 nm at I = 800/1600/2400, pile still 0.67 at the largest), while N_100 converges to 1.9e21 throughout. Loops that never stop growing cannot be represented at affordable cost, so the box is cut to exclude that corner; 0.26 already shows pile = 0.071 at I=3200. Restore the lower bound only after a size cap exists (loop->network, id 24). DEGENERATE with psucc_abs_pref at fixed T - only the product (the gate) is identifiable from one temperature; they separate solely through the f_100(T) spread across the three conditions, which is why psucc_abs_pref is held fixed rather than co-sampled."},
-
-    {"id": 26, "key": "d_min_tem",   "sheet": "postproc", "tier": 0,
-     "lo": 0.8, "hi": 1.5, "nominal": 1.0, "prior": "U", "units": "nm",
-     "sweep": [0.8, 1.0, 1.25, 1.5],
-     "note": "TEM visibility cutoff (plan S3.1-1). DELIBERATELY NOT IN THE SALTELLI DESIGN: it is a pure post-processing transform, so two design rows differing only in d_min are the SAME simulation. Sampling it would spend 48 redundant runs (one AB column) and bury its effect inside a variance decomposition. Instead every run emits f_100_tem at all four cutoffs in 'sweep', so the sensitivity is read directly off the spread and the nuisance can be marginalised at calibration time for free. Dethloff's black-dot convention alone moves one EUROFER97 point 72% -> 45% (Appendix G.5), so this spread is a floor on sigma_model for f_100"},
-
-    {"id": 19, "key": "loop_net_K_rec", "sheet": "reactions", "tier": 3,
-     "lo": 1e-6, "hi": 1e-2, "nominal": 1e-4, "prior": "LN", "units": "m/s",
-     "note": "rev.4 moved the range down; 1e-3 already saturates. Default 0 = no recovery = monotonic rho_net growth, which produced a runaway on 2026-07-31"},
-
-    {"id": 20, "key": "loop_net_w_c",  "sheet": "reactions", "tier": 3,
-     "lo": 1.0, "hi": 200.0, "nominal": 1.0, "prior": "LN", "units": "b_111",
-     "note": "capture width in units of b_111; run_ensemble multiplies by b_111 before writing"},
-
-    {"id": 24, "key": "loop_net_chi",  "sheet": "reactions", "tier": 3,
-     "lo": 1.0, "hi": 60.0, "nominal": 5.0, "prior": "LN", "units": "-",
-     "note": "nominal moved 1.0 -> 5.0 (2026-08-01). At chi=1, P_ld = 0.5*(1+tanh((chi*d - (L_ld - d/2))/b_c)) is IDENTICALLY ZERO for the few-nm loops that exist: rho_net=1e14 gives L_ld=100 nm vs chi*d=6.5 nm, i.e. tanh(-315). At the EUROFER plateau rho_net~5e14 (L_ld=44.7 nm) a 7.9 nm loop needs chi~5.2 to reach P_ld=0.5. Screening w_c/chi/K_rec on a grid where P_ld==0 returns S_i=0 for all three and looks exactly like a genuine screening result - this is the T0.4b liveness prerequisite"}
-  ],
-
-  "fixed": [
-    {"key": "gamma_a_conv",     "value": 0.02,   "why": "Table 11 physical value; lowering it hits the stiffness wall without moving f_100"},
-    {"key": "dH_rev_conv",      "value": 0.30,   "why": "enters P_succ only via (dH2 - dH_rev); non-identifiable against id 22"},
-    {"key": "psucc_abs_pref",   "value": 2.0,    "why": "A_abs. Degenerate with dH2_abs_conv at fixed T (only the gate is identifiable). Fixed at 2.0 because A_abs=1 caps the gate at 0.5 and the calibrated gate is ~1.7. Set 2026-08-01"},
-    {"key": "n_j_min_junc",     "value": 30,     "why": "Marian junction onset 34-37; mechanism constant. Used via effective_n_j_min(), never raw"},
-    {"key": "n_j_min_frac",     "value": 0.6,    "why": "0.6*50 = 30 reproduces Marian exactly at production i_mobile"},
-    {"key": "T_star_conv_C",    "value": 450,    "why": "demoted from id 18 (rev.4) - measured 2.7% effect on f_100"},
-    {"key": "nu0_conv",         "value": 1e13,   "why": "Debye frequency"},
-    {"key": "loop_net_rho_max", "value": 5e14,   "why": "EUROFER network plateau, measured not fitted"},
-    {"key": "n_ref_conv",       "value": 50,     "why": "dF calibration anchor size; redundant with T*"},
-    {"key": "absorb_boost_100", "value": 1.0,    "why": "pure test knob; the physics now lives in dH2_abs_conv"},
-    {"key": "grow_boost_100",   "value": 1.0,    "why": "REJECTED as a mechanism 2026-08-01: gives UNBOUNDED growth (d_100 = grid ceiling at I=800/1600/2400 alike, pile~0.9995). Must stay at 1.0"}
-  ]
+ "_comment": [
+  "H.11-1 parameter specification for the RadCluster_2_1 digital twin.",
+  "",
+  "JSON rather than the plan's parameters.yaml because pyyaml is not in the",
+  "environment; the schema is identical and design.py prefers a .yaml sibling",
+  "if one appears.  Ranges and provenance follow the implementation plan",
+  "S2.1 (revision 4) unless a 'revised' note says otherwise.",
+  "",
+  "prior families:  U  uniform",
+  "                 TN truncated normal, mu=nominal, sigma=(hi-lo)/4, clipped",
+  "                 LN log-uniform (sampled uniform in log10)",
+  "                 INT uniform over integers (constructor kwargs)",
+  "",
+  "tier: 2 = screened in the LF Sobol ensemble",
+  "      3 = HF only (dose-driven; rho_net compounds and is invisible at 0.1 dpa)",
+  "      0 = held fixed, recorded for audit, never sampled",
+  "",
+  "sheet: the InputData attribute that run_ensemble writes to.  'ctor' means a",
+  "RadClusterSimulation constructor kwarg.  A list means write to ALL of them",
+  "(E_m_* and gamma_s are duplicated across sheets and BOTH are read)."
+ ],
+ "version": "T2_v1+Tstar",
+ "reference": "docs/design_notes/digital_twin_implementation_plan.md S2.1 rev.4",
+ "parameters": [
+  {
+   "id": 1,
+   "key": "eta",
+   "sheet": "production_fission",
+   "tier": 2,
+   "lo": 0.2,
+   "hi": 0.35,
+   "nominal": 0.3,
+   "prior": "TN",
+   "units": "-",
+   "note": "cascade survival; Production sheet was a dead code path until 2026-07-30"
+  },
+  {
+   "id": 2,
+   "key": "f_cl_i",
+   "sheet": "production_fission",
+   "tier": 2,
+   "lo": 0.05,
+   "hi": 0.25,
+   "nominal": 0.25,
+   "prior": "U",
+   "units": "-",
+   "note": "nominal sits ON the upper bound - see plan S2.3 three-way conflict"
+  },
+  {
+   "id": 3,
+   "key": "f_cl_v",
+   "sheet": "production_fission",
+   "tier": 2,
+   "lo": 0.2,
+   "hi": 0.7,
+   "nominal": 0.3,
+   "prior": "U",
+   "units": "-",
+   "note": "workbook 0.05 and code 0.15 are BOTH outside this prior (plan S2.3); nominal moved inside"
+  },
+  {
+   "id": 4,
+   "key": "E_m_i",
+   "sheet": [
+    "energetics",
+    "diffusion"
+   ],
+   "tier": 2,
+   "lo": 0.3,
+   "hi": 0.8,
+   "nominal": 0.34,
+   "prior": "TN",
+   "units": "eV"
+  },
+  {
+   "id": 5,
+   "key": "E_m_v",
+   "sheet": [
+    "energetics",
+    "diffusion"
+   ],
+   "tier": 2,
+   "lo": 0.5,
+   "hi": 1.0,
+   "nominal": 0.67,
+   "prior": "TN",
+   "units": "eV"
+  },
+  {
+   "id": 6,
+   "key": "E_m_h",
+   "sheet": [
+    "energetics",
+    "diffusion"
+   ],
+   "tier": 2,
+   "lo": 0.06,
+   "hi": 0.09,
+   "nominal": 0.06,
+   "prior": "TN",
+   "units": "eV"
+  },
+  {
+   "id": 7,
+   "key": "L_hat",
+   "sheet": "diffusion",
+   "tier": 2,
+   "lo": 3.5,
+   "hi": 3500.0,
+   "nominal": 50.0,
+   "prior": "LN",
+   "units": "-",
+   "note": "L_hat = L/a; plan S2.1 unit change from L_1D in nm"
+  },
+  {
+   "id": 8,
+   "key": "i_mobile",
+   "sheet": "ctor",
+   "tier": 2,
+   "lo": 1,
+   "hi": 100,
+   "nominal": 10,
+   "prior": "INT",
+   "units": "-",
+   "note": "also gates the junction via effective_n_j_min(n_j_min_junc, i_mobile, n_j_min_frac)"
+  },
+  {
+   "id": 9,
+   "key": "v_mobile",
+   "sheet": "ctor",
+   "tier": 2,
+   "lo": 1,
+   "hi": 5,
+   "nominal": 5,
+   "prior": "INT",
+   "units": "-",
+   "note": "drives Woodbury rank, so it moves cost as well as physics"
+  },
+  {
+   "id": 10,
+   "key": "gamma_s",
+   "sheet": [
+    "energetics",
+    "dissociation"
+   ],
+   "tier": 2,
+   "lo": 1.7,
+   "hi": 2.3,
+   "nominal": 2.0,
+   "prior": "TN",
+   "units": "J/m^2"
+  },
+  {
+   "id": 11,
+   "key": "E_b_v2",
+   "sheet": "dissociation",
+   "tier": 2,
+   "lo": 0.1,
+   "hi": 0.35,
+   "nominal": 0.22,
+   "prior": "TN",
+   "units": "eV"
+  },
+  {
+   "id": 12,
+   "key": "lambda",
+   "sheet": "dissociation",
+   "tier": 2,
+   "lo": 0.4,
+   "hi": 0.8,
+   "nominal": 0.5756,
+   "prior": "TN",
+   "units": "1/vac",
+   "note": "blend decay; plan S2.2 flags this as currently hard-coded - VERIFY it is wired before trusting S_i"
+  },
+  {
+   "id": 13,
+   "key": "B_111",
+   "sheet": "dissociation",
+   "tier": 2,
+   "lo": 0.3,
+   "hi": 0.7,
+   "nominal": 0.3873,
+   "prior": "TN",
+   "units": "-",
+   "derived_partners": {
+    "B_100": "B_111 * 0.9246"
+   },
+   "note": "<100> carried as a FIXED offset so the character ratio cannot absorb f_100 data (plan S2.1)"
+  },
+  {
+   "id": 14,
+   "key": "E_b_i2",
+   "sheet": "dissociation",
+   "tier": 2,
+   "lo": 0.6,
+   "hi": 1.2,
+   "nominal": 0.9,
+   "prior": "TN",
+   "units": "eV",
+   "derived_partners": {
+    "A_111": "reparameterised from E_b_i2 and B_111 (plan S2.2c)",
+    "A_100": "A_111 * 0.9545"
+   },
+   "note": "A_111 is DERIVED, not sampled - sampling both would double-count"
+  },
+  {
+   "id": 15,
+   "key": "E_b_hV_1",
+   "sheet": "energetics",
+   "tier": 2,
+   "lo": 1.5,
+   "hi": 3.0,
+   "nominal": 2.3,
+   "prior": "TN",
+   "units": "eV"
+  },
+  {
+   "id": 16,
+   "key": "Z_i",
+   "sheet": "reactions",
+   "tier": 2,
+   "lo": 1.02,
+   "hi": 1.15,
+   "nominal": 1.05,
+   "prior": "U",
+   "units": "-"
+  },
+  {
+   "id": 17,
+   "key": "Z_i_loop",
+   "sheet": "reactions",
+   "tier": 2,
+   "lo": 1.05,
+   "hi": 1.3,
+   "nominal": 1.1,
+   "prior": "U",
+   "units": "-",
+   "note": "de-aliased from Z_i (plan S2.2a). SHARED between 1/2<111> capture and <100> growth, so it cannot change the character ratio - verified 2026-08-01"
+  },
+  {
+   "id": 21,
+   "key": "E_a0_conv",
+   "sheet": "reactions",
+   "tier": 2,
+   "lo": 1.6,
+   "hi": 2.4,
+   "nominal": 2.25,
+   "prior": "U",
+   "units": "eV",
+   "note": "REVISED 2026-08-02, and DELIBERATELY LEFT WIDE. Two temperatures pull this parameter in opposite directions and it cannot satisfy both: N_100 at 350 C wants 2.25 (measured 1.08x target at that value), while the f_100(T) trend wants ~1.6 (the plan's own record: f_100 0.356 -> 0.824 across 300-400 C at E_a0 = 1.6). At 2.25 the modelled trend is 0.0002 -> 0.375 across the same span, against data that is roughly flat - because N_100 ~ exp(-E_a0/kT) EXACTLY (41.3x per 0.2 eV, matching 1/kT to three digits), giving a 665x swing where the data shows almost none. Narrowing to 2.25 would bake in that bad temperature dependence and HIDE the conflict, which is precisely what Tier 2/4 exist to expose. Prior widened to span both attractors; uniform rather than truncated-normal so neither end is favoured. The rev.4 range 1.45-1.85 is withdrawn: it was set with the <100> absorption channel throttled."
+  },
+  {
+   "id": 22,
+   "key": "dH2_conv",
+   "sheet": "reactions",
+   "tier": 2,
+   "lo": 0.35,
+   "hi": 0.5,
+   "nominal": 0.4,
+   "prior": "TN",
+   "units": "eV",
+   "note": "JUNCTION gate only, as of 2026-08-01; absorption has its own barrier (id 25)"
+  },
+  {
+   "id": 23,
+   "key": "phi_max_junc",
+   "sheet": "reactions",
+   "tier": 2,
+   "lo": 0.1,
+   "hi": 1.0,
+   "nominal": 0.5,
+   "prior": "U",
+   "units": "-",
+   "canary": true,
+   "note": "SCREENING CANARY: was structurally inert whenever i_mobile < n_j_min_junc. If S_i^T ~ 0 after fix T0.5(c4), check n_j_min_frac reached the kernel BEFORE concluding the junction is unimportant - this parameter has already produced one false null"
+  },
+  {
+   "id": 25,
+   "key": "dH2_abs_conv",
+   "sheet": "reactions",
+   "tier": 2,
+   "lo": 0.26,
+   "hi": 0.45,
+   "nominal": 0.273,
+   "prior": "U",
+   "units": "eV",
+   "note": "CALIBRATED 2026-08-02. Absorption-only success gate barrier; the parameter that unsticks <100> size. At 0.273 (gate 1.246, with psucc_abs_pref = 2.0) and E_a0_conv = 2.25, a converged I=3200 run at 350 C / 0.3 dpa gives d_100 = 7.83 nm against a 7.9 nm target (0.99x) and N_100 = 4.00e21 against 3.72e21 (1.08x), with pile = 0.0000 and delta_FP = 1.5e-08. THE LOWER BOUND IS NUMERICAL, NOT PHYSICAL: <100> has no size cap in the present model, so small dH2_abs opens the gate wide enough for unbounded growth - at 0.15 (gate 1.885) d_100 fails to converge on ANY grid tried (6.04/8.09/9.40 nm at I = 800/1600/2400, pile still 0.67 at the largest), while N_100 converges to 1.9e21 throughout. Loops that never stop growing cannot be represented at affordable cost, so the box is cut to exclude that corner; 0.26 already shows pile = 0.071 at I=3200. Restore the lower bound only after a size cap exists (loop->network, id 24). DEGENERATE with psucc_abs_pref at fixed T - only the product (the gate) is identifiable from one temperature; they separate solely through the f_100(T) spread across the three conditions, which is why psucc_abs_pref is held fixed rather than co-sampled."
+  },
+  {
+   "id": 26,
+   "key": "d_min_tem",
+   "sheet": "postproc",
+   "tier": 0,
+   "lo": 0.8,
+   "hi": 1.5,
+   "nominal": 1.0,
+   "prior": "U",
+   "units": "nm",
+   "sweep": [
+    0.8,
+    1.0,
+    1.25,
+    1.5
+   ],
+   "note": "TEM visibility cutoff (plan S3.1-1). DELIBERATELY NOT IN THE SALTELLI DESIGN: it is a pure post-processing transform, so two design rows differing only in d_min are the SAME simulation. Sampling it would spend 48 redundant runs (one AB column) and bury its effect inside a variance decomposition. Instead every run emits f_100_tem at all four cutoffs in 'sweep', so the sensitivity is read directly off the spread and the nuisance can be marginalised at calibration time for free. Dethloff's black-dot convention alone moves one EUROFER97 point 72% -> 45% (Appendix G.5), so this spread is a floor on sigma_model for f_100"
+  },
+  {
+   "id": 19,
+   "key": "loop_net_K_rec",
+   "sheet": "reactions",
+   "tier": 3,
+   "lo": 1e-06,
+   "hi": 0.01,
+   "nominal": 0.0001,
+   "prior": "LN",
+   "units": "m/s",
+   "note": "rev.4 moved the range down; 1e-3 already saturates. Default 0 = no recovery = monotonic rho_net growth, which produced a runaway on 2026-07-31"
+  },
+  {
+   "id": 20,
+   "key": "loop_net_w_c",
+   "sheet": "reactions",
+   "tier": 3,
+   "lo": 1.0,
+   "hi": 200.0,
+   "nominal": 1.0,
+   "prior": "LN",
+   "units": "b_111",
+   "note": "capture width in units of b_111; run_ensemble multiplies by b_111 before writing"
+  },
+  {
+   "id": 24,
+   "key": "loop_net_chi",
+   "sheet": "reactions",
+   "tier": 3,
+   "lo": 1.0,
+   "hi": 60.0,
+   "nominal": 5.0,
+   "prior": "LN",
+   "units": "-",
+   "note": "nominal moved 1.0 -> 5.0 (2026-08-01). At chi=1, P_ld = 0.5*(1+tanh((chi*d - (L_ld - d/2))/b_c)) is IDENTICALLY ZERO for the few-nm loops that exist: rho_net=1e14 gives L_ld=100 nm vs chi*d=6.5 nm, i.e. tanh(-315). At the EUROFER plateau rho_net~5e14 (L_ld=44.7 nm) a 7.9 nm loop needs chi~5.2 to reach P_ld=0.5. Screening w_c/chi/K_rec on a grid where P_ld==0 returns S_i=0 for all three and looks exactly like a genuine screening result - this is the T0.4b liveness prerequisite"
+  },
+  {
+   "id": 27,
+   "key": "T_star_conv_C",
+   "sheet": "reactions",
+   "tier": 3,
+   "lo": 200.0,
+   "hi": 450.0,
+   "nominal": 450.0,
+   "prior": "U",
+   "units": "C",
+   "note": "PROMOTED FROM FIXED 2026-08-14.  T_star IS the model crossover temperature by construction -- loop_energetics._selftest asserts dF(n_ref,T*)=0 with 1/2<111> favoured below T* and <100> above -- yet it was pinned at 450 C for the whole campaign, 120 C above the measured EUROFER crossover (~330 C).  With T*=450 the driving force is negative at BOTH 300 and 350 C (-1.73 and -1.19 eV at n=50), so the only DF-gated, strongly T-dependent channel (unary) is off at both conditions and the character response is left to the kinetic Marian channels, whose T-ratios are 1.12 and 0.98-1.92. CAUTION: lowering T* alone does NOT fix the measured sizes -- dF at n=191 (3.4 nm) stays negative at both temperatures for every T* from 450 down to 100, so the sign flip is confined to loops <~2 nm.  Sample it, but do not expect it to carry the crossover on its own."
+  }
+ ],
+ "fixed": [
+  {
+   "key": "gamma_a_conv",
+   "value": 0.02,
+   "why": "Table 11 physical value; lowering it hits the stiffness wall without moving f_100"
+  },
+  {
+   "key": "dH_rev_conv",
+   "value": 0.3,
+   "why": "enters P_succ only via (dH2 - dH_rev); non-identifiable against id 22"
+  },
+  {
+   "key": "psucc_abs_pref",
+   "value": 2.0,
+   "why": "A_abs. Degenerate with dH2_abs_conv at fixed T (only the gate is identifiable). Fixed at 2.0 because A_abs=1 caps the gate at 0.5 and the calibrated gate is ~1.7. Set 2026-08-01"
+  },
+  {
+   "key": "n_j_min_junc",
+   "value": 30,
+   "why": "Marian junction onset 34-37; mechanism constant. Used via effective_n_j_min(), never raw"
+  },
+  {
+   "key": "n_j_min_frac",
+   "value": 0.6,
+   "why": "0.6*50 = 30 reproduces Marian exactly at production i_mobile"
+  },
+  {
+   "key": "T_star_conv_C",
+   "value": 450,
+   "why": "demoted from id 18 (rev.4) - measured 2.7% effect on f_100"
+  },
+  {
+   "key": "nu0_conv",
+   "value": 10000000000000.0,
+   "why": "Debye frequency"
+  },
+  {
+   "key": "loop_net_rho_max",
+   "value": 500000000000000.0,
+   "why": "EUROFER network plateau, measured not fitted"
+  },
+  {
+   "key": "n_ref_conv",
+   "value": 50,
+   "why": "dF calibration anchor size; redundant with T*"
+  },
+  {
+   "key": "absorb_boost_100",
+   "value": 1.0,
+   "why": "pure test knob; the physics now lives in dH2_abs_conv"
+  },
+  {
+   "key": "grow_boost_100",
+   "value": 1.0,
+   "why": "REJECTED as a mechanism 2026-08-01: gives UNBOUNDED growth (d_100 = grid ceiling at I=800/1600/2400 alike, pile~0.9995). Must stay at 1.0"
+  }
+ ]
 }

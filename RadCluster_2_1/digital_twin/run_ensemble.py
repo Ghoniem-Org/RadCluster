@@ -272,9 +272,19 @@ def apply_theta(sim, spec: dict, row: dict, cond: dict):
         put("dissociation", "A_111", a111)
         put("dissociation", "A_100", a111 * 0.9545)
 
-    # fixed values, written explicitly so a stale workbook cannot leak in
+    # fixed values, written explicitly so a stale workbook cannot leak in.
+    #
+    # A SAMPLED VALUE BEATS THE FIXED DEFAULT.  This loop runs AFTER the row
+    # loop, so without the guard below a key present in BOTH `parameters` and
+    # `fixed` would be written from the design row and then silently overwritten
+    # by the constant -- the design would appear to vary a parameter that never
+    # actually moved, which is indistinguishable from the parameter having no
+    # effect.  Relevant now because T_star_conv_C is being promoted from a fixed
+    # constant to a calibration parameter (2026-08-14).
     for f in spec.get("fixed", []):
         k, v = f["key"], f["value"]
+        if f"reactions.{k}" in written:
+            continue
         if k in ("psucc_abs_pref", "dH_rev_conv", "gamma_a_conv", "n_j_min_junc",
                  "n_j_min_frac", "T_star_conv_C", "nu0_conv", "loop_net_rho_max",
                  "n_ref_conv", "absorb_boost_100", "grow_boost_100"):

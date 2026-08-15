@@ -1,0 +1,42 @@
+{
+ "tier": "T12_full_dose_crossover",
+ "kind": "1D_scan",
+ "scanned": "E_a0_conv",
+ "values": [
+  2.0,
+  2.1,
+  2.2,
+  2.3,
+  2.4,
+  2.5
+ ],
+ "conditions": [
+  "C_300_G7",
+  "C_350_G7"
+ ],
+ "n_rows": 12,
+ "parameters": [
+  "eta",
+  "f_cl_i",
+  "f_cl_v",
+  "E_m_i",
+  "E_m_v",
+  "E_m_h",
+  "L_hat",
+  "gamma_s",
+  "E_b_v2",
+  "lambda",
+  "B_111",
+  "E_b_i2",
+  "E_b_hV_1",
+  "Z_i",
+  "Z_i_loop",
+  "E_a0_conv",
+  "dH2_conv",
+  "phi_max_junc",
+  "dH2_abs_conv"
+ ],
+ "design_sha256": "a1162067e6ec9fded1ae02c756dabec9e2b5ad1729fd146c00f185edf7191613",
+ "base": "T3_rev6 row 38 / N2 -- the base that gives the CORRECT temperature sign (T11)",
+ "rationale": "T11 found the measured crossover on this base at E_a0=1.90, but only at the 0.02 dpa rung: the 300 C end crosses f_100=0.5 at ~0.06 dpa and reaches 0.710 by 0.1 dpa, so at the 15 dpa of the measurement it converts fully and the match is lost.  Both ends rise with dose and the hot end rises faster, so the crossover should reappear at higher dose for a LARGER barrier.  T11 already shows E_a0=2.10-2.20 holding both ends at 0.26-0.42 at 0.05 dpa -- below 0.5 but not yet separated.  This scan runs E_a0 = 2.0-2.5 at the MEASURED doses (15.0 / 16.3) to test whether the separation appears there."
+}

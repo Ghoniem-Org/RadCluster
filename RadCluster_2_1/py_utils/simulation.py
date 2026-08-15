@@ -912,6 +912,7 @@ class RadClusterSimulation:
         n_doublings_V = 0
         seg_count    = 0
         interrupted  = False
+        _deferred_exc = None   # a crash is re-raised AFTER the save block
         # Allow extra iterations for expansion restarts within segments
         max_iters    = n_segments + 2 * max_doublings + 1
 
@@ -1053,6 +1054,24 @@ class RadClusterSimulation:
                     self._accumulated_results = accumulated
                 except Exception:
                     pass   # keep whatever was accumulated before
+        except BaseException as _exc:
+            # Same reasoning as the orchestrator: a crash in segment k must not
+            # discard segments 1..k-1.  A long adaptive run is exactly where
+            # this costs most -- the accumulated trajectory can represent many
+            # hours.  Merge whatever the failing segment returned, fall through
+            # to the normal save block below, and re-raise afterwards so the
+            # error is still reported.
+            interrupted = True
+            _deferred_exc = _exc
+            print(f"\n\n*** {type(_exc).__name__} in segment {seg_count} — "
+                  f"saving the {seg_count - 1} completed segment(s) before "
+                  f"re-raising. ***")
+            if results is not None and results is not accumulated:
+                try:
+                    accumulated = self._merge_results(accumulated, results)
+                    self._accumulated_results = accumulated
+                except Exception:
+                    pass
 
         # ── Finished (or interrupted) — save and return ───────────────────
         if accumulated is not None:
@@ -1072,6 +1091,14 @@ class RadClusterSimulation:
                 self._save_output(accumulated, solver_config)
         elif interrupted:
             print("\nNo completed segments to save.")
+
+        # Re-raise a crash only now, so the traceback still reaches the caller
+        # but the completed segments are already on disk.  A KeyboardInterrupt
+        # deliberately does NOT come through here: stopping early is a normal
+        # outcome for this code and returning the partial trajectory is the
+        # documented behaviour.
+        if _deferred_exc is not None:
+            raise _deferred_exc
 
         return accumulated
 
@@ -1135,6 +1162,33 @@ class RadClusterSimulation:
             print("\n*** KeyboardInterrupt at orchestrator — "
                   "recovering partial output. ***")
             results = getattr(self, '_partial_results', None)
+        except BaseException as _exc:
+            # A CRASH MUST NOT COST THE TRAJECTORY.  Ctrl+C was already handled
+            # above, but any other failure -- solver segfault surfacing as an
+            # exception, MemoryError, a parse error on a truncated stdout --
+            # previously propagated with nothing written, discarding every hour
+            # already spent.  Recover cpp_bridge's stash, flush it to a
+            # timestamped directory exactly as a normal run would, and only then
+            # re-raise so the traceback still reaches the user.
+            _partial = getattr(self, '_partial_results', None)
+            print(f"\n*** {type(_exc).__name__} during solve — "
+                  f"{'flushing partial output' if _partial is not None else 'no partial output to save'}"
+                  f" before re-raising. ***")
+            if _partial is not None:
+                self._accumulated_results = _partial
+                self._wall_clock_s = _time.perf_counter() - _t0
+                try:
+                    self._diag_text = self.reaction_rates.format_diagnostic(
+                        mean_n_i=_partial['mean_n_i'][-1]
+                        if 'mean_n_i' in _partial else None)
+                except Exception:
+                    self._diag_text = ''
+                if save_output:
+                    try:
+                        self._save_output(_partial, solver_config)
+                    except Exception as _se:      # never mask the real error
+                        print(f"    (save failed: {type(_se).__name__}: {_se})")
+            raise
         self._wall_clock_s = _time.perf_counter() - _t0
 
         # Mirror the cpp_bridge stash to the run_adaptive-style attribute so

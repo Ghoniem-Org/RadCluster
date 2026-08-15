@@ -1,0 +1,54 @@
+{
+ "tier": "T13_nref_recalibration",
+ "kind": "grid",
+ "scanned": [
+  "n_ref_conv",
+  "E_a0_conv"
+ ],
+ "n_ref_conv": [
+  1908.0,
+  2982.0,
+  4294.0
+ ],
+ "n_ref_nm_equiv": {
+  "1908": "10.0 nm",
+  "2982": "12.5 nm",
+  "4294": "15.0 nm"
+ },
+ "E_a0_conv": [
+  1.9,
+  2.1
+ ],
+ "T_star_conv_C": 330.0,
+ "conditions": [
+  "C_300_G7",
+  "C_350_G7"
+ ],
+ "n_rows": 12,
+ "parameters": [
+  "eta",
+  "f_cl_i",
+  "f_cl_v",
+  "E_m_i",
+  "E_m_v",
+  "E_m_h",
+  "L_hat",
+  "gamma_s",
+  "E_b_v2",
+  "lambda",
+  "B_111",
+  "E_b_i2",
+  "E_b_hV_1",
+  "Z_i",
+  "Z_i_loop",
+  "E_a0_conv",
+  "dH2_conv",
+  "phi_max_junc",
+  "dH2_abs_conv",
+  "T_star_conv_C",
+  "n_ref_conv"
+ ],
+ "design_sha256": "10e693af3594ff45752dc9c7174a90220773b248919d73d9cb3b0390c3d331c8",
+ "base": "T3_rev6 row 38 / N2 (correct temperature sign, T11)",
+ "rationale": "Author-directed: bring the <100> loop cost down until 10-15 nm <100> loops are attainable.  Under the shipped calibration (n_ref=50, T*=450) the crossover temperature rises steeply with size -- 450 C at n=50 but 693 C at n=2981 (12.5 nm) -- so a 10-15 nm <100> loop can never be favoured at the 350 C where the database reports it as DOMINANT. That is why T11 matched the character but left d_mean 4x short.  calibrate() sets Fhat_100_0 from dF(n_ref,T*)=0, so n_ref is the cost knob; n_ref=2982 with T*=330 lowers Fhat_100_0 by 22% (0.4799 -> 0.3757) and puts the sign flip on the measured sizes.  Run at the MEASURED doses (15.0 / 16.3), 8 h cap; timed-out rows still carry their ladder rungs."
+}

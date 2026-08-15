@@ -20,7 +20,7 @@
   "RadClusterSimulation constructor kwarg.  A list means write to ALL of them",
   "(E_m_* and gamma_s are duplicated across sheets and BOTH are read)."
  ],
- "version": "T2_v1+Tstar",
+ "version": "T2_v1+Tstar+nref",
  "reference": "docs/design_notes/digital_twin_implementation_plan.md S2.1 rev.4",
  "parameters": [
   {
@@ -353,6 +353,18 @@
    "prior": "U",
    "units": "C",
    "note": "PROMOTED FROM FIXED 2026-08-14.  T_star IS the model crossover temperature by construction -- loop_energetics._selftest asserts dF(n_ref,T*)=0 with 1/2<111> favoured below T* and <100> above -- yet it was pinned at 450 C for the whole campaign, 120 C above the measured EUROFER crossover (~330 C).  With T*=450 the driving force is negative at BOTH 300 and 350 C (-1.73 and -1.19 eV at n=50), so the only DF-gated, strongly T-dependent channel (unary) is off at both conditions and the character response is left to the kinetic Marian channels, whose T-ratios are 1.12 and 0.98-1.92. CAUTION: lowering T* alone does NOT fix the measured sizes -- dF at n=191 (3.4 nm) stays negative at both temperatures for every T* from 450 down to 100, so the sign flip is confined to loops <~2 nm.  Sample it, but do not expect it to carry the crossover on its own."
+  },
+  {
+   "id": 28,
+   "key": "n_ref_conv",
+   "sheet": "reactions",
+   "tier": 3,
+   "lo": 50.0,
+   "hi": 5000.0,
+   "nominal": 2982.0,
+   "prior": "LN",
+   "units": "SIA",
+   "note": "PROMOTED FROM FIXED 2026-08-14, author-directed, to bring the <100> loop cost down until 10-15 nm <100> loops are attainable.  LoopEnergetics.calibrate sets Fhat_100_0 so that dF(n_ref, T*) = 0, so n_ref DECLARES WHICH LOOP SIZE IS ENERGETICALLY NEUTRAL at the crossover temperature -- it is the <100> cost knob.  Pinned at 50 (a ~1.6 nm <100> loop) the crossover temperature rises steeply with size: 450 C at n=50 but 693 C at n=2981 (12.5 nm), so a 10-15 nm <100> loop could never be favoured at the 350 C where it is MEASURED as the dominant character.  Setting n_ref = 2982 with T* = 330 lowers Fhat_100_0 by only 22% (0.4799 -> 0.3757) and puts the flip on the measured sizes: dF at n=2981 is -5.52 eV at 300 C and +3.80 eV at 350 C.  Sizes: n = 477 (5 nm), 1908 (10 nm), 2982 (12.5 nm), 4294 (15 nm)."
   }
  ],
  "fixed": [

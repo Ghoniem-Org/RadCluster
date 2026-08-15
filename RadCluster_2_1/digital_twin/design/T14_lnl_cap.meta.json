@@ -1,0 +1,43 @@
+{
+ "tier": "T14_loop_network_size_cap",
+ "kind": "targeted_test",
+ "n_rows": 4,
+ "loop_net_chi": [
+  30.0,
+  60.0
+ ],
+ "loop_net_w_c": 200.0,
+ "loop_net_K_rec": 1e-06,
+ "lnl": 1,
+ "conditions": [
+  "C_300_G7",
+  "C_350_G7"
+ ],
+ "parameters": [
+  "eta",
+  "f_cl_i",
+  "f_cl_v",
+  "E_m_i",
+  "E_m_v",
+  "E_m_h",
+  "L_hat",
+  "gamma_s",
+  "E_b_v2",
+  "lambda",
+  "B_111",
+  "E_b_i2",
+  "E_b_hV_1",
+  "Z_i",
+  "Z_i_loop",
+  "E_a0_conv",
+  "dH2_conv",
+  "phi_max_junc",
+  "dH2_abs_conv",
+  "loop_net_chi",
+  "loop_net_w_c",
+  "loop_net_K_rec"
+ ],
+ "design_sha256": "b8e159b82f0cfba440e4f7deb5daa2f1c7afc32cba9794a8b5a989317ec842f2",
+ "base": "T3_rev6 row 38 / N2, E_a0_conv=1.90 -- identical to the T13 lnl=0 rows so the ONLY change is the channel",
+ "rationale": "T13 showed the <100> cost is NOT the size obstacle: lowering it via n_ref moved the answer by 1e-9 because dF gates only Gamma_uni while <100> forms kinetically.  What T13 DID show is that loop growth is unbounded -- 3.3-3.9 nm at 0.5 dpa but 21.9 nm and pile_100 = 0.94-0.99 by 6.5 dpa -- so the loops pass THROUGH the measured 10-15 nm band and run to the grid ceiling.  Nothing caps them.  LOOP_NETWORK_LOSS is the channel designed to do exactly that (CLAUDE.md objective (a), saturate loop density), and it has been off for every calibration run since it measured inert -- but that was at ION conditions where Lambda_net*t ~ 1e-3.  At neutron dose the same estimate gives ~20.  chi must be high or P_ld is identically zero (chi=1 gives Lambda_net == 0 at every size), hence 30 and 60."
+}

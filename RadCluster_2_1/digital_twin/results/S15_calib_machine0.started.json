@@ -1,0 +1,10 @@
+{
+  "unix": 1787093086.312721,
+  "at": "2026-08-18 15:44:46",
+  "machine": 0,
+  "workers": 14,
+  "rows_assigned": 12,
+  "rows_already_done": 0,
+  "rows_to_run": 12,
+  "machine_id": "Mac.san.rr.com"
+}

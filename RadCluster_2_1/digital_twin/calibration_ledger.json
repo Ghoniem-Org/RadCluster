@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated": "2026-08-18 22:19:20Z",
+  "updated": "2026-08-18 22:42:23Z",
   "goal": {
     "statement": "Find one parameter vector that puts all six observables inside their experimental ranges at EUROFER97 330 C / 15 dpa, neutron.",
     "targets_file": "targets_330C_15dpa.json",
@@ -16,8 +16,8 @@
   },
   "stages": {
     "S10_calib": {
-      "design": "design\\S10_calib.csv",
-      "results": "results\\S10_calib.jsonl",
+      "design": "design/S10_calib.csv",
+      "results": "results/S10_calib.jsonl",
       "dose_target": 15.0,
       "in_scope": true,
       "n_rows": 12,
@@ -330,8 +330,8 @@
       ]
     },
     "S11_active_window": {
-      "design": "design\\S11_probe.csv",
-      "results": "results\\S11_active_window.jsonl",
+      "design": "design/S11_probe.csv",
+      "results": "results/S11_active_window.jsonl",
       "dose_target": 15.0,
       "in_scope": true,
       "n_rows": 1,
@@ -363,8 +363,8 @@
       ]
     },
     "S11_full_system": {
-      "design": "design\\S11_probe.csv",
-      "results": "results\\S11_full_system.jsonl",
+      "design": "design/S11_probe.csv",
+      "results": "results/S11_full_system.jsonl",
       "dose_target": 15.0,
       "in_scope": true,
       "n_rows": 1,
@@ -398,7 +398,7 @@
     },
     "S11eq_active_window": {
       "design": null,
-      "results": "results\\S11eq_active_window.jsonl",
+      "results": "results/S11eq_active_window.jsonl",
       "dose_target": 0.002,
       "in_scope": false,
       "n_rows": 1,
@@ -430,7 +430,7 @@
     },
     "S11eq_full_system": {
       "design": null,
-      "results": "results\\S11eq_full_system.jsonl",
+      "results": "results/S11eq_full_system.jsonl",
       "dose_target": 0.002,
       "in_scope": false,
       "n_rows": 1,
@@ -460,8 +460,8 @@
       ]
     },
     "S12_calib": {
-      "design": "design\\S12_calib.csv",
-      "results": "results\\S12_calib.jsonl",
+      "design": "design/S12_calib.csv",
+      "results": "results/S12_calib.jsonl",
       "dose_target": 15.0,
       "in_scope": true,
       "n_rows": 12,
@@ -822,8 +822,8 @@
       ]
     },
     "S13_calib": {
-      "design": "design\\S13_calib.csv",
-      "results": "results\\S13_calib.jsonl",
+      "design": "design/S13_calib.csv",
+      "results": "results/S13_calib.jsonl",
       "dose_target": 15.0,
       "in_scope": true,
       "n_rows": 12,
@@ -1181,8 +1181,8 @@
       ]
     },
     "S14_calib": {
-      "design": "design\\S14_calib.csv",
-      "results": "results\\S14_calib.jsonl",
+      "design": "design/S14_calib.csv",
+      "results": "results/S14_calib.jsonl",
       "dose_target": 15.0,
       "in_scope": true,
       "n_rows": 5,
@@ -1377,7 +1377,7 @@
     },
     "S1_calib": {
       "design": null,
-      "results": "results\\S1_calib.jsonl",
+      "results": "results/S1_calib.jsonl",
       "dose_target": 1.0,
       "in_scope": false,
       "n_rows": 2,
@@ -1431,7 +1431,7 @@
     },
     "S1_lnl0": {
       "design": null,
-      "results": "results\\S1_lnl0.jsonl",
+      "results": "results/S1_lnl0.jsonl",
       "dose_target": 1.0,
       "in_scope": false,
       "n_rows": 12,
@@ -1703,7 +1703,7 @@
     },
     "S1_lnl1": {
       "design": null,
-      "results": "results\\S1_lnl1.jsonl",
+      "results": "results/S1_lnl1.jsonl",
       "dose_target": 1.0,
       "in_scope": false,
       "n_rows": 4,
@@ -1805,7 +1805,7 @@
     },
     "S1_smoke": {
       "design": null,
-      "results": "results\\S1_smoke.jsonl",
+      "results": "results/S1_smoke.jsonl",
       "dose_target": 15.0,
       "in_scope": true,
       "n_rows": 1,
@@ -1837,7 +1837,7 @@
     },
     "S2_cap": {
       "design": null,
-      "results": "results\\S2_cap.jsonl",
+      "results": "results/S2_cap.jsonl",
       "dose_target": 1.0,
       "in_scope": false,
       "n_rows": 6,
@@ -1977,7 +1977,7 @@
     },
     "S2_nocap": {
       "design": null,
-      "results": "results\\S2_nocap.jsonl",
+      "results": "results/S2_nocap.jsonl",
       "dose_target": 1.0,
       "in_scope": false,
       "n_rows": 10,
@@ -2208,8 +2208,8 @@
       ]
     },
     "S3_nucleation": {
-      "design": "design\\S3_nucleation.csv",
-      "results": "results\\S3_nucleation.jsonl",
+      "design": "design/S3_nucleation.csv",
+      "results": "results/S3_nucleation.jsonl",
       "dose_target": 0.02,
       "in_scope": false,
       "n_rows": 8,
@@ -2479,8 +2479,8 @@
       ]
     },
     "S4_bias": {
-      "design": "design\\S4_bias.csv",
-      "results": "results\\S4_bias.jsonl",
+      "design": "design/S4_bias.csv",
+      "results": "results/S4_bias.jsonl",
       "dose_target": 0.02,
       "in_scope": false,
       "n_rows": 9,
@@ -2820,7 +2820,7 @@
     },
     "S4_smoke": {
       "design": null,
-      "results": "results\\S4_smoke.jsonl",
+      "results": "results/S4_smoke.jsonl",
       "dose_target": 0.002,
       "in_scope": false,
       "n_rows": 2,
@@ -2872,7 +2872,7 @@
     },
     "S5_binmoment": {
       "design": null,
-      "results": "results\\S5_binmoment.jsonl",
+      "results": "results/S5_binmoment.jsonl",
       "dose_target": 0.005,
       "in_scope": false,
       "n_rows": 2,
@@ -2920,7 +2920,7 @@
     },
     "S5_discrete": {
       "design": null,
-      "results": "results\\S5_discrete.jsonl",
+      "results": "results/S5_discrete.jsonl",
       "dose_target": 0.005,
       "in_scope": false,
       "n_rows": 2,
@@ -2967,8 +2967,8 @@
       ]
     },
     "S6_binding": {
-      "design": "design\\S6_binding.csv",
-      "results": "results\\S6_binding.jsonl",
+      "design": "design/S6_binding.csv",
+      "results": "results/S6_binding.jsonl",
       "dose_target": 0.02,
       "in_scope": false,
       "n_rows": 9,
@@ -3250,7 +3250,7 @@
     },
     "S7_binding": {
       "design": null,
-      "results": "results\\S7_binding.jsonl",
+      "results": "results/S7_binding.jsonl",
       "dose_target": 0.02,
       "in_scope": false,
       "n_rows": 6,
@@ -3387,8 +3387,8 @@
       ]
     },
     "S8_15dpa": {
-      "design": "design\\S8_15dpa.csv",
-      "results": "results\\S8_15dpa.jsonl",
+      "design": "design/S8_15dpa.csv",
+      "results": "results/S8_15dpa.jsonl",
       "dose_target": 15.0,
       "in_scope": true,
       "n_rows": 6,
@@ -3624,7 +3624,7 @@
     },
     "S9_grid_A": {
       "design": null,
-      "results": "results\\S9_grid_A.jsonl",
+      "results": "results/S9_grid_A.jsonl",
       "dose_target": 0.02,
       "in_scope": false,
       "n_rows": 1,
@@ -3655,7 +3655,7 @@
     },
     "S9_grid_B": {
       "design": null,
-      "results": "results\\S9_grid_B.jsonl",
+      "results": "results/S9_grid_B.jsonl",
       "dose_target": 0.02,
       "in_scope": false,
       "n_rows": 1,
@@ -3687,7 +3687,7 @@
     },
     "S9_grid_C": {
       "design": null,
-      "results": "results\\S9_grid_C.jsonl",
+      "results": "results/S9_grid_C.jsonl",
       "dose_target": 0.02,
       "in_scope": false,
       "n_rows": 1,
@@ -3720,7 +3720,7 @@
     },
     "S9_grid_D": {
       "design": null,
-      "results": "results\\S9_grid_D.jsonl",
+      "results": "results/S9_grid_D.jsonl",
       "dose_target": 0.02,
       "in_scope": false,
       "n_rows": 1,
@@ -3752,8 +3752,8 @@
       ]
     },
     "T10_ea0_scan": {
-      "design": "design\\T10_ea0_scan.csv",
-      "results": "results\\T10_ea0_scan.jsonl",
+      "design": "design/T10_ea0_scan.csv",
+      "results": "results/T10_ea0_scan.jsonl",
       "dose_target": 2.0,
       "in_scope": false,
       "n_rows": 24,
@@ -4270,8 +4270,8 @@
       ]
     },
     "T11_row38_scan": {
-      "design": "design\\T11_row38_scan.csv",
-      "results": "results\\T11_row38_scan.jsonl",
+      "design": "design/T11_row38_scan.csv",
+      "results": "results/T11_row38_scan.jsonl",
       "dose_target": 2.0,
       "in_scope": false,
       "n_rows": 12,
@@ -4564,8 +4564,8 @@
       ]
     },
     "T13_nref": {
-      "design": "design\\T13_nref.csv",
-      "results": "results\\T13_nref.jsonl",
+      "design": "design/T13_nref.csv",
+      "results": "results/T13_nref.jsonl",
       "dose_target": 16.3,
       "in_scope": false,
       "n_rows": 12,
@@ -4891,7 +4891,7 @@
     },
     "T3_rev6_machine0": {
       "design": null,
-      "results": "results\\T3_rev6_machine0.jsonl",
+      "results": "results/T3_rev6_machine0.jsonl",
       "dose_target": 15.0,
       "in_scope": true,
       "n_rows": 480,
@@ -15075,7 +15075,7 @@
     },
     "T3_rev6_machine1": {
       "design": null,
-      "results": "results\\T3_rev6_machine1.jsonl",
+      "results": "results/T3_rev6_machine1.jsonl",
       "dose_target": 15.0,
       "in_scope": true,
       "n_rows": 55,
@@ -16246,7 +16246,7 @@
     },
     "T3_rev6_machine2": {
       "design": null,
-      "results": "results\\T3_rev6_machine2.jsonl",
+      "results": "results/T3_rev6_machine2.jsonl",
       "dose_target": 15.0,
       "in_scope": true,
       "n_rows": 165,
@@ -19761,7 +19761,7 @@
     },
     "T3_rev6_machine2_t0": {
       "design": null,
-      "results": "results\\T3_rev6_machine2_t0.jsonl",
+      "results": "results/T3_rev6_machine2_t0.jsonl",
       "dose_target": 15.0,
       "in_scope": true,
       "n_rows": 80,
@@ -21469,7 +21469,7 @@
     },
     "T3_rev6_machine2_t1": {
       "design": null,
-      "results": "results\\T3_rev6_machine2_t1.jsonl",
+      "results": "results/T3_rev6_machine2_t1.jsonl",
       "dose_target": 15.0,
       "in_scope": true,
       "n_rows": 80,
@@ -23166,7 +23166,7 @@
     },
     "T3_rev6_machine2_t2": {
       "design": null,
-      "results": "results\\T3_rev6_machine2_t2.jsonl",
+      "results": "results/T3_rev6_machine2_t2.jsonl",
       "dose_target": 15.0,
       "in_scope": true,
       "n_rows": 80,
@@ -24871,7 +24871,7 @@
     },
     "T3_rev6_machine3": {
       "design": null,
-      "results": "results\\T3_rev6_machine3.jsonl",
+      "results": "results/T3_rev6_machine3.jsonl",
       "dose_target": 15.0,
       "in_scope": true,
       "n_rows": 233,
@@ -29809,8 +29809,8 @@
       ]
     },
     "T4_lnl_check_n": {
-      "design": "design\\T4_lnl_check_n.csv",
-      "results": "results\\T4_lnl_check_n.jsonl",
+      "design": "design/T4_lnl_check_n.csv",
+      "results": "results/T4_lnl_check_n.jsonl",
       "dose_target": 1.0,
       "in_scope": false,
       "n_rows": 1,
@@ -29877,8 +29877,8 @@
       ]
     },
     "T5_cost218": {
-      "design": "design\\T5_cost218.csv",
-      "results": "results\\T5_cost218.jsonl",
+      "design": "design/T5_cost218.csv",
+      "results": "results/T5_cost218.jsonl",
       "dose_target": 1.0,
       "in_scope": false,
       "n_rows": 2,
@@ -29929,8 +29929,8 @@
       ]
     },
     "T6_fixcheck": {
-      "design": "design\\T6_fixcheck.csv",
-      "results": "results\\T6_fixcheck.jsonl",
+      "design": "design/T6_fixcheck.csv",
+      "results": "results/T6_fixcheck.jsonl",
       "dose_target": 1.0,
       "in_scope": false,
       "n_rows": 2,
@@ -30018,8 +30018,8 @@
       ]
     },
     "T7_cost": {
-      "design": "design\\T7_cost.csv",
-      "results": "results\\T7_cost.jsonl",
+      "design": "design/T7_cost.csv",
+      "results": "results/T7_cost.jsonl",
       "dose_target": 1.0,
       "in_scope": false,
       "n_rows": 4,
@@ -30110,7 +30110,7 @@
     },
     "T9_crossover_batch1": {
       "design": null,
-      "results": "results\\T9_crossover_batch1.jsonl",
+      "results": "results/T9_crossover_batch1.jsonl",
       "dose_target": 16.3,
       "in_scope": false,
       "n_rows": 12,
@@ -30383,7 +30383,7 @@
     },
     "T9_ladder_validation": {
       "design": null,
-      "results": "results\\T9_ladder_validation.jsonl",
+      "results": "results/T9_ladder_validation.jsonl",
       "dose_target": 0.05,
       "in_scope": false,
       "n_rows": 4,
@@ -30474,7 +30474,7 @@
     },
     "T9_screen_partial": {
       "design": null,
-      "results": "results\\T9_screen_partial.jsonl",
+      "results": "results/T9_screen_partial.jsonl",
       "dose_target": 2.0,
       "in_scope": false,
       "n_rows": 13,

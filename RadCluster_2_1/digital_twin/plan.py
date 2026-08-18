@@ -38,6 +38,7 @@ import argparse
 import csv
 import json
 import math
+import re
 import sys
 from pathlib import Path
 
@@ -298,11 +299,37 @@ def build_design(led: dict, levers: list, n_levels: list, stage: str,
     return header, rows, labels
 
 
+def cost_key(cm: dict, machine: dict):
+    """Which cost_model entry is this registry machine?
+
+    THE TWO FILES KEY THE SAME MACHINE DIFFERENTLY.  learn.py keys cost_model by
+    platform.node() -- the value rows actually carry -- while machines.json keys
+    by human name.  'MATRIX-PC2' never equals 'Matrix-PC', so entry 1 matched
+    nothing and fell through to the "scaled from another machine" branch, which
+    then picked MATRIX-PC2's OWN numbers (it has the worst median) and inflated
+    them by the 0.5/0.4 speed ratio: a measured 14.02 h worst row was reported
+    as 17.5 h and tripped the budget refusal on a design that fits.  Match on
+    the registry's own node_regex, which is the one field that already means
+    "what this host calls itself".
+    """
+    for k in (machine["name"], machine["name"].replace(" ", "-")):
+        if k in cm:
+            return k
+    pats = [r for r in [(machine.get("match") or {}).get("node_regex")] if r]
+    pats += [a["node_regex"] for a in machine.get("match_alternatives", [])
+             if a.get("node_regex")]
+    for k in cm:
+        if any(re.match(p, k, re.I) for p in pats):
+            return k
+    return None
+
+
 def estimate_cost(led: dict, machine: dict, n_rows: int) -> dict:
     cm = led.get("cost_model", {})
     # Prefer this machine own measured rows; fall back to the campaign worst
     # case scaled by the registry speed ratio.
-    mine = cm.get(machine["name"]) or cm.get(machine["name"].replace(" ", "-"))
+    key = cost_key(cm, machine)
+    mine = cm.get(key) if key else None
     if mine:
         med, mx = mine["median_row_h"], mine["max_row_h"]
         src = "measured on this machine"

@@ -31140,49 +31140,49 @@
   },
   "notes": [],
   "next": {
-    "stage": "S15",
-    "machine": 0,
-    "machine_name": "MacBook Pro",
+    "stage": "S16",
+    "machine": 1,
+    "machine_name": "Matrix-PC",
     "levers": [
-      "eta",
-      "f_cl_i",
-      "E_b_i2"
+      "B_111",
+      "L_hat",
+      "E_m_i"
     ],
     "n_levels": [
+      4,
       3,
-      2,
-      2
+      3
     ],
-    "n_rows": 12,
-    "design": "design/S15_calib.csv",
-    "labels": "design/S15_labels.json",
+    "n_rows": 36,
+    "design": "design/S16_calib.csv",
+    "labels": "design/S16_labels.json",
     "pinned_to": {
       "stage": "S14_calib",
       "row_id": 4400,
       "label": "E00_V0_Ea2.10_Eb0.75"
     },
-    "rationale": "worst residuals are N_100 (12.4x), d_111 (0.172x), N_111 (4.62x); sweeping eta, f_cl_i, E_b_i2, which the ledger has not retired",
+    "rationale": "worst residuals are N_100 (12.4x), d_111 (0.172x), N_111 (4.62x); sweeping B_111, L_hat, E_m_i, which the ledger has not retired",
     "cost_estimate": {
       "known": true,
-      "source": "scaled from another machine by registry `speed`",
-      "median_row_h": 3.25,
-      "max_row_h": 7.01,
-      "slots": 14,
+      "source": "measured on this machine",
+      "median_row_h": 6.5,
+      "max_row_h": 14.02,
+      "slots": 40,
       "waves": 1,
-      "est_wall_h": 7.0
+      "est_wall_h": 14.0
     },
     "commands": [
       "python run_ensemble.py \\",
-      "    --design design/S15_calib.csv \\",
+      "    --design design/S16_calib.csv \\",
       "    --conditions conditions_S8.json \\",
       "    --spec parameters_S4.json \\",
-      "    --out results/S15_calib_machine0.jsonl \\",
+      "    --out results/S16_calib_machine1.jsonl \\",
       "    --machine 0 --of 1 \\",
       "    --equations bin_moment --i-discrete 100 --i-bin 36 \\",
       "    --v-discrete 5 --v-bin 20 --allow-mixed \\",
       "    --I 80000 --V 2000 --dose 15.0 --lnl 1 --rtol 1e-5 \\",
       "    --solver-mode full_system \\",
-      "    --timeout-s 72000 --workers 14 --omp-threads 1"
+      "    --timeout-s 72000 --workers 40 --omp-threads 1"
     ]
   }
 }

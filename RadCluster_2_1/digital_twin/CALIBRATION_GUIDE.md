@@ -123,26 +123,26 @@ The planner will not propose levers for these until the entry is removed from `c
 
 ## Next stage
 
-**S15** - worst residuals are N_100 (12.4x), d_111 (0.172x), N_111 (4.62x); sweeping eta, f_cl_i, E_b_i2, which the ledger has not retired
+**S16** - worst residuals are N_100 (12.4x), d_111 (0.172x), N_111 (4.62x); sweeping B_111, L_hat, E_m_i, which the ledger has not retired
 
-Sweeping: `eta`, `f_cl_i`, `E_b_i2`
+Sweeping: `B_111`, `L_hat`, `E_m_i`
 
-Design: `design/S15_calib.csv` (12 rows)
+Design: `design/S16_calib.csv` (36 rows)
 
 Run it with:
 
 ```bash
 python run_ensemble.py \
-    --design design/S15_calib.csv \
+    --design design/S16_calib.csv \
     --conditions conditions_S8.json \
     --spec parameters_S4.json \
-    --out results/S15_calib_machine0.jsonl \
+    --out results/S16_calib_machine1.jsonl \
     --machine 0 --of 1 \
     --equations bin_moment --i-discrete 100 --i-bin 36 \
     --v-discrete 5 --v-bin 20 --allow-mixed \
     --I 80000 --V 2000 --dose 15.0 --lnl 1 --rtol 1e-5 \
     --solver-mode full_system \
-    --timeout-s 72000 --workers 14 --omp-threads 1
+    --timeout-s 72000 --workers 40 --omp-threads 1
 ```
 
 ## Multi-machine protocol

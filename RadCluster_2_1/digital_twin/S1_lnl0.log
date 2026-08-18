@@ -1,0 +1,18 @@
+  row budget 5400 s, OMP_NUM_THREADS=1
+machine 0/1  rows 12 (0 done, 12 to run)  workers 12
+  provenance {"git_sha": "6cb8333cd28561bab450a430a5d6ae6e37963a74", "machine_id": "Nasr-Workstation", "solver_sha256": "c28893e7d4a119e2", "workbook_sha256": "ae754e3a35b8805a", "design_sha256": "", "run_cfg_sha": "50d725fc33ec2ac5", "timeout_s": 5400.0, "stop_after_s": 0.0, "workers": 12, "omp_threads": 1, "weights_sha": "", "weights_map_sha": "6634b0b460b5c26f", "of": 1, "equations": "bin_moment", "python": "3.14.3"}
+  row   2009 S350  S  ok   d100=  1.99 N100=5.891e+22 pile=0.0 dFP= 2.6e-01 4435s
+  row   2011 S350  S  ok   d100=  9.78 N100=5.401e+21 pile=0.0 dFP= 1.0e-01 5426s
+  row   2001 S350  S  ok   d100=  3.59 N100=6.456e+22 pile=0.0 dFP= 1.6e-01 5456s
+  row   2010 S300  S  ok   d100= 14.01 N100=1.923e+22 pile=0.7627020648431397 dFP= 2.7e-01 5465s
+  row   2007 S350  S  ok   d100=  4.58 N100=3.341e+22 pile=0.0 dFP= 1.1e-01 5469s
+  row   2005 S350  S  ok   d100=  6.73 N100=8.015e+21 pile=0.0 dFP= 1.1e-01 5469s
+  row   2004 S300  S  ok   d100=  6.15 N100=1.057e+22 pile=1.1200259296993366e-15 dFP= 4.2e-02 5469s
+  row   2000 S300  S  ok   d100=  8.55 N100=2.644e+22 pile=3.968093355761067e-15 dFP= 3.8e-02 5469s
+  row   2003 S350  S  ok   d100=  2.28 N100=1.315e+24 pile=0.0 dFP= 2.4e-01 5469s
+  row   2002 S300  S  ok   d100=  4.20 N100=1.344e+24 pile=0.0 dFP= 3.2e-02 5469s
+  row   2008 S300  S  ok   d100=  4.25 N100=7.731e+22 pile=0.0 dFP= 7.8e-02 5469s
+  row   2006 S300  S  ok   d100= 11.63 N100=3.548e+22 pile=0.45619641983283055 dFP= 3.9e-02 5469s
+
+done in 5470s: 12 admissible, 0 inadmissible, 0 failed -> results\S1_lnl0.jsonl
+  manifest -> S1_lnl0.manifest.json

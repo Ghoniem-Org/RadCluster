@@ -1,0 +1,10 @@
+  row budget 5400 s, OMP_NUM_THREADS=1
+machine 0/1  rows 4 (0 done, 4 to run)  workers 4
+  provenance {"git_sha": "6cb8333cd28561bab450a430a5d6ae6e37963a74", "machine_id": "Nasr-Workstation", "solver_sha256": "c28893e7d4a119e2", "workbook_sha256": "ae754e3a35b8805a", "design_sha256": "", "run_cfg_sha": "2e4d8fc38cd28a00", "timeout_s": 5400.0, "stop_after_s": 0.0, "workers": 4, "omp_threads": 1, "weights_sha": "", "weights_map_sha": "6634b0b460b5c26f", "of": 1, "equations": "bin_moment", "python": "3.14.3"}
+  row   2102 S300  S  ok   d100= 13.98 N100=1.848e+22 pile=0.7598756823819565 dFP= 2.5e-01 5454s
+  row   2100 S300  S  ok   d100=  7.86 N100=2.281e+22 pile=5.448899240023601e-15 dFP= 4.5e-02 5463s
+  row   2103 S350  S  ok   d100=  9.06 N100=4.560e+21 pile=0.0 dFP= 1.0e-01 5463s
+  row   2101 S350  S  ok   d100=  3.68 N100=5.314e+22 pile=0.0 dFP= 1.4e-01 5463s
+
+done in 5464s: 4 admissible, 0 inadmissible, 0 failed -> results\S1_lnl1.jsonl
+  manifest -> S1_lnl1.manifest.json

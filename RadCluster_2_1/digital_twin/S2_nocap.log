@@ -1,0 +1,16 @@
+  row budget 5400 s, OMP_NUM_THREADS=1
+machine 0/1  rows 10 (0 done, 10 to run)  workers 10
+  provenance {"git_sha": "6cb8333cd28561bab450a430a5d6ae6e37963a74", "machine_id": "Nasr-Workstation", "solver_sha256": "c28893e7d4a119e2", "workbook_sha256": "ae754e3a35b8805a", "design_sha256": "", "run_cfg_sha": "9018ccc39694caf4", "timeout_s": 5400.0, "stop_after_s": 0.0, "workers": 10, "omp_threads": 1, "weights_sha": "", "weights_map_sha": "6634b0b460b5c26f", "of": 1, "equations": "bin_moment", "python": "3.14.3"}
+  row   3000 S330  S  ok   d100=  6.69 N100=2.852e+21 pile=8.468174564653119e-16 dFP= 7.1e-02 5463s
+  row   3001 S330  S  ok   d100= 13.93 N100=8.584e+21 pile=0.9431751225878795 dFP= 1.7e-01 5463s
+  row   3002 S330  S  ok   d100= 14.07 N100=1.410e+20 pile=0.9602742797438146 dFP= 1.4e-01 5463s
+  row   3004 S330  S  ok   d100=  8.59 N100=6.802e+21 pile=3.760290907374898e-15 dFP= 9.2e-02 5463s
+  row   3007 S330  S  ok   d100=  5.94 N100=5.210e+17 pile=0.0 dFP= 2.5e-02 5463s
+  row   3009 S330  S  ok   d100=  5.25 N100=6.703e+18 pile=0.0 dFP= 2.1e-02 5463s
+  row   3003 S330  S  ok   d100=  3.75 N100=1.925e+20 pile=0.0 dFP= 3.6e-02 5463s
+  row   3008 S330  S  ok   d100=  5.70 N100=5.123e+17 pile=0.0 dFP= 2.7e-02 5463s
+  row   3005 S330  S  ok   d100= 13.30 N100=8.062e+20 pile=0.8472783833448508 dFP= 2.6e-02 5463s
+  row   3006 S330  S  ok   d100= 13.20 N100=3.265e+20 pile=0.8799199673373738 dFP= 1.5e-01 5463s
+
+done in 5464s: 10 admissible, 0 inadmissible, 0 failed -> results\S2_nocap.jsonl
+  manifest -> S2_nocap.manifest.json

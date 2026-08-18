@@ -53,6 +53,75 @@ from .                import post_process
 BASE_DIR = Path(__file__).parent.parent
 
 
+def _remap_bin_moments(mu0_old, mu1_old, bins_old, bins_new):
+    """Move (μ₀, μ₁) from one bin partition to another, conserving both sums.
+
+    Used when a domain doubling re-derives the geometric bin edges and the
+    moments have to be expressed on the new partition.
+
+    WHY NOT reconstruct-then-reproject.  The obvious route — expand the moments
+    to a per-size c_n with the active shape function, then re-take moments on
+    the new bins — is NOT conservative.  ``distribution_from_moments_hat``
+    clamps its negative lobe with ``np.maximum(vals, 0.0)``, and that clip adds
+    mass: for a bin whose mean sits away from the centre the reconstructed sum
+    exceeds the bin's own μ₀, without bound.  Measured on the ⟨100⟩ block of the
+    I=40000 run (2026-08-15): Σ(reconstructed) / Σμ₀ = 176.9, which is precisely
+    the ×177 jump in N_100 across that run's doubling, and it took δ_FP from
+    0.20 to 0.96.  The ½⟨111⟩ and vacancy blocks survive the same round trip
+    only because they are broad and well-centred; the ⟨100⟩ population is
+    sessile, one-way and sharply peaked, so it sits in the worst case
+    permanently.
+
+    THIS route never builds a per-size array.  Each old bin is treated as
+    uniformly filled and split across the new bins it overlaps, by overlap
+    fraction w (Σ_K w = 1 because the new bins tile the old bin's span).  Both
+    moments ride the same weights, so Σμ₀ and Σμ₁ are conserved to round-off
+    by construction — the clip cannot enter because no reconstruction happens.
+
+    The one approximation is the within-bin placement of content: splitting μ₁
+    by width smears a peak across the pieces of a straddled bin.  A final clamp
+    puts each new bin's mean back inside its own range, mirroring the
+    consistency rule in ``post_process._floor_bin_moments`` (an empty bin
+    carries no content; μ₁/μ₀ lies in the bin).  Both are second-order next to
+    a factor of 177.
+
+    Returns (mu0_new, mu1_new), each length len(bins_new).
+    """
+    mu0_old = np.asarray(mu0_old, dtype=float)
+    K_new = len(bins_new)
+    mu0_new = np.zeros(K_new)
+    mu1_new = np.zeros(K_new)
+    has_m1 = mu1_old is not None
+    mu1_old = (np.asarray(mu1_old, dtype=float) if has_m1
+               else mu0_old * np.array([0.5 * (lo + hi - 1)
+                                        for lo, hi in bins_old]))
+
+    for k, (lo, hi) in enumerate(bins_old):
+        width = float(hi - lo)
+        if width <= 0.0 or mu0_old[k] <= 0.0:
+            continue
+        for K, (Lo, Hi) in enumerate(bins_new):
+            ov = min(hi, Hi) - max(lo, Lo)
+            if ov <= 0:
+                continue
+            w = ov / width
+            mu0_new[K] += w * mu0_old[k]
+            mu1_new[K] += w * mu1_old[k]
+
+    # Consistency: empty bin carries no content; mean size lies in the bin.
+    for K, (Lo, Hi) in enumerate(bins_new):
+        if mu0_new[K] <= 0.0:
+            mu0_new[K] = 0.0
+            mu1_new[K] = 0.0
+            continue
+        nb = mu1_new[K] / mu0_new[K]
+        if nb < Lo:
+            mu1_new[K] = mu0_new[K] * float(Lo)
+        elif nb > Hi - 1:
+            mu1_new[K] = mu0_new[K] * float(Hi - 1)
+    return mu0_new, mu1_new
+
+
 class _InterruptDeferred:
     """Defer SIGINT through a critical save block.
 
@@ -512,7 +581,38 @@ class RadClusterSimulation:
                 return j
         return None
 
-    def _expand_state(self, y_old, I_new, V_new):
+    @staticmethod
+    def _sia100_column(results, idx):
+        """The ⟨100⟩ block AS SOLVED at time index *idx*, or None if absent.
+
+        Reads ``y_sia100_raw`` (the raw appended block) and never ``y_sia100``,
+        which is a per-size closure reconstruction with the C_floor IC already
+        subtracted — fine for plots, wrong as an initial condition.
+        """
+        blk = results.get('y_sia100_raw')
+        if blk is None:
+            return None
+        blk = np.asarray(blk, dtype=float)
+        if blk.ndim != 2 or blk.size == 0:
+            return None
+        return blk[:, idx]
+
+    def _resume_state(self, results, idx=-1):
+        """Full C++ state vector at time index *idx*, ready to resume from.
+
+        ``results['y']`` has the appended ⟨100⟩ block split off by cpp_bridge,
+        so resuming from it alone hands the solver a SHORT y0.  The C++ reads
+        missing ``y0_k`` keys as 1e-100 (parameters.h), so this did not fail —
+        it silently erased the entire ⟨100⟩ population at every segment
+        boundary, which the population then had to regrow from nothing.  That
+        produced the once-per-segment sawtooth in the ⟨100⟩ number density and
+        a violent restart transient for CVODE.  Re-attach the block here.
+        """
+        y = np.asarray(results['y'], dtype=float)[:, idx]
+        blk = self._sia100_column(results, idx)
+        return y if blk is None else np.concatenate([y, blk])
+
+    def _expand_state(self, y_old, I_new, V_new, y100_old=None):
         """
         Map ODE state from the current domain to a larger (I_new, V_new) domain.
 
@@ -522,6 +622,18 @@ class RadClusterSimulation:
         4. Project padded distributions onto new bins.
 
         Returns y0_new for the enlarged domain.
+
+        Parameters
+        ----------
+        y100_old : ndarray or None
+            The appended ⟨100⟩ block AS SOLVED (``results['y_sia100_raw']``),
+            i.e. per-size in discrete modes and discrete-prefix + bin moments in
+            bin-moment modes.  When given it is remapped by the SAME
+            reconstruct → pad → project path as the ½⟨111⟩ block (the two share
+            a layout) and appended to the returned state, so the C++ receives a
+            y0 of the full width.  Omitting it returns the ⟨100⟩-free state,
+            which the solver zero-fills to 1e-100 — that erases the population
+            at the doubling, so pass it whenever loop conversion is on.
         """
         re_old = self.rate_equations
         is_bin = hasattr(re_old, 'bins')
@@ -550,6 +662,27 @@ class RadClusterSimulation:
             c_n_old = reconstruct_distribution(sf_old, sia_mu0, sia_mu1,
                                                sia_mu2, re_old.bins, I_old)
             c_n_old[:i_d_old] = yj[:i_d_old]
+
+            # ⟨100⟩ block — layout matches the ½⟨111⟩ block, but it must NOT go
+            # through the reconstruct → project path used above.  That path
+            # round-trips the moments through `reconstruct_distribution`, whose
+            # hat closure clips its negative lobe to zero; the clip is what
+            # breaks μ₀ conservation.  For the ½⟨111⟩ population the effect is
+            # mild (broad distribution, n̄ near bin centres).  The ⟨100⟩
+            # population is the opposite — sessile, one-way, sharply peaked and
+            # advecting in size space — so n̄ sits far from the bin centre and
+            # the clip is catastrophic: measured ×176.9 inflation of μ₀ on the
+            # real state at 1.9 dpa of the I=40000 run (2026-08-15), which is
+            # exactly the ×177 jump in N_100 seen across that run's doubling.
+            # Remap its moments conservatively instead — no per-size detour.
+            mu0_100 = mu1_100 = None
+            y100j = None
+            if y100_old is not None:
+                y100j = np.maximum(np.asarray(y100_old, dtype=float), 0.0)
+                m100 = y100j[i_d_old:i_d_old + P_old * K_i_old]
+                mu0_100 = m100[0::P_old][:K_i_old].astype(float)
+                mu1_100 = (m100[1::P_old][:K_i_old].astype(float)
+                           if P_old >= 2 else None)
 
             # Reconstruct vacancy per-size from moments
             vac_mom = yj[iv_old + v_d_old:iv_old + v_d_old + P_old * K_v_old]
@@ -658,7 +791,28 @@ class RadClusterSimulation:
             # corrupts delta_FP / delta_He for the remainder of the run.
             y0[-5:] = yj[-5:]
 
-            return y0
+            if mu0_100 is None:
+                return y0
+            # Conservative moment remap (see the note where mu0_100 is read).
+            mu0_n, mu1_n = _remap_bin_moments(mu0_100, mu1_100,
+                                              re_old.bins, re_new.bins)
+            blk = np.full(i_d_new + P_new * re_new.K_i, C_floor)
+            # i_discrete does not change on a doubling, so the discrete prefix
+            # carries over one-for-one; guard the general case anyway.
+            n_pre = min(i_d_new, i_d_old, y100j.size)
+            blk[:n_pre] = y100j[:n_pre]
+            for k in range(re_new.K_i):
+                blk[i_d_new + P_new * k] = mu0_n[k]
+                if P_new >= 2:
+                    blk[i_d_new + P_new * k + 1] = mu1_n[k]
+                if P_new >= 3:
+                    # No independent μ₂ transport in the remap: place it
+                    # consistently with the bin's own mean so the lognormal
+                    # closure sees a self-consistent triple rather than a
+                    # μ₂ inherited from a different binning.
+                    nb = (mu1_n[k] / mu0_n[k]) if mu0_n[k] > 0 else 0.0
+                    blk[i_d_new + P_new * k + 2] = mu0_n[k] * nb * nb
+            return np.concatenate([y0, blk])
 
         else:
             # Full per-size mode — pad state vector directly
@@ -692,7 +846,14 @@ class RadClusterSimulation:
             # doubling (see bin-moment branch above).
             y0[-5:] = yj[-5:]
 
-            return y0
+            if y100_old is None:
+                return y0
+            # Discrete mode: the ⟨100⟩ block is already per-size, so widening it
+            # is a pad, exactly as for the ½⟨111⟩ block.
+            y100j = np.maximum(np.asarray(y100_old, dtype=float), 0.0)
+            blk = np.full(I_new, C_floor)
+            blk[:min(I_old, y100j.size)] = y100j[:min(I_old, y100j.size)]
+            return np.concatenate([y0, blk])
 
     # ── Time-series keys that should be concatenated when merging segments ────
 
@@ -711,7 +872,7 @@ class RadClusterSimulation:
 
     # 2-D [size, time] arrays: sliced by column, merged with row zero-padding
     # so a domain doubling (which grows the size axis) still concatenates.
-    _TS_KEYS_2D = {'y_sia100'}
+    _TS_KEYS_2D = {'y_sia100', 'y_sia100_raw'}
 
     def _slice_results(self, results, start, end):
         """Slice a results dict to time indices [start:end)."""
@@ -1022,9 +1183,11 @@ class RadClusterSimulation:
                       f"SIA={frac_I_ex:.3f}  VAC={frac_V_ex:.3f}")
                 print(f"  Doubling: {', '.join(which)}")
 
-                # Map state to enlarged domain
-                y_at = results['y'][:, exceed_idx]
-                y0_override = self._expand_state(y_at, I_new, V_new)
+                # Map state to enlarged domain.  The ⟨100⟩ block rides along —
+                # see _resume_state below for why it must.
+                y_at   = results['y'][:, exceed_idx]
+                y100_at = self._sia100_column(results, exceed_idx)
+                y0_override = self._expand_state(y_at, I_new, V_new, y100_at)
                 current_t   = t_exceed
             else:
                 # Segment OK (or both dimensions maxed out) — accumulate
@@ -1042,7 +1205,7 @@ class RadClusterSimulation:
                 accumulated = self._merge_results(accumulated, results)
                 self._accumulated_results = accumulated
                 current_t   = results['t'][-1]
-                y0_override = results['y'][:, -1]
+                y0_override = self._resume_state(results, -1)
 
         except KeyboardInterrupt:
             interrupted = True

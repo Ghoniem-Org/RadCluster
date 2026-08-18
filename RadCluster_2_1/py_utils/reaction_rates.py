@@ -35,7 +35,7 @@ Thermal emission (Eq. 122, 138-140):
 Fixed sinks (Eq. 134-137):
   D_α^d  = Z_α · ρ_d · ω_α^eff · a²
   D_α^gb = π² · D_α^eff / d_g²
-  D_α^p  = Z_p · ρ_p · r_p · D_α^eff
+  D_α^p  = 4π · Z_p · ρ_p · r_p · D_α^eff        (Eq. P4p; Z_p is a pure bias)
 
 State vector convention
 -----------------------
@@ -177,6 +177,15 @@ class ReactionRates:
         A_sph  = d['A_sph']    # (48π²)^{1/3} ≈ 7.818
         A_loop = d['A_loop']   # 8√(π/√3) ≈ 10.78
         A_iv   = 4.0 * np.sqrt(3.0) * np.pi  # ≈ 21.77 for K_iv  (Eq. 130)
+        # Spherical-precipitate sink prefactor.  Eq. P4p is
+        #   D_a^p = (8*pi*r_p/a) * c_p^N * omega_a^eff
+        # and with c_p^N = rho_p*Omega, omega = D/a^2, Omega ~ a^3/2 this reduces
+        # to the standard spherical sink strength k^2 = 4*pi*r_p*rho_p.  Until
+        # 2026-08-16 the code implemented Z_p*rho_p*r_p*D -- i.e. WITHOUT the
+        # 4*pi -- so every precipitate sink was 12.57x too weak and Z_p was not
+        # a pure bias factor (a "neutral" precipitate needed Z_p = 12.57).
+        # Restored here so Z_p_i / Z_p_v mean what their names say.
+        A_PREC = 4.0 * np.pi
 
         # Dislocation sink parameters (Table 26)
         rho_d = float(re.get('rho_d', 1.0e14))
@@ -203,8 +212,19 @@ class ReactionRates:
         # row reproduces the old aliased behaviour bit-for-bit.
         Z_i_loop = _num(re.get('Z_i_loop', Z_i), Z_i)
 
-        # Grain boundary sink (Eq. 135)
+        # Grain / lath boundary sink (Eq. 135)
         d_g   = float(re.get('d_g',   5.0e-6))
+        # Boundary bias factors.  Until 2026-08-16 the boundary sink was
+        # IDENTICAL for SIAs and vacancies, so it could carry no net bias at
+        # all.  That was harmless while d_g = 1 mm made k2_gb = 9.9e6 m^-2
+        # (seven orders below the network), but with d_g at the EUROFER97 lath
+        # width the boundary carries 6.2e13 m^-2 and its bias is a first-order
+        # term in the I/V balance.  Default 1.0 on both -> unbiased, i.e. the
+        # legacy behaviour is reproduced bit-for-bit by a workbook without
+        # these rows.  He is deliberately left unbiased: the bias is an elastic
+        # drift of the Frenkel-pair species, and He is not part of that balance.
+        Z_gb_i = float(re.get('Z_gb_i', 1.0))
+        Z_gb_v = float(re.get('Z_gb_v', 1.0))
 
         # Precipitate sink (Eq. 136)
         rho_p  = float(re.get('rho_p', 1.0e21))
@@ -417,8 +437,8 @@ class ReactionRates:
             else:
                 om = 0.0                        # immobile large loops
             k2_d  = Z_i * rho_d * om * a_m**2                     # disloc sink
-            k2_gb = np.pi**2 * (om * a_m**2) / d_g**2             # GB sink
-            k2_p  = Z_p_i * rho_p * r_p * (om * a_m**2)           # precip sink
+            k2_gb = Z_gb_i * np.pi**2 * (om * a_m**2) / d_g**2    # lath GB sink
+            k2_p  = A_PREC * Z_p_i * rho_p * r_p * (om * a_m**2)  # precip sink
             k2_SIA[n - 1] = (k2_d + k2_gb + k2_p)                 # [s^-1]
         self.k2_SIA = k2_SIA
 
@@ -448,8 +468,8 @@ class ReactionRates:
 
         # Fixed vacancy sink (Eq. 134-137)
         k2_d_v  = Z_v * rho_d * Dv_eff                     # disloc
-        k2_gb_v = np.pi**2 * Dv_eff / d_g**2               # GB
-        k2_p_v  = Z_p_v * rho_p * r_p * Dv_eff             # precip
+        k2_gb_v = Z_gb_v * np.pi**2 * Dv_eff / d_g**2      # lath GB
+        k2_p_v  = A_PREC * Z_p_v * rho_p * r_p * Dv_eff    # precip
         self.k2_vac_scalar = k2_d_v + k2_gb_v + k2_p_v     # [s^-1]
 
         # Fixed He sink (Eq. 134-137)
@@ -459,8 +479,8 @@ class ReactionRates:
 
         # Fixed SIA (monomer) sink
         k2_d_i  = Z_i * rho_d * Di_eff
-        k2_gb_i = np.pi**2 * Di_eff / d_g**2
-        k2_p_i  = Z_p_i * rho_p * r_p * Di_eff
+        k2_gb_i = Z_gb_i * np.pi**2 * Di_eff / d_g**2
+        k2_p_i  = A_PREC * Z_p_i * rho_p * r_p * Di_eff
         self.k2_SIA_scalar = k2_d_i + k2_gb_i + k2_p_i
 
         # V–SIA recombination scalar (Eq. 130)
@@ -492,6 +512,33 @@ class ReactionRates:
             else:
                 D_SIA_eff[n - 1] = D1D(n) / rot_factor
         self.D_SIA_eff = D_SIA_eff
+
+        # ── ½⟨111⟩ LOOP COARSENING (LOOP_COAL, default off) ───────────────────
+        # D_SIA_eff above is hard-truncated to zero at i_mobile, so a loop that
+        # grows past the cutoff can never take part in a coalescence again.
+        # Two mobile loops of n̄ ≈ 33 merge to 66 > i_mobile = 40, and the
+        # product is frozen.  That is why the ½⟨111⟩ mean size is pinned AT the
+        # cutoff: measured mean_n_111/i_mobile = 1.32 ± 0.75 at i_mobile = 40 and
+        # 0.84 ± 0.25 at i_mobile = 100 across 16 runs (2026-08-16), i.e. the
+        # mean tracks the cutoff rather than the physics.  Real ½⟨111⟩ loops in
+        # bcc Fe stay glissile to large size and coarsen by 1-D glide.
+        #
+        # D_loop_coal continues the SAME 1-D glide law past the cutoff instead
+        # of truncating it.  It is a SEPARATE array, used ONLY by the loop–loop
+        # coalescence edge: reusing D_SIA_eff would also make large loops visible
+        # to the fixed-sink and cavity-absorption channels, which is a different
+        # physics change and would confound the test.
+        self.loop_coal = int(_num(re.get('LOOP_COAL', 0), 0))
+        self.loop_coal_pref = float(_num(re.get('loop_coal_pref', 1.0), 1.0))
+        D_loop_coal = np.zeros(I)
+        if self.loop_coal:
+            for n in range(1, I + 1):
+                if n < 4:
+                    D_loop_coal[n - 1] = Di_cluster_3D(n)
+                else:
+                    D_loop_coal[n - 1] = D1D(n) / rot_factor
+            D_loop_coal *= self.loop_coal_pref
+        self.D_loop_coal = D_loop_coal
 
         # D_VAC_eff[m-1] = effective 3D diffusivity of vacancy cluster of size m.
         # D_m = D_v / m^{s_vc} for m ≤ v_mobile; 0 for immobile clusters.

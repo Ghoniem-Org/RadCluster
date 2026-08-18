@@ -1,0 +1,23 @@
+  row budget 72000 s, OMP_NUM_THREADS=1
+machine 0/1  rows 12 (0 done, 12 to run)  workers 12
+  provenance {"git_sha": "6cb8333cd28561bab450a430a5d6ae6e37963a74", "machine_id": "Nasr-Workstation", "solver_sha256": "8e75ae933ac986e1", "workbook_sha256": "4a217b516d9f5fab", "design_sha256": "", "run_cfg_sha": "df8375dbbda193be", "timeout_s": 72000.0, "stop_after_s": 0.0, "workers": 12, "omp_threads": 1, "weights_sha": "", "weights_map_sha": "6634b0b460b5c26f", "of": 1, "equations": "bin_moment", "python": "3.14.3"}
+  row   4003 S330  S  ok   d100=  7.18 N100=5.595e+19 pile=0.0 dFP= 5.2e-02 10355s
+
+  STOP requested (unreadable STOP file) -- not submitting further rows; 11 in flight will finish and be written.
+
+  row   4002 S330  S  ok   d100=  3.59 N100=2.048e+20 pile=0.0 dFP= 3.6e-02 10355s
+  row   4007 S330  S  ok   d100=  4.58 N100=3.346e+18 pile=0.0 dFP= 4.8e-02 10355s
+  row   4009 S330  S  ok   d100=  6.25 N100=8.395e+20 pile=0.0 dFP= 6.4e-02 10355s
+  row   4004 S330  S  ok   d100=  7.45 N100=2.276e+22 pile=0.0 dFP= 3.7e-02 10355s
+  row   4006 S330  S  ok   d100=  2.53 N100=1.132e+19 pile=0.0 dFP= 3.2e-02 10355s
+  row   4000 S330  S  ok   d100=  5.12 N100=1.695e+23 pile=0.0 dFP= 4.3e-02 10355s
+  row   4005 S330  S  ok   d100=  8.59 N100=7.652e+21 pile=0.0 dFP= 8.4e-02 10355s
+  row   4001 S330  S  ok   d100=  7.03 N100=7.254e+22 pile=0.0 dFP= 9.7e-02 10355s
+  row   4011 S330  S  ok   d100=  4.62 N100=9.559e+16 pile=0.0 dFP= 4.8e-02 10355s
+  row   4010 S330  S  ok   d100=  2.64 N100=7.235e+17 pile=0.0 dFP= 3.2e-02 10355s
+  row   4008 S330  S  ok   d100=  8.69 N100=3.499e+21 pile=0.0 dFP= 4.0e-02 10355s
+
+STOPPED in 10357s: 12 admissible, 0 inadmissible, 0 failed -> results\S10_calib.jsonl
+  manifest -> S10_calib.manifest.json
+  0 row(s) were never started and remain assigned to this machine.
+  Clear the flag (campaign_ops.clear_stop()) and re-run the same command to resume; completed rows are skipped automatically.

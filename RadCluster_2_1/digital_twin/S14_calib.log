@@ -1,0 +1,7 @@
+  row budget 72000 s, OMP_NUM_THREADS=1
+machine 0/1  rows 12 (0 done, 12 to run)  workers 12
+  provenance {"git_sha": "6cb8333cd28561bab450a430a5d6ae6e37963a74", "machine_id": "Nasr-Workstation", "solver_sha256": "8e75ae933ac986e1", "workbook_sha256": "4a217b516d9f5fab", "design_sha256": "", "run_cfg_sha": "7f4cd1c59f2c81c7", "timeout_s": 72000.0, "stop_after_s": 0.0, "workers": 12, "omp_threads": 1, "weights_sha": "", "weights_map_sha": "6634b0b460b5c26f", "of": 1, "equations": "bin_moment", "python": "3.14.3"}
+  row   4400 S330  S  ok   d100=  4.86 N100=6.160e+22 pile=0.0 dFP= 3.5e-01 19205s
+  row   4402 S330  S  ok   d100=  4.87 N100=6.078e+22 pile=0.0 dFP= 3.5e-01 21679s
+  row   4404 S330  S  ok   d100= 37.69 N100=5.871e+22 pile=0.0 dFP= 3.1e-01 35674s
+  row   4410 S330  S  ok   d100= 61.40 N100=1.041e+23 pile=0.9232255199624683 dFP= 4.9e-01 47258s

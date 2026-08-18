@@ -1,0 +1,114 @@
+{
+  "schema_version": "1",
+  "written_at_unix": 1786911323.035916,
+  "written_at": "2026-08-16 13:15:23",
+  "campaign": {
+    "design_file": "design\\S3_nucleation.csv",
+    "design_sha256": null,
+    "tier": null,
+    "N": null,
+    "p": null,
+    "conditions": null,
+    "parameters": null,
+    "parameters_version": null,
+    "revision_pending": null,
+    "rows_total": null
+  },
+  "machine": {
+    "index": 0,
+    "of": 1,
+    "weights": null,
+    "rows_assigned": 8,
+    "machine_id": "Nasr-Workstation",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.14.3",
+    "cpu_count": 24,
+    "workers": 8,
+    "omp_num_threads": "1"
+  },
+  "code": {
+    "git_sha": "6cb8333cd28561bab450a430a5d6ae6e37963a74",
+    "solver_sha256": "8e75ae933ac986e1",
+    "solver_path": "D:\\GitHub\\RadCluster\\RadCluster_2_1\\build\\Release\\solver.exe",
+    "workbook_sha256": "ae754e3a35b8805a"
+  },
+  "run_config": {
+    "I": 4000,
+    "V": 2000,
+    "dose": 0.02,
+    "equations": "bin_moment",
+    "rtol": 1e-06,
+    "atol": 1e-20,
+    "C_floor": 1e-25,
+    "solver_mode": "active_window",
+    "linsol": "gmres",
+    "preconditioner": "Jacobi",
+    "loop_conversion": 1,
+    "i_mobile_default": 40,
+    "v_mobile_default": 5,
+    "n_points": 40,
+    "timeout_s": 5400.0,
+    "lnl": 0,
+    "i_discrete": 100,
+    "v_discrete": 5,
+    "I_bin": 25,
+    "V_bin": 20,
+    "shape_function": "linear"
+  },
+  "run_cfg_sha": "370b26e5e0c29b0e",
+  "conditions_file": "conditions_S3.json",
+  "conditions": {
+    "_comment": [
+      "S3 nucleation / sink-density study.  Same single condition as S2 (330 C,",
+      "G = 1e-6) so S3 rows are directly comparable to the S2 and LOOP_COAL",
+      "baselines run on the identical theta (S2 row 3100, F_hi_open conversion:",
+      "E_a0_conv = 2.10, dH2_abs_conv = 0.26).",
+      "",
+      "Motivation (2026-08-16): the LOOP_COAL prototype showed the <111> size",
+      "deficit is NOT a missing coarsening channel -- 300x the coarsening rate",
+      "buys only +10% in d_111 before saturating.  The inventory check says the",
+      "model already holds the RIGHT total SIA content in <111> loops",
+      "(7.66e24 /m3 at 0.02 dpa vs ~6.3e24 for an experiment-like N and d); it",
+      "partitions that inventory over ~20x too many loops that are ~17x too",
+      "small.  So the lever is nucleation density, not coarsening.",
+      "",
+      "Target at 0.02 dpa: N_111 = 1.1e22 m^-3 with d_111 = 6.5 nm -- the pair",
+      "that is simultaneously satisfiable at the model's CURRENT inventory."
+    ],
+    "S330": {
+      "label": "330 C, G=1e-6 (proxy for BOR-60 330 C / 15 dpa)",
+      "T_K": 603.15,
+      "cascade": "fission",
+      "G": 1e-06,
+      "rho_d": 100000000000000.0
+    }
+  },
+  "rows": {
+    "assigned": 8,
+    "completed": 8,
+    "admissible": 8,
+    "inadmissible": 0,
+    "failed": 0,
+    "not_started": 0
+  },
+  "timing": {
+    "session_wall_s": 4389.0,
+    "row_wall_mean_s": 3983.8375,
+    "row_wall_median_s": 4075.75,
+    "row_wall_p90_s": 4300.17,
+    "core_hours": 8.852972222222222
+  },
+  "stopped": null,
+  "admissibility_rule": {
+    "pile_tol": 0.05,
+    "occ_tol": 0.1,
+    "delta_FP_tol": 0.01,
+    "pile_top_frac": 0.02,
+    "axes": [
+      "sia_111",
+      "sia_100",
+      "vacancy"
+    ],
+    "note": "delta_FP is blind to SIA-axis truncation (the <100> pile-up held delta_FP at 1e-8 while 96% of content sat at n=I), so grid adequacy is judged by pile/occupancy. It is NOT blind to the VACANCY axis -- delta_FP rests on the swelling identity S = S_I + Delta J^d and S is the vacancy inventory. The vacancy axis was unchecked until 2026-08-02; at the check_machine probe (V=120) mean_n_v moved 18.7->136 and swelling 58x on going to V=240."
+  }
+}

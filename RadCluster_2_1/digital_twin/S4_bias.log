@@ -1,0 +1,15 @@
+  row budget 5400 s, OMP_NUM_THREADS=1
+machine 0/1  rows 9 (0 done, 9 to run)  workers 9
+  provenance {"git_sha": "6cb8333cd28561bab450a430a5d6ae6e37963a74", "machine_id": "Nasr-Workstation", "solver_sha256": "8e75ae933ac986e1", "workbook_sha256": "4a217b516d9f5fab", "design_sha256": "", "run_cfg_sha": "370b26e5e0c29b0e", "timeout_s": 5400.0, "stop_after_s": 0.0, "workers": 9, "omp_threads": 1, "weights_sha": "", "weights_map_sha": "6634b0b460b5c26f", "of": 1, "equations": "bin_moment", "python": "3.14.3"}
+  row   3400 S330  S  ok   d100=  7.62 N100=3.441e+21 pile=1.178199647951224e-12 dFP= 3.6e-02 4353s
+  row   3402 S330  S  ok   d100=  7.60 N100=3.768e+21 pile=1.4567073572097852e-12 dFP= 3.3e-02 4461s
+  row   3405 S330  S  ok   d100=  7.14 N100=2.459e+21 pile=0.0 dFP= 1.7e-02 4495s
+  row   3403 S330  S  ok   d100=  7.63 N100=3.516e+21 pile=1.3629248204847609e-12 dFP= 3.5e-02 4529s
+  row   3401 S330  S  ok   d100=  7.63 N100=3.491e+21 pile=1.3468963495168267e-12 dFP= 3.5e-02 4550s
+  row   3407 S330  S  ok   d100=  7.51 N100=2.725e+21 pile=8.487549011897347e-12 dFP= 1.5e-02 4550s
+  row   3406 S330  S  ok   d100=  7.91 N100=4.079e+21 pile=9.359265248038067e-14 dFP= 2.9e-02 4584s
+  row   3404 S330  S  ok   d100=  8.11 N100=3.719e+21 pile=3.6866012721500024e-13 dFP= 3.5e-02 4638s
+  row   3408 S330  S  ok   d100=  9.14 N100=1.150e+21 pile=0.044777635062769286 dFP= 5.2e-03 4837s
+
+done in 4839s: 9 admissible, 0 inadmissible, 0 failed -> results\S4_bias.jsonl
+  manifest -> S4_bias.manifest.json

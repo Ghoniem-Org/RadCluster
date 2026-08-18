@@ -533,8 +533,13 @@ $$E_b^{\rm He}(m, \ell) = E_s^{\rm He} + P_{\rm He}(m,\ell)\,\Omega
 
 Interstitial loop (Eqs. Eb\_smalln\_fit–Eb\_blended):
 
-$$E_b^{\rm loop}(n) = A_{111}\, n^{-B_{111}} \quad (n \le n_{\rm tr}),
+$$E_b^{\rm loop}(n) = A_{111}\, n^{+B_{111}} \quad (n \le n_{\rm tr}),
   \quad \text{blended to continuum via } \tanh\!\left(\frac{n - n_{\rm tr}}{\sigma_{\rm tr}}\right)$$
+
+> **The exponent is POSITIVE** — loop binding *increases* with size, approaching
+> $E_f^i$ in the continuum limit. The code (`binding_energies.E_b_loop_i`) has
+> always used $n^{+B}$; the negative sign written here previously was a
+> documentation error only. Corrected 2026-08-16.
 
 ---
 

@@ -1,0 +1,22 @@
+{
+ "nocap": {
+  "0": "H0_base",
+  "1": "H1_fcli_lo",
+  "2": "H2_Eb_lo",
+  "3": "H3_imob_hi",
+  "4": "H4_Zloop_hi",
+  "5": "H5_Lhat_lo",
+  "6": "H6_fcli_Eb",
+  "7": "H7_p_imob",
+  "8": "H8_p_Zloop",
+  "9": "H9_p_Lhat"
+ },
+ "cap": {
+  "0": "H10_lnl",
+  "1": "H11_lnl_str",
+  "2": "H12_lnl_fE",
+  "3": "H13_lnl_all",
+  "4": "H14_lnl_all_s",
+  "5": "H15_lnl_Krec"
+ }
+}

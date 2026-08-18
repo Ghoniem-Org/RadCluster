@@ -1,0 +1,10 @@
+{
+ "3300": "R0_base",
+ "3301": "R1_dg_PAG",
+ "3302": "R2_dg_lath",
+ "3303": "R3_precip_MX",
+ "3304": "R4_fcli_low",
+ "3305": "R5_si_flat",
+ "3306": "R6_allsinks",
+ "3307": "R7_everything"
+}

@@ -1,0 +1,102 @@
+{
+  "schema_version": "1",
+  "written_at_unix": 1786946916.808171,
+  "written_at": "2026-08-16 23:08:36",
+  "campaign": {
+    "design_file": "design\\S9_grid.csv",
+    "design_sha256": null,
+    "tier": null,
+    "N": null,
+    "p": null,
+    "conditions": null,
+    "parameters": null,
+    "parameters_version": null,
+    "revision_pending": null,
+    "rows_total": null
+  },
+  "machine": {
+    "index": 0,
+    "of": 1,
+    "weights": null,
+    "rows_assigned": 1,
+    "machine_id": "Nasr-Workstation",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.14.3",
+    "cpu_count": 24,
+    "workers": 1,
+    "omp_num_threads": "2"
+  },
+  "code": {
+    "git_sha": "6cb8333cd28561bab450a430a5d6ae6e37963a74",
+    "solver_sha256": "8e75ae933ac986e1",
+    "solver_path": "D:\\GitHub\\RadCluster\\RadCluster_2_1\\build\\Release\\solver.exe",
+    "workbook_sha256": "4a217b516d9f5fab"
+  },
+  "run_config": {
+    "I": 20000,
+    "V": 2000,
+    "dose": 0.02,
+    "equations": "bin_moment",
+    "rtol": 1e-06,
+    "atol": 1e-20,
+    "C_floor": 1e-25,
+    "solver_mode": "active_window",
+    "linsol": "gmres",
+    "preconditioner": "Jacobi",
+    "loop_conversion": 1,
+    "i_mobile_default": 40,
+    "v_mobile_default": 5,
+    "n_points": 40,
+    "timeout_s": 5400.0,
+    "lnl": 0,
+    "i_discrete": 100,
+    "v_discrete": 5,
+    "I_bin": 18,
+    "V_bin": 20,
+    "shape_function": "linear"
+  },
+  "run_cfg_sha": "ec3962e3fdac3d87",
+  "conditions_file": "conditions_S4.json",
+  "conditions": {
+    "_comment": [
+      "S4 sink-bias study.  rho_d is NULL here on purpose: apply_theta writes",
+      "the condition value AFTER the design row, so a non-null rho_d would silently",
+      "overwrite the design column that Q5/Q7/Q8 use to probe the cold-worked value."
+    ],
+    "S330": {
+      "label": "330 C, G=1e-6 (proxy for BOR-60 330 C / 15 dpa)",
+      "T_K": 603.15,
+      "cascade": "fission",
+      "G": 1e-06,
+      "rho_d": null
+    }
+  },
+  "rows": {
+    "assigned": 1,
+    "completed": 1,
+    "admissible": 1,
+    "inadmissible": 0,
+    "failed": 0,
+    "not_started": 0
+  },
+  "timing": {
+    "session_wall_s": 5465.4,
+    "row_wall_mean_s": 5463.8,
+    "row_wall_median_s": 5463.8,
+    "row_wall_p90_s": 5463.8,
+    "core_hours": 1.5177222222222222
+  },
+  "stopped": null,
+  "admissibility_rule": {
+    "pile_tol": 0.05,
+    "occ_tol": 0.1,
+    "delta_FP_tol": 0.01,
+    "pile_top_frac": 0.02,
+    "axes": [
+      "sia_111",
+      "sia_100",
+      "vacancy"
+    ],
+    "note": "delta_FP is blind to SIA-axis truncation (the <100> pile-up held delta_FP at 1e-8 while 96% of content sat at n=I), so grid adequacy is judged by pile/occupancy. It is NOT blind to the VACANCY axis -- delta_FP rests on the swelling identity S = S_I + Delta J^d and S is the vacancy inventory. The vacancy axis was unchecked until 2026-08-02; at the check_machine probe (V=120) mean_n_v moved 18.7->136 and swelling 58x on going to V=240."
+  }
+}

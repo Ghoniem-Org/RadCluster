@@ -109,6 +109,12 @@ struct Parameters {
     // ── Mobile cluster effective 3D diffusivities (for coalescence) ─────────
     std::vector<double> D_SIA_eff;   // [I]: effective 3D D for SIA cluster n
     std::vector<double> D_VAC_eff;   // [V]: effective 3D D for vac cluster m
+    // ½⟨111⟩ loop coarsening (LOOP_COAL).  D_SIA_eff is truncated to 0 above
+    // i_mobile, so a loop that grows past the cutoff can never coalesce again
+    // and the mean size pins AT the cutoff.  D_loop_coal continues the same
+    // glide law past it and is used ONLY by the loop–loop coalescence edge.
+    int    loop_coal = 0;            // 0 = off (legacy), 1 = on
+    std::vector<double> D_loop_coal; // [I]: glide D with no mobility cutoff
     double A_sph_inv_O23;            // A_sph / Ω^{2/3}  [m^-2]
     double A_loop_inv_O23;           // A_loop / Ω^{2/3} [m^-2]  (loop geometry for n≥4)
     double Z_i_loop;                 // SIA dislocation bias at loops (Table 26, Eq. P3_i)
@@ -439,6 +445,12 @@ inline Parameters build_parameters(const std::map<std::string, double>& p) {
         P.D_SIA_eff[k] = optional_param(p, "D_SIA_eff_" + std::to_string(k), 0.0);
     for (int k = 0; k < P.V; ++k)
         P.D_VAC_eff[k] = optional_param(p, "D_VAC_eff_" + std::to_string(k), 0.0);
+    P.loop_coal = static_cast<int>(optional_param(p, "loop_coal", 0.0));
+    P.D_loop_coal.assign(P.I, 0.0);
+    if (P.loop_coal)
+        for (int k = 0; k < P.I; ++k)
+            P.D_loop_coal[k] = optional_param(
+                p, "D_loop_coal_" + std::to_string(k), 0.0);
     P.A_sph_inv_O23  = optional_param(p, "A_sph_inv_O23", 0.0);
     P.A_loop_inv_O23 = optional_param(p, "A_loop_inv_O23", 0.0);
     P.Z_i_loop       = optional_param(p, "Z_i_loop", 1.05);

@@ -1,0 +1,14 @@
+{
+ "_comment": [
+  "S4 sink-bias study.  rho_d is NULL here on purpose: apply_theta writes",
+  "the condition value AFTER the design row, so a non-null rho_d would silently",
+  "overwrite the design column that Q5/Q7/Q8 use to probe the cold-worked value."
+ ],
+ "S330": {
+  "label": "330 C, G=1e-6 (proxy for BOR-60 330 C / 15 dpa)",
+  "T_K": 603.15,
+  "cascade": "fission",
+  "G": 1e-06,
+  "rho_d": null
+ }
+}

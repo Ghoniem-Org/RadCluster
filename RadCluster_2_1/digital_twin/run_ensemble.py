@@ -89,6 +89,10 @@ HERE = Path(__file__).resolve().parent
 REPO = HERE.parent.parent
 sys.path.insert(0, str(REPO))
 
+# Canonical A_111 <- E_b_i2 inversion, shared with ReactionRates so the two
+# cannot drift apart (see apply_theta).
+from RadCluster_2_1.py_utils.binding_energies import A_111_from_E_b_i2
+
 STOP_FILE = HERE / "CAMPAIGN_STOP"   # graceful-halt sentinel (campaign_ops)
 B111_M = 2.482e-10       # <111> Burgers magnitude [m], for loop_net_w_c units
 PILE_TOP_FRAC = 0.02     # "top 2 % of the grid"
@@ -267,8 +271,17 @@ def apply_theta(sim, spec: dict, row: dict, cond: dict):
 
     # A_111 is DERIVED from E_b_i2 (plan S2.2c), never sampled directly.
     if "E_b_i2" in row and "B_111" in row:
-        # E_b_loop(2) = A_111 * 2^-B_111  =>  A_111 = E_b_i2 * 2^B_111
-        a111 = float(row["E_b_i2"]) * (2.0 ** float(row["B_111"]))
+        # The small-n branch is E_b^fit(n) = A_111 * n^{+B_111} (exponent
+        # POSITIVE -- binding increases with size), so at n=2
+        #   E_b_i2 = A_111 * 2^{+B_111}  =>  A_111 = E_b_i2 * 2^{-B_111}
+        # This used to be written with the opposite sign, which overstated
+        # A_111 by 2^{2*B_111} (1.54x at B_111=0.314).  It was INERT --
+        # ReactionRates._precompute re-derives A_111 from E_b_i2 via
+        # A_111_from_E_b_i2 whenever E_b_i2 is present, and apply_theta always
+        # writes E_b_i2 -- verified 2026-08-16 by G_SIA being bit-identical for
+        # A_111 in {correct, old-wrong, 5.0}.  No published result is affected.
+        # Routed through the canonical helper so the two can never diverge.
+        a111 = A_111_from_E_b_i2(float(row["E_b_i2"]), float(row["B_111"]))
         put("dissociation", "A_111", a111)
         put("dissociation", "A_100", a111 * 0.9545)
 
@@ -1117,6 +1130,13 @@ def main(argv=None):
                          "Omit for the default even split (row_id %% M).")
     ap.add_argument("--out", type=Path, default=None)
     ap.add_argument("--conditions", type=Path, default=HERE / "conditions.json")
+    # Parameter spec is selectable so a side-study can add design columns (S3
+    # adds the sink and cascade-spectrum levers) WITHOUT widening the shared
+    # campaign spec -- design.py builds its Saltelli matrix from every entry in
+    # the spec, so adding to parameters.json would silently move p off 24 and
+    # invalidate the rev-6 sample size.
+    ap.add_argument("--spec", type=Path, default=HERE / "parameters.json",
+                    help="parameter spec JSON (default parameters.json)")
     # LOOP_NETWORK_LOSS override.  The flag lives in the workbook, but it is not
     # a physics constant -- it selects run_adaptive, which costs 4.6x the wall
     # time per unit dose (measured 2026-08-12, 0.0997 vs 0.4624 dpa/hr on the
@@ -1283,7 +1303,7 @@ def main(argv=None):
     if not 0 <= a.subtask < a.of_subtasks:
         raise SystemExit(f"--subtask {a.subtask} outside 0..{a.of_subtasks-1}")
 
-    spec = json.loads((HERE / "parameters.json").read_text(encoding="utf-8"))
+    spec = json.loads(a.spec.read_text(encoding="utf-8"))
     rows, meta = read_design(a.design)
     conds = (json.loads(a.conditions.read_text(encoding="utf-8"))
              if a.conditions.exists() else

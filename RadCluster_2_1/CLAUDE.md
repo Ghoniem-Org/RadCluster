@@ -577,8 +577,19 @@ $$E_b^{\rm He}(m, \ell) = E_s^{\rm He} + P_{\rm He}(m,\ell)\,\Omega
 
 Interstitial loop (Eqs. Eb\_smalln\_fit–Eb\_blended):
 
-$$E_b^{\rm loop}(n) = A_{111}\, n^{-B_{111}} \quad (n \le n_{\rm tr}),
+$$E_b^{\rm loop}(n) = A_{111}\, n^{+B_{111}} \quad (n \le n_{\rm tr}),
   \quad \text{blended to continuum via } \tanh\!\left(\frac{n - n_{\rm tr}}{\sigma_{\rm tr}}\right)$$
+
+> **The exponent is POSITIVE** — loop binding *increases* with size, approaching
+> $E_f^i$ in the continuum limit. The $\langle100\rangle$ branch is the same
+> form, $E_b^{100}(n) = A_{100}\,n^{+B_{100}}$. This section previously wrote
+> both with a negative exponent; the code (`binding_energies.E_b_loop_i`,
+> `E_b_loop_100`) has always used $n^{+B}$, so the sign error was confined to
+> the documentation. Corrected 2026-08-16.
+>
+> Consequently the di-interstitial anchor inverts as
+> $A_{111} = E_b^i(2)\cdot 2^{-B_{111}}$ (`binding_energies.A_111_from_E_b_i2`),
+> which is the single canonical implementation — do not re-derive it inline.
 
 ---
 

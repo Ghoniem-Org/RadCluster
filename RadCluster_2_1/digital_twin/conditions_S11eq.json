@@ -1,0 +1,14 @@
+{
+ "_comment": [
+  "Equivalence check: same dose_dpa both modes, small enough that",
+  "active_window can finish. Verifies full_system is not just FASTER but SAME."
+ ],
+ "S330": {
+  "label": "330 C, G=1e-7, 0.002 dpa (solver equivalence check)",
+  "T_K": 603.15,
+  "cascade": "fission",
+  "G": 1e-07,
+  "rho_d": null,
+  "dose_dpa": 0.002
+ }
+}

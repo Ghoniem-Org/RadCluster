@@ -1,0 +1,35 @@
+{
+  "_comment": [
+    "S8: the 15 dpa reconciliation run.  Same 330 C condition as S2-S7, but",
+    "carried to the ACTUAL dose of the measurement instead of the 0.02 dpa",
+    "screening dose.  dose_dpa is read per-condition by run_ensemble",
+    "(cond.get('dose_dpa', cfg['dose'])), so it overrides --dose.",
+    "",
+    "Why this matters: every conclusion from S1-S7 compared a 0.02 dpa run to",
+    "15 dpa data -- a factor of 750 in dose.  The S1 finding that E_a0_conv",
+    "cannot satisfy N_100/d_100 and f_100 simultaneously (0/81 points) was",
+    "diagnosed at that mismatched dose and may simply not be a real conflict",
+    "here.",
+    "",
+    "rho_d is null on purpose so the DESIGN column controls it -- apply_theta",
+    "writes condition values AFTER the row loop.",
+    "",
+    "G = 1e-7 dpa/s is the EXPERIMENTAL rate (set 2026-08-16), replacing the",
+    "1e-6 accelerated rate that S1-S7 screened at.  t_end = dose/G = 1.5e8 s,",
+    "about 14 decades of log-spaced time against the 10 decades of the",
+    "screening runs.",
+    "",
+    "This is not a cosmetic change.  Dropping G by 10x at fixed dose gives",
+    "every thermal process 10x longer per dpa, so emission, diffusion and",
+    "coarsening all gain ground on production -- which is the direction the",
+    "reconciliation needs (fewer, larger loops; more cavity growth).  It also",
+    "means the S1-S7 screening conclusions were drawn at a dose rate the",
+    "measurement never saw, and their PARAMETER RANKINGS may not transfer even",
+    "though their mechanisms should."
+  ],
+  "S330": {
+    "label": "330 C, G=1e-7 (experimental rate), 15 dpa (BOR-60 EUROFER97)",
+    "T_K": 603.15, "cascade": "fission", "G": 1.0e-07,
+    "rho_d": null, "dose_dpa": 15.0
+  }
+}

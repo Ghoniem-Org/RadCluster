@@ -1,0 +1,12 @@
+  row budget 36000 s, OMP_NUM_THREADS=1
+machine 0/1  rows 6 (0 done, 6 to run)  workers 6
+  provenance {"git_sha": "6cb8333cd28561bab450a430a5d6ae6e37963a74", "machine_id": "Nasr-Workstation", "solver_sha256": "8e75ae933ac986e1", "workbook_sha256": "4a217b516d9f5fab", "design_sha256": "", "run_cfg_sha": "b3030a04ce044986", "timeout_s": 36000.0, "stop_after_s": 0.0, "workers": 6, "omp_threads": 1, "weights_sha": "", "weights_map_sha": "6634b0b460b5c26f", "of": 1, "equations": "bin_moment", "python": "3.14.3"}
+  row   3904 S330  S  ok   d100=  4.19 N100=1.227e+19 pile=0.0 dFP= 4.2e-02 36065s
+  row   3903 S330  S  ok   d100=  8.30 N100=7.421e+19 pile=0.0 dFP= 6.0e-02 36065s
+  row   3902 S330  S  ok   d100=  5.99 N100=3.195e+18 pile=0.0 dFP= 4.8e-02 36065s
+  row   3905 S330  S  ok   d100=  4.94 N100=4.312e+18 pile=0.0 dFP= 1.6e-02 36065s
+  row   3900 S330  S  ok   d100= 11.08 N100=1.578e+21 pile=8.305452829688542e-13 dFP= 3.9e-02 36065s
+  row   3901 S330  S  ok   d100= 11.18 N100=7.037e+22 pile=2.825379218420152e-13 dFP= 4.9e-02 36065s
+
+done in 36067s: 6 admissible, 0 inadmissible, 0 failed -> results\S8_15dpa.jsonl
+  manifest -> S8_15dpa.manifest.json

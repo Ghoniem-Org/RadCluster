@@ -1,0 +1,140 @@
+{
+  "schema_version": "1",
+  "written_at_unix": 1786856189.6013396,
+  "written_at": "2026-08-15 21:56:29",
+  "campaign": {
+    "design_file": "design\\S1_conv_lnl0.csv",
+    "design_sha256": null,
+    "tier": null,
+    "N": null,
+    "p": null,
+    "conditions": null,
+    "parameters": null,
+    "parameters_version": null,
+    "revision_pending": null,
+    "rows_total": null
+  },
+  "machine": {
+    "index": 0,
+    "of": 1,
+    "weights": null,
+    "rows_assigned": 1,
+    "machine_id": "Nasr-Workstation",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.14.3",
+    "cpu_count": 24,
+    "workers": 1,
+    "omp_num_threads": "1"
+  },
+  "code": {
+    "git_sha": "6cb8333cd28561bab450a430a5d6ae6e37963a74",
+    "solver_sha256": "c28893e7d4a119e2",
+    "solver_path": "D:\\GitHub\\RadCluster\\RadCluster_2_1\\build\\Release\\solver.exe",
+    "workbook_sha256": "ae754e3a35b8805a"
+  },
+  "run_config": {
+    "I": 10000,
+    "V": 5000,
+    "dose": 1.0,
+    "equations": "bin_moment",
+    "rtol": 1e-06,
+    "atol": 1e-20,
+    "C_floor": 1e-25,
+    "solver_mode": "active_window",
+    "linsol": "gmres",
+    "preconditioner": "Jacobi",
+    "loop_conversion": 1,
+    "i_mobile_default": 40,
+    "v_mobile_default": 5,
+    "n_points": 40,
+    "timeout_s": 420.0,
+    "lnl": 0,
+    "i_discrete": 40,
+    "v_discrete": 5,
+    "I_bin": 20,
+    "V_bin": 20,
+    "shape_function": "linear"
+  },
+  "run_cfg_sha": "fbf84560bf503e10",
+  "conditions_file": "conditions_T7.json",
+  "conditions": {
+    "_comment": [
+      "T7 cost decomposition: the SAME theta (T3 row 38 -- grid-clean,",
+      "conserving, d_100 already in the experimental range) at the four",
+      "corners of (T, G).  T3 confounded these: rows 301/302 changed BOTH",
+      "temperature and dose rate at once AND ran discrete, so the 107x cost",
+      "gap could not be attributed. bin_moment here, i.e. production mode.",
+      "",
+      "C_300_G7 / C_350_G7 added 2026-08-13: the two UNAMBIGUOUS ends of the",
+      "EUROFER97 character series. Per-condition dose_dpa carries each point to the",
+      "dose it was measured at (15.0 and 16.3), which run_ensemble reads in",
+      "preference to --dose."
+    ],
+    "C_300_G6": {
+      "label": "300 C, G=1e-6 (T3 baseline)",
+      "T_K": 573.15,
+      "cascade": "fission",
+      "G": 1e-06,
+      "rho_d": 100000000000000.0
+    },
+    "C_330_G6": {
+      "label": "330 C, G=1e-6",
+      "T_K": 603.15,
+      "cascade": "fission",
+      "G": 1e-06,
+      "rho_d": 100000000000000.0
+    },
+    "C_300_G7": {
+      "label": "EUROFER97 neutron 300 C, 15 dpa -- COLD END, data says 1/2<111>",
+      "T_K": 573.15,
+      "cascade": "fission",
+      "G": 1e-07,
+      "rho_d": 100000000000000.0,
+      "dose_dpa": 15.0
+    },
+    "C_330_G7": {
+      "label": "330 C, G=1e-7 (the experiment)",
+      "T_K": 603.15,
+      "cascade": "fission",
+      "G": 1e-07,
+      "rho_d": 100000000000000.0,
+      "dose_dpa": 15.0
+    },
+    "C_350_G7": {
+      "label": "EUROFER97 neutron 350 C, 16.3 dpa -- HOT END, data says <100>",
+      "T_K": 623.15,
+      "cascade": "fission",
+      "G": 1e-07,
+      "rho_d": 100000000000000.0,
+      "dose_dpa": 16.3
+    }
+  },
+  "rows": {
+    "assigned": 1,
+    "completed": 1,
+    "admissible": 1,
+    "inadmissible": 0,
+    "failed": 0,
+    "not_started": 0
+  },
+  "timing": {
+    "session_wall_s": 483.3,
+    "row_wall_mean_s": 482.7,
+    "row_wall_median_s": 482.7,
+    "row_wall_p90_s": 482.7,
+    "core_hours": 0.13408333333333333
+  },
+  "stopped": null,
+  "admissibility_rule": {
+    "pile_tol": 0.05,
+    "occ_tol": 0.1,
+    "delta_FP_tol": 0.01,
+    "pile_top_frac": 0.02,
+    "axes": [
+      "sia_111",
+      "sia_100",
+      "vacancy"
+    ],
+    "note": "delta_FP is blind to SIA-axis truncation (the <100> pile-up held delta_FP at 1e-8 while 96% of content sat at n=I), so grid adequacy is judged by pile/occupancy. It is NOT blind to the VACANCY axis -- delta_FP rests on the swelling identity S = S_I + Delta J^d and S is the vacancy inventory. The vacancy axis was unchecked until 2026-08-02; at the check_machine probe (V=120) mean_n_v moved 18.7->136 and swelling 58x on going to V=240."
+  }
+}

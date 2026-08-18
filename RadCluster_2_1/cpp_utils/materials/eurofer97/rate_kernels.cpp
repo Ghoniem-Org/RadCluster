@@ -1688,6 +1688,103 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
         }
     }
 
+    // ── ½⟨111⟩ LOOP–LOOP COARSENING (P.loop_coal) ─────────────────────────
+    // The missing edge.  D_SIA_eff is truncated to zero above i_mobile, so two
+    // mobile loops of n̄ ≈ 33 merge to 66 > i_mobile = 40 and the product is
+    // frozen forever: the ½⟨111⟩ mean size pins AT the cutoff (measured
+    // mean_n_111/i_mobile = 1.32 ± 0.75 at i_mobile = 40, 0.84 ± 0.25 at 100,
+    // 16 runs, 2026-08-16) and the density runs 20–60x over the EUROFER97 data.
+    // Real ½⟨111⟩ loops stay glissile and coarsen by 1-D glide.
+    //
+    // Done on MOMENTS, not per-size.  The general coalescence above is confined
+    // to discrete sizes precisely because a per-size reconstruction amplifies
+    // the rate by O(bw^2) in wide bins (see the note at the head of dc_n).
+    // Treating each sessile class as monodisperse at its own mean avoids the
+    // reconstruction entirely: the pair sum is O((i_d - i_mobile + Ib)^2), and
+    // it conserves SIA inventory exactly because the product carries precisely
+    // the two reactants' sizes.
+    if (P.loop_coal) {
+        struct LoopCls { double n_bar, cnt; int kind, idx; };  // kind 0=discrete,1=bin
+        std::vector<LoopCls> cls;
+        cls.reserve(std::max(0, i_d - P.i_mobile) + Ib);
+        // sessile discrete sizes: mobile ones already coalesce in the block above
+        for (int sn = P.i_mobile + 1; sn <= i_d; ++sn) {
+            const double c = std::max(c_n[sn - 1], 0.0);
+            if (c > P.C_floor)
+                cls.push_back({static_cast<double>(sn), c, 0, sn - 1});
+        }
+        for (int k = 0; k < Ib; ++k) {
+            const double m0 = std::max(y[i_d + PM*k], 0.0);
+            if (m0 <= P.C_floor) continue;
+            double nb = (PM >= 2) ? y[i_d + PM*k + 1] / std::max(m0, 1e-300)
+                                  : 0.5 * (n_lo[k] + n_hi[k] - 1);
+            const double lo_f = static_cast<double>(n_lo[k]);
+            const double hi_f = static_cast<double>(n_hi[k] - 1);
+            if (nb < lo_f) nb = lo_f;
+            else if (nb > hi_f) nb = hi_f;
+            cls.push_back({nb, m0, 1, k});
+        }
+        const int NC = static_cast<int>(cls.size());
+        // deposit helper: put (cnt, content) at product size s
+        auto deposit = [&](double s, double r) {
+            if (s <= 0.0) return;
+            int si = static_cast<int>(s + 0.5);
+            if (si > I) si = I;                       // pile at the grid edge
+            if (si <= i_d) {                          // lands on a discrete size
+                dc_n[si - 1] += r;
+                return;
+            }
+            for (int k = 0; k < Ib; ++k) {            // lands in a bin
+                if (si >= n_lo[k] && si < n_hi[k]) {
+                    coal_dmu0[k] += r;
+                    if (PM >= 2) coal_dmu1[k] += s * r;
+                    if (PM >= 3) coal_dmu2[k] += s * s * r;
+                    return;
+                }
+            }
+            coal_dmu0[Ib - 1] += r;                   // beyond the last bin
+            if (PM >= 2) coal_dmu1[Ib - 1] += s * r;
+            if (PM >= 3) coal_dmu2[Ib - 1] += s * s * r;
+        };
+        auto remove = [&](const LoopCls& a, double r) {
+            if (a.kind == 0) {
+                dc_n[a.idx] -= r;
+            } else {
+                coal_dmu0[a.idx] -= r;
+                if (PM >= 2) coal_dmu1[a.idx] -= a.n_bar * r;
+                if (PM >= 3) coal_dmu2[a.idx] -= a.n_bar * a.n_bar * r;
+            }
+        };
+        for (int a = 0; a < NC; ++a) {
+            const double na = cls[a].n_bar;
+            const double Da = P.D_loop_coal[std::min(I, std::max(1,
+                                  static_cast<int>(na + 0.5))) - 1];
+            for (int b = a; b < NC; ++b) {
+                const double nb = cls[b].n_bar;
+                const double Db = P.D_loop_coal[std::min(I, std::max(1,
+                                      static_cast<int>(nb + 0.5))) - 1];
+                // Both partners glide, so the encounter rate carries D_a + D_b
+                // (relative diffusivity), unlike the projectile-only convention
+                // of K_ii_coal where one partner is a fixed target.
+                const double Dsum = Da + Db;
+                if (Dsum < 1e-300) continue;
+                const double sf = std::sqrt(na) + std::sqrt(nb);
+                const double K  = P.Z_ii * P.Z_i_loop * P.A_loop_inv_O23 * sf * Dsum;
+                // a == b: 1/2 K c^2 (each event consumes TWO of the same class)
+                const double r = (a == b) ? 0.5 * K * cls[a].cnt * cls[a].cnt
+                                          : K * cls[a].cnt * cls[b].cnt;
+                if (r < 1e-300) continue;
+                if (a == b) {
+                    remove(cls[a], 2.0 * r);
+                } else {
+                    remove(cls[a], r);
+                    remove(cls[b], r);
+                }
+                deposit(na + nb, r);
+            }
+        }
+    }
+
     // ── Project dc_n into dydt ────────────────────────────────────────────
     // Discrete sizes: direct copy
     for (int n = 0; n < i_d; ++n)

@@ -1,0 +1,14 @@
+  row budget 5400 s, OMP_NUM_THREADS=1
+machine 0/1  rows 8 (0 done, 8 to run)  workers 8
+  provenance {"git_sha": "6cb8333cd28561bab450a430a5d6ae6e37963a74", "machine_id": "Nasr-Workstation", "solver_sha256": "8e75ae933ac986e1", "workbook_sha256": "ae754e3a35b8805a", "design_sha256": "", "run_cfg_sha": "370b26e5e0c29b0e", "timeout_s": 5400.0, "stop_after_s": 0.0, "workers": 8, "omp_threads": 1, "weights_sha": "", "weights_map_sha": "6634b0b460b5c26f", "of": 1, "equations": "bin_moment", "python": "3.14.3"}
+  row   3304 S330  S  ok   d100=  9.97 N100=2.422e+21 pile=0.3059821412717783 dFP= 3.0e-02 2961s
+  row   3307 S330  S  ok   d100=  8.89 N100=1.788e+21 pile=0.05040581020551168 dFP= 1.4e-02 3888s
+  row   3305 S330  S  ok   d100=  7.61 N100=4.579e+21 pile=1.499067254781519e-15 dFP= 8.1e-02 4028s
+  row   3302 S330  S  ok   d100=  7.73 N100=4.693e+21 pile=1.6143125533202525e-14 dFP= 6.2e-02 4036s
+  row   3303 S330  S  ok   d100=  7.72 N100=4.204e+21 pile=1.3519449784275017e-13 dFP= 4.8e-02 4116s
+  row   3301 S330  S  ok   d100=  7.89 N100=4.230e+21 pile=1.0770577330643752e-15 dFP= 8.0e-02 4193s
+  row   3300 S330  S  ok   d100=  7.89 N100=4.230e+21 pile=1.066981473082118e-15 dFP= 8.0e-02 4263s
+  row   3306 S330  S  ok   d100=  7.69 N100=3.851e+21 pile=4.0205343566757184e-13 dFP= 4.2e-02 4386s
+
+done in 4389s: 8 admissible, 0 inadmissible, 0 failed -> results\S3_nucleation.jsonl
+  manifest -> S3_nucleation.manifest.json

@@ -1,0 +1,23 @@
+  row budget 72000 s, OMP_NUM_THREADS=1
+machine 0/1  rows 12 (0 done, 12 to run)  workers 12
+  provenance {"git_sha": "6cb8333cd28561bab450a430a5d6ae6e37963a74", "machine_id": "Nasr-Workstation", "solver_sha256": "8e75ae933ac986e1", "workbook_sha256": "4a217b516d9f5fab", "design_sha256": "", "run_cfg_sha": "eac1a2b88394fd44", "timeout_s": 72000.0, "stop_after_s": 0.0, "workers": 12, "omp_threads": 1, "weights_sha": "", "weights_map_sha": "6634b0b460b5c26f", "of": 1, "equations": "bin_moment", "python": "3.14.3"}
+  row   4205 S330  S  ok   d100= 32.18 N100=1.416e+22 pile=0.9894610287673236 dFP= 2.8e-01 10870s
+  row   4206 S330  S  ok   d100= 29.12 N100=1.784e+23 pile=0.5127944045086306 dFP= 1.7e-01 15250s
+  row   4200 S330  S  ok   d100= 31.65 N100=2.763e+23 pile=0.9662329245251207 dFP= 5.9e-01 16230s
+  row   4210 S330  S  ok   d100= 31.85 N100=1.027e+23 pile=0.9733753840497594 dFP= 4.7e-01 19309s
+  row   4201 S330  S  ok   d100= 31.78 N100=1.596e+23 pile=0.970243083677224 dFP= 6.4e-01 20222s
+  row   4204 S330  S  ok   d100= 31.88 N100=1.048e+23 pile=0.9754853386222626 dFP= 6.2e-01 22394s
+  row   4209 S330  S  ok   d100= 31.82 N100=1.869e+23 pile=0.9745296047474103 dFP= 5.9e-01 25833s
+  row   4202 S330  S  ok   d100= 32.04 N100=4.279e+22 pile=0.9819701221594568 dFP= 4.8e-01 26433s
+  row   4203 S330  S  ok   d100= 31.83 N100=1.868e+23 pile=0.9751038881676138 dFP= 6.3e-01 27333s
+
+  STOP requested (unreadable STOP file) -- not submitting further rows; 3 in flight will finish and be written.
+
+  row   4211 S330  S  ok   d100= 19.94 N100=1.540e+21 pile=0.0 dFP= 6.4e-02 27392s
+  row   4208 S330  S  ok   d100= 16.58 N100=1.004e+22 pile=0.0 dFP= 1.1e-01 27392s
+  row   4207 S330  S  ok   d100= 31.33 N100=1.220e+23 pile=0.9450315153763388 dFP= 3.9e-01 27392s
+
+STOPPED in 27394s: 12 admissible, 0 inadmissible, 0 failed -> results\S12_calib.jsonl
+  manifest -> S12_calib.manifest.json
+  0 row(s) were never started and remain assigned to this machine.
+  Clear the flag (campaign_ops.clear_stop()) and re-run the same command to resume; completed rows are skipped automatically.

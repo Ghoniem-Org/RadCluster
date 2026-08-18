@@ -1,0 +1,7 @@
+  row budget 3600 s, OMP_NUM_THREADS=6
+machine 0/1  rows 1 (0 done, 1 to run)  workers 1
+  provenance {"git_sha": "6cb8333cd28561bab450a430a5d6ae6e37963a74", "machine_id": "Nasr-Workstation", "solver_sha256": "8e75ae933ac986e1", "workbook_sha256": "4a217b516d9f5fab", "design_sha256": "", "run_cfg_sha": "9b8de6b6412ae872", "timeout_s": 3600.0, "stop_after_s": 0.0, "workers": 1, "omp_threads": 6, "weights_sha": "", "weights_map_sha": "6634b0b460b5c26f", "of": 1, "equations": "bin_moment", "python": "3.14.3"}
+  row   4100 S330  S  ok   d100=  3.40 N100=3.536e+21 pile=0.0 dFP= 1.9e-02 540s
+
+done in 541s: 1 admissible, 0 inadmissible, 0 failed -> results\S11eq_full_system.jsonl
+  manifest -> S11eq_full_system.manifest.json

@@ -124,6 +124,30 @@ _PHYSICS_OPTION_MAP = {
 }
 
 
+def sia100_block_length(sim, solver_config):
+    """Length of the appended ⟨100⟩ SIA block in the C++ state vector.
+
+    The ⟨100⟩ block carries the SAME size reduction as the ½⟨111⟩ population:
+    full per-size (length I) in discrete modes, and the discrete-prefix +
+    bin-moment vector (i_discrete + n_mom·I_bin) in bin_moment modes.  Zero when
+    loop conversion is off.
+
+    Shared by ``write_param_file`` (which must emit a y0 of the full width) and
+    ``run_cpp_solver`` (which splits the block back off).  Keeping one rule in
+    one place is deliberate: when the two disagreed, the writer emitted a short
+    y0 and the reader still found a block, so the mismatch was invisible.
+    """
+    if not int(solver_config.get(
+            'loop_conversion', sim.input_data.reactions.get('loop_conversion', 0))):
+        return 0
+    re_obj = sim.rate_equations
+    if hasattr(re_obj, 'bins'):        # BinMomentRateEquations
+        return (int(getattr(re_obj, 'i_discrete', 0))
+                + int(getattr(re_obj, 'n_mom', 2))
+                * int(getattr(re_obj, 'I_bin', len(getattr(re_obj, 'bins', [])))))
+    return int(sim.input_data.I)
+
+
 def write_param_file(sim, solver_config, path, y0_override=None):
     """
     Write all solver parameters to a text file (key=value, one per line).
@@ -220,6 +244,13 @@ def write_param_file(sim, solver_config, path, y0_override=None):
         lines.append(f"D_SIA_eff_{k}={v:.17e}")
     for k, v in enumerate(rr.D_VAC_eff):
         lines.append(f"D_VAC_eff_{k}={v:.17e}")
+    # ½⟨111⟩ loop coarsening: glide law continued past i_mobile, used ONLY by
+    # the loop–loop coalescence edge (see ReactionRates.D_loop_coal).
+    _lc = int(getattr(rr, 'loop_coal', 0))
+    lines.append(f"loop_coal={_lc}")
+    if _lc:
+        for k, v in enumerate(rr.D_loop_coal):
+            lines.append(f"D_loop_coal_{k}={v:.17e}")
     lines.append(f"A_sph_inv_O23={rr.A_sph_inv_O23:.17e}")
     lines.append(f"A_loop_inv_O23={rr.A_loop_inv_O23:.17e}")
     # Loop SIA bias — own key, falling back to the network bias Z_i when the
@@ -361,7 +392,47 @@ def write_param_file(sim, solver_config, path, y0_override=None):
     lines.append(f"he_mode={he_mode_int}")
 
     # ── Initial conditions ────────────────────────────────────────────────────
-    y0 = y0_override if y0_override is not None else re_obj.get_initial_conditions()
+    # The C++ reads y0_k for k < N_eq and falls back to 1e-100 for every key it
+    # does not find (parameters.h: `optional_param(p, "y0_"+k, 1e-100)`).  A
+    # short y0 therefore does not fail — it silently zeroes the tail of the
+    # state.  That is exactly how adaptive continuation erased the whole ⟨100⟩
+    # block at every segment restart (resume handed back results['y'][:, -1],
+    # from which cpp_bridge had already split the block off).
+    n_sia100   = sia100_block_length(sim, solver_config)
+    n_expected = re_obj.N_eq + n_sia100
+    if y0_override is None:
+        # Fresh start: get_initial_conditions() covers N_eq only, so the ⟨100⟩
+        # block has to be built here.  Give it the SAME shaped IC that
+        # get_initial_conditions builds for the ½⟨111⟩ bins — μ₀ = C_floor and
+        # μ₁ = C_floor·midpoint — for the reason stated in its docstring: all
+        # moments at C_floor gives μ₁/μ₀ = 1, a mean size outside every bin,
+        # which the closure cannot reconstruct sensibly.  Leaving the block flat
+        # put all 21 ⟨100⟩ bins in that state for the whole early history (the
+        # C++ clamps every entry up to C_floor at t_begin and after each output
+        # step, so a flat block does not simply grow out of it).
+        C_floor_ic = float(inp.reactions.get('C_floor', 1e-15))
+        blk = np.full(n_sia100, C_floor_ic)
+        if n_sia100 and hasattr(re_obj, 'bins'):
+            i_d, Pm = int(re_obj.i_discrete), int(re_obj.n_mom)
+            for k, (nlo, nhi) in enumerate(re_obj.bins):
+                mid = 0.5 * (nlo + nhi - 1)
+                idx = i_d + Pm * k
+                if Pm >= 2:
+                    blk[idx + 1] = C_floor_ic * mid
+                if Pm >= 3:
+                    blk[idx + 2] = C_floor_ic * mid * mid
+        y0 = np.concatenate([re_obj.get_initial_conditions(), blk])
+    else:
+        y0 = np.asarray(y0_override, dtype=float)
+        # A resume MUST carry the full width; silence here is what hid the bug.
+        if y0.size != n_expected:
+            raise ValueError(
+                f"write_param_file: y0_override has {y0.size} entries but the "
+                f"C++ state vector is {n_expected} wide (N_eq={re_obj.N_eq} + "
+                f"{n_sia100} for the appended ⟨100⟩ block).  A short y0 would "
+                "be silently filled with 1e-100, erasing the ⟨100⟩ population. "
+                "Resume via RadClusterSimulation._resume_state / _expand_state, "
+                "which re-attach the block.")
     for k, v in enumerate(y0):
         lines.append(f"y0_{k}={v:.17e}")
 
@@ -617,19 +688,8 @@ def run_cpp_solver(sim, solver_config, base_dir=None, progress_callback=None,
     # (i_discrete + n_mom·I_bin) in bin_moment modes.  Parse the wider rows and
     # split the appended block off before post-processing (which expects the
     # original [SIA | VAC | He | conservation] layout).
-    _loop_conv = int(solver_config.get(
-        'loop_conversion', sim.input_data.reactions.get('loop_conversion', 0)))
     _is_bin = hasattr(re_obj, 'bins')   # BinMomentRateEquations
-    if _loop_conv:
-        if _is_bin:
-            _i_d   = int(getattr(re_obj, 'i_discrete', 0))
-            _n_mom = int(getattr(re_obj, 'n_mom', 2))
-            _I_bin = int(getattr(re_obj, 'I_bin', len(getattr(re_obj, 'bins', []))))
-            _n_sia100 = _i_d + _n_mom * _I_bin
-        else:
-            _n_sia100 = int(sim.input_data.I)
-    else:
-        _n_sia100 = 0
+    _n_sia100 = sia100_block_length(sim, solver_config)
     N_tot   += _n_sia100
 
     proc = None
@@ -867,6 +927,16 @@ def run_cpp_solver(sim, solver_config, base_dir=None, progress_callback=None,
         results['y'] = y   # raw ODE state [N_eq, n_pts] in atom fraction
         if y_sia100_full is not None:
             results['y_sia100'] = y_sia100_full   # ⟨100⟩ per-size [I, n_pts]
+        if y_sia100 is not None:
+            # The ⟨100⟩ block AS SOLVED — the only view that can serve as an
+            # initial condition for a continuation segment.  y_sia100_full is a
+            # closure reconstruction with the C_floor IC already removed, so
+            # round-tripping it through the solver is lossy; and results['y']
+            # has the block split off entirely, so a caller that resumes from
+            # results['y'][:, -1] alone hands the solver a SHORT y0 and every
+            # ⟨100⟩ component silently falls back to the parameters.h default
+            # of 1e-100 (i.e. the population is erased once per segment).
+            results['y_sia100_raw'] = y_sia100    # [n_sia100, n_pts] as solved
 
         # ── Window-bounds sidecar (active_window mode tracks expansion) ───
         # The C++ solver writes <bin_path>.window.csv with one row per output

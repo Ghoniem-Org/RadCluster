@@ -1,0 +1,23 @@
+{
+  "_comment": [
+    "S3 nucleation / sink-density study.  Same single condition as S2 (330 C,",
+    "G = 1e-6) so S3 rows are directly comparable to the S2 and LOOP_COAL",
+    "baselines run on the identical theta (S2 row 3100, F_hi_open conversion:",
+    "E_a0_conv = 2.10, dH2_abs_conv = 0.26).",
+    "",
+    "Motivation (2026-08-16): the LOOP_COAL prototype showed the <111> size",
+    "deficit is NOT a missing coarsening channel -- 300x the coarsening rate",
+    "buys only +10% in d_111 before saturating.  The inventory check says the",
+    "model already holds the RIGHT total SIA content in <111> loops",
+    "(7.66e24 /m3 at 0.02 dpa vs ~6.3e24 for an experiment-like N and d); it",
+    "partitions that inventory over ~20x too many loops that are ~17x too",
+    "small.  So the lever is nucleation density, not coarsening.",
+    "",
+    "Target at 0.02 dpa: N_111 = 1.1e22 m^-3 with d_111 = 6.5 nm -- the pair",
+    "that is simultaneously satisfiable at the model's CURRENT inventory."
+  ],
+  "S330": {
+    "label": "330 C, G=1e-6 (proxy for BOR-60 330 C / 15 dpa)",
+    "T_K": 603.15, "cascade": "fission", "G": 1.0e-06, "rho_d": 1.0e14
+  }
+}

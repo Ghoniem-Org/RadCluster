@@ -1,0 +1,7 @@
+  row budget 5400 s, OMP_NUM_THREADS=2
+machine 0/1  rows 1 (0 done, 1 to run)  workers 1
+  provenance {"git_sha": "6cb8333cd28561bab450a430a5d6ae6e37963a74", "machine_id": "Nasr-Workstation", "solver_sha256": "8e75ae933ac986e1", "workbook_sha256": "4a217b516d9f5fab", "design_sha256": "", "run_cfg_sha": "6231db70ffb7d9aa", "timeout_s": 5400.0, "stop_after_s": 0.0, "workers": 1, "omp_threads": 2, "weights_sha": "", "weights_map_sha": "6634b0b460b5c26f", "of": 1, "equations": "bin_moment", "python": "3.14.3"}
+  row   3800 S330  S  ok   d100=  7.62 N100=3.442e+21 pile=0.0 dFP= 3.6e-02 5438s
+
+done in 5439s: 1 admissible, 0 inadmissible, 0 failed -> results\S9_grid_A.jsonl
+  manifest -> S9_grid_A.manifest.json

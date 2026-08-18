@@ -1,0 +1,20 @@
+{
+  "_comment": [
+    "S1 conversion-parameter sweep.  Same two temperatures as the EUROFER97",
+    "character series (C_300_G7 / C_350_G7) but at G=1e-6 rather than the",
+    "reactor 1e-7, because at 1e-7 a row reaches only ~2e-5 dpa in 8 minutes",
+    "and no dose-ladder rung is populated.  The dose-rate shift is REAL physics",
+    "(it changes absolute densities), so these rows are for RANKING conversion",
+    "parameter combinations against each other, not for absolute comparison",
+    "with the 15 dpa data.  Same G on both temperatures, so the f_100(T) trend",
+    "-- the quantity the campaign actually cannot reproduce -- stays a fair test."
+  ],
+  "S300": {
+    "label": "300 C, G=1e-6 (accelerated proxy for the 300 C / 15 dpa point)",
+    "T_K": 573.15, "cascade": "fission", "G": 1.0e-06, "rho_d": 1.0e14
+  },
+  "S350": {
+    "label": "350 C, G=1e-6 (accelerated proxy for the 350 C / 16.3 dpa point)",
+    "T_K": 623.15, "cascade": "fission", "G": 1.0e-06, "rho_d": 1.0e14
+  }
+}

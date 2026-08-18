@@ -1,0 +1,12 @@
+  row budget 5400 s, OMP_NUM_THREADS=1
+machine 0/1  rows 6 (0 done, 6 to run)  workers 6
+  provenance {"git_sha": "6cb8333cd28561bab450a430a5d6ae6e37963a74", "machine_id": "Nasr-Workstation", "solver_sha256": "c28893e7d4a119e2", "workbook_sha256": "ae754e3a35b8805a", "design_sha256": "", "run_cfg_sha": "ef9534b317ceef41", "timeout_s": 5400.0, "stop_after_s": 0.0, "workers": 6, "omp_threads": 1, "weights_sha": "", "weights_map_sha": "6634b0b460b5c26f", "of": 1, "equations": "bin_moment", "python": "3.14.3"}
+  row   3100 S330  S  ok   d100=  8.17 N100=4.544e+21 pile=9.139120383772097e-16 dFP= 8.2e-02 5463s
+  row   3104 S330  S  ok   d100=  6.22 N100=7.674e+17 pile=0.0 dFP= 2.7e-02 5463s
+  row   3101 S330  S  ok   d100=  8.17 N100=4.507e+21 pile=8.964418875959005e-16 dFP= 8.2e-02 5463s
+  row   3102 S330  S  ok   d100= 12.89 N100=2.149e+20 pile=0.8480121458691593 dFP= 1.3e-01 5463s
+  row   3103 S330  S  ok   d100=  6.22 N100=7.675e+17 pile=0.0 dFP= 2.7e-02 5463s
+  row   3105 S330  S  ok   d100=  6.22 N100=7.675e+17 pile=0.0 dFP= 2.7e-02 5463s
+
+done in 5464s: 6 admissible, 0 inadmissible, 0 failed -> results\S2_cap.jsonl
+  manifest -> S2_cap.manifest.json

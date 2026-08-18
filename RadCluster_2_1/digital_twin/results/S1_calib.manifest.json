@@ -1,0 +1,114 @@
+{
+  "schema_version": "1",
+  "written_at_unix": 1786857817.8088179,
+  "written_at": "2026-08-15 22:23:37",
+  "campaign": {
+    "design_file": "design\\S1_conv_lnl0.csv",
+    "design_sha256": null,
+    "tier": null,
+    "N": null,
+    "p": null,
+    "conditions": null,
+    "parameters": null,
+    "parameters_version": null,
+    "revision_pending": null,
+    "rows_total": null
+  },
+  "machine": {
+    "index": 0,
+    "of": 1,
+    "weights": null,
+    "rows_assigned": 2,
+    "machine_id": "Nasr-Workstation",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.14.3",
+    "cpu_count": 24,
+    "workers": 2,
+    "omp_num_threads": "1"
+  },
+  "code": {
+    "git_sha": "6cb8333cd28561bab450a430a5d6ae6e37963a74",
+    "solver_sha256": "c28893e7d4a119e2",
+    "solver_path": "D:\\GitHub\\RadCluster\\RadCluster_2_1\\build\\Release\\solver.exe",
+    "workbook_sha256": "ae754e3a35b8805a"
+  },
+  "run_config": {
+    "I": 4000,
+    "V": 2000,
+    "dose": 1.0,
+    "equations": "bin_moment",
+    "rtol": 1e-06,
+    "atol": 1e-20,
+    "C_floor": 1e-25,
+    "solver_mode": "active_window",
+    "linsol": "gmres",
+    "preconditioner": "Jacobi",
+    "loop_conversion": 1,
+    "i_mobile_default": 40,
+    "v_mobile_default": 5,
+    "n_points": 40,
+    "timeout_s": 1500.0,
+    "lnl": 0,
+    "i_discrete": 40,
+    "v_discrete": 5,
+    "I_bin": 25,
+    "V_bin": 20,
+    "shape_function": "linear"
+  },
+  "run_cfg_sha": "50d725fc33ec2ac5",
+  "conditions_file": "conditions_S1.json",
+  "conditions": {
+    "_comment": [
+      "S1 conversion-parameter sweep.  Same two temperatures as the EUROFER97",
+      "character series (C_300_G7 / C_350_G7) but at G=1e-6 rather than the",
+      "reactor 1e-7, because at 1e-7 a row reaches only ~2e-5 dpa in 8 minutes",
+      "and no dose-ladder rung is populated.  The dose-rate shift is REAL physics",
+      "(it changes absolute densities), so these rows are for RANKING conversion",
+      "parameter combinations against each other, not for absolute comparison",
+      "with the 15 dpa data.  Same G on both temperatures, so the f_100(T) trend",
+      "-- the quantity the campaign actually cannot reproduce -- stays a fair test."
+    ],
+    "S300": {
+      "label": "300 C, G=1e-6 (accelerated proxy for the 300 C / 15 dpa point)",
+      "T_K": 573.15,
+      "cascade": "fission",
+      "G": 1e-06,
+      "rho_d": 100000000000000.0
+    },
+    "S350": {
+      "label": "350 C, G=1e-6 (accelerated proxy for the 350 C / 16.3 dpa point)",
+      "T_K": 623.15,
+      "cascade": "fission",
+      "G": 1e-06,
+      "rho_d": 100000000000000.0
+    }
+  },
+  "rows": {
+    "assigned": 2,
+    "completed": 2,
+    "admissible": 2,
+    "inadmissible": 0,
+    "failed": 0,
+    "not_started": 0
+  },
+  "timing": {
+    "session_wall_s": 1562.9,
+    "row_wall_mean_s": 1562.2,
+    "row_wall_median_s": 1562.2,
+    "row_wall_p90_s": 1562.2,
+    "core_hours": 0.8678888888888889
+  },
+  "stopped": null,
+  "admissibility_rule": {
+    "pile_tol": 0.05,
+    "occ_tol": 0.1,
+    "delta_FP_tol": 0.01,
+    "pile_top_frac": 0.02,
+    "axes": [
+      "sia_111",
+      "sia_100",
+      "vacancy"
+    ],
+    "note": "delta_FP is blind to SIA-axis truncation (the <100> pile-up held delta_FP at 1e-8 while 96% of content sat at n=I), so grid adequacy is judged by pile/occupancy. It is NOT blind to the VACANCY axis -- delta_FP rests on the swelling identity S = S_I + Delta J^d and S is the vacancy inventory. The vacancy axis was unchecked until 2026-08-02; at the check_machine probe (V=120) mean_n_v moved 18.7->136 and swelling 58x on going to V=240."
+  }
+}

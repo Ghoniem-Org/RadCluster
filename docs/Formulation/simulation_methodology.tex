@@ -523,7 +523,12 @@ $\mathcal{K}^{100}_g(n)=A_{\rm loop}n^{1/2}Z_i^{\rm loop}\omega_i^{\rm eff}$
 (SIA-monomer capture), $\mathcal{K}^{100}_s(n)=A_{\rm loop}n^{1/2}\omega_v^{\rm eff}$
 (vacancy-monomer capture), and $\varepsilon^{100}(n)$ the detailed-balance
 emission rate against $\mathcal{K}^{100}_g$ with $\langle100\rangle$ binding
-energy $E_b^{100}(n)=A_{100}\,n^{-B_{100}}$.
+energy $E_b^{100}(n)=A_{100}\,n^{+B_{100}}$.%
+% Sign corrected 2026-08-16: the exponent is POSITIVE.  Loop binding INCREASES
+% with size, blending to the continuum limit E_f^i; the same holds for the
+% 1/2<111> branch, E_b^{111}(n) = A_111 n^{+B_111}.  The implementation
+% (binding_energies.E_b_loop_100 / E_b_loop_i) has always used n^{+B}, so this
+% was a typo in the manuscript, not a code/theory disagreement.
 
 \textbf{Conservation of SIA content.}
 Every term in Eqs.~\eqref{eq:conv_111}--\eqref{eq:ME_SIA100} conserves the total

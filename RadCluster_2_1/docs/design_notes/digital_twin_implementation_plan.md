@@ -316,7 +316,9 @@ one parameter collapses that degree of freedom and will bias the posterior on
 #### (b) `A_V`, `B_V` are withdrawn; the blended capillary model takes the slot — *directives 3 + 4*
 
 Table H.38 named a "vacancy binding-law amplitude and exponent" `A_V m^{-B_V}`,
-by analogy with `A_111 n^{-B_111}` for loops. **No such form exists in
+by analogy with `A_111 n^{+B_111}` for loops (Table H.38 wrote the loop
+exponent negative; the code uses `n^{+B}` — see the erratum below). **No such
+form exists in
 RadCluster, and none will be added.** The reference document's own void model is
 the atomistic–continuum blend, Eqs. (B.14)–(B.15):
 
@@ -389,11 +391,18 @@ blended to the continuum at `n_tr = 25`. **The exponent is POSITIVE** — bindin
 E_b^fit(n) = A_111 · n^{+B_111}      ⟹      E_b^i(2) = A_111 · 2^{+B_111}
 ```
 
-> **Erratum against `CLAUDE.md` §10**, which writes `E_b^loop(n) = A_111 n^{−B_111}`.
+> **Erratum against `CLAUDE.md` §10**, which *used* to write
+> `E_b^loop(n) = A_111 n^{−B_111}`.
 > The code uses `+B_111`, and the positive sign is the physically correct one
 > (larger loops bind SIAs more strongly). Revision 1 of this plan inherited the
 > `CLAUDE.md` sign and consequently mis-stated the current di-interstitial
 > binding as 2.29 eV; the correct legacy value is **3.92 eV**.
+>
+> **Resolved 2026-08-16.** The sign was corrected at source in
+> `RadCluster_2_1/CLAUDE.md` §10, `RadCluster_2_0/CLAUDE.md` §10 and
+> `docs/Formulation/simulation_methodology.tex` (the `⟨100⟩` branch carried the
+> same typo). This erratum is retained as the record of the discrepancy, not as
+> a live warning.
 
 **Reparameterise rather than add a fourth free constant.** Set/sample
 `(E_b^i(2), B_111)` and derive

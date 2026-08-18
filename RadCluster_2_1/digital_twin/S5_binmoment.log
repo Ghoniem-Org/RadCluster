@@ -1,0 +1,8 @@
+  row budget 5400 s, OMP_NUM_THREADS=3
+machine 0/1  rows 2 (0 done, 2 to run)  workers 2
+  provenance {"git_sha": "6cb8333cd28561bab450a430a5d6ae6e37963a74", "machine_id": "Nasr-Workstation", "solver_sha256": "8e75ae933ac986e1", "workbook_sha256": "4a217b516d9f5fab", "design_sha256": "", "run_cfg_sha": "aada924ffa36b6db", "timeout_s": 5400.0, "stop_after_s": 0.0, "workers": 2, "omp_threads": 3, "weights_sha": "", "weights_map_sha": "6634b0b460b5c26f", "of": 1, "equations": "bin_moment", "python": "3.14.3"}
+  row   3500 S330  S  ok   d100=  3.96 N100=1.073e+21 pile=0.0 dFP= 2.1e-02 2201s
+  row   3501 S330  S  ok   d100=  4.27 N100=2.683e+20 pile=0.0 dFP= 3.3e-03 2417s
+
+done in 2418s: 2 admissible, 0 inadmissible, 0 failed -> results\S5_binmoment.jsonl
+  manifest -> S5_binmoment.manifest.json

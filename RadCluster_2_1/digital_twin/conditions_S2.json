@@ -1,0 +1,14 @@
+{
+  "_comment": [
+    "S2 half-<111> study.  330 C is the primary reconciliation target: it is the",
+    "richest self-consistent cluster in InterstitialLoop.xlsx (BOR-60, 15 dpa,",
+    "three paired rows at f_100 = 72-73%) and its 6-7 nm loops are the only ones",
+    "in the high-f_100 regime that are reachable at affordable dose.  The 350 C",
+    "HFR point (d_100 = 48 nm) is out of reach on any grid we can run.",
+    "G accelerated to 1e-6 as in S1, same reason and same caveat."
+  ],
+  "S330": {
+    "label": "330 C, G=1e-6 (proxy for BOR-60 330 C / 15 dpa)",
+    "T_K": 603.15, "cascade": "fission", "G": 1.0e-06, "rho_d": 1.0e14
+  }
+}

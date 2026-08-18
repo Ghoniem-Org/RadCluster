@@ -142,7 +142,7 @@ python run_ensemble.py \
     --v-discrete 5 --v-bin 20 --allow-mixed \
     --I 80000 --V 2000 --dose 15.0 --lnl 1 --rtol 1e-5 \
     --solver-mode full_system \
-    --timeout-s 72000 --workers 40 --omp-threads 1
+    --timeout-s 72000 --workers 20 --omp-threads 1
 ```
 
 ## Multi-machine protocol

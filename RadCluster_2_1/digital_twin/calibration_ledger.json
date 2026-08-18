@@ -31167,9 +31167,9 @@
       "source": "measured on this machine",
       "median_row_h": 6.5,
       "max_row_h": 14.02,
-      "slots": 40,
-      "waves": 1,
-      "est_wall_h": 14.0
+      "slots": 20,
+      "waves": 2,
+      "est_wall_h": 28.0
     },
     "commands": [
       "python run_ensemble.py \\",
@@ -31182,7 +31182,7 @@
       "    --v-discrete 5 --v-bin 20 --allow-mixed \\",
       "    --I 80000 --V 2000 --dose 15.0 --lnl 1 --rtol 1e-5 \\",
       "    --solver-mode full_system \\",
-      "    --timeout-s 72000 --workers 40 --omp-threads 1"
+      "    --timeout-s 72000 --workers 20 --omp-threads 1"
     ]
   }
 }

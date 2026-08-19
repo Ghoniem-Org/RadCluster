@@ -1,6 +1,6 @@
 # Calibration Guide - EUROFER97 digital twin
 
-*Derived by `learn.py`; content last changed 2026-08-19 19:55:47Z (re-running with no new results leaves this file untouched). Do not hand-edit: edits are overwritten. Durable notes belong in `calibration_ledger.json` under `notes`, which is preserved across regenerations.*
+*Derived by `learn.py`; content last changed 2026-08-19 21:50:16Z (re-running with no new results leaves this file untouched). Do not hand-edit: edits are overwritten. Durable notes belong in `calibration_ledger.json` under `notes`, which is preserved across regenerations.*
 
 ## Goal
 
@@ -10,15 +10,15 @@ Condition: **EUROFER97, 330 C, 15.0 dpa, neutron** - targets in `targets_330C_15
 
 ## Where the campaign stands
 
-Best valid row: **S1700_imobile5_si1_phimaxjunc0.05** from `S17_calib_machine1` - **3/6** observables in range, log-distance 1.259.
+Best valid row: **V109_Zv_lo0.9** from `V1_calib_machine0` - **3/6** observables in range, log-distance 1.24.
 
 | observable | model | target | range | ratio | in range |
 |---|---|---|---|---|---|
-| N_100 | 8.4e+21 | 4.97e+21 | 4.67e+21 - 9e+21 | 1.69 x | yes |
-| d_100 | 6.79 | 6.2 | 3.4 - 7 | 1.1 x | yes |
-| N_111 | 1.43e+22 | 1.93e+21 | 1.73e+21 - 1.5e+22 | 7.4 x | yes |
-| d_111 | 1.05 | 6.2 | 3.4 - 7 | 0.169 x | **no** |
-| N_void | 2.56e+18 | 1.5e+21 | 3.6e+20 - 3.01e+21 | 0.0017 x | **no** |
+| N_100 | 6.32e+21 | 4.97e+21 | 4.67e+21 - 9e+21 | 1.27 x | yes |
+| d_100 | 5.59 | 6.2 | 3.4 - 7 | 0.902 x | yes |
+| N_111 | 9.94e+21 | 1.93e+21 | 1.73e+21 - 1.5e+22 | 5.15 x | yes |
+| d_111 | 1.02 | 6.2 | 3.4 - 7 | 0.165 x | **no** |
+| N_void | 2.57e+18 | 1.5e+21 | 3.6e+20 - 3.01e+21 | 0.0017 x | **no** |
 | d_void | 0.561 | 2.6 | 2.12 - 2.9 | 0.216 x | **no** |
 
 ### Defect inventory (SIA content locked in loops)
@@ -27,9 +27,9 @@ Computed from the row own n<->d relation, so no lattice constant is assumed.
 
 | character | model N x nbar | experiment N x nbar | ratio |
 |---|---|---|---|
-| <100> | 7.39e+24 | 3.65e+24 | 2.03 x |
-| <111> | 2.6e+23 | 1.23e+24 | 0.212 x |
-| **total** | 7.65e+24 | 4.87e+24 | **1.57 x** |
+| <100> | 3.77e+24 | 3.65e+24 | 1.04 x |
+| <111> | 1.71e+23 | 1.23e+24 | 0.14 x |
+| **total** | 3.95e+24 | 4.87e+24 | **0.81 x** |
 
 ## Can any lever still close this?
 
@@ -37,10 +37,10 @@ How far each observable must move from the best row, against the largest change 
 
 | observable | ratio | needs | best single lever | that lever | single lever enough? |
 |---|---|---|---|---|---|
-| N_100 | 1.69 x | +69% | +240264% | `B_111` | yes |
-| d_100 | 1.1 x | +10% | +693% | `f_cl_v+E_b_v2+s_v` | yes |
-| N_111 | 7.4 x | +640% | +8406% | `E_m_i` | yes |
-| d_111 | 0.169 x | +490% | +89% | `s_i` | **no** |
+| N_100 | 1.27 x | +27% | +240264% | `B_111` | yes |
+| d_100 | 0.902 x | +11% | +693% | `f_cl_v+E_b_v2+s_v` | yes |
+| N_111 | 5.15 x | +415% | +8406% | `E_m_i` | yes |
+| d_111 | 0.165 x | +507% | +89% | `s_i` | **no** |
 | N_void | 0.0017 x | +58724% | +397% | `eta` | **no** |
 | d_void | 0.216 x | +363% | +10% | `L_hat` | **no** |
 
@@ -60,20 +60,24 @@ A lever is **dead** when its full tested span moves every observable by less tha
 | `eta` | eta 0.05->0.249 | **live** (drives rows off-grid) | 3 | 397.2% | N_void, N_111, N_100, d_100, d_111 | S15_calib_machine0 |
 | `phi_max_junc` | phi_max_junc 0.05->0.6 | **live** | 6 | 163.9% | N_100, d_100, N_111, d_111 | S17_calib_machine1 |
 | `i_mobile` | i_mobile 5->100 | **live** (drives rows off-grid) | 8 | 132.7% | N_100, N_111, d_100, d_111 | S17_calib_machine1, S8_15dpa |
+| `gamma_s` | gamma_s 1.5->3 | **live** (drives rows off-grid) | 1 | 100.0% | N_void, N_100, N_111, d_100 | V1_calib_machine0 |
+| `f_cl_v` | f_cl_v 0.05->0.8 | **live** (drives rows off-grid) | 1 | 84.2% | N_void, N_100, N_111, d_100 | S18_calib_machine2, V1_calib_machine0 |
+| `E_m_v` | E_m_v 0.5->0.9 | **live** (drives rows off-grid) | 1 | 83.5% | N_void | V1_calib_machine0 |
+| `rho_d` | rho_d 1e+13->1e+15 | **live** (drives rows off-grid) | 1 | 74.0% | N_111, d_100, N_100, d_111 | V1_calib_machine0 |
+| `Z_v` | Z_v 0.9->1.05 | **live** | 3 | 65.2% | N_111, N_100, d_100 | V1_calib_machine0 |
 | `E_a0_conv` | E_a0_conv 1.8->2.3 | **dead** (drives rows off-grid) | 2 | 2.5% | - | S10_calib, S12_calib, S13_calib, S14_calib, S8_15dpa |
 | `E_b_i2` | E_b_i2 0.55->0.875 | **inconclusive** (drives rows off-grid) | 0 | - | - | S10_calib, S12_calib, S13_calib, S14_calib, S15_calib_machine0, S8_15dpa |
 | `Z_i+Z_p_i+Z_p_v+Z_gb_i+Z_gb_v` | Z_i 1.2->1.35; Z_p_i 1.2->1.45; Z_p_v 0.93->0.98; Z_gb_i 1.2->1.4; Z_gb_v 0.93->0.98 | **inconclusive** (drives rows off-grid) | 0 | - | - | S12_calib |
 | `d_g+rho_p` | d_g 1e-06->4e-06; rho_p 1e+19->1e+20 | **inconclusive** (drives rows off-grid) | 0 | - | - | S13_calib |
 | `f_cl_i` | f_cl_i 0.02->0.124 | **inconclusive** (drives rows off-grid) | 0 | - | - | S15_calib_machine0, S8_15dpa |
-| `f_cl_v` | f_cl_v 0.05->0.05 | **inconclusive** | 0 | - | - | S18_calib_machine2 |
-| `E_b_v2` | E_b_v2 0.1->0.45 | **dead** | 1 | 0.0% | - | S18_calib_machine2 |
+| `E_b_v2` | E_b_v2 0.1->0.45 | **dead** | 4 | 0.0% | - | S18_calib_machine2, V1_calib_machine0 |
 | `E_b_hV_1` | E_b_hV_1 3->3 | **inconclusive** | 0 | - | - | S18_calib_machine2 |
 
 ### Never varied
 
 These columns exist in the design but have never taken more than one value, so the campaign has no evidence about them:
 
-`E_m_h`, `E_m_v`, `Z_i_loop`, `Z_v`, `dH2_abs_conv`, `dH2_conv`, `gamma_s`, `lambda`, `loop_net_K_rec`, `loop_net_chi`, `loop_net_w_c`, `r_p`, `rho_d`
+`E_m_h`, `Z_i_loop`, `dH2_abs_conv`, `dH2_conv`, `lambda`, `loop_net_K_rec`, `loop_net_chi`, `loop_net_w_c`, `r_p`
 
 ## Stage history
 
@@ -129,6 +133,7 @@ Only stages that ran to 15.0 dpa are in scope; the rest are listed for provenanc
 | `T9_crossover_batch1` | 16.3 | out | 12 | 0 | - | - |
 | `T9_ladder_validation` | 0.05 | out | 4 | 2 | - | 1 |
 | `T9_screen_partial` | 2 | out | 13 | 1 | - | 0 |
+| `V1_calib_machine0` | 15 | in | 13 | 9 | `f_cl_v`, `E_m_v`, `gamma_s`, `E_b_v2`, `Z_v`, `rho_d` | 3 |
 
 ## Cost model (measured)
 
@@ -138,7 +143,7 @@ Completed rows only. A row cut at the budget measures the timeout, not the cost,
 |---|---|---|---|---|---|
 | MATRIX-PC2 | 111 | 7.89 h | 2.94 h | 18.87 h | 0 |
 | Mac.san.rr.com | 264 | 1.58 h | 0.33 h | 5.51 h | 0 |
-| MacBook-Pro.local | 493 | 1.02 h | 0.23 h | 9.2 h | 0 |
+| MacBook-Pro.local | 506 | 1.02 h | 0.23 h | 9.2 h | 0 |
 | Nasr-Workstation | 413 | 3.35 h | 0.15 h | 19.79 h | 164 |
 
 `plan.py` sizes a stage from this table and the machine slot count, and refuses to propose a design whose estimated cost exceeds the machine row budget.

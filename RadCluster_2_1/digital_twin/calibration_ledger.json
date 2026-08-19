@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated": "2026-08-19 19:55:47Z",
+  "updated": "2026-08-19 21:50:16Z",
   "goal": {
     "statement": "Find one parameter vector that puts all six observables inside their experimental ranges at EUROFER97 330 C / 15 dpa, neutron.",
     "targets_file": "targets_330C_15dpa.json",
@@ -32365,6 +32365,420 @@
           }
         }
       ]
+    },
+    "V1_calib_machine0": {
+      "design": "design/V1_calib.csv",
+      "results": "results/V1_calib_machine0.jsonl",
+      "dose_target": 15.0,
+      "in_scope": true,
+      "n_rows": 13,
+      "n_valid": 9,
+      "swept": [
+        "f_cl_v",
+        "E_m_v",
+        "gamma_s",
+        "E_b_v2",
+        "Z_v",
+        "rho_d"
+      ],
+      "sensitivity": {
+        "f_cl_v": {
+          "columns": [
+            "f_cl_v"
+          ],
+          "span": {
+            "f_cl_v": [
+              0.05,
+              0.8
+            ]
+          },
+          "n_pairs": 1,
+          "response": {
+            "N_loops_100": 0.5723734201945244,
+            "d_100_nm": 0.09712724841959586,
+            "N_loops_111": 0.35073291139865537,
+            "d_111_nm": 0.01682220595096129,
+            "N_voids": 0.8421746465040669,
+            "d_cavity_nm": 0.0002846629370815146
+          },
+          "peak_response": 0.8421746465040669,
+          "drove_invalid": true,
+          "verdict": "live"
+        },
+        "E_m_v": {
+          "columns": [
+            "E_m_v"
+          ],
+          "span": {
+            "E_m_v": [
+              0.5,
+              0.9
+            ]
+          },
+          "n_pairs": 1,
+          "response": {
+            "N_loops_100": 0.0004852808598262426,
+            "d_100_nm": 0.00010719974888417916,
+            "N_loops_111": 5.798742318907646e-05,
+            "d_111_nm": 1.081343376907462e-05,
+            "N_voids": 0.8347689068909477,
+            "d_cavity_nm": 0.00017011589944448957
+          },
+          "peak_response": 0.8347689068909477,
+          "drove_invalid": true,
+          "verdict": "live"
+        },
+        "gamma_s": {
+          "columns": [
+            "gamma_s"
+          ],
+          "span": {
+            "gamma_s": [
+              1.5,
+              3.0
+            ]
+          },
+          "n_pairs": 1,
+          "response": {
+            "N_loops_100": 0.6195473681372854,
+            "d_100_nm": 0.11059707441357736,
+            "N_loops_111": 0.39175890897703236,
+            "d_111_nm": 0.020234883911735446,
+            "N_voids": 0.999638731686173,
+            "d_cavity_nm": 0.045715458428738476
+          },
+          "peak_response": 0.999638731686173,
+          "drove_invalid": true,
+          "verdict": "live"
+        },
+        "E_b_v2": {
+          "columns": [
+            "E_b_v2"
+          ],
+          "span": {
+            "E_b_v2": [
+              0.1,
+              0.45
+            ]
+          },
+          "n_pairs": 3,
+          "response": {
+            "N_loops_100": 0.0,
+            "d_100_nm": 0.0,
+            "N_loops_111": 0.0,
+            "d_111_nm": 0.0,
+            "N_voids": 0.0,
+            "d_cavity_nm": 0.0
+          },
+          "peak_response": 0.0,
+          "drove_invalid": false,
+          "verdict": "dead"
+        },
+        "Z_v": {
+          "columns": [
+            "Z_v"
+          ],
+          "span": {
+            "Z_v": [
+              0.9,
+              1.05
+            ]
+          },
+          "n_pairs": 3,
+          "response": {
+            "N_loops_100": 0.5377841519039397,
+            "d_100_nm": 0.2976356957195063,
+            "N_loops_111": 0.651718352850658,
+            "d_111_nm": 0.03830249440299105,
+            "N_voids": 0.003866310669054629,
+            "d_cavity_nm": 0.00037895006228683137
+          },
+          "peak_response": 0.651718352850658,
+          "drove_invalid": false,
+          "verdict": "live"
+        },
+        "rho_d": {
+          "columns": [
+            "rho_d"
+          ],
+          "span": {
+            "rho_d": [
+              10000000000000.0,
+              1000000000000000.0
+            ]
+          },
+          "n_pairs": 1,
+          "response": {
+            "N_loops_100": 0.25679965155173257,
+            "d_100_nm": 0.6007126043496402,
+            "N_loops_111": 0.7395092006855066,
+            "d_111_nm": 0.10431336507165434,
+            "N_voids": 0.019181260591675908,
+            "d_cavity_nm": 0.0014316638702503992
+          },
+          "peak_response": 0.7395092006855066,
+          "drove_invalid": true,
+          "verdict": "live"
+        }
+      },
+      "affordability": {},
+      "rows": [
+        {
+          "row_id": 5101,
+          "label": "V101_fclv_lo0.05",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 2,
+          "log_distance": 1.542,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 3.5913290346290364e+21,
+            "d_100": 6.130670837983282,
+            "N_111": 9.268099211266501e+21,
+            "d_111": 1.0327421952021616,
+            "N_void": 4.0468028277963386e+17,
+            "d_void": 0.5610703118523213
+          }
+        },
+        {
+          "row_id": 5109,
+          "label": "V109_Zv_lo0.9",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 3,
+          "log_distance": 1.24,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 6.319398633553164e+21,
+            "d_100": 5.594645594814676,
+            "N_111": 9.935918242587256e+21,
+            "d_111": 1.0213946808645125,
+            "N_void": 2.5709118270492303e+18,
+            "d_void": 0.5611100666377895
+          }
+        },
+        {
+          "row_id": 5100,
+          "label": "V100_CONTROL_base_S1700",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 3,
+          "log_distance": 1.259,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 8.398282997896687e+21,
+            "d_100": 6.790182589132355,
+            "N_111": 1.4274709705726653e+22,
+            "d_111": 1.0504124497655718,
+            "N_void": 2.564101862062752e+18,
+            "d_void": 0.5612300732533521
+          }
+        },
+        {
+          "row_id": 5103,
+          "label": "V103_Ebv2_lo0.1",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 3,
+          "log_distance": 1.259,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 8.398282997896687e+21,
+            "d_100": 6.790182589132355,
+            "N_111": 1.4274709705726653e+22,
+            "d_111": 1.0504124497655718,
+            "N_void": 2.564101862062752e+18,
+            "d_void": 0.5612300732533521
+          }
+        },
+        {
+          "row_id": 5104,
+          "label": "V104_Ebv2_hi0.45",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 3,
+          "log_distance": 1.259,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 8.398282997896687e+21,
+            "d_100": 6.790182589132355,
+            "N_111": 1.4274709705726653e+22,
+            "d_111": 1.0504124497655718,
+            "N_void": 2.564101862062752e+18,
+            "d_void": 0.5612300732533521
+          }
+        },
+        {
+          "row_id": 5107,
+          "label": "V107_Emv_lo0.5",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 3,
+          "log_distance": 1.551,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 8.394207471902404e+21,
+            "d_100": 6.790910495000787,
+            "N_111": 1.4273881952094045e+22,
+            "d_111": 1.0504238083310276,
+            "N_void": 4.236693535115849e+17,
+            "d_void": 0.5611345990946452
+          }
+        },
+        {
+          "row_id": 5112,
+          "label": "V112_rhod_hi1e+15",
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.464,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 6.5569732058949265e+22,
+            "d_100": 49.877238954749444,
+            "N_111": 4.925513678493018e+22,
+            "d_111": 1.0378047876682825,
+            "N_void": 2.4552682528431237e+18,
+            "d_void": 0.5656373768882069
+          }
+        },
+        {
+          "row_id": 5110,
+          "label": "V110_Zv_hi1.05",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.268,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 9.717871068241468e+21,
+            "d_100": 7.259811828731412,
+            "N_111": 1.6411338513705026e+22,
+            "d_111": 1.0605166449115704,
+            "N_void": 2.560971883223111e+18,
+            "d_void": 0.5613226993324917
+          }
+        },
+        {
+          "row_id": 5111,
+          "label": "V111_rhod_lo1e+13",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 2,
+          "log_distance": 1.221,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 6.241606850403978e+21,
+            "d_100": 2.7112343220050747,
+            "N_111": 3.7184305412270913e+21,
+            "d_111": 0.940840392417365,
+            "N_void": 2.6132845680625787e+18,
+            "d_void": 0.5604265804345773
+          }
+        },
+        {
+          "row_id": 5108,
+          "label": "V108_Emv_hi0.9",
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 0.94,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 1.30770460802684e+23,
+            "d_100": 8.49277663175661,
+            "N_111": 3.2999935119665733e+22,
+            "d_111": 1.0182134767181117,
+            "N_void": 1.7417838708798041e+22,
+            "d_void": 2.6423407558599696
+          }
+        },
+        {
+          "row_id": 5106,
+          "label": "V106_gammas_hi3",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 2,
+          "log_distance": 2.583,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 3.1951488696776833e+21,
+            "d_100": 6.039208260040307,
+            "N_111": 8.682465005447325e+21,
+            "d_111": 1.0291574757851238,
+            "N_void": 926328756188108.4,
+            "d_void": 0.5868869633361236
+          }
+        },
+        {
+          "row_id": 5105,
+          "label": "V105_gammas_lo1.5",
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 1.126,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 3.893768148353731e+22,
+            "d_100": 60.54490117120524,
+            "N_111": 3.371728895749135e+22,
+            "d_111": 1.0090441291127503,
+            "N_void": 1.227075750365335e+23,
+            "d_void": 2.657342515491797
+          }
+        },
+        {
+          "row_id": 5102,
+          "label": "V102_fclv_hi0.8",
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.261,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 4.50279595574155e+22,
+            "d_100": 61.20640399839119,
+            "N_111": 1.8077158213820151e+22,
+            "d_111": 0.9639912927303107,
+            "N_void": 6.461705422711172e+18,
+            "d_void": 0.5613231434096955
+          }
+        }
+      ]
     }
   },
   "levers": {
@@ -32815,34 +33229,41 @@
         "f_cl_v"
       ],
       "seen_in": [
-        "S18_calib_machine2"
+        "S18_calib_machine2",
+        "V1_calib_machine0"
       ],
-      "peak_response": 0.0,
+      "peak_response": 0.8421746465040669,
       "response": {
-        "N_loops_100": 0.0,
-        "d_100_nm": 0.0,
-        "N_loops_111": 0.0,
-        "d_111_nm": 0.0,
-        "N_voids": 0.0,
-        "d_cavity_nm": 0.0
+        "N_loops_100": 0.5723734201945244,
+        "d_100_nm": 0.09712724841959586,
+        "N_loops_111": 0.35073291139865537,
+        "d_111_nm": 0.01682220595096129,
+        "N_voids": 0.8421746465040669,
+        "d_cavity_nm": 0.0002846629370815146
       },
       "spans": {
         "f_cl_v": [
           0.05,
-          0.05
+          0.8
         ]
       },
-      "n_pairs": 0,
-      "drove_invalid": false,
-      "verdict": "inconclusive",
-      "moves": []
+      "n_pairs": 1,
+      "drove_invalid": true,
+      "verdict": "live",
+      "moves": [
+        "N_void",
+        "N_100",
+        "N_111",
+        "d_100"
+      ]
     },
     "E_b_v2": {
       "columns": [
         "E_b_v2"
       ],
       "seen_in": [
-        "S18_calib_machine2"
+        "S18_calib_machine2",
+        "V1_calib_machine0"
       ],
       "peak_response": 0.0,
       "response": {
@@ -32856,10 +33277,10 @@
       "spans": {
         "E_b_v2": [
           0.1,
-          0.44999999999999996
+          0.45
         ]
       },
-      "n_pairs": 1,
+      "n_pairs": 4,
       "drove_invalid": false,
       "verdict": "dead",
       "moves": []
@@ -32890,52 +33311,172 @@
       "drove_invalid": false,
       "verdict": "inconclusive",
       "moves": []
+    },
+    "E_m_v": {
+      "columns": [
+        "E_m_v"
+      ],
+      "seen_in": [
+        "V1_calib_machine0"
+      ],
+      "peak_response": 0.8347689068909477,
+      "response": {
+        "N_loops_100": 0.0004852808598262426,
+        "d_100_nm": 0.00010719974888417916,
+        "N_loops_111": 5.798742318907646e-05,
+        "d_111_nm": 1.081343376907462e-05,
+        "N_voids": 0.8347689068909477,
+        "d_cavity_nm": 0.00017011589944448957
+      },
+      "spans": {
+        "E_m_v": [
+          0.5,
+          0.9
+        ]
+      },
+      "n_pairs": 1,
+      "drove_invalid": true,
+      "verdict": "live",
+      "moves": [
+        "N_void"
+      ]
+    },
+    "gamma_s": {
+      "columns": [
+        "gamma_s"
+      ],
+      "seen_in": [
+        "V1_calib_machine0"
+      ],
+      "peak_response": 0.999638731686173,
+      "response": {
+        "N_loops_100": 0.6195473681372854,
+        "d_100_nm": 0.11059707441357736,
+        "N_loops_111": 0.39175890897703236,
+        "d_111_nm": 0.020234883911735446,
+        "N_voids": 0.999638731686173,
+        "d_cavity_nm": 0.045715458428738476
+      },
+      "spans": {
+        "gamma_s": [
+          1.5,
+          3.0
+        ]
+      },
+      "n_pairs": 1,
+      "drove_invalid": true,
+      "verdict": "live",
+      "moves": [
+        "N_void",
+        "N_100",
+        "N_111",
+        "d_100"
+      ]
+    },
+    "Z_v": {
+      "columns": [
+        "Z_v"
+      ],
+      "seen_in": [
+        "V1_calib_machine0"
+      ],
+      "peak_response": 0.651718352850658,
+      "response": {
+        "N_loops_100": 0.5377841519039397,
+        "d_100_nm": 0.2976356957195063,
+        "N_loops_111": 0.651718352850658,
+        "d_111_nm": 0.03830249440299105,
+        "N_voids": 0.003866310669054629,
+        "d_cavity_nm": 0.00037895006228683137
+      },
+      "spans": {
+        "Z_v": [
+          0.9,
+          1.05
+        ]
+      },
+      "n_pairs": 3,
+      "drove_invalid": false,
+      "verdict": "live",
+      "moves": [
+        "N_111",
+        "N_100",
+        "d_100"
+      ]
+    },
+    "rho_d": {
+      "columns": [
+        "rho_d"
+      ],
+      "seen_in": [
+        "V1_calib_machine0"
+      ],
+      "peak_response": 0.7395092006855066,
+      "response": {
+        "N_loops_100": 0.25679965155173257,
+        "d_100_nm": 0.6007126043496402,
+        "N_loops_111": 0.7395092006855066,
+        "d_111_nm": 0.10431336507165434,
+        "N_voids": 0.019181260591675908,
+        "d_cavity_nm": 0.0014316638702503992
+      },
+      "spans": {
+        "rho_d": [
+          10000000000000.0,
+          1000000000000000.0
+        ]
+      },
+      "n_pairs": 1,
+      "drove_invalid": true,
+      "verdict": "live",
+      "moves": [
+        "N_111",
+        "d_100",
+        "N_100",
+        "d_111"
+      ]
     }
   },
   "untested_columns": [
     "E_m_h",
-    "E_m_v",
     "Z_i_loop",
-    "Z_v",
     "dH2_abs_conv",
     "dH2_conv",
-    "gamma_s",
     "lambda",
     "loop_net_K_rec",
     "loop_net_chi",
     "loop_net_w_c",
-    "r_p",
-    "rho_d"
+    "r_p"
   ],
   "reachability": {
     "N_100": {
-      "ratio": 1.6898,
-      "needed_factor": 1.69,
-      "needed_pct": 69.0,
+      "ratio": 1.2715,
+      "needed_factor": 1.272,
+      "needed_pct": 27.2,
       "best_single_lever_pct": 240263.5,
       "best_single_lever": "B_111",
       "single_lever_sufficient": true
     },
     "d_100": {
-      "ratio": 1.0952,
-      "needed_factor": 1.095,
-      "needed_pct": 9.5,
+      "ratio": 0.9024,
+      "needed_factor": 1.108,
+      "needed_pct": 10.8,
       "best_single_lever_pct": 692.8,
       "best_single_lever": "f_cl_v+E_b_v2+s_v",
       "single_lever_sufficient": true
     },
     "N_111": {
-      "ratio": 7.3962,
-      "needed_factor": 7.396,
-      "needed_pct": 639.6,
+      "ratio": 5.1481,
+      "needed_factor": 5.148,
+      "needed_pct": 414.8,
       "best_single_lever_pct": 8406.1,
       "best_single_lever": "E_m_i",
       "single_lever_sufficient": true
     },
     "d_111": {
-      "ratio": 0.1694,
-      "needed_factor": 5.903,
-      "needed_pct": 490.3,
+      "ratio": 0.1647,
+      "needed_factor": 6.072,
+      "needed_pct": 507.2,
       "best_single_lever_pct": 88.7,
       "best_single_lever": "s_i",
       "single_lever_sufficient": false
@@ -32949,9 +33490,9 @@
       "single_lever_sufficient": false
     },
     "d_void": {
-      "ratio": 0.2159,
-      "needed_factor": 4.632,
-      "needed_pct": 363.2,
+      "ratio": 0.2158,
+      "needed_factor": 4.634,
+      "needed_pct": 363.4,
       "best_single_lever_pct": 9.8,
       "best_single_lever": "L_hat",
       "single_lever_sufficient": false
@@ -32977,29 +33518,29 @@
     }
   },
   "best": {
-    "stage": "S17_calib_machine1",
-    "row_id": 4700,
-    "label": "S1700_imobile5_si1_phimaxjunc0.05",
+    "stage": "V1_calib_machine0",
+    "row_id": 5109,
+    "label": "V109_Zv_lo0.9",
     "n_in_range": 3,
-    "log_distance": 1.259,
+    "log_distance": 1.24,
     "flags": [
       "NOCONS"
     ],
     "observables": {
-      "N_100": 8.398291271962819e+21,
-      "d_100": 6.790180782829428,
-      "N_111": 1.427470863965185e+22,
-      "d_111": 1.0504124162223982,
-      "N_void": 2.5641018623414963e+18,
-      "d_void": 0.561230073194993
+      "N_100": 6.319398633553164e+21,
+      "d_100": 5.594645594814676,
+      "N_111": 9.935918242587256e+21,
+      "d_111": 1.0213946808645125,
+      "N_void": 2.5709118270492303e+18,
+      "d_void": 0.5611100666377895
     },
     "ratios": {
-      "N_100": 1.6898,
-      "d_100": 1.0952,
-      "N_111": 7.3962,
-      "d_111": 0.1694,
+      "N_100": 1.2715,
+      "d_100": 0.9024,
+      "N_111": 5.1481,
+      "d_111": 0.1647,
       "N_void": 0.0017,
-      "d_void": 0.2159
+      "d_void": 0.2158
     },
     "params": {
       "eta": "0.24871922678490935",
@@ -33026,7 +33567,7 @@
       "loop_net_w_c": "100.0",
       "loop_net_K_rec": "1e-06",
       "s_i": "1.0",
-      "Z_v": "1.0",
+      "Z_v": "0.9",
       "Z_p_i": "1.45",
       "Z_p_v": "0.93",
       "Z_gb_i": "1.4",
@@ -33039,37 +33580,37 @@
     },
     "inventory": {
       "100": {
-        "model_N": 8.398291271962819e+21,
-        "model_mean_n": 879.828936564497,
-        "model_content": 7.389059678769943e+24,
+        "model_N": 6.319398633553164e+21,
+        "model_mean_n": 597.2837892177781,
+        "model_content": 3.774474361426283e+24,
         "exp_N": 4.97e+21,
         "exp_mean_n_at_target_d": 733.5317998700087,
         "exp_content": 3.645653045353943e+24,
-        "ratio": 2.0268137386761573
+        "ratio": 1.0353355940539957
       },
       "111": {
-        "model_N": 1.427470863965185e+22,
-        "model_mean_n": 18.227593910955385,
-        "model_content": 2.6019359228078027e+23,
+        "model_N": 9.935918242587256e+21,
+        "model_mean_n": 17.234426447934073,
+        "model_content": 1.7123985214455642e+23,
         "exp_N": 1.93e+21,
-        "exp_mean_n_at_target_d": 635.0282271633629,
-        "exp_content": 1.2256044784252902e+24,
-        "ratio": 0.21229817356337363
+        "exp_mean_n_at_target_d": 635.0282271633631,
+        "exp_content": 1.2256044784252908e+24,
+        "ratio": 0.13971868996804968
       },
       "total": {
-        "model_content": 7.649253271050723e+24,
+        "model_content": 3.945714213570839e+24,
         "exp_content": 4.871257523779233e+24,
-        "ratio": 1.5702830806440833
+        "ratio": 0.8099991007064771
       }
     }
   },
   "residuals": {
-    "N_100": 1.6898,
-    "d_100": 1.0952,
-    "N_111": 7.3962,
-    "d_111": 0.1694,
+    "N_100": 1.2715,
+    "d_100": 0.9024,
+    "N_111": 5.1481,
+    "d_111": 0.1647,
     "N_void": 0.0017,
-    "d_void": 0.2159
+    "d_void": 0.2158
   },
   "cost_model": {
     "MATRIX-PC2": {
@@ -33087,7 +33628,7 @@
       "min_row_h": 0.33
     },
     "MacBook-Pro.local": {
-      "n": 493,
+      "n": 506,
       "n_timed_out": 0,
       "median_row_h": 1.02,
       "max_row_h": 9.2,

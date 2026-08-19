@@ -1,61 +1,84 @@
 {
-  "_comment": [
-    "Six-observable reconciliation target set for EUROFER97, 330 C, 15 dpa,",
-    "neutron.  Kept SEPARATE from targets.json because that file's condition is",
-    "the broad 'EUROFER97 neutron, T <= 400 C' envelope; these are point values",
-    "at one condition and would change the meaning of the campaign scorer.",
-    "",
-    "Extracted 2026-08-16 from docs/Database/InterstitialLoop.xlsx and",
-    "docs/Database/Void.xlsx by filtering Material~Eurofer, T=330 C, dose=15 dpa,",
-    "neutron.  Loops: 4 paired rows; voids: 3 rows.",
-    "",
-    "THE CHARACTER FRACTION IS NOT AN INDEPENDENT TARGET.  f_100 =",
-    "N_100/(N_100+N_111), so hitting N_100 and N_111 delivers it automatically:",
-    "4.97e21/(4.97e21+1.93e21) = 0.72, which is the measured value.  This is why",
-    "f_100 is listed as derived, not fitted.",
-    "",
-    "Three of the four loop rows form a self-consistent high-f_100 cluster",
-    "(f_100 = 72/73/73 %, d = 6.1-7.0 nm).  The fourth (f_100 = 45 %, d = 3.4 nm,",
-    "N_111 = 1.1e22) is the outlier that widens every range below; 'target' is",
-    "taken from the high-f cluster, 'lo'/'hi' span ALL rows."
-  ],
-  "condition": {
-    "material": "EUROFER97",
-    "T_C": 330, "T_K": 603.15,
-    "dose_dpa": 15.0,
-    "irradiation": "neutron",
-    "n_loop_rows": 4, "n_void_rows": 3
+ "_comment": [
+  "Six-observable reconciliation target set for EUROFER97, 330 C, 15 dpa,",
+  "neutron.  Kept SEPARATE from targets.json because that file's condition is",
+  "the broad 'EUROFER97 neutron, T <= 400 C' envelope; these are point values",
+  "at one condition and would change the meaning of the campaign scorer.",
+  "",
+  "Extracted 2026-08-16 from docs/Database/InterstitialLoop.xlsx and",
+  "docs/Database/Void.xlsx by filtering Material~Eurofer, T=330 C, dose=15 dpa,",
+  "neutron.  Loops: 4 paired rows; voids: 3 rows.",
+  "",
+  "THE CHARACTER FRACTION IS NOT AN INDEPENDENT TARGET.  f_100 =",
+  "N_100/(N_100+N_111), so hitting N_100 and N_111 delivers it automatically:",
+  "4.97e21/(4.97e21+1.93e21) = 0.72, which is the measured value.  This is why",
+  "f_100 is listed as derived, not fitted.",
+  "",
+  "Three of the four loop rows form a self-consistent high-f_100 cluster",
+  "(f_100 = 72/73/73 %, d = 6.1-7.0 nm).  The fourth (f_100 = 45 %, d = 3.4 nm,",
+  "N_111 = 1.1e22) is the outlier that widens every range below; 'target' is",
+  "taken from the high-f cluster, 'lo'/'hi' span ALL rows."
+ ],
+ "condition": {
+  "material": "EUROFER97",
+  "T_C": 330,
+  "T_K": 603.15,
+  "dose_dpa": 15.0,
+  "irradiation": "neutron",
+  "n_loop_rows": 4,
+  "n_void_rows": 3
+ },
+ "observables": {
+  "N_loops_100": {
+   "target": 4.97e+21,
+   "lo": 4.67e+21,
+   "hi": 9e+21,
+   "units": "m^-3",
+   "note": "high-f cluster 4.97/4.67/8.83e21; outlier row 9.0e21 at f_100=45%"
   },
-  "observables": {
-    "N_loops_100": {
-      "target": 4.97e21, "lo": 4.67e21, "hi": 9.0e21, "units": "m^-3",
-      "note": "high-f cluster 4.97/4.67/8.83e21; outlier row 9.0e21 at f_100=45%"
-    },
-    "d_100_nm": {
-      "target": 6.2, "lo": 3.4, "hi": 7.0, "units": "nm",
-      "note": "high-f cluster 6.1/6.2/7.0 nm; outlier 3.4 nm"
-    },
-    "N_loops_111": {
-      "target": 1.93e21, "lo": 1.73e21, "hi": 1.1e22, "units": "m^-3",
-      "note": "high-f cluster 1.93/1.73/3.27e21; outlier 1.1e22 at f_100=45%. Supersedes the null in targets.json."
-    },
-    "d_111_nm": {
-      "target": 6.2, "lo": 3.4, "hi": 7.0, "units": "nm",
-      "note": "loops are reported at a COMMON diameter per row (d_111 = d_100), so this range mirrors d_100. Supersedes the null in targets.json."
-    },
-    "N_voids": {
-      "target": 1.5e21, "lo": 3.6e20, "hi": 3.01e21, "units": "m^-3",
-      "note": "Weiss 2012 3.6e20; Chauhan 2021 3.01e21 and 1.50e21"
-    },
-    "d_cavity_nm": {
-      "target": 2.6, "lo": 2.12, "hi": 2.9, "units": "nm",
-      "note": "Weiss 2012 2.60; Chauhan 2021 2.12 and 2.90"
-    }
+  "d_100_nm": {
+   "target": 6.2,
+   "lo": 3.4,
+   "hi": 7.0,
+   "units": "nm",
+   "note": "high-f cluster 6.1/6.2/7.0 nm; outlier 3.4 nm"
   },
-  "derived": {
-    "f_100_tem_1": {
-      "target": 0.72, "lo": 0.1, "hi": 0.87, "units": "-",
-      "note": "DERIVED from N_100 and N_111, not fitted independently."
-    }
+  "N_loops_111": {
+   "target": 1.93e+21,
+   "lo": 1.73e+21,
+   "hi": 1.5e+22,
+   "units": "m^-3",
+   "note": "high-f cluster 1.93/1.73/3.27e21; outlier 1.1e22 at f_100=45%. Supersedes the null in targets.json.  CEILING RAISED 1.1e22 -> 1.5e22 on 2026-08-19 by the author's decision, as an accepted tolerance rather than a new measurement: the campaign's best vector (i_mobile=5, S1700) sits at 1.43e22, and the ceiling itself is already an OUTLIER row at f_100=45%, not the high-f cluster the rest of the range is built from. Rescoring consequence: rows between 1.1e22 and 1.5e22 now count as in range, campaign-wide and retroactively."
+  },
+  "d_111_nm": {
+   "target": 6.2,
+   "lo": 3.4,
+   "hi": 7.0,
+   "units": "nm",
+   "note": "loops are reported at a COMMON diameter per row (d_111 = d_100), so this range mirrors d_100. Supersedes the null in targets.json."
+  },
+  "N_voids": {
+   "target": 1.5e+21,
+   "lo": 3.6e+20,
+   "hi": 3.01e+21,
+   "units": "m^-3",
+   "note": "Weiss 2012 3.6e20; Chauhan 2021 3.01e21 and 1.50e21"
+  },
+  "d_cavity_nm": {
+   "target": 2.6,
+   "lo": 2.12,
+   "hi": 2.9,
+   "units": "nm",
+   "note": "Weiss 2012 2.60; Chauhan 2021 2.12 and 2.90"
   }
+ },
+ "derived": {
+  "f_100_tem_1": {
+   "target": 0.72,
+   "lo": 0.1,
+   "hi": 0.87,
+   "units": "-",
+   "note": "DERIVED from N_100 and N_111, not fitted independently."
+  }
+ }
 }

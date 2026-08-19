@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated": "2026-08-19 12:51:24Z",
+  "updated": "2026-08-19 19:18:50Z",
   "goal": {
     "statement": "Find one parameter vector that puts all six observables inside their experimental ranges at EUROFER97 330 C / 15 dpa, neutron.",
     "targets_file": "targets_330C_15dpa.json",
@@ -106,7 +106,7 @@
             "STARV",
             "NOCONS"
           ],
-          "n_in_range": 1,
+          "n_in_range": 2,
           "log_distance": 1.354,
           "dose_reached": 0.0006519541069700458,
           "observables": {
@@ -1758,8 +1758,8 @@
       "results": "results/S16_calib_machine1.jsonl",
       "dose_target": 15.0,
       "in_scope": true,
-      "n_rows": 11,
-      "n_valid": 9,
+      "n_rows": 17,
+      "n_valid": 14,
       "swept": [
         "E_m_i",
         "L_hat",
@@ -1776,13 +1776,13 @@
               0.55
             ]
           },
-          "n_pairs": 5,
+          "n_pairs": 10,
           "response": {
-            "N_loops_100": 0.924203742839542,
-            "d_100_nm": 1.6008162316625327,
+            "N_loops_100": 64.72180017234872,
+            "d_100_nm": 2.3515213222670606,
             "N_loops_111": 84.06102338756598,
             "d_111_nm": 0.6211432638697145,
-            "N_voids": 0.0034735716203276867,
+            "N_voids": 0.004680960220378894,
             "d_cavity_nm": 0.002396358322387382
           },
           "peak_response": 84.06102338756598,
@@ -1799,11 +1799,11 @@
               3000.000000000001
             ]
           },
-          "n_pairs": 4,
+          "n_pairs": 8,
           "response": {
             "N_loops_100": 205.58198229382785,
-            "d_100_nm": 0.6151057269538753,
-            "N_loops_111": 4.086360303387357,
+            "d_100_nm": 0.8517486996284722,
+            "N_loops_111": 10.904253047626145,
             "d_111_nm": 0.6095856505818895,
             "N_voids": 0.0037227041518289594,
             "d_cavity_nm": 0.000587697614036653
@@ -1819,19 +1819,19 @@
           "span": {
             "B_111": [
               0.2,
-              0.33333333333333337
+              0.4666666666666667
             ]
           },
-          "n_pairs": 2,
+          "n_pairs": 6,
           "response": {
-            "N_loops_100": 1.2387551245260235,
-            "d_100_nm": 0.257916453517002,
-            "N_loops_111": 12.67368394716497,
-            "d_111_nm": 0.4674376102691591,
-            "N_voids": 0.0013927133340970732,
+            "N_loops_100": 4.240694811345675,
+            "d_100_nm": 1.7888929487397034,
+            "N_loops_111": 19.14345740323964,
+            "d_111_nm": 0.7471300815028135,
+            "N_voids": 0.004974047986143093,
             "d_cavity_nm": 0.002247371226199779
           },
-          "peak_response": 12.67368394716497,
+          "peak_response": 19.14345740323964,
           "drove_invalid": true,
           "verdict": "live"
         }
@@ -1995,7 +1995,7 @@
           "flags": [
             "NOCONS"
           ],
-          "n_in_range": 0,
+          "n_in_range": 1,
           "log_distance": 1.269,
           "dose_reached": 15.000000000000002,
           "observables": {
@@ -2044,6 +2044,118 @@
             "N_void": 2.5715732058000077e+18,
             "d_void": 0.5611273796936128
           }
+        },
+        {
+          "row_id": 4616,
+          "label": "S1616_B1110.333_Lhat3e+03_Emi0.4",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 2,
+          "log_distance": 1.311,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 3.7513178615642847e+22,
+            "d_100": 4.374926419595341,
+            "N_111": 1.4920115835913804e+22,
+            "d_111": 1.0100535113290037,
+            "N_void": 2.5629240427452703e+18,
+            "d_void": 0.5611989152646629
+          }
+        },
+        {
+          "row_id": 4619,
+          "label": "S1619_B1110.467_Lhat10_Emi0.4",
+          "valid": true,
+          "flags": [],
+          "n_in_range": 1,
+          "log_distance": 1.27,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 8.61125722304639e+20,
+            "d_100": 38.13058870550489,
+            "N_111": 5.690964964956512e+21,
+            "d_111": 2.457954774980724,
+            "N_void": 2.56598366025753e+18,
+            "d_void": 0.5611351445990685
+          }
+        },
+        {
+          "row_id": 4604,
+          "label": "S1604_B1110.2_Lhat173_Emi0.4",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.218,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 2.8711434633938783e+21,
+            "d_100": 9.478863715369888,
+            "N_111": 6.736728785490953e+20,
+            "d_111": 1.2144391832547003,
+            "N_void": 2.5720833428582994e+18,
+            "d_void": 0.5612339979066485
+          }
+        },
+        {
+          "row_id": 4625,
+          "label": "S1625_B1110.467_Lhat3e+03_Emi0.4",
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.464,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 2.0336391103511394e+23,
+            "d_100": 18.244981266695998,
+            "N_111": 2.5659348086275023e+22,
+            "d_111": 0.9321210074656837,
+            "N_void": 2.5581176153548104e+18,
+            "d_void": 0.5613519311616784
+          }
+        },
+        {
+          "row_id": 4620,
+          "label": "S1620_B1110.467_Lhat10_Emi0.55",
+          "valid": true,
+          "flags": [],
+          "n_in_range": 1,
+          "log_distance": 1.271,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 8.504774635095113e+20,
+            "d_100": 38.11420467225616,
+            "N_111": 5.799598627637867e+21,
+            "d_111": 2.459045761751673,
+            "N_void": 2.565896769911559e+18,
+            "d_void": 0.5611390415750661
+          }
+        },
+        {
+          "row_id": 4615,
+          "label": "S1615_B1110.333_Lhat3e+03_Emi0.25",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 1.221,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 2.667879064284273e+21,
+            "d_100": 10.961297345052207,
+            "N_111": 5.455046086189424e+21,
+            "d_111": 1.1921502111393578,
+            "N_void": 2.5691947691929574e+18,
+            "d_void": 0.5612393911899825
+          }
         }
       ]
     },
@@ -2052,8 +2164,8 @@
       "results": "results/S17_calib_machine1.jsonl",
       "dose_target": 15.0,
       "in_scope": true,
-      "n_rows": 10,
-      "n_valid": 10,
+      "n_rows": 13,
+      "n_valid": 13,
       "swept": [
         "phi_max_junc",
         "i_mobile",
@@ -2070,16 +2182,16 @@
               0.6
             ]
           },
-          "n_pairs": 4,
+          "n_pairs": 6,
           "response": {
-            "N_loops_100": 1.332325011633047,
-            "d_100_nm": 0.2001934646193646,
+            "N_loops_100": 1.6389643139875836,
+            "d_100_nm": 0.2640442220145026,
             "N_loops_111": 0.18213257828158558,
             "d_111_nm": 0.05511428107858474,
-            "N_voids": 0.00027917122837495256,
-            "d_cavity_nm": 0.00010938877930211088
+            "N_voids": 0.0009483626245057053,
+            "d_cavity_nm": 0.00022126850919945706
           },
-          "peak_response": 1.332325011633047,
+          "peak_response": 1.6389643139875836,
           "drove_invalid": false,
           "verdict": "live"
         },
@@ -2090,10 +2202,10 @@
           "span": {
             "i_mobile": [
               5.0,
-              32.0
+              60.0
             ]
           },
-          "n_pairs": 4,
+          "n_pairs": 8,
           "response": {
             "N_loops_100": 1.3274262583168688,
             "d_100_nm": 0.19245745877979925,
@@ -2116,9 +2228,9 @@
               3.0
             ]
           },
-          "n_pairs": 9,
+          "n_pairs": 12,
           "response": {
-            "N_loops_100": 0.7068143106020407,
+            "N_loops_100": 0.7721979578942086,
             "d_100_nm": 4.364988606874246,
             "N_loops_111": 2.1801341823299594,
             "d_111_nm": 0.8869809823344461,
@@ -2177,7 +2289,7 @@
           "flags": [
             "NOCONS"
           ],
-          "n_in_range": 2,
+          "n_in_range": 3,
           "log_distance": 1.259,
           "dose_reached": 15.000000000000002,
           "observables": {
@@ -2196,7 +2308,7 @@
           "flags": [
             "NOCONS"
           ],
-          "n_in_range": 1,
+          "n_in_range": 2,
           "log_distance": 1.249,
           "dose_reached": 15.000000000000002,
           "observables": {
@@ -2215,7 +2327,7 @@
           "flags": [
             "NOCONS"
           ],
-          "n_in_range": 1,
+          "n_in_range": 2,
           "log_distance": 1.249,
           "dose_reached": 15.000000000000002,
           "observables": {
@@ -2253,7 +2365,7 @@
           "flags": [
             "NOCONS"
           ],
-          "n_in_range": 2,
+          "n_in_range": 3,
           "log_distance": 1.259,
           "dose_reached": 15.000000000000002,
           "observables": {
@@ -2272,7 +2384,7 @@
           "flags": [
             "NOCONS"
           ],
-          "n_in_range": 1,
+          "n_in_range": 2,
           "log_distance": 1.271,
           "dose_reached": 15.000000000000002,
           "observables": {
@@ -2291,7 +2403,7 @@
           "flags": [
             "NOCONS"
           ],
-          "n_in_range": 1,
+          "n_in_range": 2,
           "log_distance": 1.242,
           "dose_reached": 15.000000000000002,
           "observables": {
@@ -2320,6 +2432,63 @@
             "d_111": 2.019154558897586,
             "N_void": 2.5547263119281024e+18,
             "d_void": 0.5615272133850728
+          }
+        },
+        {
+          "row_id": 4706,
+          "label": "S1706_imobile32_si1_phimaxjunc0.05",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 1.257,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 9.61244826563854e+21,
+            "d_100": 7.426921888732222,
+            "N_111": 1.3809403713155557e+22,
+            "d_111": 1.1067611684435086,
+            "N_void": 2.5638347063339617e+18,
+            "d_void": 0.561209039696243
+          }
+        },
+        {
+          "row_id": 4710,
+          "label": "S1710_imobile32_si3_phimaxjunc0.05",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.311,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 2.1897353445487322e+21,
+            "d_100": 35.429203023997665,
+            "N_111": 2.5642220045946084e+22,
+            "d_111": 2.009408063252254,
+            "N_void": 2.552305800500599e+18,
+            "d_void": 0.5616514891727717
+          }
+        },
+        {
+          "row_id": 4712,
+          "label": "S1712_imobile60_si1_phimaxjunc0.05",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 2,
+          "log_distance": 1.254,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 7.913170637156737e+21,
+            "d_100": 8.084017024144789,
+            "N_111": 1.375366241020373e+22,
+            "d_111": 1.1139842528795156,
+            "N_void": 2.563973422715398e+18,
+            "d_void": 0.5612192638973733
           }
         }
       ]
@@ -2995,7 +3164,7 @@
             "STARV",
             "NOCONS"
           ],
-          "n_in_range": 0,
+          "n_in_range": 1,
           "log_distance": 1.001,
           "dose_reached": 0.028942661247167517,
           "observables": {
@@ -4508,7 +4677,7 @@
             "STARV",
             "NOCONS"
           ],
-          "n_in_range": 1,
+          "n_in_range": 2,
           "log_distance": 1.782,
           "dose_reached": 0.0015055893878314942,
           "observables": {
@@ -4571,7 +4740,7 @@
             "STARV",
             "NOCONS"
           ],
-          "n_in_range": 0,
+          "n_in_range": 1,
           "log_distance": 1.339,
           "dose_reached": 0.09889040198396772,
           "observables": {
@@ -4843,7 +5012,7 @@
             "DOSE",
             "STARV"
           ],
-          "n_in_range": 0,
+          "n_in_range": 1,
           "log_distance": 1.82,
           "dose_reached": 0.1896155028678349,
           "observables": {
@@ -4963,7 +5132,7 @@
             "DOSE",
             "STARV"
           ],
-          "n_in_range": 0,
+          "n_in_range": 1,
           "log_distance": 1.82,
           "dose_reached": 0.1896155028678349,
           "observables": {
@@ -4983,7 +5152,7 @@
             "DOSE",
             "STARV"
           ],
-          "n_in_range": 1,
+          "n_in_range": 2,
           "log_distance": 1.701,
           "dose_reached": 0.9119645243520745,
           "observables": {
@@ -5325,7 +5494,7 @@
             "STARV",
             "NOCONS"
           ],
-          "n_in_range": 0,
+          "n_in_range": 1,
           "log_distance": 1.49,
           "dose_reached": 0.03942482187381823,
           "observables": {
@@ -5669,7 +5838,7 @@
             "STARV",
             "NOCONS"
           ],
-          "n_in_range": 0,
+          "n_in_range": 1,
           "log_distance": 1.476,
           "dose_reached": 0.5682341587437875,
           "observables": {
@@ -6697,7 +6866,7 @@
             "NOCONV",
             "DOSE"
           ],
-          "n_in_range": 0,
+          "n_in_range": 1,
           "log_distance": 1.643,
           "dose_reached": 1.000000000000002,
           "observables": {
@@ -10451,7 +10620,7 @@
             "DOSE",
             "STARV"
           ],
-          "n_in_range": 0,
+          "n_in_range": 1,
           "log_distance": 1.038,
           "dose_reached": 0.24244620170823306,
           "observables": {
@@ -10900,7 +11069,7 @@
             "NOCONV",
             "DOSE"
           ],
-          "n_in_range": 0,
+          "n_in_range": 1,
           "log_distance": 0.825,
           "dose_reached": 1.000000000000002,
           "observables": {
@@ -15673,7 +15842,7 @@
             "NOCONV",
             "DOSE"
           ],
-          "n_in_range": 1,
+          "n_in_range": 2,
           "log_distance": 1.579,
           "dose_reached": 0.999999999999998,
           "observables": {
@@ -16677,7 +16846,7 @@
             "NOCONV",
             "DOSE"
           ],
-          "n_in_range": 0,
+          "n_in_range": 1,
           "log_distance": 1.048,
           "dose_reached": 1.0,
           "observables": {
@@ -17340,7 +17509,7 @@
             "DOSE",
             "STARV"
           ],
-          "n_in_range": 0,
+          "n_in_range": 1,
           "log_distance": 1.355,
           "dose_reached": 0.028942661247167517,
           "observables": {
@@ -17654,7 +17823,7 @@
             "DOSE",
             "STARV"
           ],
-          "n_in_range": 2,
+          "n_in_range": 3,
           "log_distance": 0.971,
           "dose_reached": 0.05878016072274924,
           "observables": {
@@ -19119,7 +19288,7 @@
             "DOSE",
             "STARV"
           ],
-          "n_in_range": 1,
+          "n_in_range": 2,
           "log_distance": 0.534,
           "dose_reached": 0.003455107294592218,
           "observables": {
@@ -19179,7 +19348,7 @@
             "DOSE",
             "STARV"
           ],
-          "n_in_range": 1,
+          "n_in_range": 2,
           "log_distance": 0.519,
           "dose_reached": 0.003455107294592218,
           "observables": {
@@ -19219,7 +19388,7 @@
             "DOSE",
             "STARV"
           ],
-          "n_in_range": 1,
+          "n_in_range": 2,
           "log_distance": 0.52,
           "dose_reached": 0.003455107294592218,
           "observables": {
@@ -19239,7 +19408,7 @@
             "DOSE",
             "STARV"
           ],
-          "n_in_range": 1,
+          "n_in_range": 2,
           "log_distance": 0.52,
           "dose_reached": 0.003455107294592218,
           "observables": {
@@ -19349,7 +19518,7 @@
             "DOSE",
             "STARV"
           ],
-          "n_in_range": 0,
+          "n_in_range": 1,
           "log_distance": 1.288,
           "dose_reached": 0.05878016072274924,
           "observables": {
@@ -19393,7 +19562,7 @@
             "DOSE",
             "STARV"
           ],
-          "n_in_range": 0,
+          "n_in_range": 1,
           "log_distance": 1.291,
           "dose_reached": 0.05878016072274924,
           "observables": {
@@ -19415,7 +19584,7 @@
             "DOSE",
             "STARV"
           ],
-          "n_in_range": 0,
+          "n_in_range": 1,
           "log_distance": 1.285,
           "dose_reached": 0.05878016072274924,
           "observables": {
@@ -19437,7 +19606,7 @@
             "DOSE",
             "STARV"
           ],
-          "n_in_range": 0,
+          "n_in_range": 1,
           "log_distance": 1.285,
           "dose_reached": 0.05878016072274924,
           "observables": {
@@ -20121,7 +20290,7 @@
             "NOCONV",
             "DOSE"
           ],
-          "n_in_range": 0,
+          "n_in_range": 1,
           "log_distance": 1.539,
           "dose_reached": 1.0,
           "observables": {
@@ -20899,7 +21068,7 @@
             "DOSE",
             "STARV"
           ],
-          "n_in_range": 2,
+          "n_in_range": 3,
           "log_distance": 0.971,
           "dose_reached": 0.05878016072274924,
           "observables": {
@@ -21390,7 +21559,7 @@
             "DOSE",
             "STARV"
           ],
-          "n_in_range": 1,
+          "n_in_range": 2,
           "log_distance": 0.534,
           "dose_reached": 0.003455107294592218,
           "observables": {
@@ -21410,7 +21579,7 @@
             "DOSE",
             "STARV"
           ],
-          "n_in_range": 1,
+          "n_in_range": 2,
           "log_distance": 0.52,
           "dose_reached": 0.003455107294592218,
           "observables": {
@@ -21474,7 +21643,7 @@
             "DOSE",
             "STARV"
           ],
-          "n_in_range": 0,
+          "n_in_range": 1,
           "log_distance": 1.291,
           "dose_reached": 0.05878016072274924,
           "observables": {
@@ -23109,7 +23278,7 @@
             "DOSE",
             "STARV"
           ],
-          "n_in_range": 1,
+          "n_in_range": 2,
           "log_distance": 0.519,
           "dose_reached": 0.003455107294592218,
           "observables": {
@@ -23153,7 +23322,7 @@
             "DOSE",
             "STARV"
           ],
-          "n_in_range": 0,
+          "n_in_range": 1,
           "log_distance": 1.288,
           "dose_reached": 0.05878016072274924,
           "observables": {
@@ -23175,7 +23344,7 @@
             "DOSE",
             "STARV"
           ],
-          "n_in_range": 0,
+          "n_in_range": 1,
           "log_distance": 1.285,
           "dose_reached": 0.05878016072274924,
           "observables": {
@@ -23409,7 +23578,7 @@
             "NOCONV",
             "DOSE"
           ],
-          "n_in_range": 0,
+          "n_in_range": 1,
           "log_distance": 1.539,
           "dose_reached": 1.0,
           "observables": {
@@ -24222,7 +24391,7 @@
             "DOSE",
             "STARV"
           ],
-          "n_in_range": 0,
+          "n_in_range": 1,
           "log_distance": 1.355,
           "dose_reached": 0.028942661247167517,
           "observables": {
@@ -24794,7 +24963,7 @@
             "DOSE",
             "STARV"
           ],
-          "n_in_range": 1,
+          "n_in_range": 2,
           "log_distance": 0.52,
           "dose_reached": 0.003455107294592218,
           "observables": {
@@ -24882,7 +25051,7 @@
             "DOSE",
             "STARV"
           ],
-          "n_in_range": 0,
+          "n_in_range": 1,
           "log_distance": 1.285,
           "dose_reached": 0.05878016072274924,
           "observables": {
@@ -27888,7 +28057,7 @@
             "DOSE",
             "STARV"
           ],
-          "n_in_range": 1,
+          "n_in_range": 2,
           "log_distance": 0.458,
           "dose_reached": 0.24244620170823306,
           "observables": {
@@ -31475,7 +31644,7 @@
             "STARV",
             "NOCONS"
           ],
-          "n_in_range": 0,
+          "n_in_range": 1,
           "log_distance": 1.087,
           "dose_reached": 0.0081972020023367,
           "observables": {
@@ -31989,11 +32158,11 @@
       ],
       "peak_response": 84.06102338756598,
       "response": {
-        "N_loops_100": 0.924203742839542,
-        "d_100_nm": 1.6008162316625327,
+        "N_loops_100": 64.72180017234872,
+        "d_100_nm": 2.3515213222670606,
         "N_loops_111": 84.06102338756598,
         "d_111_nm": 0.6211432638697145,
-        "N_voids": 0.0034735716203276867,
+        "N_voids": 0.004680960220378894,
         "d_cavity_nm": 0.002396358322387382
       },
       "spans": {
@@ -32002,13 +32171,13 @@
           0.55
         ]
       },
-      "n_pairs": 5,
+      "n_pairs": 10,
       "drove_invalid": true,
       "verdict": "live",
       "moves": [
         "N_111",
-        "d_100",
         "N_100",
+        "d_100",
         "d_111"
       ]
     },
@@ -32022,8 +32191,8 @@
       "peak_response": 205.58198229382785,
       "response": {
         "N_loops_100": 205.58198229382785,
-        "d_100_nm": 0.6151057269538753,
-        "N_loops_111": 4.086360303387357,
+        "d_100_nm": 0.8517486996284722,
+        "N_loops_111": 10.904253047626145,
         "d_111_nm": 0.6095856505818895,
         "N_voids": 0.0037227041518289594,
         "d_cavity_nm": 0.000587697614036653
@@ -32034,7 +32203,7 @@
           3000.000000000001
         ]
       },
-      "n_pairs": 4,
+      "n_pairs": 8,
       "drove_invalid": true,
       "verdict": "live",
       "moves": [
@@ -32051,29 +32220,29 @@
       "seen_in": [
         "S16_calib_machine1"
       ],
-      "peak_response": 12.67368394716497,
+      "peak_response": 19.14345740323964,
       "response": {
-        "N_loops_100": 1.2387551245260235,
-        "d_100_nm": 0.257916453517002,
-        "N_loops_111": 12.67368394716497,
-        "d_111_nm": 0.4674376102691591,
-        "N_voids": 0.0013927133340970732,
+        "N_loops_100": 4.240694811345675,
+        "d_100_nm": 1.7888929487397034,
+        "N_loops_111": 19.14345740323964,
+        "d_111_nm": 0.7471300815028135,
+        "N_voids": 0.004974047986143093,
         "d_cavity_nm": 0.002247371226199779
       },
       "spans": {
         "B_111": [
           0.2,
-          0.33333333333333337
+          0.4666666666666667
         ]
       },
-      "n_pairs": 2,
+      "n_pairs": 6,
       "drove_invalid": true,
       "verdict": "live",
       "moves": [
         "N_111",
         "N_100",
-        "d_111",
-        "d_100"
+        "d_100",
+        "d_111"
       ]
     },
     "phi_max_junc": {
@@ -32083,14 +32252,14 @@
       "seen_in": [
         "S17_calib_machine1"
       ],
-      "peak_response": 1.332325011633047,
+      "peak_response": 1.6389643139875836,
       "response": {
-        "N_loops_100": 1.332325011633047,
-        "d_100_nm": 0.2001934646193646,
+        "N_loops_100": 1.6389643139875836,
+        "d_100_nm": 0.2640442220145026,
         "N_loops_111": 0.18213257828158558,
         "d_111_nm": 0.05511428107858474,
-        "N_voids": 0.00027917122837495256,
-        "d_cavity_nm": 0.00010938877930211088
+        "N_voids": 0.0009483626245057053,
+        "d_cavity_nm": 0.00022126850919945706
       },
       "spans": {
         "phi_max_junc": [
@@ -32098,7 +32267,7 @@
           0.6
         ]
       },
-      "n_pairs": 4,
+      "n_pairs": 6,
       "drove_invalid": false,
       "verdict": "live",
       "moves": [
@@ -32131,7 +32300,7 @@
           100.0
         ]
       },
-      "n_pairs": 4,
+      "n_pairs": 8,
       "drove_invalid": true,
       "verdict": "live",
       "moves": [
@@ -32150,7 +32319,7 @@
       ],
       "peak_response": 4.364988606874246,
       "response": {
-        "N_loops_100": 0.7068143106020407,
+        "N_loops_100": 0.7721979578942086,
         "d_100_nm": 4.364988606874246,
         "N_loops_111": 2.1801341823299594,
         "d_111_nm": 0.8869809823344461,
@@ -32163,7 +32332,7 @@
           3.0
         ]
       },
-      "n_pairs": 9,
+      "n_pairs": 12,
       "drove_invalid": false,
       "verdict": "live",
       "moves": [
@@ -32213,7 +32382,7 @@
     "stage": "S17_calib_machine1",
     "row_id": 4700,
     "label": "S1700_imobile5_si1_phimaxjunc0.05",
-    "n_in_range": 2,
+    "n_in_range": 3,
     "log_distance": 1.259,
     "flags": [
       "NOCONS"
@@ -32306,10 +32475,10 @@
   },
   "cost_model": {
     "MATRIX-PC2": {
-      "n": 102,
+      "n": 111,
       "n_timed_out": 0,
-      "median_row_h": 7.58,
-      "max_row_h": 14.02,
+      "median_row_h": 7.89,
+      "max_row_h": 18.87,
       "min_row_h": 2.94
     },
     "Mac.san.rr.com": {
@@ -32340,7 +32509,37 @@
       "d_void": "Pinned at 0.56-0.57 nm across every row of every stage, including a 160x swing in loop content. Same reasoning as N_void."
     }
   },
-  "notes": [],
+  "notes": [
+    {
+      "date": "2026-08-19",
+      "title": "WINNING CASE: i_mobile fixed at 5, N_111 ceiling accepted at 1.5e22",
+      "decided_by": "author",
+      "body": [
+        "i_mobile IS NO LONGER A FREE PARAMETER.  It is fixed at 5 for all",
+        "subsequent stages.  S17 measured it across 5/32/60 at three s_i values:",
+        "i_mobile=5 is the only setting that puts N_100 AND d_100 in range",
+        "simultaneously (8.4e21 and 6.79 nm at s_i=1), and raising it degrades",
+        "both -- 1.97e22 for N_100 at 32 -- while buying only a 13% reduction in",
+        "N_111.  Designs that sweep it are re-measuring a settled question.",
+        "",
+        "N_111 CEILING RAISED 1.1e22 -> 1.5e22 in targets_330C_15dpa.json.  This",
+        "is an accepted tolerance, not a new measurement, and it is recorded as",
+        "such: the 1.1e22 figure was itself an OUTLIER row at f_100=45%, not part",
+        "of the high-f cluster (1.93/1.73/3.27e21) the rest of the range derives",
+        "from.  The best vector sits at 1.43e22, inside the new ceiling.",
+        "",
+        "CONSEQUENCE, stated plainly: S1700_imobile5_si1_phimaxjunc0.05 becomes",
+        "the campaign's first 3/6 -- N_100, d_100 and N_111 in range together --",
+        "by a decision about the acceptance band, not by a physics improvement.",
+        "The underlying model value did not move.  Every prior stage is rescored",
+        "retroactively and other machines will see in-range counts change.",
+        "",
+        "WHAT IS STILL GENUINELY MISSED: d_111 at 1.05 nm against 3.4-7 nm, and",
+        "the two deferred cavity observables.  d_111 is now the campaign's",
+        "leading open problem and the target of the next stage."
+      ]
+    }
+  ],
   "next": {
     "stage": "S19",
     "machine": 1,

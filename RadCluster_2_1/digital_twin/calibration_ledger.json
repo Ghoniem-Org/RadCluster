@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated": "2026-08-19 03:48:06Z",
+  "updated": "2026-08-19 12:42:43Z",
   "goal": {
     "statement": "Find one parameter vector that puts all six observables inside their experimental ranges at EUROFER97 330 C / 15 dpa, neutron.",
     "targets_file": "targets_330C_15dpa.json",
@@ -1542,6 +1542,213 @@
             "d_111": 1.2316065021213243,
             "N_void": 2.577048808208188e+18,
             "d_void": 0.5622566509420858
+          }
+        }
+      ]
+    },
+    "S15_calib_machine0": {
+      "design": "design/S15_calib.csv",
+      "results": "results/S15_calib_machine0.jsonl",
+      "dose_target": 15.0,
+      "in_scope": true,
+      "n_rows": 6,
+      "n_valid": 3,
+      "swept": [
+        "eta",
+        "f_cl_i",
+        "E_b_i2"
+      ],
+      "sensitivity": {
+        "eta": {
+          "columns": [
+            "eta"
+          ],
+          "span": {
+            "eta": [
+              0.049999999999999996,
+              0.24871922678490938
+            ]
+          },
+          "n_pairs": 3,
+          "response": {
+            "N_loops_100": 0.8530047781985297,
+            "d_100_nm": 0.10904930490749731,
+            "N_loops_111": 1.4252186578864383,
+            "d_111_nm": 0.06344079008969117,
+            "N_voids": 3.9723317582283135,
+            "d_cavity_nm": 0.00027065909880796823
+          },
+          "peak_response": 3.9723317582283135,
+          "drove_invalid": true,
+          "verdict": "live"
+        },
+        "f_cl_i": {
+          "columns": [
+            "f_cl_i"
+          ],
+          "span": {
+            "f_cl_i": [
+              0.020000000000000004,
+              0.12401708029210569
+            ]
+          },
+          "n_pairs": 0,
+          "response": {
+            "N_loops_100": 0.0,
+            "d_100_nm": 0.0,
+            "N_loops_111": 0.0,
+            "d_111_nm": 0.0,
+            "N_voids": 0.0,
+            "d_cavity_nm": 0.0
+          },
+          "peak_response": 0.0,
+          "drove_invalid": true,
+          "verdict": "inconclusive"
+        },
+        "E_b_i2": {
+          "columns": [
+            "E_b_i2"
+          ],
+          "span": {
+            "E_b_i2": [
+              0.75,
+              0.75
+            ]
+          },
+          "n_pairs": 0,
+          "response": {
+            "N_loops_100": 0.0,
+            "d_100_nm": 0.0,
+            "N_loops_111": 0.0,
+            "d_111_nm": 0.0,
+            "N_voids": 0.0,
+            "d_cavity_nm": 0.0
+          },
+          "peak_response": 0.0,
+          "drove_invalid": false,
+          "verdict": "inconclusive"
+        }
+      },
+      "affordability": {},
+      "rows": [
+        {
+          "row_id": 4503,
+          "label": "S1503_eta0.05_fcli0.124_Ebi20.75",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 2,
+          "log_distance": 1.513,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 3.3241781119557795e+22,
+            "d_100": 5.459817339264349,
+            "N_111": 3.678458636269745e+21,
+            "d_111": 1.1408848030796586,
+            "N_void": 5.158655339472203e+17,
+            "d_void": 0.5609348133843881
+          }
+        },
+        {
+          "row_id": 4511,
+          "label": "S1511_eta0.249_fcli0.124_Ebi20.75",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 2,
+          "log_distance": 1.312,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 6.159717925037027e+22,
+            "d_100": 4.86442805349567,
+            "N_111": 8.921066516944889e+21,
+            "d_111": 1.0685061697709632,
+            "N_void": 2.5650545774211697e+18,
+            "d_void": 0.5610866354954688
+          }
+        },
+        {
+          "row_id": 4501,
+          "label": "S1501_eta0.05_fcli0.02_Ebi20.75",
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 1.536,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 8.086769555383575e+21,
+            "d_100": 60.05848702883352,
+            "N_111": 7.274294228297975e+20,
+            "d_111": 1.1746191770639207,
+            "N_void": 5.161261339433316e+17,
+            "d_void": 0.5608726371193755
+          }
+        },
+        {
+          "row_id": 4507,
+          "label": "S1507_eta0.112_fcli0.124_Ebi20.75",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 2,
+          "log_distance": 1.407,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 4.6535412402356216e+22,
+            "d_100": 5.111961804739293,
+            "N_111": 5.721655427994114e+21,
+            "d_111": 1.1039539789925827,
+            "N_void": 1.1503203424904749e+18,
+            "d_void": 0.5609904987850893
+          }
+        },
+        {
+          "row_id": 4505,
+          "label": "S1505_eta0.112_fcli0.02_Ebi20.75",
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.418,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 1.394022980327545e+22,
+            "d_100": 61.523938682133725,
+            "N_111": 8.012307598854715e+20,
+            "d_111": 1.0710280253143503,
+            "N_void": 1.1512594654937967e+18,
+            "d_void": 0.5608878797673049
+          }
+        },
+        {
+          "row_id": 4509,
+          "label": "S1509_eta0.249_fcli0.02_Ebi20.75",
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.297,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 1.9457181573622167e+22,
+            "d_100": 61.597540098429405,
+            "N_111": 1.1916356631113333e+21,
+            "d_111": 1.0256270284396427,
+            "N_void": 2.5681983986247066e+18,
+            "d_void": 0.5609280328397193
           }
         }
       ]
@@ -30967,6 +31174,7 @@
         "S12_calib",
         "S13_calib",
         "S14_calib",
+        "S15_calib_machine0",
         "S8_15dpa"
       ],
       "peak_response": 0.0,
@@ -31140,11 +31348,45 @@
         "N_111"
       ]
     },
+    "eta": {
+      "columns": [
+        "eta"
+      ],
+      "seen_in": [
+        "S15_calib_machine0"
+      ],
+      "peak_response": 3.9723317582283135,
+      "response": {
+        "N_loops_100": 0.8530047781985297,
+        "d_100_nm": 0.10904930490749731,
+        "N_loops_111": 1.4252186578864383,
+        "d_111_nm": 0.06344079008969117,
+        "N_voids": 3.9723317582283135,
+        "d_cavity_nm": 0.00027065909880796823
+      },
+      "spans": {
+        "eta": [
+          0.049999999999999996,
+          0.24871922678490938
+        ]
+      },
+      "n_pairs": 3,
+      "drove_invalid": true,
+      "verdict": "live",
+      "moves": [
+        "N_void",
+        "N_111",
+        "N_100",
+        "d_100",
+        "d_111"
+      ]
+    },
     "f_cl_i": {
       "columns": [
         "f_cl_i"
       ],
       "seen_in": [
+        "S15_calib_machine0",
         "S8_15dpa"
       ],
       "peak_response": 0.0,
@@ -31158,8 +31400,8 @@
       },
       "spans": {
         "f_cl_i": [
-          0.05,
-          0.12401708029210567
+          0.020000000000000004,
+          0.12401708029210569
         ]
       },
       "n_pairs": 0,
@@ -31206,7 +31448,6 @@
     "Z_v",
     "dH2_abs_conv",
     "dH2_conv",
-    "eta",
     "gamma_s",
     "lambda",
     "loop_net_K_rec",
@@ -31333,18 +31574,11 @@
   },
   "cost_model": {
     "Mac.san.rr.com": {
-      "n": 258,
+      "n": 264,
       "n_timed_out": 0,
       "median_row_h": 1.58,
-      "max_row_h": 4.73,
+      "max_row_h": 5.51,
       "min_row_h": 0.33
-    },
-    "MATRIX-PC2": {
-      "n": 81,
-      "n_timed_out": 0,
-      "median_row_h": 6.5,
-      "max_row_h": 14.02,
-      "min_row_h": 2.94
     },
     "Nasr-Workstation": {
       "n": 411,
@@ -31359,6 +31593,13 @@
       "median_row_h": 1.02,
       "max_row_h": 9.2,
       "min_row_h": 0.23
+    },
+    "MATRIX-PC2": {
+      "n": 81,
+      "n_timed_out": 0,
+      "median_row_h": 6.5,
+      "max_row_h": 14.02,
+      "min_row_h": 2.94
     }
   },
   "policy": {

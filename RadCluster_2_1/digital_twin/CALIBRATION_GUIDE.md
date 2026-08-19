@@ -1,6 +1,6 @@
 # Calibration Guide - EUROFER97 digital twin
 
-*Derived by `learn.py`; content last changed 2026-08-19 03:48:06Z (re-running with no new results leaves this file untouched). Do not hand-edit: edits are overwritten. Durable notes belong in `calibration_ledger.json` under `notes`, which is preserved across regenerations.*
+*Derived by `learn.py`; content last changed 2026-08-19 12:42:43Z (re-running with no new results leaves this file untouched). Do not hand-edit: edits are overwritten. Durable notes belong in `calibration_ledger.json` under `notes`, which is preserved across regenerations.*
 
 ## Goal
 
@@ -40,18 +40,19 @@ A lever is **dead** when its full tested span moves every observable by less tha
 | lever | tested span | verdict | valid pairs | peak response | moves | stages |
 |---|---|---|---|---|---|---|
 | `f_cl_v+E_b_v2+s_v` | f_cl_v 0.317->0.7; E_b_v2 0.213->0.35; s_v 1.9->2.5 | **live** (drives rows off-grid) | 2 | 692.8% | d_100, N_void, N_111 | S14_calib |
+| `eta` | eta 0.05->0.249 | **live** (drives rows off-grid) | 3 | 397.2% | N_void, N_111, N_100, d_100, d_111 | S15_calib_machine0 |
 | `E_a0_conv` | E_a0_conv 1.8->2.3 | **dead** (drives rows off-grid) | 2 | 2.5% | - | S10_calib, S12_calib, S13_calib, S14_calib, S8_15dpa |
-| `E_b_i2` | E_b_i2 0.55->0.875 | **inconclusive** (drives rows off-grid) | 0 | - | - | S10_calib, S12_calib, S13_calib, S14_calib, S8_15dpa |
+| `E_b_i2` | E_b_i2 0.55->0.875 | **inconclusive** (drives rows off-grid) | 0 | - | - | S10_calib, S12_calib, S13_calib, S14_calib, S15_calib_machine0, S8_15dpa |
 | `Z_i+Z_p_i+Z_p_v+Z_gb_i+Z_gb_v` | Z_i 1.2->1.35; Z_p_i 1.2->1.45; Z_p_v 0.93->0.98; Z_gb_i 1.2->1.4; Z_gb_v 0.93->0.98 | **inconclusive** (drives rows off-grid) | 0 | - | - | S12_calib |
 | `d_g+rho_p` | d_g 1e-06->4e-06; rho_p 1e+19->1e+20 | **inconclusive** (drives rows off-grid) | 0 | - | - | S13_calib |
-| `f_cl_i` | f_cl_i 0.05->0.124 | **inconclusive** (drives rows off-grid) | 0 | - | - | S8_15dpa |
+| `f_cl_i` | f_cl_i 0.02->0.124 | **inconclusive** (drives rows off-grid) | 0 | - | - | S15_calib_machine0, S8_15dpa |
 | `i_mobile` | i_mobile 40->100 | **inconclusive** (drives rows off-grid) | 0 | - | - | S8_15dpa |
 
 ### Never varied
 
 These columns exist in the design but have never taken more than one value, so the campaign has no evidence about them:
 
-`B_111`, `E_b_hV_1`, `E_m_h`, `E_m_i`, `E_m_v`, `L_hat`, `Z_i_loop`, `Z_v`, `dH2_abs_conv`, `dH2_conv`, `eta`, `gamma_s`, `lambda`, `loop_net_K_rec`, `loop_net_chi`, `loop_net_w_c`, `phi_max_junc`, `r_p`, `rho_d`, `s_i`
+`B_111`, `E_b_hV_1`, `E_m_h`, `E_m_i`, `E_m_v`, `L_hat`, `Z_i_loop`, `Z_v`, `dH2_abs_conv`, `dH2_conv`, `gamma_s`, `lambda`, `loop_net_K_rec`, `loop_net_chi`, `loop_net_w_c`, `phi_max_junc`, `r_p`, `rho_d`, `s_i`
 
 ## Stage history
 
@@ -67,6 +68,7 @@ Only stages that ran to 15.0 dpa are in scope; the rest are listed for provenanc
 | `S12_calib` | 15 | in | 12 | 0 | `E_b_i2`, `Z_i+Z_p_i+Z_p_v+Z_gb_i+Z_gb_v`, `E_a0_conv` | - |
 | `S13_calib` | 15 | in | 12 | 0 | `E_b_i2`, `E_a0_conv`, `d_g+rho_p` | - |
 | `S14_calib` | 15 | in | 12 | 4 | `f_cl_v+E_b_v2+s_v`, `E_b_i2`, `E_a0_conv` | 2 |
+| `S15_calib_machine0` | 15 | in | 6 | 3 | `eta`, `f_cl_i`, `E_b_i2` | 2 |
 | `S1_calib` | 1 | out | 2 | 0 | - | - |
 | `S1_lnl0` | 1 | out | 12 | 1 | - | 0 |
 | `S1_lnl1` | 1 | out | 4 | 0 | - | - |
@@ -110,7 +112,7 @@ Completed rows only. A row cut at the budget measures the timeout, not the cost,
 | machine | completed | median row | min | max | timed out |
 |---|---|---|---|---|---|
 | MATRIX-PC2 | 81 | 6.5 h | 2.94 h | 14.02 h | 0 |
-| Mac.san.rr.com | 258 | 1.58 h | 0.33 h | 4.73 h | 0 |
+| Mac.san.rr.com | 264 | 1.58 h | 0.33 h | 5.51 h | 0 |
 | MacBook-Pro.local | 480 | 1.02 h | 0.23 h | 9.2 h | 0 |
 | Nasr-Workstation | 411 | 3.35 h | 0.15 h | 19.79 h | 164 |
 

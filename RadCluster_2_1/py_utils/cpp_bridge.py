@@ -47,6 +47,86 @@ log = logging.getLogger(__name__)
 GRACEFUL_SHUTDOWN_TIMEOUT_S = 60.0
 
 
+def _pin_child_to_cpu_group(pid):
+    """Move a freshly spawned solver.exe onto a specific Windows processor group.
+
+    NO-OP unless RADCLUSTER_CPU_GROUP is set, so every host that does not opt in
+    behaves exactly as before.  Never raises: failing to pin must cost a little
+    throughput, never a row.
+
+    WHY IT EXISTS.  A Windows host with more than 64 logical CPUs is split into
+    processor GROUPS, and the scheduler homes threads to the group their process
+    was assigned at creation.  On MATRIX-PC2 (2x Xeon Gold 6230, two groups of 40
+    logical) that is group 0 for every solver, whatever the parent did: measured
+    2026-08-18 under a live 20-row stage, each solver.exe had exactly ONE thread,
+    all 20 homed to group 0, socket 0 saturated and socket 1 at 3 %.  The run_
+    ensemble pool workers themselves DO spread across both groups -- it is only
+    the solver, where all the compute is, that piles up.
+
+    The fix is one call per row.  Measured immediately after moving 5 of 20 live
+    solver threads to group 1:  group 0  50.7 % -> 37.4 %,  group 1  3.8 % ->
+    14.2 %.
+
+    NOT a numerical knob: affinity changes where a thread runs, never what it
+    computes.  Rows produced with and without it are directly comparable.
+    """
+    group = os.environ.get("RADCLUSTER_CPU_GROUP", "").strip()
+    if not group or sys.platform != "win32":
+        return
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        class _THREADENTRY32(ctypes.Structure):
+            _fields_ = [("dwSize", wintypes.DWORD), ("cntUsage", wintypes.DWORD),
+                        ("th32ThreadID", wintypes.DWORD),
+                        ("th32OwnerProcessID", wintypes.DWORD),
+                        ("tpBasePri", ctypes.c_long),
+                        ("tpDeltaPri", ctypes.c_long),
+                        ("dwFlags", wintypes.DWORD)]
+
+        class _GROUP_AFFINITY(ctypes.Structure):
+            _fields_ = [("Mask", ctypes.c_size_t), ("Group", ctypes.c_ushort),
+                        ("Reserved", ctypes.c_ushort * 3)]
+
+        k = ctypes.WinDLL("kernel32", use_last_error=True)
+        k.OpenThread.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+        k.OpenThread.restype = wintypes.HANDLE
+        k.SetThreadGroupAffinity.argtypes = [wintypes.HANDLE,
+                                             ctypes.POINTER(_GROUP_AFFINITY),
+                                             ctypes.POINTER(_GROUP_AFFINITY)]
+        k.GetActiveProcessorCount.argtypes = [ctypes.c_ushort]
+        k.GetActiveProcessorCount.restype = wintypes.DWORD
+
+        g = int(group)
+        n_cpu = int(k.GetActiveProcessorCount(ctypes.c_ushort(g)))
+        if n_cpu <= 0:
+            return
+        mask = (1 << n_cpu) - 1
+
+        snap = k.CreateToolhelp32Snapshot(0x00000004, 0)   # TH32CS_SNAPTHREAD
+        te = _THREADENTRY32()
+        te.dwSize = ctypes.sizeof(_THREADENTRY32)
+        moved = 0
+        ok = k.Thread32First(snap, ctypes.byref(te))
+        while ok:
+            if te.th32OwnerProcessID == pid:
+                # THREAD_SET_INFORMATION | THREAD_QUERY_LIMITED_INFORMATION
+                h = k.OpenThread(0x0020 | 0x0800, False, te.th32ThreadID)
+                if h:
+                    ga = _GROUP_AFFINITY(Mask=mask, Group=g)
+                    if k.SetThreadGroupAffinity(h, ctypes.byref(ga), None):
+                        moved += 1
+                    k.CloseHandle(h)
+            ok = k.Thread32Next(snap, ctypes.byref(te))
+        k.CloseHandle(snap)
+        if moved:
+            logging.debug("pinned solver pid %s (%d thread(s)) to CPU group %d",
+                          pid, moved, g)
+    except Exception as exc:                       # never lose a row over this
+        logging.debug("CPU-group pin skipped for pid %s: %s", pid, exc)
+
+
 def _send_graceful_interrupt(proc):
     """Ask the C++ subprocess to finish its current integration step and
     exit cleanly via its own signal handler.  On Windows this requires the
@@ -712,6 +792,7 @@ def run_cpp_solver(sim, solver_config, base_dir=None, progress_callback=None,
             [str(exe_path), f'--param_file={param_path}'],
             **popen_kwargs,
         )
+        _pin_child_to_cpu_group(proc.pid)
 
         solver_info = {}
         stderr_fn = _make_stderr_handler(progress_callback, info_out=solver_info)

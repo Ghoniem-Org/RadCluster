@@ -32342,47 +32342,49 @@
   },
   "notes": [],
   "next": {
-    "stage": "S19",
-    "machine": 1,
-    "machine_name": "Matrix-PC",
+    "stage": "S20",
+    "machine": 0,
+    "machine_name": "MacBook Pro",
     "levers": [
-      "i_mobile",
-      "phi_max_junc"
+      "L_hat",
+      "B_111",
+      "E_m_i"
     ],
     "n_levels": [
-      10,
+      3,
+      2,
       2
     ],
-    "n_rows": 20,
-    "design": "design/S19_calib.csv",
-    "labels": "design/S19_labels.json",
+    "n_rows": 12,
+    "design": "design/S20_calib.csv",
+    "labels": "design/S20_labels.json",
     "pinned_to": {
       "stage": "S17_calib_machine1",
       "row_id": 4700,
       "label": "S1700_imobile5_si1_phimaxjunc0.05"
     },
-    "rationale": "worst residuals are N_111 (7.4x), d_111 (0.169x), N_100 (1.69x); sweeping i_mobile, phi_max_junc, which the ledger has not retired",
+    "rationale": "worst residuals are N_111 (7.4x), d_111 (0.169x), N_100 (1.69x); sweeping L_hat, B_111, E_m_i, which the ledger has not retired",
     "cost_estimate": {
       "known": true,
-      "source": "measured on this machine",
-      "median_row_h": 7.58,
-      "max_row_h": 14.02,
-      "slots": 20,
+      "source": "scaled from another machine by registry `speed`",
+      "median_row_h": 3.79,
+      "max_row_h": 7.01,
+      "slots": 14,
       "waves": 1,
-      "est_wall_h": 14.0
+      "est_wall_h": 7.0
     },
     "commands": [
       "python run_ensemble.py \\",
-      "    --design design/S19_calib.csv \\",
+      "    --design design/S20_calib.csv \\",
       "    --conditions conditions_S8.json \\",
       "    --spec parameters_S4.json \\",
-      "    --out results/S19_calib_machine1.jsonl \\",
+      "    --out results/S20_calib_machine0.jsonl \\",
       "    --machine 0 --of 1 \\",
       "    --equations bin_moment --i-discrete 100 --i-bin 36 \\",
       "    --v-discrete 5 --v-bin 20 --allow-mixed \\",
       "    --I 80000 --V 2000 --dose 15.0 --lnl 1 --rtol 1e-5 \\",
       "    --solver-mode full_system \\",
-      "    --timeout-s 108000 --workers 20 --omp-threads 1"
+      "    --timeout-s 43200 --workers 14 --omp-threads 1"
     ]
   },
   "next_by_machine": {
@@ -32474,6 +32476,52 @@
         "    --I 80000 --V 2000 --dose 15.0 --lnl 1 --rtol 1e-5 \\",
         "    --solver-mode full_system \\",
         "    --timeout-s 72000 --workers 12 --omp-threads 1"
+      ]
+    },
+    "0": {
+      "stage": "S20",
+      "machine": 0,
+      "machine_name": "MacBook Pro",
+      "levers": [
+        "L_hat",
+        "B_111",
+        "E_m_i"
+      ],
+      "n_levels": [
+        3,
+        2,
+        2
+      ],
+      "n_rows": 12,
+      "design": "design/S20_calib.csv",
+      "labels": "design/S20_labels.json",
+      "pinned_to": {
+        "stage": "S17_calib_machine1",
+        "row_id": 4700,
+        "label": "S1700_imobile5_si1_phimaxjunc0.05"
+      },
+      "rationale": "worst residuals are N_111 (7.4x), d_111 (0.169x), N_100 (1.69x); sweeping L_hat, B_111, E_m_i, which the ledger has not retired",
+      "cost_estimate": {
+        "known": true,
+        "source": "scaled from another machine by registry `speed`",
+        "median_row_h": 3.79,
+        "max_row_h": 7.01,
+        "slots": 14,
+        "waves": 1,
+        "est_wall_h": 7.0
+      },
+      "commands": [
+        "python run_ensemble.py \\",
+        "    --design design/S20_calib.csv \\",
+        "    --conditions conditions_S8.json \\",
+        "    --spec parameters_S4.json \\",
+        "    --out results/S20_calib_machine0.jsonl \\",
+        "    --machine 0 --of 1 \\",
+        "    --equations bin_moment --i-discrete 100 --i-bin 36 \\",
+        "    --v-discrete 5 --v-bin 20 --allow-mixed \\",
+        "    --I 80000 --V 2000 --dose 15.0 --lnl 1 --rtol 1e-5 \\",
+        "    --solver-mode full_system \\",
+        "    --timeout-s 43200 --workers 14 --omp-threads 1"
       ]
     }
   }

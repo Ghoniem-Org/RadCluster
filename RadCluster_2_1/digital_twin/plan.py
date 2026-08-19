@@ -356,8 +356,29 @@ def prefer_for(col: str, obs: str, ratio) -> int:
     return -sign if ratio > 1 else +sign
 
 
+def parse_box_override(spec: str) -> dict:
+    """--box i_mobile=5:32 -> {"i_mobile": (5.0, 32.0)}."""
+    out = {}
+    for part in (spec or "").split(","):
+        part = part.strip()
+        if not part:
+            continue
+        col, _, rng = part.partition("=")
+        lo, _, hi = rng.partition(":")
+        col = col.strip()
+        if col not in PRIOR_BOX:
+            raise SystemExit("--box %s: unknown lever (not in PRIOR_BOX)" % col)
+        try:
+            out[col] = (float(lo), float(hi))
+        except ValueError:
+            raise SystemExit("--box %s: expected lever=lo:hi" % part)
+        if out[col][0] >= out[col][1]:
+            raise SystemExit("--box %s: lo must be < hi" % part)
+    return out
+
+
 def build_design(led: dict, levers: list, n_levels: list, stage: str,
-                 row_base: int, why: list = None) -> tuple:
+                 row_base: int, why: list = None, box_override: dict = None) -> tuple:
     best = led["best"]
     if not best:
         raise SystemExit("ledger has no valid best row -- nothing safe to pin to")
@@ -372,9 +393,22 @@ def build_design(led: dict, levers: list, n_levels: list, stage: str,
         except (TypeError, ValueError):
             base = sum(PRIOR_BOX[col][:2]) / 2.0
         obs = target_obs.get(col)
+        lo, hi, kind = box_for(col, led, base)
+        ov = (box_override or {}).get(col)
+        if ov:
+            # INTERSECT, never replace.  An override is a statement about where
+            # this stage should spend its rows, not a licence to leave the
+            # physical box or re-enter a span the ledger measured as
+            # unaffordable.
+            lo, hi = max(lo, ov[0]), min(hi, ov[1])
+            if lo >= hi:
+                raise SystemExit(
+                    "--box %s=%g:%g leaves nothing after intersecting the "
+                    "admissible span (%g, %g) for that lever."
+                    % (col, ov[0], ov[1], *box_for(col, led, base)[:2]))
         grids.append(levels_for(col, base, n,
                                 prefer_for(col, obs, ratios.get(obs)),
-                                box_for(col, led, base)))
+                                (lo, hi, kind)))
 
     combos = [[]]
     for g in grids:
@@ -460,6 +494,13 @@ def main(argv=None):
     ap.add_argument("--levels", default=None,
                     help="comma-separated level count per lever, e.g. 3,2,2")
     ap.add_argument("--row-base", type=int, default=None)
+    ap.add_argument("--box", default=None,
+                    help="narrow a lever's span for THIS stage only, e.g. "
+                         "--box i_mobile=5:32 (comma-separated for several). "
+                         "Only ever narrows: the result is intersected with "
+                         "PRIOR_BOX and the affordability clip, so an override "
+                         "cannot smuggle a design outside the physical box or "
+                         "into a region measured as unaffordable.")
     ap.add_argument("--budget-h", type=float, default=None,
                     help="row budget in hours; overrides machines.json")
     ap.add_argument("--share", default=None,
@@ -503,7 +544,8 @@ def main(argv=None):
     row_base = a.row_base if a.row_base is not None else 4000 + \
         (int(stage[1:]) - 10) * 100
 
-    header, rows, labels = build_design(led, levers, n_levels, stage, row_base, why)
+    header, rows, labels = build_design(led, levers, n_levels, stage, row_base,
+                                        why, parse_box_override(a.box))
     share = [int(x) for x in a.share.split(",")] if a.share else []
     cost = estimate_cost(led, machine,
                          math.ceil(n_rows / len(share)) if share else n_rows)

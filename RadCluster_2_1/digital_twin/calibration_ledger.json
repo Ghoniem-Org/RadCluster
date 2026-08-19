@@ -32342,79 +32342,75 @@
   },
   "notes": [],
   "next": {
-    "stage": "S18",
-    "machine": 2,
-    "machine_name": "Nasr Workstation",
+    "stage": "S19",
+    "machine": 1,
+    "machine_name": "Matrix-PC",
     "levers": [
-      "f_cl_v",
-      "E_b_v2",
-      "E_b_hV_1"
+      "i_mobile",
+      "phi_max_junc"
     ],
     "n_levels": [
-      3,
-      2,
+      10,
       2
     ],
-    "n_rows": 12,
-    "design": "design/S18_calib.csv",
-    "labels": "design/S18_labels.json",
+    "n_rows": 20,
+    "design": "design/S19_calib.csv",
+    "labels": "design/S19_labels.json",
     "pinned_to": {
-      "stage": "S14_calib",
-      "row_id": 4400,
-      "label": "E00_V0_Ea2.10_Eb0.75"
+      "stage": "S17_calib_machine1",
+      "row_id": 4700,
+      "label": "S1700_imobile5_si1_phimaxjunc0.05"
     },
-    "rationale": "worst residuals are N_100 (12.4x), d_111 (0.172x), N_111 (4.62x); sweeping f_cl_v, E_b_v2, E_b_hV_1, which the ledger has not retired",
+    "rationale": "worst residuals are N_111 (7.4x), d_111 (0.169x), N_100 (1.69x); sweeping i_mobile, phi_max_junc, which the ledger has not retired",
     "cost_estimate": {
       "known": true,
       "source": "measured on this machine",
-      "median_row_h": 3.35,
-      "max_row_h": 19.79,
-      "slots": 12,
+      "median_row_h": 7.58,
+      "max_row_h": 14.02,
+      "slots": 20,
       "waves": 1,
-      "est_wall_h": 19.8
+      "est_wall_h": 14.0
     },
     "commands": [
       "python run_ensemble.py \\",
-      "    --design design/S18_calib.csv \\",
+      "    --design design/S19_calib.csv \\",
       "    --conditions conditions_S8.json \\",
       "    --spec parameters_S4.json \\",
-      "    --out results/S18_calib_machine2.jsonl \\",
+      "    --out results/S19_calib_machine1.jsonl \\",
       "    --machine 0 --of 1 \\",
       "    --equations bin_moment --i-discrete 100 --i-bin 36 \\",
       "    --v-discrete 5 --v-bin 20 --allow-mixed \\",
       "    --I 80000 --V 2000 --dose 15.0 --lnl 1 --rtol 1e-5 \\",
       "    --solver-mode full_system \\",
-      "    --timeout-s 72000 --workers 12 --omp-threads 1"
+      "    --timeout-s 108000 --workers 20 --omp-threads 1"
     ]
   },
   "next_by_machine": {
     "1": {
-      "stage": "S17",
+      "stage": "S19",
       "machine": 1,
       "machine_name": "Matrix-PC",
       "levers": [
         "i_mobile",
-        "s_i",
         "phi_max_junc"
       ],
       "n_levels": [
-        3,
-        3,
+        10,
         2
       ],
-      "n_rows": 18,
-      "design": "design/S17_calib.csv",
-      "labels": "design/S17_labels.json",
+      "n_rows": 20,
+      "design": "design/S19_calib.csv",
+      "labels": "design/S19_labels.json",
       "pinned_to": {
-        "stage": "S14_calib",
-        "row_id": 4400,
-        "label": "E00_V0_Ea2.10_Eb0.75"
+        "stage": "S17_calib_machine1",
+        "row_id": 4700,
+        "label": "S1700_imobile5_si1_phimaxjunc0.05"
       },
-      "rationale": "worst residuals are N_100 (12.4x), d_111 (0.172x), N_111 (4.62x); sweeping i_mobile, s_i, phi_max_junc, which the ledger has not retired",
+      "rationale": "worst residuals are N_111 (7.4x), d_111 (0.169x), N_100 (1.69x); sweeping i_mobile, phi_max_junc, which the ledger has not retired",
       "cost_estimate": {
         "known": true,
         "source": "measured on this machine",
-        "median_row_h": 6.5,
+        "median_row_h": 7.58,
         "max_row_h": 14.02,
         "slots": 20,
         "waves": 1,
@@ -32422,16 +32418,16 @@
       },
       "commands": [
         "python run_ensemble.py \\",
-        "    --design design/S17_calib.csv \\",
+        "    --design design/S19_calib.csv \\",
         "    --conditions conditions_S8.json \\",
         "    --spec parameters_S4.json \\",
-        "    --out results/S17_calib_machine1.jsonl \\",
+        "    --out results/S19_calib_machine1.jsonl \\",
         "    --machine 0 --of 1 \\",
         "    --equations bin_moment --i-discrete 100 --i-bin 36 \\",
         "    --v-discrete 5 --v-bin 20 --allow-mixed \\",
         "    --I 80000 --V 2000 --dose 15.0 --lnl 1 --rtol 1e-5 \\",
         "    --solver-mode full_system \\",
-        "    --timeout-s 72000 --workers 20 --omp-threads 1"
+        "    --timeout-s 108000 --workers 20 --omp-threads 1"
       ]
     },
     "2": {

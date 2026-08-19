@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated": "2026-08-19 21:50:16Z",
+  "updated": "2026-08-19 22:24:48Z",
   "goal": {
     "statement": "Find one parameter vector that puts all six observables inside their experimental ranges at EUROFER97 330 C / 15 dpa, neutron.",
     "targets_file": "targets_330C_15dpa.json",
@@ -1758,8 +1758,8 @@
       "results": "results/S16_calib_machine1.jsonl",
       "dose_target": 15.0,
       "in_scope": true,
-      "n_rows": 17,
-      "n_valid": 14,
+      "n_rows": 26,
+      "n_valid": 17,
       "swept": [
         "E_m_i",
         "L_hat",
@@ -1799,7 +1799,7 @@
               3000.000000000001
             ]
           },
-          "n_pairs": 8,
+          "n_pairs": 9,
           "response": {
             "N_loops_100": 205.58198229382785,
             "d_100_nm": 0.8517486996284722,
@@ -1819,19 +1819,19 @@
           "span": {
             "B_111": [
               0.2,
-              0.4666666666666667
+              0.6
             ]
           },
-          "n_pairs": 6,
+          "n_pairs": 10,
           "response": {
-            "N_loops_100": 4.240694811345675,
-            "d_100_nm": 1.7888929487397034,
-            "N_loops_111": 19.14345740323964,
+            "N_loops_100": 60.82331764530832,
+            "d_100_nm": 2.2037214207322258,
+            "N_loops_111": 137.21218362125794,
             "d_111_nm": 0.7471300815028135,
-            "N_voids": 0.004974047986143093,
-            "d_cavity_nm": 0.002247371226199779
+            "N_voids": 0.005102141590920373,
+            "d_cavity_nm": 0.002295677839057042
           },
-          "peak_response": 19.14345740323964,
+          "peak_response": 137.21218362125794,
           "drove_invalid": true,
           "verdict": "live"
         }
@@ -2155,6 +2155,186 @@
             "d_111": 1.1921502111393578,
             "N_void": 2.5691947691929574e+18,
             "d_void": 0.5612393911899825
+          }
+        },
+        {
+          "row_id": 4601,
+          "label": "S1601_B1110.2_Lhat10_Emi0.4",
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "STARV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.264,
+          "dose_reached": 2.4464178313781106,
+          "observables": {
+            "N_100": 1.3017589858929612e+21,
+            "d_100": 20.063897974610782,
+            "N_111": 2.9471116984473977e+20,
+            "d_111": 2.0728039048810327,
+            "N_void": 2.572399023766259e+18,
+            "d_void": 0.561822259447153
+          }
+        },
+        {
+          "row_id": 4618,
+          "label": "S1618_B1110.467_Lhat10_Emi0.25",
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "STARV"
+          ],
+          "n_in_range": 1,
+          "log_distance": 1.227,
+          "dose_reached": 2.4464178313781106,
+          "observables": {
+            "N_100": 1.2867142066425692e+21,
+            "d_100": 27.72121153502929,
+            "N_111": 2.0173972720075109e+21,
+            "d_111": 2.3542386425046016,
+            "N_void": 2.569525830631325e+18,
+            "d_void": 0.5610182653747452
+          }
+        },
+        {
+          "row_id": 4608,
+          "label": "S1608_B1110.2_Lhat3e+03_Emi0.55",
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "STARV",
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 1.225,
+          "dose_reached": 6.0577444210425115,
+          "observables": {
+            "N_100": 2.3949023633681343e+21,
+            "d_100": 11.09958183973933,
+            "N_111": 5.485481749707848e+21,
+            "d_111": 1.142183482513665,
+            "N_void": 2.569474312971072e+18,
+            "d_void": 0.5612652255266812
+          }
+        },
+        {
+          "row_id": 4614,
+          "label": "S1614_B1110.333_Lhat173_Emi0.55",
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "STARV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.323,
+          "dose_reached": 2.4464178313781106,
+          "observables": {
+            "N_100": 1.5150747503932081e+22,
+            "d_100": 40.128259431887756,
+            "N_111": 2.6736252741265887e+22,
+            "d_111": 2.267915161555844,
+            "N_void": 2.5493275351514583e+18,
+            "d_void": 0.561734734269658
+          }
+        },
+        {
+          "row_id": 4607,
+          "label": "S1607_B1110.2_Lhat3e+03_Emi0.4",
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "STARV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.414,
+          "dose_reached": 6.0577444210425115,
+          "observables": {
+            "N_100": 8.992303363987369e+19,
+            "d_100": 23.76026388688236,
+            "N_111": 9.312802192460522e+20,
+            "d_111": 1.3198042826530945,
+            "N_void": 2.5795262846408223e+18,
+            "d_void": 0.5733157982281203
+          }
+        },
+        {
+          "row_id": 4621,
+          "label": "S1621_B1110.467_Lhat173_Emi0.25",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.294,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 1.5138850000461678e+22,
+            "d_100": 32.56365924301107,
+            "N_111": 1.9013689269724136e+22,
+            "d_111": 2.200297202277487,
+            "N_void": 2.555107166322741e+18,
+            "d_void": 0.5614918228162378
+          }
+        },
+        {
+          "row_id": 4624,
+          "label": "S1624_B1110.467_Lhat3e+03_Emi0.25",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.44,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 1.6493713483051455e+23,
+            "d_100": 10.862427916448448,
+            "N_111": 2.739302411833214e+22,
+            "d_111": 0.9875041758711819,
+            "N_void": 2.5569993014828416e+18,
+            "d_void": 0.561401856549601
+          }
+        },
+        {
+          "row_id": 4623,
+          "label": "S1623_B1110.467_Lhat173_Emi0.55",
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.339,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 1.5334650539739204e+22,
+            "d_100": 48.46994901511374,
+            "N_111": 2.99477222939899e+22,
+            "d_111": 2.296105843283374,
+            "N_void": 2.546887855149063e+18,
+            "d_void": 0.5618362877748749
+          }
+        },
+        {
+          "row_id": 4627,
+          "label": "S1627_B1110.6_Lhat10_Emi0.25",
+          "valid": true,
+          "flags": [],
+          "n_in_range": 1,
+          "log_distance": 1.259,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 9.24731228672454e+20,
+            "d_100": 35.05593515264765,
+            "N_111": 4.631877499880308e+21,
+            "d_111": 2.4367275082737674,
+            "N_void": 2.5669630822616074e+18,
+            "d_void": 0.5611002124756945
           }
         }
       ]
@@ -2498,8 +2678,8 @@
       "results": "results/S18_calib_machine2.jsonl",
       "dose_target": 15.0,
       "in_scope": true,
-      "n_rows": 2,
-      "n_valid": 2,
+      "n_rows": 4,
+      "n_valid": 4,
       "swept": [
         "f_cl_v",
         "E_b_v2",
@@ -2513,21 +2693,21 @@
           "span": {
             "f_cl_v": [
               0.05,
-              0.05
+              0.275
             ]
           },
-          "n_pairs": 0,
+          "n_pairs": 2,
           "response": {
-            "N_loops_100": 0.0,
-            "d_100_nm": 0.0,
-            "N_loops_111": 0.0,
-            "d_111_nm": 0.0,
-            "N_voids": 0.0,
-            "d_cavity_nm": 0.0
+            "N_loops_100": 1.9092712649341395,
+            "d_100_nm": 0.14235682669647454,
+            "N_loops_111": 0.3863393341140484,
+            "d_111_nm": 0.039357918535802616,
+            "N_voids": 4.495523169722984,
+            "d_cavity_nm": 0.00012624738597843965
           },
-          "peak_response": 0.0,
+          "peak_response": 4.495523169722984,
           "drove_invalid": false,
-          "verdict": "inconclusive"
+          "verdict": "live"
         },
         "E_b_v2": {
           "columns": [
@@ -2539,7 +2719,7 @@
               0.44999999999999996
             ]
           },
-          "n_pairs": 1,
+          "n_pairs": 2,
           "response": {
             "N_loops_100": 0.0,
             "d_100_nm": 0.0,
@@ -2614,6 +2794,44 @@
             "d_111": 0.9930055651972101,
             "N_void": 4.046635567380954e+17,
             "d_void": 0.5609960825980641
+          }
+        },
+        {
+          "row_id": 4807,
+          "label": "S1807_fclv0.275_Ebv20.45_EbhV13",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 2,
+          "log_distance": 1.322,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 4.9134219239273445e+22,
+            "d_100": 3.607371989759609,
+            "N_111": 8.132677490838694e+21,
+            "d_111": 1.0320881973378404,
+            "N_void": 2.2238379519967148e+18,
+            "d_void": 0.5610669068870362
+          }
+        },
+        {
+          "row_id": 4805,
+          "label": "S1805_fclv0.275_Ebv20.1_EbhV13",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 2,
+          "log_distance": 1.322,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 4.9134219239273445e+22,
+            "d_100": 3.607371989759609,
+            "N_111": 8.132677490838694e+21,
+            "d_111": 1.0320881973378404,
+            "N_void": 2.2238379519967148e+18,
+            "d_void": 0.5610669068870362
           }
         }
       ]
@@ -33082,7 +33300,7 @@
           3000.0000000000014
         ]
       },
-      "n_pairs": 15,
+      "n_pairs": 16,
       "drove_invalid": true,
       "verdict": "live",
       "moves": [
@@ -33104,8 +33322,8 @@
       "peak_response": 2402.6346369499643,
       "response": {
         "N_loops_100": 2402.6346369499643,
-        "d_100_nm": 1.7888929487397034,
-        "N_loops_111": 36.244873889627314,
+        "d_100_nm": 2.2037214207322258,
+        "N_loops_111": 137.21218362125794,
         "d_111_nm": 0.7471300815028135,
         "N_voids": 0.03169869294141381,
         "d_cavity_nm": 0.09326504266291746
@@ -33116,7 +33334,7 @@
           0.6
         ]
       },
-      "n_pairs": 8,
+      "n_pairs": 12,
       "drove_invalid": true,
       "verdict": "live",
       "moves": [
@@ -33232,13 +33450,13 @@
         "S18_calib_machine2",
         "V1_calib_machine0"
       ],
-      "peak_response": 0.8421746465040669,
+      "peak_response": 4.495523169722984,
       "response": {
-        "N_loops_100": 0.5723734201945244,
-        "d_100_nm": 0.09712724841959586,
-        "N_loops_111": 0.35073291139865537,
-        "d_111_nm": 0.01682220595096129,
-        "N_voids": 0.8421746465040669,
+        "N_loops_100": 1.9092712649341395,
+        "d_100_nm": 0.14235682669647454,
+        "N_loops_111": 0.3863393341140484,
+        "d_111_nm": 0.039357918535802616,
+        "N_voids": 4.495523169722984,
         "d_cavity_nm": 0.0002846629370815146
       },
       "spans": {
@@ -33247,7 +33465,7 @@
           0.8
         ]
       },
-      "n_pairs": 1,
+      "n_pairs": 3,
       "drove_invalid": true,
       "verdict": "live",
       "moves": [
@@ -33280,7 +33498,7 @@
           0.45
         ]
       },
-      "n_pairs": 4,
+      "n_pairs": 5,
       "drove_invalid": false,
       "verdict": "dead",
       "moves": []
@@ -33469,8 +33687,8 @@
       "ratio": 5.1481,
       "needed_factor": 5.148,
       "needed_pct": 414.8,
-      "best_single_lever_pct": 8406.1,
-      "best_single_lever": "E_m_i",
+      "best_single_lever_pct": 13721.2,
+      "best_single_lever": "B_111",
       "single_lever_sufficient": true
     },
     "d_111": {
@@ -33485,8 +33703,8 @@
       "ratio": 0.0017,
       "needed_factor": 588.235,
       "needed_pct": 58723.5,
-      "best_single_lever_pct": 397.2,
-      "best_single_lever": "eta",
+      "best_single_lever_pct": 449.6,
+      "best_single_lever": "f_cl_v",
       "single_lever_sufficient": false
     },
     "d_void": {
@@ -33614,9 +33832,9 @@
   },
   "cost_model": {
     "MATRIX-PC2": {
-      "n": 111,
-      "n_timed_out": 0,
-      "median_row_h": 7.89,
+      "n": 115,
+      "n_timed_out": 5,
+      "median_row_h": 7.99,
       "max_row_h": 18.87,
       "min_row_h": 2.94
     },
@@ -33635,7 +33853,7 @@
       "min_row_h": 0.23
     },
     "Nasr-Workstation": {
-      "n": 413,
+      "n": 415,
       "n_timed_out": 164,
       "median_row_h": 3.35,
       "max_row_h": 19.79,
@@ -33653,49 +33871,47 @@
   },
   "notes": [],
   "next": {
-    "stage": "S22",
-    "machine": 1,
-    "machine_name": "Matrix-PC",
+    "stage": "V3",
+    "machine": 2,
+    "machine_name": "Nasr Workstation",
     "levers": [
-      "s_i",
-      "eta",
-      "L_hat"
+      "gamma_s",
+      "E_m_v"
     ],
     "n_levels": [
-      5,
-      2,
-      2
+      4,
+      3
     ],
-    "n_rows": 20,
-    "design": "design/S22_calib.csv",
-    "labels": "design/S22_labels.json",
+    "n_rows": 12,
+    "design": "design/V3_calib.csv",
+    "labels": "design/V3_labels.json",
     "pinned_to": {
       "stage": "V1_calib_machine0",
       "row_id": 5109,
       "label": "V109_Zv_lo0.9"
     },
-    "rationale": "worst residuals are d_111 (0.165x), N_111 (5.15x), N_100 (1.27x); sweeping s_i, eta, L_hat, which the ledger has not retired",
+    "rationale": "worst residuals are d_111 (0.165x), N_111 (5.15x), N_100 (1.27x); sweeping gamma_s, E_m_v, which the ledger has not retired",
     "cost_estimate": {
       "known": true,
       "source": "measured on this machine",
-      "median_row_h": 7.89,
-      "max_row_h": 18.87,
-      "slots": 20,
+      "median_row_h": 3.35,
+      "max_row_h": 19.79,
+      "slots": 12,
       "waves": 1,
-      "est_wall_h": 18.9
+      "est_wall_h": 19.8
     },
     "commands": [
       "python run_ensemble.py \\",
-      "    --design design/S22_calib.csv \\",
+      "    --design design/V3_calib.csv \\",
       "    --conditions conditions_S8.json \\",
       "    --spec parameters_S4.json \\",
-      "    --out results/S22_calib_machine1.jsonl \\",
+      "    --out results/V3_calib_machine2.jsonl \\",
       "    --machine 0 --of 1 \\",
       "    --equations bin_moment --i-discrete 100 --i-bin 36 \\",
       "    --v-discrete 5 --v-bin 20 --allow-mixed \\",
-      "    --I 80000 --V 2000 --dose 15.0 --lnl 1 --rtol 1e-5 \\",
+      "    --I 80000 --V 20000 --dose 15.0 --lnl 1 --rtol 1e-5 \\",
       "    --solver-mode full_system \\",
-      "    --timeout-s 108000 --workers 20 --omp-threads 1"
+      "    --timeout-s 72000 --workers 12 --omp-threads 1"
     ]
   },
   "next_by_machine": {
@@ -33746,28 +33962,26 @@
       ]
     },
     "2": {
-      "stage": "S18",
+      "stage": "V3",
       "machine": 2,
       "machine_name": "Nasr Workstation",
       "levers": [
-        "f_cl_v",
-        "E_b_v2",
-        "E_b_hV_1"
+        "gamma_s",
+        "E_m_v"
       ],
       "n_levels": [
-        3,
-        2,
-        2
+        4,
+        3
       ],
       "n_rows": 12,
-      "design": "design/S18_calib.csv",
-      "labels": "design/S18_labels.json",
+      "design": "design/V3_calib.csv",
+      "labels": "design/V3_labels.json",
       "pinned_to": {
-        "stage": "S14_calib",
-        "row_id": 4400,
-        "label": "E00_V0_Ea2.10_Eb0.75"
+        "stage": "V1_calib_machine0",
+        "row_id": 5109,
+        "label": "V109_Zv_lo0.9"
       },
-      "rationale": "worst residuals are N_100 (12.4x), d_111 (0.172x), N_111 (4.62x); sweeping f_cl_v, E_b_v2, E_b_hV_1, which the ledger has not retired",
+      "rationale": "worst residuals are d_111 (0.165x), N_111 (5.15x), N_100 (1.27x); sweeping gamma_s, E_m_v, which the ledger has not retired",
       "cost_estimate": {
         "known": true,
         "source": "measured on this machine",
@@ -33779,14 +33993,14 @@
       },
       "commands": [
         "python run_ensemble.py \\",
-        "    --design design/S18_calib.csv \\",
+        "    --design design/V3_calib.csv \\",
         "    --conditions conditions_S8.json \\",
         "    --spec parameters_S4.json \\",
-        "    --out results/S18_calib_machine2.jsonl \\",
+        "    --out results/V3_calib_machine2.jsonl \\",
         "    --machine 0 --of 1 \\",
         "    --equations bin_moment --i-discrete 100 --i-bin 36 \\",
         "    --v-discrete 5 --v-bin 20 --allow-mixed \\",
-        "    --I 80000 --V 2000 --dose 15.0 --lnl 1 --rtol 1e-5 \\",
+        "    --I 80000 --V 20000 --dose 15.0 --lnl 1 --rtol 1e-5 \\",
         "    --solver-mode full_system \\",
         "    --timeout-s 72000 --workers 12 --omp-threads 1"
       ]

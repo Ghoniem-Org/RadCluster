@@ -1,6 +1,6 @@
 # Calibration Guide - EUROFER97 digital twin
 
-*Derived by `learn.py`; content last changed 2026-08-19 21:50:16Z (re-running with no new results leaves this file untouched). Do not hand-edit: edits are overwritten. Durable notes belong in `calibration_ledger.json` under `notes`, which is preserved across regenerations.*
+*Derived by `learn.py`; content last changed 2026-08-19 22:24:48Z (re-running with no new results leaves this file untouched). Do not hand-edit: edits are overwritten. Durable notes belong in `calibration_ledger.json` under `notes`, which is preserved across regenerations.*
 
 ## Goal
 
@@ -39,9 +39,9 @@ How far each observable must move from the best row, against the largest change 
 |---|---|---|---|---|---|
 | N_100 | 1.27 x | +27% | +240264% | `B_111` | yes |
 | d_100 | 0.902 x | +11% | +693% | `f_cl_v+E_b_v2+s_v` | yes |
-| N_111 | 5.15 x | +415% | +8406% | `E_m_i` | yes |
+| N_111 | 5.15 x | +415% | +13721% | `B_111` | yes |
 | d_111 | 0.165 x | +507% | +89% | `s_i` | **no** |
-| N_void | 0.0017 x | +58724% | +397% | `eta` | **no** |
+| N_void | 0.0017 x | +58724% | +450% | `f_cl_v` | **no** |
 | d_void | 0.216 x | +363% | +10% | `L_hat` | **no** |
 
 ## What each lever does
@@ -52,16 +52,16 @@ A lever is **dead** when its full tested span moves every observable by less tha
 
 | lever | tested span | verdict | valid pairs | peak response | moves | stages |
 |---|---|---|---|---|---|---|
-| `B_111` | B_111 0.2->0.6 | **live** (drives rows off-grid) | 8 | 240263.5% | N_100, N_111, d_100, d_111, d_void | S16_calib_machine1, S20_calib_machine0 |
-| `L_hat` | L_hat 10->3e+03 | **live** (drives rows off-grid) | 15 | 20558.2% | N_100, N_111, d_100, d_111, d_void | S16_calib_machine1, S20_calib_machine0 |
+| `B_111` | B_111 0.2->0.6 | **live** (drives rows off-grid) | 12 | 240263.5% | N_100, N_111, d_100, d_111, d_void | S16_calib_machine1, S20_calib_machine0 |
+| `L_hat` | L_hat 10->3e+03 | **live** (drives rows off-grid) | 16 | 20558.2% | N_100, N_111, d_100, d_111, d_void | S16_calib_machine1, S20_calib_machine0 |
 | `E_m_i` | E_m_i 0.25->0.55 | **live** (drives rows off-grid) | 12 | 8406.1% | N_111, N_100, d_100, d_111 | S16_calib_machine1, S20_calib_machine0 |
 | `f_cl_v+E_b_v2+s_v` | f_cl_v 0.317->0.7; E_b_v2 0.213->0.35; s_v 1.9->2.5 | **live** (drives rows off-grid) | 2 | 692.8% | d_100, N_void, N_111 | S14_calib |
+| `f_cl_v` | f_cl_v 0.05->0.8 | **live** (drives rows off-grid) | 3 | 449.6% | N_void, N_100, N_111, d_100 | S18_calib_machine2, V1_calib_machine0 |
 | `s_i` | s_i 1->3 | **live** | 12 | 436.5% | d_100, N_111, d_111, N_100 | S17_calib_machine1 |
 | `eta` | eta 0.05->0.249 | **live** (drives rows off-grid) | 3 | 397.2% | N_void, N_111, N_100, d_100, d_111 | S15_calib_machine0 |
 | `phi_max_junc` | phi_max_junc 0.05->0.6 | **live** | 6 | 163.9% | N_100, d_100, N_111, d_111 | S17_calib_machine1 |
 | `i_mobile` | i_mobile 5->100 | **live** (drives rows off-grid) | 8 | 132.7% | N_100, N_111, d_100, d_111 | S17_calib_machine1, S8_15dpa |
 | `gamma_s` | gamma_s 1.5->3 | **live** (drives rows off-grid) | 1 | 100.0% | N_void, N_100, N_111, d_100 | V1_calib_machine0 |
-| `f_cl_v` | f_cl_v 0.05->0.8 | **live** (drives rows off-grid) | 1 | 84.2% | N_void, N_100, N_111, d_100 | S18_calib_machine2, V1_calib_machine0 |
 | `E_m_v` | E_m_v 0.5->0.9 | **live** (drives rows off-grid) | 1 | 83.5% | N_void | V1_calib_machine0 |
 | `rho_d` | rho_d 1e+13->1e+15 | **live** (drives rows off-grid) | 1 | 74.0% | N_111, d_100, N_100, d_111 | V1_calib_machine0 |
 | `Z_v` | Z_v 0.9->1.05 | **live** | 3 | 65.2% | N_111, N_100, d_100 | V1_calib_machine0 |
@@ -70,7 +70,7 @@ A lever is **dead** when its full tested span moves every observable by less tha
 | `Z_i+Z_p_i+Z_p_v+Z_gb_i+Z_gb_v` | Z_i 1.2->1.35; Z_p_i 1.2->1.45; Z_p_v 0.93->0.98; Z_gb_i 1.2->1.4; Z_gb_v 0.93->0.98 | **inconclusive** (drives rows off-grid) | 0 | - | - | S12_calib |
 | `d_g+rho_p` | d_g 1e-06->4e-06; rho_p 1e+19->1e+20 | **inconclusive** (drives rows off-grid) | 0 | - | - | S13_calib |
 | `f_cl_i` | f_cl_i 0.02->0.124 | **inconclusive** (drives rows off-grid) | 0 | - | - | S15_calib_machine0, S8_15dpa |
-| `E_b_v2` | E_b_v2 0.1->0.45 | **dead** | 4 | 0.0% | - | S18_calib_machine2, V1_calib_machine0 |
+| `E_b_v2` | E_b_v2 0.1->0.45 | **dead** | 5 | 0.0% | - | S18_calib_machine2, V1_calib_machine0 |
 | `E_b_hV_1` | E_b_hV_1 3->3 | **inconclusive** | 0 | - | - | S18_calib_machine2 |
 
 ### Never varied
@@ -94,9 +94,9 @@ Only stages that ran to 15.0 dpa are in scope; the rest are listed for provenanc
 | `S13_calib` | 15 | in | 12 | 0 | `E_b_i2`, `E_a0_conv`, `d_g+rho_p` | - |
 | `S14_calib` | 15 | in | 12 | 4 | `f_cl_v+E_b_v2+s_v`, `E_b_i2`, `E_a0_conv` | 2 |
 | `S15_calib_machine0` | 15 | in | 6 | 3 | `eta`, `f_cl_i`, `E_b_i2` | 2 |
-| `S16_calib_machine1` | 15 | in | 17 | 14 | `E_m_i`, `L_hat`, `B_111` | 2 |
+| `S16_calib_machine1` | 15 | in | 26 | 17 | `E_m_i`, `L_hat`, `B_111` | 2 |
 | `S17_calib_machine1` | 15 | in | 13 | 13 | `phi_max_junc`, `i_mobile`, `s_i` | 3 |
-| `S18_calib_machine2` | 15 | in | 2 | 2 | `f_cl_v`, `E_b_v2`, `E_b_hV_1` | 1 |
+| `S18_calib_machine2` | 15 | in | 4 | 4 | `f_cl_v`, `E_b_v2`, `E_b_hV_1` | 2 |
 | `S1_calib` | 1 | out | 2 | 0 | - | - |
 | `S1_lnl0` | 1 | out | 12 | 1 | - | 0 |
 | `S1_lnl1` | 1 | out | 4 | 0 | - | - |
@@ -141,10 +141,10 @@ Completed rows only. A row cut at the budget measures the timeout, not the cost,
 
 | machine | completed | median row | min | max | timed out |
 |---|---|---|---|---|---|
-| MATRIX-PC2 | 111 | 7.89 h | 2.94 h | 18.87 h | 0 |
+| MATRIX-PC2 | 115 | 7.99 h | 2.94 h | 18.87 h | 5 |
 | Mac.san.rr.com | 264 | 1.58 h | 0.33 h | 5.51 h | 0 |
 | MacBook-Pro.local | 506 | 1.02 h | 0.23 h | 9.2 h | 0 |
-| Nasr-Workstation | 413 | 3.35 h | 0.15 h | 19.79 h | 164 |
+| Nasr-Workstation | 415 | 3.35 h | 0.15 h | 19.79 h | 164 |
 
 `plan.py` sizes a stage from this table and the machine slot count, and refuses to propose a design whose estimated cost exceeds the machine row budget.
 
@@ -177,30 +177,30 @@ One row per machine. A machine claims a stage by running `plan.py --write` on it
 |---|---|---|---|---|
 | 0 (MacBook Pro) | **S20** | `L_hat`, `B_111`, `E_m_i` | 12 | `design/S20_calib.csv` |
 | 1 (Matrix-PC) | **S22** | `s_i`, `eta`, `L_hat` | 20 | `design/S22_calib.csv` |
-| 2 (Nasr Workstation) | **S18** | `f_cl_v`, `E_b_v2`, `E_b_hV_1` | 12 | `design/S18_calib.csv` |
+| 2 (Nasr Workstation) | **V3** | `gamma_s`, `E_m_v` | 12 | `design/V3_calib.csv` |
 
 ## Next stage
 
-**S22** - worst residuals are d_111 (0.165x), N_111 (5.15x), N_100 (1.27x); sweeping s_i, eta, L_hat, which the ledger has not retired
+**V3** - worst residuals are d_111 (0.165x), N_111 (5.15x), N_100 (1.27x); sweeping gamma_s, E_m_v, which the ledger has not retired
 
-Sweeping: `s_i`, `eta`, `L_hat`
+Sweeping: `gamma_s`, `E_m_v`
 
-Design: `design/S22_calib.csv` (20 rows)
+Design: `design/V3_calib.csv` (12 rows)
 
 Run it with:
 
 ```bash
 python run_ensemble.py \
-    --design design/S22_calib.csv \
+    --design design/V3_calib.csv \
     --conditions conditions_S8.json \
     --spec parameters_S4.json \
-    --out results/S22_calib_machine1.jsonl \
+    --out results/V3_calib_machine2.jsonl \
     --machine 0 --of 1 \
     --equations bin_moment --i-discrete 100 --i-bin 36 \
     --v-discrete 5 --v-bin 20 --allow-mixed \
-    --I 80000 --V 2000 --dose 15.0 --lnl 1 --rtol 1e-5 \
+    --I 80000 --V 20000 --dose 15.0 --lnl 1 --rtol 1e-5 \
     --solver-mode full_system \
-    --timeout-s 108000 --workers 20 --omp-threads 1
+    --timeout-s 72000 --workers 12 --omp-threads 1
 ```
 
 ## Multi-machine protocol

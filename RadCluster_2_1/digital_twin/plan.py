@@ -414,8 +414,9 @@ def estimate_cost(led: dict, machine: dict, n_rows: int) -> dict:
     if mine:
         med, mx = mine["median_row_h"], mine["max_row_h"]
         src = "measured on this machine"
-    elif cm:
-        worst = max(cm.values(), key=lambda v: v["median_row_h"])
+    elif any(v.get("n") for v in cm.values()):
+        worst = max((v for v in cm.values() if v.get("n")),
+                    key=lambda v: v["median_row_h"])
         ref_speed = 0.5
         scale = ref_speed / max(machine.get("speed", 1.0), 1e-6)
         med, mx = worst["median_row_h"] * scale, worst["max_row_h"] * scale
@@ -558,7 +559,7 @@ def main(argv=None):
             w.writerow(r)
     (HERE / labels_rel).write_text(json.dumps(labels, indent=1), encoding="utf-8")
 
-    led["next"] = {
+    claim = {
         "stage": stage,
         "machine": machine["index"], "machine_name": machine["name"],
         "levers": levers, "n_levels": n_levels, "n_rows": n_rows,
@@ -573,6 +574,12 @@ def main(argv=None):
         "cost_estimate": cost,
         "commands": cmd,
     }
+    # PER-MACHINE CLAIMS.  A single `next` field is one slot for a fleet that
+    # now runs three stages at once: writing S18 here silently erased
+    # Matrix-PC's S17 claim.  `next` is kept as the claim made by THIS run so
+    # the guide has something to render, but the durable record is per machine.
+    led.setdefault("next_by_machine", {})[str(machine["index"])] = claim
+    led["next"] = claim
     LEDGER.write_text(json.dumps(led, indent=2), encoding="utf-8")
 
     sys.path.insert(0, str(HERE))

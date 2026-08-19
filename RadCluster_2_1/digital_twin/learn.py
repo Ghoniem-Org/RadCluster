@@ -355,18 +355,35 @@ def inventory(row: dict, targets: dict):
 
 # ----------------------------------------------------------- cost model -----
 def cost_model(all_rows: list) -> dict:
-    by_machine = {}
+    """Wall time per row, per machine -- from COMPLETED rows only.
+
+    A row cut at the budget records wall_s == the budget, which measures the
+    timeout and not the cost.  Counting those pins max_row_h to the budget, and
+    since plan.py refuses a design whose worst row exceeds the budget, one
+    timed-out stage would make the planner refuse every subsequent design on
+    that machine.  S14 did exactly this: six rows at 20.0 h that never reached
+    dose.  Timeouts are counted separately, because a machine that times out
+    often is still worth knowing about.
+    """
+    done, timed_out = {}, {}
     for r in all_rows:
         w, m = r.get("wall_s"), r.get("machine_id")
-        if w and m:
-            by_machine.setdefault(m, []).append(float(w))
+        if not (w and m):
+            continue
+        tgt = r.get("dose_target")
+        reached = r.get("dose_reached")
+        finished = (tgt is None or reached is None
+                    or abs(reached - tgt) <= 0.02 * tgt)
+        (done if finished else timed_out).setdefault(m, []).append(float(w))
     out = {}
-    for m, ws in by_machine.items():
-        ws.sort()
-        out[m] = {"n": len(ws),
-                  "median_row_h": round(ws[len(ws) // 2] / 3600.0, 2),
-                  "max_row_h": round(ws[-1] / 3600.0, 2),
-                  "min_row_h": round(ws[0] / 3600.0, 2)}
+    for m in set(done) | set(timed_out):
+        ws = sorted(done.get(m, []))
+        rec = {"n": len(ws), "n_timed_out": len(timed_out.get(m, []))}
+        if ws:
+            rec.update({"median_row_h": round(ws[len(ws) // 2] / 3600.0, 2),
+                        "max_row_h": round(ws[-1] / 3600.0, 2),
+                        "min_row_h": round(ws[0] / 3600.0, 2)})
+        out[m] = rec
     return out
 
 
@@ -532,7 +549,8 @@ def ingest() -> dict:
         "cost_model": cost_model(all_rows),
         "policy": prev.get("policy", DEFAULT_POLICY),
         "notes": prev.get("notes", []),      # hand-written insight survives
-        "next": prev.get("next"),            # plan.py owns this field
+        "next": prev.get("next"),            # plan.py owns these two fields
+        "next_by_machine": prev.get("next_by_machine", {}),
     }
 
     # RE-INGESTING THE SAME RESULTS MUST BE A BYTE-FOR-BYTE NO-OP.  The ledger
@@ -685,11 +703,18 @@ def render_guide(led: dict) -> str:
 
     A("## Cost model (measured)")
     A("")
-    A("| machine | rows timed | median row | min | max |")
-    A("|---|---|---|---|---|")
+    A("Completed rows only. A row cut at the budget measures the timeout, not "
+      "the cost, so timeouts are counted in their own column.")
+    A("")
+    A("| machine | completed | median row | min | max | timed out |")
+    A("|---|---|---|---|---|---|")
     for m, cm in sorted(led["cost_model"].items()):
-        A("| %s | %d | %s h | %s h | %s h |"
-          % (m, cm["n"], cm["median_row_h"], cm["min_row_h"], cm["max_row_h"]))
+        if cm["n"]:
+            A("| %s | %d | %s h | %s h | %s h | %d |"
+              % (m, cm["n"], cm["median_row_h"], cm["min_row_h"],
+                 cm["max_row_h"], cm["n_timed_out"]))
+        else:
+            A("| %s | 0 | - | - | - | %d |" % (m, cm["n_timed_out"]))
     A("")
     A("`plan.py` sizes a stage from this table and the machine slot count, and "
       "refuses to propose a design whose estimated cost exceeds the machine "
@@ -731,6 +756,24 @@ def render_guide(led: dict) -> str:
         A("")
         for n in led["notes"]:
             A("- %s" % n)
+        A("")
+
+    claims = led.get("next_by_machine") or {}
+    if claims:
+        A("## Claimed stages")
+        A("")
+        A("One row per machine. A machine claims a stage by running `plan.py "
+          "--write` on it; the claim is not a lock, only a record of what that "
+          "machine was last told to run.")
+        A("")
+        A("| machine | stage | levers | rows | design |")
+        A("|---|---|---|---|---|")
+        for idx in sorted(claims, key=lambda k: int(k)):
+            c = claims[idx]
+            A("| %s (%s) | **%s** | %s | %s | `%s` |"
+              % (idx, c.get("machine_name", "?"), c.get("stage"),
+                 ", ".join("`%s`" % l for l in c.get("levers", [])),
+                 c.get("n_rows", "?"), c.get("design", "")))
         A("")
 
     A("## Next stage")

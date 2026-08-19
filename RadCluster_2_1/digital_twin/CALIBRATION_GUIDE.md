@@ -1,6 +1,6 @@
 # Calibration Guide - EUROFER97 digital twin
 
-*Derived by `learn.py`; content last changed 2026-08-19 01:49:47Z (re-running with no new results leaves this file untouched). Do not hand-edit: edits are overwritten. Durable notes belong in `calibration_ledger.json` under `notes`, which is preserved across regenerations.*
+*Derived by `learn.py`; content last changed 2026-08-19 03:48:06Z (re-running with no new results leaves this file untouched). Do not hand-edit: edits are overwritten. Durable notes belong in `calibration_ledger.json` under `notes`, which is preserved across regenerations.*
 
 ## Goal
 
@@ -105,12 +105,14 @@ Only stages that ran to 15.0 dpa are in scope; the rest are listed for provenanc
 
 ## Cost model (measured)
 
-| machine | rows timed | median row | min | max |
-|---|---|---|---|---|
-| MATRIX-PC2 | 81 | 6.5 h | 2.94 h | 14.02 h |
-| Mac.san.rr.com | 258 | 1.58 h | 0.33 h | 4.73 h |
-| MacBook-Pro.local | 480 | 1.02 h | 0.23 h | 9.2 h |
-| Nasr-Workstation | 575 | 3.35 h | 0.04 h | 20.02 h |
+Completed rows only. A row cut at the budget measures the timeout, not the cost, so timeouts are counted in their own column.
+
+| machine | completed | median row | min | max | timed out |
+|---|---|---|---|---|---|
+| MATRIX-PC2 | 81 | 6.5 h | 2.94 h | 14.02 h | 0 |
+| Mac.san.rr.com | 258 | 1.58 h | 0.33 h | 4.73 h | 0 |
+| MacBook-Pro.local | 480 | 1.02 h | 0.23 h | 9.2 h | 0 |
+| Nasr-Workstation | 411 | 3.35 h | 0.15 h | 19.79 h | 164 |
 
 `plan.py` sizes a stage from this table and the machine slot count, and refuses to propose a design whose estimated cost exceeds the machine row budget.
 
@@ -129,28 +131,37 @@ The planner will not propose levers for these until the entry is removed from `c
 - **N_void** - Missed by ~300x AND nearly unresponsive to its own governing parameters: the S14 vacancy triple moved N_void only 2.57e18 -> 9.08e18 (3.5x) while moving loop content 160x. A residual that large with a response that small is evidence of a structural defect in the cavity channel, not a parameter that needs tuning. Re-enable once cavity nucleation is shown to respond at all.
 - **d_void** - Pinned at 0.56-0.57 nm across every row of every stage, including a 160x swing in loop content. Same reasoning as N_void.
 
+## Claimed stages
+
+One row per machine. A machine claims a stage by running `plan.py --write` on it; the claim is not a lock, only a record of what that machine was last told to run.
+
+| machine | stage | levers | rows | design |
+|---|---|---|---|---|
+| 1 (Matrix-PC) | **S17** | `i_mobile`, `s_i`, `phi_max_junc` | 18 | `design/S17_calib.csv` |
+| 2 (Nasr Workstation) | **S18** | `gamma_s`, `E_b_v2`, `E_b_hV_1` | 12 | `design/S18_calib.csv` |
+
 ## Next stage
 
-**S17** - worst residuals are N_100 (12.4x), d_111 (0.172x), N_111 (4.62x); sweeping i_mobile, s_i, phi_max_junc, which the ledger has not retired
+**S18** - worst residuals are N_100 (12.4x), d_111 (0.172x), N_111 (4.62x); sweeping gamma_s, E_b_v2, E_b_hV_1, which the ledger has not retired
 
-Sweeping: `i_mobile`, `s_i`, `phi_max_junc`
+Sweeping: `gamma_s`, `E_b_v2`, `E_b_hV_1`
 
-Design: `design/S17_calib.csv` (18 rows)
+Design: `design/S18_calib.csv` (12 rows)
 
 Run it with:
 
 ```bash
 python run_ensemble.py \
-    --design design/S17_calib.csv \
+    --design design/S18_calib.csv \
     --conditions conditions_S8.json \
     --spec parameters_S4.json \
-    --out results/S17_calib_machine1.jsonl \
+    --out results/S18_calib_machine2.jsonl \
     --machine 0 --of 1 \
     --equations bin_moment --i-discrete 100 --i-bin 36 \
     --v-discrete 5 --v-bin 20 --allow-mixed \
     --I 80000 --V 2000 --dose 15.0 --lnl 1 --rtol 1e-5 \
     --solver-mode full_system \
-    --timeout-s 72000 --workers 20 --omp-threads 1
+    --timeout-s 72000 --workers 12 --omp-threads 1
 ```
 
 ## Multi-machine protocol

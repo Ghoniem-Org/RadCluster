@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated": "2026-08-19 01:49:47Z",
+  "updated": "2026-08-19 03:48:06Z",
   "goal": {
     "statement": "Find one parameter vector that puts all six observables inside their experimental ranges at EUROFER97 330 C / 15 dpa, neutron.",
     "targets_file": "targets_330C_15dpa.json",
@@ -31332,29 +31332,33 @@
     "d_void": 0.2158
   },
   "cost_model": {
-    "Nasr-Workstation": {
-      "n": 575,
-      "median_row_h": 3.35,
-      "max_row_h": 20.02,
-      "min_row_h": 0.04
-    },
     "MacBook-Pro.local": {
       "n": 480,
+      "n_timed_out": 0,
       "median_row_h": 1.02,
       "max_row_h": 9.2,
       "min_row_h": 0.23
     },
-    "MATRIX-PC2": {
-      "n": 81,
-      "median_row_h": 6.5,
-      "max_row_h": 14.02,
-      "min_row_h": 2.94
+    "Nasr-Workstation": {
+      "n": 411,
+      "n_timed_out": 164,
+      "median_row_h": 3.35,
+      "max_row_h": 19.79,
+      "min_row_h": 0.15
     },
     "Mac.san.rr.com": {
       "n": 258,
+      "n_timed_out": 0,
       "median_row_h": 1.58,
       "max_row_h": 4.73,
       "min_row_h": 0.33
+    },
+    "MATRIX-PC2": {
+      "n": 81,
+      "n_timed_out": 0,
+      "median_row_h": 6.5,
+      "max_row_h": 14.02,
+      "min_row_h": 2.94
     }
   },
   "policy": {
@@ -31365,49 +31369,143 @@
   },
   "notes": [],
   "next": {
-    "stage": "S17",
-    "machine": 1,
-    "machine_name": "Matrix-PC",
+    "stage": "S18",
+    "machine": 2,
+    "machine_name": "Nasr Workstation",
     "levers": [
-      "i_mobile",
-      "s_i",
-      "phi_max_junc"
+      "gamma_s",
+      "E_b_v2",
+      "E_b_hV_1"
     ],
     "n_levels": [
       3,
-      3,
+      2,
       2
     ],
-    "n_rows": 18,
-    "design": "design/S17_calib.csv",
-    "labels": "design/S17_labels.json",
+    "n_rows": 12,
+    "design": "design/S18_calib.csv",
+    "labels": "design/S18_labels.json",
     "pinned_to": {
       "stage": "S14_calib",
       "row_id": 4400,
       "label": "E00_V0_Ea2.10_Eb0.75"
     },
-    "rationale": "worst residuals are N_100 (12.4x), d_111 (0.172x), N_111 (4.62x); sweeping i_mobile, s_i, phi_max_junc, which the ledger has not retired",
+    "rationale": "worst residuals are N_100 (12.4x), d_111 (0.172x), N_111 (4.62x); sweeping gamma_s, E_b_v2, E_b_hV_1, which the ledger has not retired",
     "cost_estimate": {
       "known": true,
       "source": "measured on this machine",
-      "median_row_h": 6.5,
-      "max_row_h": 14.02,
-      "slots": 20,
+      "median_row_h": 3.35,
+      "max_row_h": 19.79,
+      "slots": 12,
       "waves": 1,
-      "est_wall_h": 14.0
+      "est_wall_h": 19.8
     },
     "commands": [
       "python run_ensemble.py \\",
-      "    --design design/S17_calib.csv \\",
+      "    --design design/S18_calib.csv \\",
       "    --conditions conditions_S8.json \\",
       "    --spec parameters_S4.json \\",
-      "    --out results/S17_calib_machine1.jsonl \\",
+      "    --out results/S18_calib_machine2.jsonl \\",
       "    --machine 0 --of 1 \\",
       "    --equations bin_moment --i-discrete 100 --i-bin 36 \\",
       "    --v-discrete 5 --v-bin 20 --allow-mixed \\",
       "    --I 80000 --V 2000 --dose 15.0 --lnl 1 --rtol 1e-5 \\",
       "    --solver-mode full_system \\",
-      "    --timeout-s 72000 --workers 20 --omp-threads 1"
+      "    --timeout-s 72000 --workers 12 --omp-threads 1"
     ]
+  },
+  "next_by_machine": {
+    "1": {
+      "stage": "S17",
+      "machine": 1,
+      "machine_name": "Matrix-PC",
+      "levers": [
+        "i_mobile",
+        "s_i",
+        "phi_max_junc"
+      ],
+      "n_levels": [
+        3,
+        3,
+        2
+      ],
+      "n_rows": 18,
+      "design": "design/S17_calib.csv",
+      "labels": "design/S17_labels.json",
+      "pinned_to": {
+        "stage": "S14_calib",
+        "row_id": 4400,
+        "label": "E00_V0_Ea2.10_Eb0.75"
+      },
+      "rationale": "worst residuals are N_100 (12.4x), d_111 (0.172x), N_111 (4.62x); sweeping i_mobile, s_i, phi_max_junc, which the ledger has not retired",
+      "cost_estimate": {
+        "known": true,
+        "source": "measured on this machine",
+        "median_row_h": 6.5,
+        "max_row_h": 14.02,
+        "slots": 20,
+        "waves": 1,
+        "est_wall_h": 14.0
+      },
+      "commands": [
+        "python run_ensemble.py \\",
+        "    --design design/S17_calib.csv \\",
+        "    --conditions conditions_S8.json \\",
+        "    --spec parameters_S4.json \\",
+        "    --out results/S17_calib_machine1.jsonl \\",
+        "    --machine 0 --of 1 \\",
+        "    --equations bin_moment --i-discrete 100 --i-bin 36 \\",
+        "    --v-discrete 5 --v-bin 20 --allow-mixed \\",
+        "    --I 80000 --V 2000 --dose 15.0 --lnl 1 --rtol 1e-5 \\",
+        "    --solver-mode full_system \\",
+        "    --timeout-s 72000 --workers 20 --omp-threads 1"
+      ]
+    },
+    "2": {
+      "stage": "S18",
+      "machine": 2,
+      "machine_name": "Nasr Workstation",
+      "levers": [
+        "gamma_s",
+        "E_b_v2",
+        "E_b_hV_1"
+      ],
+      "n_levels": [
+        3,
+        2,
+        2
+      ],
+      "n_rows": 12,
+      "design": "design/S18_calib.csv",
+      "labels": "design/S18_labels.json",
+      "pinned_to": {
+        "stage": "S14_calib",
+        "row_id": 4400,
+        "label": "E00_V0_Ea2.10_Eb0.75"
+      },
+      "rationale": "worst residuals are N_100 (12.4x), d_111 (0.172x), N_111 (4.62x); sweeping gamma_s, E_b_v2, E_b_hV_1, which the ledger has not retired",
+      "cost_estimate": {
+        "known": true,
+        "source": "measured on this machine",
+        "median_row_h": 3.35,
+        "max_row_h": 19.79,
+        "slots": 12,
+        "waves": 1,
+        "est_wall_h": 19.8
+      },
+      "commands": [
+        "python run_ensemble.py \\",
+        "    --design design/S18_calib.csv \\",
+        "    --conditions conditions_S8.json \\",
+        "    --spec parameters_S4.json \\",
+        "    --out results/S18_calib_machine2.jsonl \\",
+        "    --machine 0 --of 1 \\",
+        "    --equations bin_moment --i-discrete 100 --i-bin 36 \\",
+        "    --v-discrete 5 --v-bin 20 --allow-mixed \\",
+        "    --I 80000 --V 2000 --dose 15.0 --lnl 1 --rtol 1e-5 \\",
+        "    --solver-mode full_system \\",
+        "    --timeout-s 72000 --workers 12 --omp-threads 1"
+      ]
+    }
   }
 }

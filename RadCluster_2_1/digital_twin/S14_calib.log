@@ -6,3 +6,13 @@ machine 0/1  rows 12 (0 done, 12 to run)  workers 12
   row   4404 S330  S  ok   d100= 37.69 N100=5.871e+22 pile=0.0 dFP= 3.1e-01 35674s
   row   4410 S330  S  ok   d100= 61.40 N100=1.041e+23 pile=0.9232255199624683 dFP= 4.9e-01 47258s
   row   4408 S330  S  ok   d100= 61.55 N100=1.090e+23 pile=0.9285375493763972 dFP= 4.9e-01 57839s
+  row   4406 S330  S  ok   d100= 38.64 N100=5.863e+22 pile=0.0 dFP= 3.1e-01 71238s
+  row   4407 S330  S  ok   d100= 14.45 N100=1.056e+18 pile=0.0 dFP= 4.9e-02 72074s
+  row   4403 S330  S  ok   d100= 26.14 N100=5.802e+19 pile=0.0 dFP= 5.1e-02 72075s
+  row   4411 S330  S  ok   d100= 58.35 N100=5.809e+19 pile=0.7374081402046615 dFP= 5.9e-02 72075s
+  row   4405 S330  S  ok   d100= 32.33 N100=1.626e+20 pile=0.0 dFP= 6.0e-02 72075s
+  row   4409 S330  S  ok   d100= 55.92 N100=7.309e+20 pile=0.0 dFP= 1.0e-01 72075s
+  row   4401 S330  S  ok   d100= 20.95 N100=1.812e+20 pile=0.0 dFP= 6.4e-02 72075s
+
+done in 72077s: 12 admissible, 0 inadmissible, 0 failed -> results\S14_calib.jsonl
+  manifest -> S14_calib.manifest.json

@@ -1,6 +1,6 @@
 # Calibration Guide - EUROFER97 digital twin
 
-*Derived by `learn.py`; content last changed 2026-08-18 22:42:23Z (re-running with no new results leaves this file untouched). Do not hand-edit: edits are overwritten. Durable notes belong in `calibration_ledger.json` under `notes`, which is preserved across regenerations.*
+*Derived by `learn.py`; content last changed 2026-08-19 01:49:47Z (re-running with no new results leaves this file untouched). Do not hand-edit: edits are overwritten. Durable notes belong in `calibration_ledger.json` under `notes`, which is preserved across regenerations.*
 
 ## Goal
 
@@ -39,8 +39,8 @@ A lever is **dead** when its full tested span moves every observable by less tha
 
 | lever | tested span | verdict | valid pairs | peak response | moves | stages |
 |---|---|---|---|---|---|---|
-| `f_cl_v+E_b_v2+s_v` | f_cl_v 0.317->0.7; E_b_v2 0.213->0.35; s_v 1.9->2.5 | **live** (drives rows off-grid) | 1 | 674.9% | d_100, N_void, N_111 | S14_calib |
-| `E_a0_conv` | E_a0_conv 1.8->2.3 | **dead** (drives rows off-grid) | 1 | 1.3% | - | S10_calib, S12_calib, S13_calib, S14_calib, S8_15dpa |
+| `f_cl_v+E_b_v2+s_v` | f_cl_v 0.317->0.7; E_b_v2 0.213->0.35; s_v 1.9->2.5 | **live** (drives rows off-grid) | 2 | 692.8% | d_100, N_void, N_111 | S14_calib |
+| `E_a0_conv` | E_a0_conv 1.8->2.3 | **dead** (drives rows off-grid) | 2 | 2.5% | - | S10_calib, S12_calib, S13_calib, S14_calib, S8_15dpa |
 | `E_b_i2` | E_b_i2 0.55->0.875 | **inconclusive** (drives rows off-grid) | 0 | - | - | S10_calib, S12_calib, S13_calib, S14_calib, S8_15dpa |
 | `Z_i+Z_p_i+Z_p_v+Z_gb_i+Z_gb_v` | Z_i 1.2->1.35; Z_p_i 1.2->1.45; Z_p_v 0.93->0.98; Z_gb_i 1.2->1.4; Z_gb_v 0.93->0.98 | **inconclusive** (drives rows off-grid) | 0 | - | - | S12_calib |
 | `d_g+rho_p` | d_g 1e-06->4e-06; rho_p 1e+19->1e+20 | **inconclusive** (drives rows off-grid) | 0 | - | - | S13_calib |
@@ -66,7 +66,7 @@ Only stages that ran to 15.0 dpa are in scope; the rest are listed for provenanc
 | `S11eq_full_system` | 0.002 | out | 1 | 1 | - | 1 |
 | `S12_calib` | 15 | in | 12 | 0 | `E_b_i2`, `Z_i+Z_p_i+Z_p_v+Z_gb_i+Z_gb_v`, `E_a0_conv` | - |
 | `S13_calib` | 15 | in | 12 | 0 | `E_b_i2`, `E_a0_conv`, `d_g+rho_p` | - |
-| `S14_calib` | 15 | in | 5 | 3 | `f_cl_v+E_b_v2+s_v`, `E_b_i2`, `E_a0_conv` | 2 |
+| `S14_calib` | 15 | in | 12 | 4 | `f_cl_v+E_b_v2+s_v`, `E_b_i2`, `E_a0_conv` | 2 |
 | `S1_calib` | 1 | out | 2 | 0 | - | - |
 | `S1_lnl0` | 1 | out | 12 | 1 | - | 0 |
 | `S1_lnl1` | 1 | out | 4 | 0 | - | - |
@@ -110,9 +110,17 @@ Only stages that ran to 15.0 dpa are in scope; the rest are listed for provenanc
 | MATRIX-PC2 | 81 | 6.5 h | 2.94 h | 14.02 h |
 | Mac.san.rr.com | 258 | 1.58 h | 0.33 h | 4.73 h |
 | MacBook-Pro.local | 480 | 1.02 h | 0.23 h | 9.2 h |
-| Nasr-Workstation | 568 | 3.35 h | 0.04 h | 16.07 h |
+| Nasr-Workstation | 575 | 3.35 h | 0.04 h | 20.02 h |
 
 `plan.py` sizes a stage from this table and the machine slot count, and refuses to propose a design whose estimated cost exceeds the machine row budget.
+
+## Unaffordable lever values
+
+Measured, not assumed: a level counts here only if it produced ZERO full-dose rows while another level of the same lever - everything else held equal - produced at least one. `plan.py` will not place a design point on these values.
+
+| lever | unaffordable at | evidence |
+|---|---|---|
+| `E_b_i2` | 0.6 | S14_calib: 0 of 6 rows reached dose at E_b_i2=0.6 |
 
 ## Deferred observables
 

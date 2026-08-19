@@ -106,6 +106,14 @@ PRIOR_BOX = {
     "E_b_hV_1":     (1.0, 3.0, "linear"),
 }
 
+# A lever whose corrective direction retains less than this fraction of its
+# prior box -- after affordability clipping -- is not worth a stage.
+MIN_USABLE_SPAN = 0.10
+
+# Columns the solver reads as counts, not reals.  A design that writes
+# i_mobile = 32.5 is not a smaller step than 33 -- it is an invalid input.
+INTEGER_COLS = {"i_mobile", "v_mobile", "i_discrete", "v_discrete"}
+
 BOOKKEEPING = {"row_id", "condition", "cond_row_id", "matrix", "base_idx",
                "param_j", "theta_id"}
 
@@ -218,21 +226,77 @@ def pick_levers(led: dict, worst: list, n_wanted: int = 3) -> tuple:
             return 2
         return 99                         # dead -- never propose
 
-    chosen, why = [], []
+    params = (led.get("best") or {}).get("params") or {}
+    ratios = led.get("residuals") or {}
+    chosen, why, skipped = [], [], []
     for obs, miss in worst:
         for col in LEVER_MAP.get(obs, []):
             if col in chosen or priority(col) == 99:
                 continue
             if col not in PRIOR_BOX:
                 continue
+            try:
+                base = float(params.get(col))
+            except (TypeError, ValueError):
+                base = sum(PRIOR_BOX[col][:2]) / 2.0
+            pref = prefer_for(col, obs, ratios.get(obs))
+            span = usable_span(col, led, base, pref)
+            if span < MIN_USABLE_SPAN:
+                skipped.append((col, obs, span))
+                continue
             chosen.append(col)
             why.append((col, obs, miss, priority(col)))
             if len(chosen) >= n_wanted:
-                return chosen, why
-    return chosen, why
+                return chosen, why, skipped
+    return chosen, why, skipped
 
 
-def levels_for(col: str, base: float, n: int, prefer: int = 0) -> list:
+def box_for(col: str, led: dict, base: float):
+    """The prior box for `col`, clipped to the region measured as affordable.
+
+    THE CLIFF LOCATION IS UNKNOWN.  S14 shows E_b_i2 = 0.60 never reaches dose
+    and 0.75 always does; the boundary is somewhere in between and nothing
+    measures where.  Placing a design point inside that unresolved interval is
+    a coin flip that costs a full row budget when it loses, so the box is
+    clipped to the nearest value KNOWN to complete -- not to just above the
+    value known to fail.
+    """
+    lo, hi, kind = PRIOR_BOX[col]
+    rec = (led.get("affordability") or {}).get(col)
+    if not rec:
+        return lo, hi, kind
+    bad = rec.get("unaffordable_numeric") or []
+    good = rec.get("affordable_numeric") or []
+    below = [u for u in bad if u < base]
+    above = [u for u in bad if u > base]
+    if below:
+        safe = [g for g in good if g > max(below)]
+        lo = max(lo, min(safe) if safe else max(below))
+    if above:
+        safe = [g for g in good if g < min(above)]
+        hi = min(hi, max(safe) if safe else min(above))
+    return lo, hi, kind
+
+
+def usable_span(col: str, led: dict, base: float, prefer: int) -> float:
+    """Fraction of the prior box still available in the corrective direction."""
+    lo0, hi0, kind = PRIOR_BOX[col]
+    lo, hi, _ = box_for(col, led, base)
+    full = (math.log10(hi0 / lo0) if kind == "log" and lo0 > 0 else hi0 - lo0)
+    if prefer < 0:
+        a, b = lo, min(base, hi)
+    elif prefer > 0:
+        a, b = max(base, lo), hi
+    else:
+        a, b = lo, hi
+    if b <= a:
+        return 0.0
+    got = (math.log10(b / a) if kind == "log" and a > 0 else b - a)
+    return max(0.0, got / full) if full else 0.0
+
+
+def levels_for(col: str, base: float, n: int, prefer: int = 0,
+               box=None) -> list:
     """n levels for `col`, spanning the prior box.
 
     `prefer` is the corrective direction: -1 sweeps from the box floor up to
@@ -240,14 +304,14 @@ def levels_for(col: str, base: float, n: int, prefer: int = 0) -> list:
     base is always one of the endpoints when prefer != 0, so the stage stays
     anchored to the point already known to be grid-clean.
     """
-    lo, hi, kind = PRIOR_BOX[col]
+    lo, hi, kind = box or PRIOR_BOX[col]
     base = min(max(base, lo), hi)
     if prefer < 0:
         lo, hi = lo, base
     elif prefer > 0:
         lo, hi = base, hi
     if hi <= lo:                     # base sits on the box edge -- fall back
-        lo, hi, _ = PRIOR_BOX[col]
+        lo, hi, _ = box or PRIOR_BOX[col]
     if kind == "log" and lo > 0:
         a, b = math.log10(lo), math.log10(hi)
         vals = [10 ** (a + (b - a) * i / (n - 1)) for i in range(n)]
@@ -288,7 +352,8 @@ def build_design(led: dict, levers: list, n_levels: list, stage: str,
             base = sum(PRIOR_BOX[col][:2]) / 2.0
         obs = target_obs.get(col)
         grids.append(levels_for(col, base, n,
-                                prefer_for(col, obs, ratios.get(obs))))
+                                prefer_for(col, obs, ratios.get(obs)),
+                                box_for(col, led, base)))
 
     combos = [[]]
     for g in grids:
@@ -306,6 +371,8 @@ def build_design(led: dict, levers: list, n_levels: list, stage: str,
             rec[k] = params[k]
         tag = []
         for col, v in zip(levers, combo):
+            if col in INTEGER_COLS:
+                v = int(round(v))
             rec[col] = repr(v) if isinstance(v, float) else v
             tag.append("%s%.3g" % (col.replace("_", ""), v))
         rows.append(rec)
@@ -387,8 +454,9 @@ def main(argv=None):
     if a.levers:
         levers = [s.strip() for s in a.levers.split(",") if s.strip()]
         why = [(c, "operator override", 0.0, -1) for c in levers]
+        skipped = []
     else:
-        levers, why = pick_levers(led, worst)
+        levers, why, skipped = pick_levers(led, worst)
     if not levers:
         raise SystemExit("no admissible levers -- every candidate is dead in "
                          "the ledger. Widen LEVER_MAP or PRIOR_BOX.")
@@ -445,6 +513,9 @@ def main(argv=None):
         lv = next((n for c, n in zip(levers, n_levels) if c == col), "?")
         print("    %-12s %-2s levels   for %-7s  [%s]"
               % (col, lv, obs, tagname.get(pr, "?")))
+    for col, obs, span in skipped:
+        print("    %-12s SKIPPED for %-7s -- only %.0f%% of its box is "
+              "affordable in the corrective direction" % (col, obs, span * 100))
     print("design         : %s, %d rows (%s)"
           % (stage, n_rows, " x ".join(str(n) for n in n_levels)))
     if cost.get("known"):

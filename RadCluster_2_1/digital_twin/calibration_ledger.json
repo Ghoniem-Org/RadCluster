@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated": "2026-08-18 22:42:23Z",
+  "updated": "2026-08-19 01:49:47Z",
   "goal": {
     "statement": "Find one parameter vector that puts all six observables inside their experimental ranges at EUROFER97 330 C / 15 dpa, neutron.",
     "targets_file": "targets_330C_15dpa.json",
@@ -74,6 +74,7 @@
           "verdict": "inconclusive"
         }
       },
+      "affordability": {},
       "rows": [
         {
           "row_id": 4003,
@@ -338,6 +339,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 4100,
@@ -371,6 +373,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 4100,
@@ -405,6 +408,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 4100,
@@ -437,6 +441,7 @@
       "n_valid": 1,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 4100,
@@ -562,6 +567,7 @@
           "verdict": "inconclusive"
         }
       },
+      "affordability": {},
       "rows": [
         {
           "row_id": 4205,
@@ -909,6 +915,7 @@
           "verdict": "inconclusive"
         }
       },
+      "affordability": {},
       "rows": [
         {
           "row_id": 4306,
@@ -1185,8 +1192,8 @@
       "results": "results/S14_calib.jsonl",
       "dose_target": 15.0,
       "in_scope": true,
-      "n_rows": 5,
-      "n_valid": 3,
+      "n_rows": 12,
+      "n_valid": 4,
       "swept": [
         "f_cl_v+E_b_v2+s_v",
         "E_b_i2",
@@ -1213,16 +1220,16 @@
               2.5
             ]
           },
-          "n_pairs": 1,
+          "n_pairs": 2,
           "response": {
             "N_loops_100": 0.04688019531077403,
-            "d_100_nm": 6.748740250226811,
-            "N_loops_111": 0.4463755649505272,
-            "d_111_nm": 0.033653872046009226,
-            "N_voids": 1.0132979702567084,
+            "d_100_nm": 6.927975629990434,
+            "N_loops_111": 0.4517742558543695,
+            "d_111_nm": 0.03448256923854143,
+            "N_voids": 1.0133164459244863,
             "d_cavity_nm": 0.007512396118883435
           },
-          "peak_response": 6.748740250226811,
+          "peak_response": 6.927975629990434,
           "drove_invalid": true,
           "verdict": "live"
         },
@@ -1232,7 +1239,7 @@
           ],
           "span": {
             "E_b_i2": [
-              0.75,
+              0.6,
               0.75
             ]
           },
@@ -1246,7 +1253,7 @@
             "d_cavity_nm": 0.0
           },
           "peak_response": 0.0,
-          "drove_invalid": false,
+          "drove_invalid": true,
           "verdict": "inconclusive"
         },
         "E_a0_conv": {
@@ -1259,18 +1266,31 @@
               2.3
             ]
           },
-          "n_pairs": 1,
+          "n_pairs": 2,
           "response": {
             "N_loops_100": 0.013318665837333876,
-            "d_100_nm": 0.0019492483518690484,
-            "N_loops_111": 0.00446427879630229,
-            "d_111_nm": 0.0003240372931210267,
+            "d_100_nm": 0.025125241898299677,
+            "N_loops_111": 0.005330794942969064,
+            "d_111_nm": 0.0005337979041725172,
             "N_voids": 5.405477754960586e-06,
             "d_cavity_nm": 1.606338511761507e-06
           },
-          "peak_response": 0.013318665837333876,
+          "peak_response": 0.025125241898299677,
           "drove_invalid": true,
           "verdict": "dead"
+        }
+      },
+      "affordability": {
+        "E_b_i2": {
+          "unaffordable": [
+            "0.6"
+          ],
+          "affordable": [
+            "0.75"
+          ],
+          "evidence": [
+            "S14_calib: 0 of 6 rows reached dose at E_b_i2=0.6"
+          ]
         }
       },
       "rows": [
@@ -1372,6 +1392,157 @@
             "N_void": 9.078637848503436e+18,
             "d_void": 0.5686585591444576
           }
+        },
+        {
+          "row_id": 4406,
+          "label": "E06_V1_Ea2.30_Eb0.75",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 1.229,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 5.862845461763598e+22,
+            "d_100": 38.64025018897274,
+            "N_111": 4.912592192979056e+21,
+            "d_111": 1.0319956637952667,
+            "N_void": 5.164238649182392e+18,
+            "d_void": 0.5653012710675004
+          }
+        },
+        {
+          "row_id": 4407,
+          "label": "E07_V1_Ea2.30_Eb0.60",
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.85,
+          "dose_reached": 0.0042861606445482,
+          "observables": {
+            "N_100": 1.0557149125259757e+18,
+            "d_100": 14.450561545874796,
+            "N_111": 1.0906002137418984e+21,
+            "d_111": 1.3556486225757842,
+            "N_void": 5.210180498108084e+18,
+            "d_void": 0.6397006570533338
+          }
+        },
+        {
+          "row_id": 4403,
+          "label": "E03_V0_Ea2.30_Eb0.60",
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.462,
+          "dose_reached": 0.39899734704565265,
+          "observables": {
+            "N_100": 5.802139659535346e+19,
+            "d_100": 26.14202931871575,
+            "N_111": 7.792260055979275e+20,
+            "d_111": 1.260185184278302,
+            "N_void": 2.5818683341879793e+18,
+            "d_void": 0.5848452819278076
+          }
+        },
+        {
+          "row_id": 4411,
+          "label": "E11_V2_Ea2.30_Eb0.60",
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 1.317,
+          "dose_reached": 0.16113493020510428,
+          "observables": {
+            "N_100": 5.808583992119589e+19,
+            "d_100": 58.34988217980697,
+            "N_111": 2.06382557667942e+21,
+            "d_111": 1.5061916029082878,
+            "N_void": 9.107687669945216e+18,
+            "d_void": 0.5783173658944242
+          }
+        },
+        {
+          "row_id": 4405,
+          "label": "E05_V1_Ea2.10_Eb0.60",
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "STARV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.274,
+          "dose_reached": 0.39899734704565265,
+          "observables": {
+            "N_100": 1.6260527966194922e+20,
+            "d_100": 32.33468533267354,
+            "N_111": 1.057305531393885e+21,
+            "d_111": 1.3133228250031341,
+            "N_void": 5.183042004906934e+18,
+            "d_void": 0.5686030387010912
+          }
+        },
+        {
+          "row_id": 4409,
+          "label": "E09_V2_Ea2.10_Eb0.60",
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "STARV",
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 1.108,
+          "dose_reached": 0.9879849313046444,
+          "observables": {
+            "N_100": 7.30856012657698e+20,
+            "d_100": 55.92498521891911,
+            "N_111": 2.8969766191007106e+21,
+            "d_111": 1.5112254693465126,
+            "N_void": 9.084578496450764e+18,
+            "d_void": 0.5697656490336285
+          }
+        },
+        {
+          "row_id": 4401,
+          "label": "E01_V0_Ea2.10_Eb0.60",
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "STARV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.36,
+          "dose_reached": 6.0577444210425115,
+          "observables": {
+            "N_100": 1.8120435902100757e+20,
+            "d_100": 20.945853524355513,
+            "N_111": 7.437472313940199e+20,
+            "d_111": 1.2316065021213243,
+            "N_void": 2.577048808208188e+18,
+            "d_void": 0.5622566509420858
+          }
         }
       ]
     },
@@ -1384,6 +1555,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 2001,
@@ -1438,6 +1610,7 @@
       "n_valid": 1,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 2009,
@@ -1710,6 +1883,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 2102,
@@ -1812,6 +1986,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 2000,
@@ -1844,6 +2019,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 3100,
@@ -1984,6 +2160,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 3000,
@@ -2319,6 +2496,7 @@
           "verdict": "live"
         }
       },
+      "affordability": {},
       "rows": [
         {
           "row_id": 3304,
@@ -2643,6 +2821,7 @@
           "verdict": "live"
         }
       },
+      "affordability": {},
       "rows": [
         {
           "row_id": 3400,
@@ -2827,6 +3006,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 3401,
@@ -2879,6 +3059,7 @@
       "n_valid": 2,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 3500,
@@ -2927,6 +3108,7 @@
       "n_valid": 2,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 3500,
@@ -3074,6 +3256,7 @@
           "verdict": "live"
         }
       },
+      "affordability": {},
       "rows": [
         {
           "row_id": 3605,
@@ -3257,6 +3440,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 3700,
@@ -3493,6 +3677,7 @@
           "verdict": "inconclusive"
         }
       },
+      "affordability": {},
       "rows": [
         {
           "row_id": 3904,
@@ -3631,6 +3816,7 @@
       "n_valid": 1,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 3800,
@@ -3662,6 +3848,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 3800,
@@ -3694,6 +3881,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 3800,
@@ -3727,6 +3915,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 3800,
@@ -3786,6 +3975,7 @@
           "verdict": "inconclusive"
         }
       },
+      "affordability": {},
       "rows": [
         {
           "row_id": 900,
@@ -4304,6 +4494,7 @@
           "verdict": "inconclusive"
         }
       },
+      "affordability": {},
       "rows": [
         {
           "row_id": 1004,
@@ -4622,6 +4813,7 @@
           "verdict": "inconclusive"
         }
       },
+      "affordability": {},
       "rows": [
         {
           "row_id": 1201,
@@ -4898,6 +5090,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 25,
@@ -15082,6 +15275,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 247,
@@ -16253,6 +16447,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 43,
@@ -19768,6 +19963,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 1,
@@ -21476,6 +21672,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 5,
@@ -23173,6 +23370,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 10,
@@ -24878,6 +25076,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 32,
@@ -29853,6 +30052,7 @@
           "verdict": "inconclusive"
         }
       },
+      "affordability": {},
       "rows": [
         {
           "row_id": 22,
@@ -29885,6 +30085,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 302,
@@ -29968,6 +30169,7 @@
           "verdict": "inconclusive"
         }
       },
+      "affordability": {},
       "rows": [
         {
           "row_id": 400,
@@ -30026,6 +30228,7 @@
       "n_valid": 2,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 500,
@@ -30117,6 +30320,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 808,
@@ -30390,6 +30594,7 @@
       "n_valid": 2,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 500,
@@ -30481,6 +30686,7 @@
       "n_valid": 1,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 810,
@@ -30794,12 +31000,12 @@
         "S14_calib",
         "S8_15dpa"
       ],
-      "peak_response": 0.013318665837333876,
+      "peak_response": 0.025125241898299677,
       "response": {
         "N_loops_100": 0.013318665837333876,
-        "d_100_nm": 0.0019492483518690484,
-        "N_loops_111": 0.00446427879630229,
-        "d_111_nm": 0.0003240372931210267,
+        "d_100_nm": 0.025125241898299677,
+        "N_loops_111": 0.005330794942969064,
+        "d_111_nm": 0.0005337979041725172,
         "N_voids": 5.405477754960586e-06,
         "d_cavity_nm": 1.606338511761507e-06
       },
@@ -30809,7 +31015,7 @@
           2.3
         ]
       },
-      "n_pairs": 1,
+      "n_pairs": 2,
       "drove_invalid": true,
       "verdict": "dead",
       "moves": []
@@ -30902,13 +31108,13 @@
       "seen_in": [
         "S14_calib"
       ],
-      "peak_response": 6.748740250226811,
+      "peak_response": 6.927975629990434,
       "response": {
         "N_loops_100": 0.04688019531077403,
-        "d_100_nm": 6.748740250226811,
-        "N_loops_111": 0.4463755649505272,
-        "d_111_nm": 0.033653872046009226,
-        "N_voids": 1.0132979702567084,
+        "d_100_nm": 6.927975629990434,
+        "N_loops_111": 0.4517742558543695,
+        "d_111_nm": 0.03448256923854143,
+        "N_voids": 1.0133164459244863,
         "d_cavity_nm": 0.007512396118883435
       },
       "spans": {
@@ -30925,7 +31131,7 @@
           2.5
         ]
       },
-      "n_pairs": 1,
+      "n_pairs": 2,
       "drove_invalid": true,
       "verdict": "live",
       "moves": [
@@ -31011,6 +31217,25 @@
     "rho_d",
     "s_i"
   ],
+  "affordability": {
+    "E_b_i2": {
+      "unaffordable": [
+        "0.6"
+      ],
+      "affordable": [
+        "0.75"
+      ],
+      "evidence": [
+        "S14_calib: 0 of 6 rows reached dose at E_b_i2=0.6"
+      ],
+      "unaffordable_numeric": [
+        0.6
+      ],
+      "affordable_numeric": [
+        0.75
+      ]
+    }
+  },
   "best": {
     "stage": "S14_calib",
     "row_id": 4400,
@@ -31108,9 +31333,9 @@
   },
   "cost_model": {
     "Nasr-Workstation": {
-      "n": 568,
+      "n": 575,
       "median_row_h": 3.35,
-      "max_row_h": 16.07,
+      "max_row_h": 20.02,
       "min_row_h": 0.04
     },
     "MacBook-Pro.local": {

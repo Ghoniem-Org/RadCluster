@@ -270,6 +270,57 @@ def sensitivity(stage: dict, rows: list, targets: dict,
     return out
 
 
+# ---------------------------------------------------------- affordability ---
+def affordability(stage: dict, rows: list, dose_target: float) -> dict:
+    """Which lever VALUES prevent a row from ever reaching dose.
+
+    This is a COST verdict, not a physics one, and it is measured with a
+    controlled contrast: within one stage, a level counts as unaffordable only
+    if it produced zero full-dose rows while ANOTHER level of the same
+    co-varying group -- everything else held equal -- produced at least one.
+
+    S14 is the motivating case.  All six rows at E_b_i2 = 0.60 burned the full
+    20 h budget and reached 0.004-6.06 of 15 dpa; all six at 0.75 finished in
+    5.3-19.8 h.  Nothing about that is visible in the physics verdicts, because
+    a row that never reaches dose is excluded from scoring -- so without this
+    the planner cheerfully proposes another stage in the same dead direction.
+    """
+    design = read_design(stage["design"])
+    if not design:
+        return {}
+    by_id = {str(r["row_id"]): r for r in rows if r.get("row_id") is not None}
+    out = {}
+    for group in covarying_groups(design):
+        tally = {}
+        for rid, drow in design.items():
+            r = by_id.get(rid)
+            if r is None:
+                continue
+            reached = abs((r.get("dose_reached") or 0.0) - dose_target) \
+                <= 0.02 * dose_target
+            key = group_key(drow, group)
+            slot = tally.setdefault(key, [0, 0])
+            slot[0] += 1
+            slot[1] += reached
+        if len(tally) < 2:
+            continue
+        any_ok = any(v[1] > 0 for v in tally.values())
+        for key, (n, ok) in tally.items():
+            for col, val in zip(group, key):
+                rec = out.setdefault(col, {"unaffordable": [], "affordable": [],
+                                           "evidence": []})
+                if ok == 0 and n >= 3 and any_ok:
+                    if val not in rec["unaffordable"]:
+                        rec["unaffordable"].append(val)
+                        rec["evidence"].append(
+                            "%s: 0 of %d rows reached dose at %s=%s"
+                            % (stage.get("stem", "?"), n, col, val))
+                elif ok > 0 and val not in rec["affordable"]:
+                    rec["affordable"].append(val)
+    # Drop columns with nothing adverse to say.
+    return {c: r for c, r in out.items() if r["unaffordable"]}
+
+
 # ------------------------------------------------------------ inventory -----
 def inventory(row: dict, targets: dict):
     """Compare SIA content locked in loops against the measurement.
@@ -387,6 +438,8 @@ def ingest() -> dict:
             "n_rows": len(rows), "n_valid": n_valid,
             "swept": swept,
             "sensitivity": sensitivity(meta, rows, targets, stage_dose),
+            "affordability": (affordability(dict(meta, stem=stem), rows, stage_dose)
+                              if in_scope else {}),
             "rows": recs,
         }
 
@@ -442,6 +495,24 @@ def ingest() -> dict:
             all_cols |= {c for c in next(iter(d.values())) if c not in BOOKKEEPING}
     untested = sorted(all_cols - tested_cols)
 
+    # Roll affordability up across in-scope stages.
+    afford = {}
+    for stem, st in stages.items():
+        for col, rec in (st.get("affordability") or {}).items():
+            a = afford.setdefault(col, {"unaffordable": [], "affordable": [],
+                                        "evidence": []})
+            for kind in ("unaffordable", "affordable"):
+                for v in rec.get(kind, []):
+                    if v not in a[kind]:
+                        a[kind].append(v)
+            a["evidence"].extend(rec["evidence"])
+    for col, a in afford.items():
+        for kind in ("unaffordable", "affordable"):
+            try:
+                a[kind + "_numeric"] = sorted(float(v) for v in a[kind])
+            except (TypeError, ValueError):
+                pass
+
     ledger = {
         "schema": 1,
         "updated": None,                     # set below, from CONTENT not clock
@@ -455,6 +526,7 @@ def ingest() -> dict:
         "stages": stages,
         "levers": levers,
         "untested_columns": untested,
+        "affordability": afford,
         "best": best,
         "residuals": best["ratios"] if best else {},
         "cost_model": cost_model(all_rows),
@@ -623,6 +695,23 @@ def render_guide(led: dict) -> str:
       "refuses to propose a design whose estimated cost exceeds the machine "
       "row budget.")
     A("")
+
+    aff = led.get("affordability") or {}
+    if aff:
+        A("## Unaffordable lever values")
+        A("")
+        A("Measured, not assumed: a level counts here only if it produced ZERO "
+          "full-dose rows while another level of the same lever - everything "
+          "else held equal - produced at least one. `plan.py` will not place a "
+          "design point on these values.")
+        A("")
+        A("| lever | unaffordable at | evidence |")
+        A("|---|---|---|")
+        for col, rec in sorted(aff.items()):
+            A("| `%s` | %s | %s |"
+              % (col, ", ".join(str(v) for v in rec["unaffordable"]),
+                 "; ".join(rec["evidence"])))
+        A("")
 
     dep = (led.get("policy") or {}).get("deprioritized_observables") or {}
     if dep:

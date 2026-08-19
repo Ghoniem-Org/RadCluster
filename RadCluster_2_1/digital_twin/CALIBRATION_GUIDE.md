@@ -165,31 +165,31 @@ One row per machine. A machine claims a stage by running `plan.py --write` on it
 | machine | stage | levers | rows | design |
 |---|---|---|---|---|
 | 0 (MacBook Pro) | **S20** | `L_hat`, `B_111`, `E_m_i` | 12 | `design/S20_calib.csv` |
-| 1 (Matrix-PC) | **S19** | `i_mobile`, `phi_max_junc` | 20 | `design/S19_calib.csv` |
+| 1 (Matrix-PC) | **S21** | `s_i`, `B_111`, `L_hat` | 20 | `design/S21_calib.csv` |
 | 2 (Nasr Workstation) | **S18** | `f_cl_v`, `E_b_v2`, `E_b_hV_1` | 12 | `design/S18_calib.csv` |
 
 ## Next stage
 
-**S20** - worst residuals are N_111 (7.4x), d_111 (0.169x), N_100 (1.69x); sweeping L_hat, B_111, E_m_i, which the ledger has not retired
+**S21** - worst residuals are N_111 (7.4x), d_111 (0.169x), N_100 (1.69x); sweeping s_i, B_111, L_hat, which the ledger has not retired
 
-Sweeping: `L_hat`, `B_111`, `E_m_i`
+Sweeping: `s_i`, `B_111`, `L_hat`
 
-Design: `design/S20_calib.csv` (12 rows)
+Design: `design/S21_calib.csv` (20 rows)
 
 Run it with:
 
 ```bash
 python run_ensemble.py \
-    --design design/S20_calib.csv \
+    --design design/S21_calib.csv \
     --conditions conditions_S8.json \
     --spec parameters_S4.json \
-    --out results/S20_calib_machine0.jsonl \
+    --out results/S21_calib_machine1.jsonl \
     --machine 0 --of 1 \
     --equations bin_moment --i-discrete 100 --i-bin 36 \
     --v-discrete 5 --v-bin 20 --allow-mixed \
     --I 80000 --V 2000 --dose 15.0 --lnl 1 --rtol 1e-5 \
     --solver-mode full_system \
-    --timeout-s 43200 --workers 14 --omp-threads 1
+    --timeout-s 108000 --workers 20 --omp-threads 1
 ```
 
 ## Multi-machine protocol

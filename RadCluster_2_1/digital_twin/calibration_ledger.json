@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated": "2026-08-19 19:18:50Z",
+  "updated": "2026-08-19 19:21:54Z",
   "goal": {
     "statement": "Find one parameter vector that puts all six observables inside their experimental ranges at EUROFER97 330 C / 15 dpa, neutron.",
     "targets_file": "targets_330C_15dpa.json",
@@ -2953,6 +2953,344 @@
             "d_111": 0.9228112422647734,
             "N_void": 1.6359918600394875e+19,
             "d_void": 0.5755690012369362
+          }
+        }
+      ]
+    },
+    "S20_calib_machine0": {
+      "design": "design/S20_calib.csv",
+      "results": "results/S20_calib_machine0.jsonl",
+      "dose_target": 15.0,
+      "in_scope": true,
+      "n_rows": 13,
+      "n_valid": 9,
+      "swept": [
+        "E_m_i",
+        "L_hat",
+        "B_111"
+      ],
+      "sensitivity": {
+        "E_m_i": {
+          "columns": [
+            "E_m_i"
+          ],
+          "span": {
+            "E_m_i": [
+              0.25,
+              0.55
+            ]
+          },
+          "n_pairs": 2,
+          "response": {
+            "N_loops_100": 2.539124431539825,
+            "d_100_nm": 0.3128328375386993,
+            "N_loops_111": 0.38596684586803454,
+            "d_111_nm": 0.06149325267236583,
+            "N_voids": 0.006214520169203874,
+            "d_cavity_nm": 0.0012154850489598523
+          },
+          "peak_response": 2.539124431539825,
+          "drove_invalid": true,
+          "verdict": "live"
+        },
+        "L_hat": {
+          "columns": [
+            "L_hat"
+          ],
+          "span": {
+            "L_hat": [
+              10.0,
+              3000.0000000000014
+            ]
+          },
+          "n_pairs": 7,
+          "response": {
+            "N_loops_100": 0.5062181735153204,
+            "d_100_nm": 0.5330744798614797,
+            "N_loops_111": 0.3827026104416008,
+            "d_111_nm": 0.0902134023922575,
+            "N_voids": 0.001803946549794433,
+            "d_cavity_nm": 0.09783573772633103
+          },
+          "peak_response": 0.5330744798614797,
+          "drove_invalid": true,
+          "verdict": "live"
+        },
+        "B_111": {
+          "columns": [
+            "B_111"
+          ],
+          "span": {
+            "B_111": [
+              0.2,
+              0.6
+            ]
+          },
+          "n_pairs": 2,
+          "response": {
+            "N_loops_100": 2402.6346369499643,
+            "d_100_nm": 0.408882970848342,
+            "N_loops_111": 36.244873889627314,
+            "d_111_nm": 0.3550757867645944,
+            "N_voids": 0.03169869294141381,
+            "d_cavity_nm": 0.09326504266291746
+          },
+          "peak_response": 2402.6346369499643,
+          "drove_invalid": true,
+          "verdict": "live"
+        }
+      },
+      "affordability": {},
+      "rows": [
+        {
+          "row_id": 5007,
+          "label": "S2007_Lhat173_B1110.6_Emi0.55",
+          "valid": true,
+          "flags": [],
+          "n_in_range": 1,
+          "log_distance": 1.924,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 4.4975078218229467e+24,
+            "d_100": 6.653479282674318,
+            "N_111": 2.548341254276269e+23,
+            "d_111": 0.7854094578575064,
+            "N_void": 2.492379417080398e+18,
+            "d_void": 0.5641970121468691
+          }
+        },
+        {
+          "row_id": 5008,
+          "label": "S2008_Lhat3e+03_B1110.2_Emi0.25",
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.697,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 9.922887133911149e+18,
+            "d_100": 25.202645682419064,
+            "N_111": 1.625148001913348e+20,
+            "d_111": 1.3321056646739273,
+            "N_void": 2.5888233585206287e+18,
+            "d_void": 0.6194286717911394
+          }
+        },
+        {
+          "row_id": 5004,
+          "label": "S2004_Lhat173_B1110.2_Emi0.25",
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.697,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 9.92295288238873e+18,
+            "d_100": 25.202646769274665,
+            "N_111": 1.625164734363775e+20,
+            "d_111": 1.332108903957036,
+            "N_void": 2.5888234533581916e+18,
+            "d_void": 0.6194297321615764
+          }
+        },
+        {
+          "row_id": 5005,
+          "label": "S2005_Lhat173_B1110.2_Emi0.55",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 1.238,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 1.8711278963469897e+21,
+            "d_100": 11.113064853394587,
+            "N_111": 6.84212614554182e+21,
+            "d_111": 1.1097458743948352,
+            "N_void": 2.5693285896172165e+18,
+            "d_void": 0.5613540610859737
+          }
+        },
+        {
+          "row_id": 5001,
+          "label": "S2001_Lhat10_B1110.2_Emi0.55",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 1.237,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 3.739365533643072e+21,
+            "d_100": 11.257265033947586,
+            "N_111": 1.0998734946472311e+22,
+            "d_111": 1.2178391752211395,
+            "N_void": 2.573971897340692e+18,
+            "d_void": 0.6222292041720007
+          }
+        },
+        {
+          "row_id": 5000,
+          "label": "S2000_Lhat10_B1110.2_Emi0.25",
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.697,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 9.942337313888512e+18,
+            "d_100": 25.2029643299509,
+            "N_111": 1.6301429924147495e+20,
+            "d_111": 1.3330714711116287,
+            "N_void": 2.5888500895730975e+18,
+            "d_void": 0.6197296939740015
+          }
+        },
+        {
+          "row_id": 5009,
+          "label": "S2009_Lhat3e+03_B1110.2_Emi0.55",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 1.238,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 1.8464307430961347e+21,
+            "d_100": 11.11916788104808,
+            "N_111": 6.789490370902097e+21,
+            "d_111": 1.1079737596578598,
+            "N_void": 2.5693916444245156e+18,
+            "d_void": 0.5613529509469651
+          }
+        },
+        {
+          "row_id": 5012,
+          "label": "S2012_CONTROL_base_S1700_repro",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 3,
+          "log_distance": 1.259,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 8.398282997896687e+21,
+            "d_100": 6.790182589132355,
+            "N_111": 1.4274709705726653e+22,
+            "d_111": 1.0504124497655718,
+            "N_void": 2.564101862062752e+18,
+            "d_void": 0.5612300732533521
+          }
+        },
+        {
+          "row_id": 5003,
+          "label": "S2003_Lhat10_B1110.6_Emi0.55",
+          "valid": true,
+          "flags": [],
+          "n_in_range": 1,
+          "log_distance": 1.924,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 4.497706789980956e+24,
+            "d_100": 6.654361063239936,
+            "N_111": 2.5482897538374717e+23,
+            "d_111": 0.7854139719267487,
+            "N_void": 2.492380352527061e+18,
+            "d_void": 0.5641969708987858
+          }
+        },
+        {
+          "row_id": 5006,
+          "label": "S2006_Lhat173_B1110.6_Emi0.25",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.763,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 1.2707967489761704e+24,
+            "d_100": 9.067187416031244,
+            "N_111": 1.838936374251725e+23,
+            "d_111": 0.8368714024634697,
+            "N_void": 2.5078666192481454e+18,
+            "d_void": 0.5635165756076098
+          }
+        },
+        {
+          "row_id": 5011,
+          "label": "S2011_Lhat3e+03_B1110.6_Emi0.55",
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 1.92,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 4.313417245340096e+24,
+            "d_100": 6.471658813487688,
+            "N_111": 2.5613915683179913e+23,
+            "d_111": 0.7844797819501625,
+            "N_void": 2.492133199765359e+18,
+            "d_void": 0.5642079113548039
+          }
+        },
+        {
+          "row_id": 5002,
+          "label": "S2002_Lhat10_B1110.6_Emi0.25",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.788,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 1.6207197364666588e+24,
+            "d_100": 9.683758809727307,
+            "N_111": 1.838636877523193e+23,
+            "d_111": 0.8343800781212125,
+            "N_void": 2.507966158804633e+18,
+            "d_void": 0.5635120304508638
+          }
+        },
+        {
+          "row_id": 5010,
+          "label": "S2010_Lhat3e+03_B1110.6_Emi0.25",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 1.736,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 1.0457329474238448e+24,
+            "d_100": 4.521594119127901,
+            "N_111": 1.6905156664786603e+23,
+            "d_111": 0.8392335076153217,
+            "N_void": 2.511931318692772e+18,
+            "d_void": 0.5633401851649666
           }
         }
       ]
@@ -32154,7 +32492,8 @@
         "E_m_i"
       ],
       "seen_in": [
-        "S16_calib_machine1"
+        "S16_calib_machine1",
+        "S20_calib_machine0"
       ],
       "peak_response": 84.06102338756598,
       "response": {
@@ -32162,7 +32501,7 @@
         "d_100_nm": 2.3515213222670606,
         "N_loops_111": 84.06102338756598,
         "d_111_nm": 0.6211432638697145,
-        "N_voids": 0.004680960220378894,
+        "N_voids": 0.006214520169203874,
         "d_cavity_nm": 0.002396358322387382
       },
       "spans": {
@@ -32171,7 +32510,7 @@
           0.55
         ]
       },
-      "n_pairs": 10,
+      "n_pairs": 12,
       "drove_invalid": true,
       "verdict": "live",
       "moves": [
@@ -32186,7 +32525,8 @@
         "L_hat"
       ],
       "seen_in": [
-        "S16_calib_machine1"
+        "S16_calib_machine1",
+        "S20_calib_machine0"
       ],
       "peak_response": 205.58198229382785,
       "response": {
@@ -32195,12 +32535,46 @@
         "N_loops_111": 10.904253047626145,
         "d_111_nm": 0.6095856505818895,
         "N_voids": 0.0037227041518289594,
-        "d_cavity_nm": 0.000587697614036653
+        "d_cavity_nm": 0.09783573772633103
       },
       "spans": {
         "L_hat": [
           10.0,
-          3000.000000000001
+          3000.0000000000014
+        ]
+      },
+      "n_pairs": 15,
+      "drove_invalid": true,
+      "verdict": "live",
+      "moves": [
+        "N_100",
+        "N_111",
+        "d_100",
+        "d_111",
+        "d_void"
+      ]
+    },
+    "B_111": {
+      "columns": [
+        "B_111"
+      ],
+      "seen_in": [
+        "S16_calib_machine1",
+        "S20_calib_machine0"
+      ],
+      "peak_response": 2402.6346369499643,
+      "response": {
+        "N_loops_100": 2402.6346369499643,
+        "d_100_nm": 1.7888929487397034,
+        "N_loops_111": 36.244873889627314,
+        "d_111_nm": 0.7471300815028135,
+        "N_voids": 0.03169869294141381,
+        "d_cavity_nm": 0.09326504266291746
+      },
+      "spans": {
+        "B_111": [
+          0.2,
+          0.6
         ]
       },
       "n_pairs": 8,
@@ -32210,39 +32584,8 @@
         "N_100",
         "N_111",
         "d_100",
-        "d_111"
-      ]
-    },
-    "B_111": {
-      "columns": [
-        "B_111"
-      ],
-      "seen_in": [
-        "S16_calib_machine1"
-      ],
-      "peak_response": 19.14345740323964,
-      "response": {
-        "N_loops_100": 4.240694811345675,
-        "d_100_nm": 1.7888929487397034,
-        "N_loops_111": 19.14345740323964,
-        "d_111_nm": 0.7471300815028135,
-        "N_voids": 0.004974047986143093,
-        "d_cavity_nm": 0.002247371226199779
-      },
-      "spans": {
-        "B_111": [
-          0.2,
-          0.4666666666666667
-        ]
-      },
-      "n_pairs": 6,
-      "drove_invalid": true,
-      "verdict": "live",
-      "moves": [
-        "N_111",
-        "N_100",
-        "d_100",
-        "d_111"
+        "d_111",
+        "d_void"
       ]
     },
     "phi_max_junc": {
@@ -32359,6 +32702,56 @@
     "r_p",
     "rho_d"
   ],
+  "reachability": {
+    "N_100": {
+      "ratio": 1.6898,
+      "needed_factor": 1.69,
+      "needed_pct": 69.0,
+      "best_single_lever_pct": 240263.5,
+      "best_single_lever": "B_111",
+      "single_lever_sufficient": true
+    },
+    "d_100": {
+      "ratio": 1.0952,
+      "needed_factor": 1.095,
+      "needed_pct": 9.5,
+      "best_single_lever_pct": 692.8,
+      "best_single_lever": "f_cl_v+E_b_v2+s_v",
+      "single_lever_sufficient": true
+    },
+    "N_111": {
+      "ratio": 7.3962,
+      "needed_factor": 7.396,
+      "needed_pct": 639.6,
+      "best_single_lever_pct": 8406.1,
+      "best_single_lever": "E_m_i",
+      "single_lever_sufficient": true
+    },
+    "d_111": {
+      "ratio": 0.1694,
+      "needed_factor": 5.903,
+      "needed_pct": 490.3,
+      "best_single_lever_pct": 88.7,
+      "best_single_lever": "s_i",
+      "single_lever_sufficient": false
+    },
+    "N_void": {
+      "ratio": 0.0017,
+      "needed_factor": 588.235,
+      "needed_pct": 58723.5,
+      "best_single_lever_pct": 397.2,
+      "best_single_lever": "eta",
+      "single_lever_sufficient": false
+    },
+    "d_void": {
+      "ratio": 0.2159,
+      "needed_factor": 4.632,
+      "needed_pct": 363.2,
+      "best_single_lever_pct": 9.8,
+      "best_single_lever": "L_hat",
+      "single_lever_sufficient": false
+    }
+  },
   "affordability": {
     "E_b_i2": {
       "unaffordable": [
@@ -32489,7 +32882,7 @@
       "min_row_h": 0.33
     },
     "MacBook-Pro.local": {
-      "n": 480,
+      "n": 493,
       "n_timed_out": 0,
       "median_row_h": 1.02,
       "max_row_h": 9.2,
@@ -32541,47 +32934,49 @@
     }
   ],
   "next": {
-    "stage": "S19",
-    "machine": 1,
-    "machine_name": "Matrix-PC",
+    "stage": "S20",
+    "machine": 0,
+    "machine_name": "MacBook Pro",
     "levers": [
-      "i_mobile",
-      "phi_max_junc"
+      "L_hat",
+      "B_111",
+      "E_m_i"
     ],
     "n_levels": [
-      10,
+      3,
+      2,
       2
     ],
-    "n_rows": 20,
-    "design": "design/S19_calib.csv",
-    "labels": "design/S19_labels.json",
+    "n_rows": 12,
+    "design": "design/S20_calib.csv",
+    "labels": "design/S20_labels.json",
     "pinned_to": {
       "stage": "S17_calib_machine1",
       "row_id": 4700,
       "label": "S1700_imobile5_si1_phimaxjunc0.05"
     },
-    "rationale": "worst residuals are N_111 (7.4x), d_111 (0.169x), N_100 (1.69x); sweeping i_mobile, phi_max_junc, which the ledger has not retired",
+    "rationale": "worst residuals are N_111 (7.4x), d_111 (0.169x), N_100 (1.69x); sweeping L_hat, B_111, E_m_i, which the ledger has not retired",
     "cost_estimate": {
       "known": true,
-      "source": "measured on this machine",
-      "median_row_h": 7.58,
-      "max_row_h": 14.02,
-      "slots": 20,
+      "source": "scaled from another machine by registry `speed`",
+      "median_row_h": 3.79,
+      "max_row_h": 7.01,
+      "slots": 14,
       "waves": 1,
-      "est_wall_h": 14.0
+      "est_wall_h": 7.0
     },
     "commands": [
       "python run_ensemble.py \\",
-      "    --design design/S19_calib.csv \\",
+      "    --design design/S20_calib.csv \\",
       "    --conditions conditions_S8.json \\",
       "    --spec parameters_S4.json \\",
-      "    --out results/S19_calib_machine1.jsonl \\",
+      "    --out results/S20_calib_machine0.jsonl \\",
       "    --machine 0 --of 1 \\",
       "    --equations bin_moment --i-discrete 100 --i-bin 36 \\",
       "    --v-discrete 5 --v-bin 20 --allow-mixed \\",
       "    --I 80000 --V 2000 --dose 15.0 --lnl 1 --rtol 1e-5 \\",
       "    --solver-mode full_system \\",
-      "    --timeout-s 108000 --workers 20 --omp-threads 1"
+      "    --timeout-s 43200 --workers 14 --omp-threads 1"
     ]
   },
   "next_by_machine": {
@@ -32673,6 +33068,52 @@
         "    --I 80000 --V 2000 --dose 15.0 --lnl 1 --rtol 1e-5 \\",
         "    --solver-mode full_system \\",
         "    --timeout-s 72000 --workers 12 --omp-threads 1"
+      ]
+    },
+    "0": {
+      "stage": "S20",
+      "machine": 0,
+      "machine_name": "MacBook Pro",
+      "levers": [
+        "L_hat",
+        "B_111",
+        "E_m_i"
+      ],
+      "n_levels": [
+        3,
+        2,
+        2
+      ],
+      "n_rows": 12,
+      "design": "design/S20_calib.csv",
+      "labels": "design/S20_labels.json",
+      "pinned_to": {
+        "stage": "S17_calib_machine1",
+        "row_id": 4700,
+        "label": "S1700_imobile5_si1_phimaxjunc0.05"
+      },
+      "rationale": "worst residuals are N_111 (7.4x), d_111 (0.169x), N_100 (1.69x); sweeping L_hat, B_111, E_m_i, which the ledger has not retired",
+      "cost_estimate": {
+        "known": true,
+        "source": "scaled from another machine by registry `speed`",
+        "median_row_h": 3.79,
+        "max_row_h": 7.01,
+        "slots": 14,
+        "waves": 1,
+        "est_wall_h": 7.0
+      },
+      "commands": [
+        "python run_ensemble.py \\",
+        "    --design design/S20_calib.csv \\",
+        "    --conditions conditions_S8.json \\",
+        "    --spec parameters_S4.json \\",
+        "    --out results/S20_calib_machine0.jsonl \\",
+        "    --machine 0 --of 1 \\",
+        "    --equations bin_moment --i-discrete 100 --i-bin 36 \\",
+        "    --v-discrete 5 --v-bin 20 --allow-mixed \\",
+        "    --I 80000 --V 2000 --dose 15.0 --lnl 1 --rtol 1e-5 \\",
+        "    --solver-mode full_system \\",
+        "    --timeout-s 43200 --workers 14 --omp-threads 1"
       ]
     }
   }

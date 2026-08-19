@@ -1,6 +1,6 @@
 # Calibration Guide - EUROFER97 digital twin
 
-*Derived by `learn.py`; content last changed 2026-08-19 22:24:48Z (re-running with no new results leaves this file untouched). Do not hand-edit: edits are overwritten. Durable notes belong in `calibration_ledger.json` under `notes`, which is preserved across regenerations.*
+*Derived by `learn.py`; content last changed 2026-08-19 23:33:32Z (re-running with no new results leaves this file untouched). Do not hand-edit: edits are overwritten. Durable notes belong in `calibration_ledger.json` under `notes`, which is preserved across regenerations.*
 
 ## Goal
 
@@ -52,9 +52,9 @@ A lever is **dead** when its full tested span moves every observable by less tha
 
 | lever | tested span | verdict | valid pairs | peak response | moves | stages |
 |---|---|---|---|---|---|---|
-| `B_111` | B_111 0.2->0.6 | **live** (drives rows off-grid) | 12 | 240263.5% | N_100, N_111, d_100, d_111, d_void | S16_calib_machine1, S20_calib_machine0 |
-| `L_hat` | L_hat 10->3e+03 | **live** (drives rows off-grid) | 16 | 20558.2% | N_100, N_111, d_100, d_111, d_void | S16_calib_machine1, S20_calib_machine0 |
-| `E_m_i` | E_m_i 0.25->0.55 | **live** (drives rows off-grid) | 12 | 8406.1% | N_111, N_100, d_100, d_111 | S16_calib_machine1, S20_calib_machine0 |
+| `B_111` | B_111 0.2->0.6 | **live** (drives rows off-grid) | 13 | 240263.5% | N_100, N_111, d_100, d_111, d_void | S16_calib_machine1, S20_calib_machine0 |
+| `L_hat` | L_hat 10->3e+03 | **live** (drives rows off-grid) | 17 | 30324.9% | N_100, N_111, d_100, d_111, d_void | S16_calib_machine1, S20_calib_machine0 |
+| `E_m_i` | E_m_i 0.25->0.55 | **live** (drives rows off-grid) | 13 | 8406.1% | N_111, N_100, d_100, d_111 | S16_calib_machine1, S20_calib_machine0 |
 | `f_cl_v+E_b_v2+s_v` | f_cl_v 0.317->0.7; E_b_v2 0.213->0.35; s_v 1.9->2.5 | **live** (drives rows off-grid) | 2 | 692.8% | d_100, N_void, N_111 | S14_calib |
 | `f_cl_v` | f_cl_v 0.05->0.8 | **live** (drives rows off-grid) | 3 | 449.6% | N_void, N_100, N_111, d_100 | S18_calib_machine2, V1_calib_machine0 |
 | `s_i` | s_i 1->3 | **live** | 12 | 436.5% | d_100, N_111, d_111, N_100 | S17_calib_machine1 |
@@ -94,7 +94,7 @@ Only stages that ran to 15.0 dpa are in scope; the rest are listed for provenanc
 | `S13_calib` | 15 | in | 12 | 0 | `E_b_i2`, `E_a0_conv`, `d_g+rho_p` | - |
 | `S14_calib` | 15 | in | 12 | 4 | `f_cl_v+E_b_v2+s_v`, `E_b_i2`, `E_a0_conv` | 2 |
 | `S15_calib_machine0` | 15 | in | 6 | 3 | `eta`, `f_cl_i`, `E_b_i2` | 2 |
-| `S16_calib_machine1` | 15 | in | 26 | 17 | `E_m_i`, `L_hat`, `B_111` | 2 |
+| `S16_calib_machine1` | 15 | in | 27 | 18 | `E_m_i`, `L_hat`, `B_111` | 2 |
 | `S17_calib_machine1` | 15 | in | 13 | 13 | `phi_max_junc`, `i_mobile`, `s_i` | 3 |
 | `S18_calib_machine2` | 15 | in | 4 | 4 | `f_cl_v`, `E_b_v2`, `E_b_hV_1` | 2 |
 | `S1_calib` | 1 | out | 2 | 0 | - | - |
@@ -141,7 +141,7 @@ Completed rows only. A row cut at the budget measures the timeout, not the cost,
 
 | machine | completed | median row | min | max | timed out |
 |---|---|---|---|---|---|
-| MATRIX-PC2 | 115 | 7.99 h | 2.94 h | 18.87 h | 5 |
+| MATRIX-PC2 | 116 | 8.26 h | 2.94 h | 18.87 h | 5 |
 | Mac.san.rr.com | 264 | 1.58 h | 0.33 h | 5.51 h | 0 |
 | MacBook-Pro.local | 506 | 1.02 h | 0.23 h | 9.2 h | 0 |
 | Nasr-Workstation | 415 | 3.35 h | 0.15 h | 19.79 h | 164 |

@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated": "2026-08-19 22:24:48Z",
+  "updated": "2026-08-19 23:33:32Z",
   "goal": {
     "statement": "Find one parameter vector that puts all six observables inside their experimental ranges at EUROFER97 330 C / 15 dpa, neutron.",
     "targets_file": "targets_330C_15dpa.json",
@@ -1758,8 +1758,8 @@
       "results": "results/S16_calib_machine1.jsonl",
       "dose_target": 15.0,
       "in_scope": true,
-      "n_rows": 26,
-      "n_valid": 17,
+      "n_rows": 27,
+      "n_valid": 18,
       "swept": [
         "E_m_i",
         "L_hat",
@@ -1776,7 +1776,7 @@
               0.55
             ]
           },
-          "n_pairs": 10,
+          "n_pairs": 11,
           "response": {
             "N_loops_100": 64.72180017234872,
             "d_100_nm": 2.3515213222670606,
@@ -1799,16 +1799,16 @@
               3000.000000000001
             ]
           },
-          "n_pairs": 9,
+          "n_pairs": 10,
           "response": {
-            "N_loops_100": 205.58198229382785,
+            "N_loops_100": 303.2493681461739,
             "d_100_nm": 0.8517486996284722,
             "N_loops_111": 10.904253047626145,
-            "d_111_nm": 0.6095856505818895,
+            "d_111_nm": 0.6439317568557861,
             "N_voids": 0.0037227041518289594,
             "d_cavity_nm": 0.000587697614036653
           },
-          "peak_response": 205.58198229382785,
+          "peak_response": 303.2493681461739,
           "drove_invalid": true,
           "verdict": "live"
         },
@@ -1822,7 +1822,7 @@
               0.6
             ]
           },
-          "n_pairs": 10,
+          "n_pairs": 11,
           "response": {
             "N_loops_100": 60.82331764530832,
             "d_100_nm": 2.2037214207322258,
@@ -2335,6 +2335,25 @@
             "d_111": 2.4367275082737674,
             "N_void": 2.5669630822616074e+18,
             "d_void": 0.5611002124756945
+          }
+        },
+        {
+          "row_id": 4626,
+          "label": "S1626_B1110.467_Lhat3e+03_Emi0.55",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.485,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 2.5875723089532945e+23,
+            "d_100": 22.790857396285464,
+            "N_111": 2.2703427352398536e+22,
+            "d_111": 0.8755881041981433,
+            "N_void": 2.559702557308366e+18,
+            "d_void": 0.5612837751196619
           }
         }
       ]
@@ -33267,7 +33286,7 @@
           0.55
         ]
       },
-      "n_pairs": 12,
+      "n_pairs": 13,
       "drove_invalid": true,
       "verdict": "live",
       "moves": [
@@ -33285,12 +33304,12 @@
         "S16_calib_machine1",
         "S20_calib_machine0"
       ],
-      "peak_response": 205.58198229382785,
+      "peak_response": 303.2493681461739,
       "response": {
-        "N_loops_100": 205.58198229382785,
+        "N_loops_100": 303.2493681461739,
         "d_100_nm": 0.8517486996284722,
         "N_loops_111": 10.904253047626145,
-        "d_111_nm": 0.6095856505818895,
+        "d_111_nm": 0.6439317568557861,
         "N_voids": 0.0037227041518289594,
         "d_cavity_nm": 0.09783573772633103
       },
@@ -33300,7 +33319,7 @@
           3000.0000000000014
         ]
       },
-      "n_pairs": 16,
+      "n_pairs": 17,
       "drove_invalid": true,
       "verdict": "live",
       "moves": [
@@ -33334,7 +33353,7 @@
           0.6
         ]
       },
-      "n_pairs": 12,
+      "n_pairs": 13,
       "drove_invalid": true,
       "verdict": "live",
       "moves": [
@@ -33832,9 +33851,9 @@
   },
   "cost_model": {
     "MATRIX-PC2": {
-      "n": 115,
+      "n": 116,
       "n_timed_out": 5,
-      "median_row_h": 7.99,
+      "median_row_h": 8.26,
       "max_row_h": 18.87,
       "min_row_h": 2.94
     },

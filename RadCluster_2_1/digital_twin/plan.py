@@ -231,8 +231,11 @@ def pick_levers(led: dict, worst: list, n_wanted: int = 3) -> tuple:
             if cur is None or rank[L["verdict"]] > rank[cur]:
                 verdict[c] = L["verdict"]
     never = set(led.get("untested_columns") or [])
+    unwired = set(((led.get("policy") or {}).get("unwired_parameters") or {}))
 
     def priority(col):
+        if col in unwired:
+            return 99                     # physics never reads it -- see policy
         if col in never:
             return 0                      # never varied -- most information
         v = verdict.get(col)
@@ -516,6 +519,16 @@ def main(argv=None):
 
     if a.levers:
         levers = [s.strip() for s in a.levers.split(",") if s.strip()]
+        # An explicit override still may not sweep a parameter the physics does
+        # not read: those rows come back bit-identical, so the stage is pure
+        # waste no matter who asked for it.
+        unwired = ((led.get("policy") or {}).get("unwired_parameters") or {})
+        bad = [c for c in levers if c in unwired]
+        if bad:
+            for c in bad:
+                print("REFUSING --levers %s: the physics never reads it." % c)
+                print("  %s" % unwired[c])
+            raise SystemExit(2)
         why = [(c, "operator override", 0.0, -1) for c in levers]
         skipped = []
     else:

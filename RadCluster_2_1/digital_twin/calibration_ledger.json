@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated": "2026-08-19 19:21:54Z",
+  "updated": "2026-08-19 19:55:47Z",
   "goal": {
     "statement": "Find one parameter vector that puts all six observables inside their experimental ranges at EUROFER97 330 C / 15 dpa, neutron.",
     "targets_file": "targets_330C_15dpa.json",
@@ -2489,6 +2489,131 @@
             "d_111": 1.1139842528795156,
             "N_void": 2.563973422715398e+18,
             "d_void": 0.5612192638973733
+          }
+        }
+      ]
+    },
+    "S18_calib_machine2": {
+      "design": "design/S18_calib.csv",
+      "results": "results/S18_calib_machine2.jsonl",
+      "dose_target": 15.0,
+      "in_scope": true,
+      "n_rows": 2,
+      "n_valid": 2,
+      "swept": [
+        "f_cl_v",
+        "E_b_v2",
+        "E_b_hV_1"
+      ],
+      "sensitivity": {
+        "f_cl_v": {
+          "columns": [
+            "f_cl_v"
+          ],
+          "span": {
+            "f_cl_v": [
+              0.05,
+              0.05
+            ]
+          },
+          "n_pairs": 0,
+          "response": {
+            "N_loops_100": 0.0,
+            "d_100_nm": 0.0,
+            "N_loops_111": 0.0,
+            "d_111_nm": 0.0,
+            "N_voids": 0.0,
+            "d_cavity_nm": 0.0
+          },
+          "peak_response": 0.0,
+          "drove_invalid": false,
+          "verdict": "inconclusive"
+        },
+        "E_b_v2": {
+          "columns": [
+            "E_b_v2"
+          ],
+          "span": {
+            "E_b_v2": [
+              0.1,
+              0.44999999999999996
+            ]
+          },
+          "n_pairs": 1,
+          "response": {
+            "N_loops_100": 0.0,
+            "d_100_nm": 0.0,
+            "N_loops_111": 0.0,
+            "d_111_nm": 0.0,
+            "N_voids": 0.0,
+            "d_cavity_nm": 0.0
+          },
+          "peak_response": 0.0,
+          "drove_invalid": false,
+          "verdict": "dead"
+        },
+        "E_b_hV_1": {
+          "columns": [
+            "E_b_hV_1"
+          ],
+          "span": {
+            "E_b_hV_1": [
+              3.0,
+              3.0
+            ]
+          },
+          "n_pairs": 0,
+          "response": {
+            "N_loops_100": 0.0,
+            "d_100_nm": 0.0,
+            "N_loops_111": 0.0,
+            "d_111_nm": 0.0,
+            "N_voids": 0.0,
+            "d_cavity_nm": 0.0
+          },
+          "peak_response": 0.0,
+          "drove_invalid": false,
+          "verdict": "inconclusive"
+        }
+      },
+      "affordability": {},
+      "rows": [
+        {
+          "row_id": 4801,
+          "label": "S1801_fclv0.05_Ebv20.1_EbhV13",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 1.55,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 1.6888840800613947e+22,
+            "d_100": 3.1578329165253827,
+            "N_111": 5.866296433142719e+21,
+            "d_111": 0.9930055651972101,
+            "N_void": 4.046635567380954e+17,
+            "d_void": 0.5609960825980641
+          }
+        },
+        {
+          "row_id": 4803,
+          "label": "S1803_fclv0.05_Ebv20.45_EbhV13",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 1.55,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 1.6888840800613947e+22,
+            "d_100": 3.1578329165253827,
+            "N_111": 5.866296433142719e+21,
+            "d_111": 0.9930055651972101,
+            "N_void": 4.046635567380954e+17,
+            "d_void": 0.5609960825980641
           }
         }
       ]
@@ -32684,10 +32809,90 @@
         "d_111",
         "N_100"
       ]
+    },
+    "f_cl_v": {
+      "columns": [
+        "f_cl_v"
+      ],
+      "seen_in": [
+        "S18_calib_machine2"
+      ],
+      "peak_response": 0.0,
+      "response": {
+        "N_loops_100": 0.0,
+        "d_100_nm": 0.0,
+        "N_loops_111": 0.0,
+        "d_111_nm": 0.0,
+        "N_voids": 0.0,
+        "d_cavity_nm": 0.0
+      },
+      "spans": {
+        "f_cl_v": [
+          0.05,
+          0.05
+        ]
+      },
+      "n_pairs": 0,
+      "drove_invalid": false,
+      "verdict": "inconclusive",
+      "moves": []
+    },
+    "E_b_v2": {
+      "columns": [
+        "E_b_v2"
+      ],
+      "seen_in": [
+        "S18_calib_machine2"
+      ],
+      "peak_response": 0.0,
+      "response": {
+        "N_loops_100": 0.0,
+        "d_100_nm": 0.0,
+        "N_loops_111": 0.0,
+        "d_111_nm": 0.0,
+        "N_voids": 0.0,
+        "d_cavity_nm": 0.0
+      },
+      "spans": {
+        "E_b_v2": [
+          0.1,
+          0.44999999999999996
+        ]
+      },
+      "n_pairs": 1,
+      "drove_invalid": false,
+      "verdict": "dead",
+      "moves": []
+    },
+    "E_b_hV_1": {
+      "columns": [
+        "E_b_hV_1"
+      ],
+      "seen_in": [
+        "S18_calib_machine2"
+      ],
+      "peak_response": 0.0,
+      "response": {
+        "N_loops_100": 0.0,
+        "d_100_nm": 0.0,
+        "N_loops_111": 0.0,
+        "d_111_nm": 0.0,
+        "N_voids": 0.0,
+        "d_cavity_nm": 0.0
+      },
+      "spans": {
+        "E_b_hV_1": [
+          3.0,
+          3.0
+        ]
+      },
+      "n_pairs": 0,
+      "drove_invalid": false,
+      "verdict": "inconclusive",
+      "moves": []
     }
   },
   "untested_columns": [
-    "E_b_hV_1",
     "E_m_h",
     "E_m_v",
     "Z_i_loop",
@@ -32889,7 +33094,7 @@
       "min_row_h": 0.23
     },
     "Nasr-Workstation": {
-      "n": 411,
+      "n": 413,
       "n_timed_out": 164,
       "median_row_h": 3.35,
       "max_row_h": 19.79,
@@ -32900,124 +33105,95 @@
     "deprioritized_observables": {
       "N_void": "Missed by ~300x AND nearly unresponsive to its own governing parameters: the S14 vacancy triple moved N_void only 2.57e18 -> 9.08e18 (3.5x) while moving loop content 160x. A residual that large with a response that small is evidence of a structural defect in the cavity channel, not a parameter that needs tuning. Re-enable once cavity nucleation is shown to respond at all.",
       "d_void": "Pinned at 0.56-0.57 nm across every row of every stage, including a 160x swing in loop content. Same reasoning as N_void."
+    },
+    "unwired_parameters": {
+      "E_b_v2": "S18 rows 4801 and 4803 differ only in E_b_v2 (0.10 vs 0.45 eV, the full prior box) and agree in 63 of 67 numeric fields BIT-FOR-BIT -- N_voids, mean_n_v and S_inventory to the last digit; only row_id bookkeeping and wall_s differ. At 603 K a 0.35 eV binding change should move di-vacancy emission by exp(0.35/0.052) ~ 840x. Confirmed in source: `E_b_v2` appears only in py_utils/create_excel.py, which BUILDS the workbook; binding_energies.E_b_void() derives the m=2 binding from the capillary term plus A_void_0*exp(-lambda*(m-1)) and never reads it. Note the same function's docstring records that `lambda` and `A_void_0` were once carried by the workbook and unread -- same bug, previously fixed. FIX THE CODE, then delete this entry; do not sweep E_b_v2 until then."
     }
   },
-  "notes": [
-    {
-      "date": "2026-08-19",
-      "title": "WINNING CASE: i_mobile fixed at 5, N_111 ceiling accepted at 1.5e22",
-      "decided_by": "author",
-      "body": [
-        "i_mobile IS NO LONGER A FREE PARAMETER.  It is fixed at 5 for all",
-        "subsequent stages.  S17 measured it across 5/32/60 at three s_i values:",
-        "i_mobile=5 is the only setting that puts N_100 AND d_100 in range",
-        "simultaneously (8.4e21 and 6.79 nm at s_i=1), and raising it degrades",
-        "both -- 1.97e22 for N_100 at 32 -- while buying only a 13% reduction in",
-        "N_111.  Designs that sweep it are re-measuring a settled question.",
-        "",
-        "N_111 CEILING RAISED 1.1e22 -> 1.5e22 in targets_330C_15dpa.json.  This",
-        "is an accepted tolerance, not a new measurement, and it is recorded as",
-        "such: the 1.1e22 figure was itself an OUTLIER row at f_100=45%, not part",
-        "of the high-f cluster (1.93/1.73/3.27e21) the rest of the range derives",
-        "from.  The best vector sits at 1.43e22, inside the new ceiling.",
-        "",
-        "CONSEQUENCE, stated plainly: S1700_imobile5_si1_phimaxjunc0.05 becomes",
-        "the campaign's first 3/6 -- N_100, d_100 and N_111 in range together --",
-        "by a decision about the acceptance band, not by a physics improvement.",
-        "The underlying model value did not move.  Every prior stage is rescored",
-        "retroactively and other machines will see in-range counts change.",
-        "",
-        "WHAT IS STILL GENUINELY MISSED: d_111 at 1.05 nm against 3.4-7 nm, and",
-        "the two deferred cavity observables.  d_111 is now the campaign's",
-        "leading open problem and the target of the next stage."
-      ]
-    }
-  ],
+  "notes": [],
   "next": {
-    "stage": "S21",
-    "machine": 1,
-    "machine_name": "Matrix-PC",
+    "stage": "S20",
+    "machine": 0,
+    "machine_name": "MacBook Pro",
     "levers": [
-      "s_i",
+      "L_hat",
       "B_111",
-      "L_hat"
+      "E_m_i"
     ],
     "n_levels": [
-      5,
+      3,
       2,
       2
     ],
-    "n_rows": 20,
-    "design": "design/S21_calib.csv",
-    "labels": "design/S21_labels.json",
+    "n_rows": 12,
+    "design": "design/S20_calib.csv",
+    "labels": "design/S20_labels.json",
     "pinned_to": {
       "stage": "S17_calib_machine1",
       "row_id": 4700,
       "label": "S1700_imobile5_si1_phimaxjunc0.05"
     },
-    "rationale": "worst residuals are N_111 (7.4x), d_111 (0.169x), N_100 (1.69x); sweeping s_i, B_111, L_hat, which the ledger has not retired",
+    "rationale": "worst residuals are N_111 (7.4x), d_111 (0.169x), N_100 (1.69x); sweeping L_hat, B_111, E_m_i, which the ledger has not retired",
     "cost_estimate": {
       "known": true,
-      "source": "measured on this machine",
-      "median_row_h": 7.89,
-      "max_row_h": 18.87,
-      "slots": 20,
+      "source": "scaled from another machine by registry `speed`",
+      "median_row_h": 3.79,
+      "max_row_h": 7.01,
+      "slots": 14,
       "waves": 1,
-      "est_wall_h": 18.9
+      "est_wall_h": 7.0
     },
     "commands": [
       "python run_ensemble.py \\",
-      "    --design design/S21_calib.csv \\",
+      "    --design design/S20_calib.csv \\",
       "    --conditions conditions_S8.json \\",
       "    --spec parameters_S4.json \\",
-      "    --out results/S21_calib_machine1.jsonl \\",
+      "    --out results/S20_calib_machine0.jsonl \\",
       "    --machine 0 --of 1 \\",
       "    --equations bin_moment --i-discrete 100 --i-bin 36 \\",
       "    --v-discrete 5 --v-bin 20 --allow-mixed \\",
       "    --I 80000 --V 2000 --dose 15.0 --lnl 1 --rtol 1e-5 \\",
       "    --solver-mode full_system \\",
-      "    --timeout-s 108000 --workers 20 --omp-threads 1"
+      "    --timeout-s 43200 --workers 14 --omp-threads 1"
     ]
   },
   "next_by_machine": {
     "1": {
-      "stage": "S21",
+      "stage": "S19",
       "machine": 1,
       "machine_name": "Matrix-PC",
       "levers": [
-        "s_i",
-        "B_111",
-        "L_hat"
+        "i_mobile",
+        "phi_max_junc"
       ],
       "n_levels": [
-        5,
-        2,
+        10,
         2
       ],
       "n_rows": 20,
-      "design": "design/S21_calib.csv",
-      "labels": "design/S21_labels.json",
+      "design": "design/S19_calib.csv",
+      "labels": "design/S19_labels.json",
       "pinned_to": {
         "stage": "S17_calib_machine1",
         "row_id": 4700,
         "label": "S1700_imobile5_si1_phimaxjunc0.05"
       },
-      "rationale": "worst residuals are N_111 (7.4x), d_111 (0.169x), N_100 (1.69x); sweeping s_i, B_111, L_hat, which the ledger has not retired",
+      "rationale": "worst residuals are N_111 (7.4x), d_111 (0.169x), N_100 (1.69x); sweeping i_mobile, phi_max_junc, which the ledger has not retired",
       "cost_estimate": {
         "known": true,
         "source": "measured on this machine",
-        "median_row_h": 7.89,
-        "max_row_h": 18.87,
+        "median_row_h": 7.58,
+        "max_row_h": 14.02,
         "slots": 20,
         "waves": 1,
-        "est_wall_h": 18.9
+        "est_wall_h": 14.0
       },
       "commands": [
         "python run_ensemble.py \\",
-        "    --design design/S21_calib.csv \\",
+        "    --design design/S19_calib.csv \\",
         "    --conditions conditions_S8.json \\",
         "    --spec parameters_S4.json \\",
-        "    --out results/S21_calib_machine1.jsonl \\",
+        "    --out results/S19_calib_machine1.jsonl \\",
         "    --machine 0 --of 1 \\",
         "    --equations bin_moment --i-discrete 100 --i-bin 36 \\",
         "    --v-discrete 5 --v-bin 20 --allow-mixed \\",

@@ -1,6 +1,6 @@
 # Calibration Guide - EUROFER97 digital twin
 
-*Derived by `learn.py`; content last changed 2026-08-19 19:21:54Z (re-running with no new results leaves this file untouched). Do not hand-edit: edits are overwritten. Durable notes belong in `calibration_ledger.json` under `notes`, which is preserved across regenerations.*
+*Derived by `learn.py`; content last changed 2026-08-19 19:55:47Z (re-running with no new results leaves this file untouched). Do not hand-edit: edits are overwritten. Durable notes belong in `calibration_ledger.json` under `notes`, which is preserved across regenerations.*
 
 ## Goal
 
@@ -65,12 +65,15 @@ A lever is **dead** when its full tested span moves every observable by less tha
 | `Z_i+Z_p_i+Z_p_v+Z_gb_i+Z_gb_v` | Z_i 1.2->1.35; Z_p_i 1.2->1.45; Z_p_v 0.93->0.98; Z_gb_i 1.2->1.4; Z_gb_v 0.93->0.98 | **inconclusive** (drives rows off-grid) | 0 | - | - | S12_calib |
 | `d_g+rho_p` | d_g 1e-06->4e-06; rho_p 1e+19->1e+20 | **inconclusive** (drives rows off-grid) | 0 | - | - | S13_calib |
 | `f_cl_i` | f_cl_i 0.02->0.124 | **inconclusive** (drives rows off-grid) | 0 | - | - | S15_calib_machine0, S8_15dpa |
+| `f_cl_v` | f_cl_v 0.05->0.05 | **inconclusive** | 0 | - | - | S18_calib_machine2 |
+| `E_b_v2` | E_b_v2 0.1->0.45 | **dead** | 1 | 0.0% | - | S18_calib_machine2 |
+| `E_b_hV_1` | E_b_hV_1 3->3 | **inconclusive** | 0 | - | - | S18_calib_machine2 |
 
 ### Never varied
 
 These columns exist in the design but have never taken more than one value, so the campaign has no evidence about them:
 
-`E_b_hV_1`, `E_m_h`, `E_m_v`, `Z_i_loop`, `Z_v`, `dH2_abs_conv`, `dH2_conv`, `gamma_s`, `lambda`, `loop_net_K_rec`, `loop_net_chi`, `loop_net_w_c`, `r_p`, `rho_d`
+`E_m_h`, `E_m_v`, `Z_i_loop`, `Z_v`, `dH2_abs_conv`, `dH2_conv`, `gamma_s`, `lambda`, `loop_net_K_rec`, `loop_net_chi`, `loop_net_w_c`, `r_p`, `rho_d`
 
 ## Stage history
 
@@ -89,6 +92,7 @@ Only stages that ran to 15.0 dpa are in scope; the rest are listed for provenanc
 | `S15_calib_machine0` | 15 | in | 6 | 3 | `eta`, `f_cl_i`, `E_b_i2` | 2 |
 | `S16_calib_machine1` | 15 | in | 17 | 14 | `E_m_i`, `L_hat`, `B_111` | 2 |
 | `S17_calib_machine1` | 15 | in | 13 | 13 | `phi_max_junc`, `i_mobile`, `s_i` | 3 |
+| `S18_calib_machine2` | 15 | in | 2 | 2 | `f_cl_v`, `E_b_v2`, `E_b_hV_1` | 1 |
 | `S1_calib` | 1 | out | 2 | 0 | - | - |
 | `S1_lnl0` | 1 | out | 12 | 1 | - | 0 |
 | `S1_lnl1` | 1 | out | 4 | 0 | - | - |
@@ -135,7 +139,7 @@ Completed rows only. A row cut at the budget measures the timeout, not the cost,
 | MATRIX-PC2 | 111 | 7.89 h | 2.94 h | 18.87 h | 0 |
 | Mac.san.rr.com | 264 | 1.58 h | 0.33 h | 5.51 h | 0 |
 | MacBook-Pro.local | 493 | 1.02 h | 0.23 h | 9.2 h | 0 |
-| Nasr-Workstation | 411 | 3.35 h | 0.15 h | 19.79 h | 164 |
+| Nasr-Workstation | 413 | 3.35 h | 0.15 h | 19.79 h | 164 |
 
 `plan.py` sizes a stage from this table and the machine slot count, and refuses to propose a design whose estimated cost exceeds the machine row budget.
 
@@ -147,16 +151,18 @@ Measured, not assumed: a level counts here only if it produced ZERO full-dose ro
 |---|---|---|
 | `E_b_i2` | 0.6 | S14_calib: 0 of 6 rows reached dose at E_b_i2=0.6 |
 
+## Parameters the physics never reads
+
+A design can set these and the solver ignores them, so sweeping one produces bit-identical rows. `plan.py` refuses to propose them. These are BUGS to fix, not physics conclusions - remove the entry once the code reads the parameter.
+
+- **`E_b_v2`** - S18 rows 4801 and 4803 differ only in E_b_v2 (0.10 vs 0.45 eV, the full prior box) and agree in 63 of 67 numeric fields BIT-FOR-BIT -- N_voids, mean_n_v and S_inventory to the last digit; only row_id bookkeeping and wall_s differ. At 603 K a 0.35 eV binding change should move di-vacancy emission by exp(0.35/0.052) ~ 840x. Confirmed in source: `E_b_v2` appears only in py_utils/create_excel.py, which BUILDS the workbook; binding_energies.E_b_void() derives the m=2 binding from the capillary term plus A_void_0*exp(-lambda*(m-1)) and never reads it. Note the same function's docstring records that `lambda` and `A_void_0` were once carried by the workbook and unread -- same bug, previously fixed. FIX THE CODE, then delete this entry; do not sweep E_b_v2 until then.
+
 ## Deferred observables
 
 The planner will not propose levers for these until the entry is removed from `calibration_ledger.json` under `policy.deprioritized_observables`. They still appear in every score above - they are deferred, not ignored.
 
 - **N_void** - Missed by ~300x AND nearly unresponsive to its own governing parameters: the S14 vacancy triple moved N_void only 2.57e18 -> 9.08e18 (3.5x) while moving loop content 160x. A residual that large with a response that small is evidence of a structural defect in the cavity channel, not a parameter that needs tuning. Re-enable once cavity nucleation is shown to respond at all.
 - **d_void** - Pinned at 0.56-0.57 nm across every row of every stage, including a 160x swing in loop content. Same reasoning as N_void.
-
-## Curated notes
-
-- {'date': '2026-08-19', 'title': 'WINNING CASE: i_mobile fixed at 5, N_111 ceiling accepted at 1.5e22', 'decided_by': 'author', 'body': ['i_mobile IS NO LONGER A FREE PARAMETER.  It is fixed at 5 for all', 'subsequent stages.  S17 measured it across 5/32/60 at three s_i values:', 'i_mobile=5 is the only setting that puts N_100 AND d_100 in range', 'simultaneously (8.4e21 and 6.79 nm at s_i=1), and raising it degrades', 'both -- 1.97e22 for N_100 at 32 -- while buying only a 13% reduction in', 'N_111.  Designs that sweep it are re-measuring a settled question.', '', 'N_111 CEILING RAISED 1.1e22 -> 1.5e22 in targets_330C_15dpa.json.  This', 'is an accepted tolerance, not a new measurement, and it is recorded as', 'such: the 1.1e22 figure was itself an OUTLIER row at f_100=45%, not part', 'of the high-f cluster (1.93/1.73/3.27e21) the rest of the range derives', 'from.  The best vector sits at 1.43e22, inside the new ceiling.', '', 'CONSEQUENCE, stated plainly: S1700_imobile5_si1_phimaxjunc0.05 becomes', "the campaign's first 3/6 -- N_100, d_100 and N_111 in range together --", 'by a decision about the acceptance band, not by a physics improvement.', 'The underlying model value did not move.  Every prior stage is rescored', 'retroactively and other machines will see in-range counts change.', '', 'WHAT IS STILL GENUINELY MISSED: d_111 at 1.05 nm against 3.4-7 nm, and', "the two deferred cavity observables.  d_111 is now the campaign's", 'leading open problem and the target of the next stage.']}
 
 ## Claimed stages
 
@@ -165,31 +171,31 @@ One row per machine. A machine claims a stage by running `plan.py --write` on it
 | machine | stage | levers | rows | design |
 |---|---|---|---|---|
 | 0 (MacBook Pro) | **S20** | `L_hat`, `B_111`, `E_m_i` | 12 | `design/S20_calib.csv` |
-| 1 (Matrix-PC) | **S21** | `s_i`, `B_111`, `L_hat` | 20 | `design/S21_calib.csv` |
+| 1 (Matrix-PC) | **S19** | `i_mobile`, `phi_max_junc` | 20 | `design/S19_calib.csv` |
 | 2 (Nasr Workstation) | **S18** | `f_cl_v`, `E_b_v2`, `E_b_hV_1` | 12 | `design/S18_calib.csv` |
 
 ## Next stage
 
-**S21** - worst residuals are N_111 (7.4x), d_111 (0.169x), N_100 (1.69x); sweeping s_i, B_111, L_hat, which the ledger has not retired
+**S20** - worst residuals are N_111 (7.4x), d_111 (0.169x), N_100 (1.69x); sweeping L_hat, B_111, E_m_i, which the ledger has not retired
 
-Sweeping: `s_i`, `B_111`, `L_hat`
+Sweeping: `L_hat`, `B_111`, `E_m_i`
 
-Design: `design/S21_calib.csv` (20 rows)
+Design: `design/S20_calib.csv` (12 rows)
 
 Run it with:
 
 ```bash
 python run_ensemble.py \
-    --design design/S21_calib.csv \
+    --design design/S20_calib.csv \
     --conditions conditions_S8.json \
     --spec parameters_S4.json \
-    --out results/S21_calib_machine1.jsonl \
+    --out results/S20_calib_machine0.jsonl \
     --machine 0 --of 1 \
     --equations bin_moment --i-discrete 100 --i-bin 36 \
     --v-discrete 5 --v-bin 20 --allow-mixed \
     --I 80000 --V 2000 --dose 15.0 --lnl 1 --rtol 1e-5 \
     --solver-mode full_system \
-    --timeout-s 108000 --workers 20 --omp-threads 1
+    --timeout-s 43200 --workers 14 --omp-threads 1
 ```
 
 ## Multi-machine protocol

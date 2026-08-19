@@ -75,6 +75,25 @@ DEFAULT_POLICY = {
                    "including a 160x swing in loop content. Same reasoning as "
                    "N_void."),
     },
+    # Parameters the design can set that the PHYSICS NEVER READS.  Sweeping one
+    # produces bit-identical rows and burns the machine time silently.  Each
+    # entry must cite how it was established.
+    "unwired_parameters": {
+        "E_b_v2": ("S18 rows 4801 and 4803 differ only in E_b_v2 (0.10 vs "
+                   "0.45 eV, the full prior box) and agree in 63 of 67 numeric "
+                   "fields BIT-FOR-BIT -- N_voids, mean_n_v and S_inventory to "
+                   "the last digit; only row_id bookkeeping and wall_s differ. "
+                   "At 603 K a 0.35 eV binding change should move di-vacancy "
+                   "emission by exp(0.35/0.052) ~ 840x. Confirmed in source: "
+                   "`E_b_v2` appears only in py_utils/create_excel.py, which "
+                   "BUILDS the workbook; binding_energies.E_b_void() derives "
+                   "the m=2 binding from the capillary term plus "
+                   "A_void_0*exp(-lambda*(m-1)) and never reads it. Note the "
+                   "same function's docstring records that `lambda` and "
+                   "`A_void_0` were once carried by the workbook and unread -- "
+                   "same bug, previously fixed. FIX THE CODE, then delete this "
+                   "entry; do not sweep E_b_v2 until then."),
+    },
 }
 
 
@@ -592,7 +611,11 @@ def ingest() -> dict:
         "best": best,
         "residuals": best["ratios"] if best else {},
         "cost_model": cost_model(all_rows),
-        "policy": prev.get("policy", DEFAULT_POLICY),
+        # Preserve curated policy, but MERGE IN any category the defaults have
+        # gained since the ledger was written -- otherwise a new policy kind
+        # (unwired_parameters) is silently shadowed by the stored dict and
+        # never takes effect.  Existing keys are never overwritten.
+        "policy": {**DEFAULT_POLICY, **(prev.get("policy") or {})},
         "notes": prev.get("notes", []),      # hand-written insight survives
         "next": prev.get("next"),            # plan.py owns these two fields
         "next_by_machine": prev.get("next_by_machine", {}),
@@ -802,6 +825,19 @@ def render_guide(led: dict) -> str:
             A("| `%s` | %s | %s |"
               % (col, ", ".join(str(v) for v in rec["unaffordable"]),
                  "; ".join(rec["evidence"])))
+        A("")
+
+    unw = (led.get("policy") or {}).get("unwired_parameters") or {}
+    if unw:
+        A("## Parameters the physics never reads")
+        A("")
+        A("A design can set these and the solver ignores them, so sweeping one "
+          "produces bit-identical rows. `plan.py` refuses to propose them. "
+          "These are BUGS to fix, not physics conclusions - remove the entry "
+          "once the code reads the parameter.")
+        A("")
+        for k, why in sorted(unw.items()):
+            A("- **`%s`** - %s" % (k, why))
         A("")
 
     dep = (led.get("policy") or {}).get("deprioritized_observables") or {}

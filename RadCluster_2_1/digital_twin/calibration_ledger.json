@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated": "2026-08-18 22:42:23Z",
+  "updated": "2026-08-19 12:42:43Z",
   "goal": {
     "statement": "Find one parameter vector that puts all six observables inside their experimental ranges at EUROFER97 330 C / 15 dpa, neutron.",
     "targets_file": "targets_330C_15dpa.json",
@@ -74,6 +74,7 @@
           "verdict": "inconclusive"
         }
       },
+      "affordability": {},
       "rows": [
         {
           "row_id": 4003,
@@ -338,6 +339,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 4100,
@@ -371,6 +373,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 4100,
@@ -405,6 +408,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 4100,
@@ -437,6 +441,7 @@
       "n_valid": 1,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 4100,
@@ -562,6 +567,7 @@
           "verdict": "inconclusive"
         }
       },
+      "affordability": {},
       "rows": [
         {
           "row_id": 4205,
@@ -909,6 +915,7 @@
           "verdict": "inconclusive"
         }
       },
+      "affordability": {},
       "rows": [
         {
           "row_id": 4306,
@@ -1185,8 +1192,8 @@
       "results": "results/S14_calib.jsonl",
       "dose_target": 15.0,
       "in_scope": true,
-      "n_rows": 5,
-      "n_valid": 3,
+      "n_rows": 12,
+      "n_valid": 4,
       "swept": [
         "f_cl_v+E_b_v2+s_v",
         "E_b_i2",
@@ -1213,16 +1220,16 @@
               2.5
             ]
           },
-          "n_pairs": 1,
+          "n_pairs": 2,
           "response": {
             "N_loops_100": 0.04688019531077403,
-            "d_100_nm": 6.748740250226811,
-            "N_loops_111": 0.4463755649505272,
-            "d_111_nm": 0.033653872046009226,
-            "N_voids": 1.0132979702567084,
+            "d_100_nm": 6.927975629990434,
+            "N_loops_111": 0.4517742558543695,
+            "d_111_nm": 0.03448256923854143,
+            "N_voids": 1.0133164459244863,
             "d_cavity_nm": 0.007512396118883435
           },
-          "peak_response": 6.748740250226811,
+          "peak_response": 6.927975629990434,
           "drove_invalid": true,
           "verdict": "live"
         },
@@ -1232,7 +1239,7 @@
           ],
           "span": {
             "E_b_i2": [
-              0.75,
+              0.6,
               0.75
             ]
           },
@@ -1246,7 +1253,7 @@
             "d_cavity_nm": 0.0
           },
           "peak_response": 0.0,
-          "drove_invalid": false,
+          "drove_invalid": true,
           "verdict": "inconclusive"
         },
         "E_a0_conv": {
@@ -1259,18 +1266,31 @@
               2.3
             ]
           },
-          "n_pairs": 1,
+          "n_pairs": 2,
           "response": {
             "N_loops_100": 0.013318665837333876,
-            "d_100_nm": 0.0019492483518690484,
-            "N_loops_111": 0.00446427879630229,
-            "d_111_nm": 0.0003240372931210267,
+            "d_100_nm": 0.025125241898299677,
+            "N_loops_111": 0.005330794942969064,
+            "d_111_nm": 0.0005337979041725172,
             "N_voids": 5.405477754960586e-06,
             "d_cavity_nm": 1.606338511761507e-06
           },
-          "peak_response": 0.013318665837333876,
+          "peak_response": 0.025125241898299677,
           "drove_invalid": true,
           "verdict": "dead"
+        }
+      },
+      "affordability": {
+        "E_b_i2": {
+          "unaffordable": [
+            "0.6"
+          ],
+          "affordable": [
+            "0.75"
+          ],
+          "evidence": [
+            "S14_calib: 0 of 6 rows reached dose at E_b_i2=0.6"
+          ]
         }
       },
       "rows": [
@@ -1372,6 +1392,364 @@
             "N_void": 9.078637848503436e+18,
             "d_void": 0.5686585591444576
           }
+        },
+        {
+          "row_id": 4406,
+          "label": "E06_V1_Ea2.30_Eb0.75",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 1.229,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 5.862845461763598e+22,
+            "d_100": 38.64025018897274,
+            "N_111": 4.912592192979056e+21,
+            "d_111": 1.0319956637952667,
+            "N_void": 5.164238649182392e+18,
+            "d_void": 0.5653012710675004
+          }
+        },
+        {
+          "row_id": 4407,
+          "label": "E07_V1_Ea2.30_Eb0.60",
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.85,
+          "dose_reached": 0.0042861606445482,
+          "observables": {
+            "N_100": 1.0557149125259757e+18,
+            "d_100": 14.450561545874796,
+            "N_111": 1.0906002137418984e+21,
+            "d_111": 1.3556486225757842,
+            "N_void": 5.210180498108084e+18,
+            "d_void": 0.6397006570533338
+          }
+        },
+        {
+          "row_id": 4403,
+          "label": "E03_V0_Ea2.30_Eb0.60",
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.462,
+          "dose_reached": 0.39899734704565265,
+          "observables": {
+            "N_100": 5.802139659535346e+19,
+            "d_100": 26.14202931871575,
+            "N_111": 7.792260055979275e+20,
+            "d_111": 1.260185184278302,
+            "N_void": 2.5818683341879793e+18,
+            "d_void": 0.5848452819278076
+          }
+        },
+        {
+          "row_id": 4411,
+          "label": "E11_V2_Ea2.30_Eb0.60",
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 1.317,
+          "dose_reached": 0.16113493020510428,
+          "observables": {
+            "N_100": 5.808583992119589e+19,
+            "d_100": 58.34988217980697,
+            "N_111": 2.06382557667942e+21,
+            "d_111": 1.5061916029082878,
+            "N_void": 9.107687669945216e+18,
+            "d_void": 0.5783173658944242
+          }
+        },
+        {
+          "row_id": 4405,
+          "label": "E05_V1_Ea2.10_Eb0.60",
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "STARV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.274,
+          "dose_reached": 0.39899734704565265,
+          "observables": {
+            "N_100": 1.6260527966194922e+20,
+            "d_100": 32.33468533267354,
+            "N_111": 1.057305531393885e+21,
+            "d_111": 1.3133228250031341,
+            "N_void": 5.183042004906934e+18,
+            "d_void": 0.5686030387010912
+          }
+        },
+        {
+          "row_id": 4409,
+          "label": "E09_V2_Ea2.10_Eb0.60",
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "STARV",
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 1.108,
+          "dose_reached": 0.9879849313046444,
+          "observables": {
+            "N_100": 7.30856012657698e+20,
+            "d_100": 55.92498521891911,
+            "N_111": 2.8969766191007106e+21,
+            "d_111": 1.5112254693465126,
+            "N_void": 9.084578496450764e+18,
+            "d_void": 0.5697656490336285
+          }
+        },
+        {
+          "row_id": 4401,
+          "label": "E01_V0_Ea2.10_Eb0.60",
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "STARV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.36,
+          "dose_reached": 6.0577444210425115,
+          "observables": {
+            "N_100": 1.8120435902100757e+20,
+            "d_100": 20.945853524355513,
+            "N_111": 7.437472313940199e+20,
+            "d_111": 1.2316065021213243,
+            "N_void": 2.577048808208188e+18,
+            "d_void": 0.5622566509420858
+          }
+        }
+      ]
+    },
+    "S15_calib_machine0": {
+      "design": "design/S15_calib.csv",
+      "results": "results/S15_calib_machine0.jsonl",
+      "dose_target": 15.0,
+      "in_scope": true,
+      "n_rows": 6,
+      "n_valid": 3,
+      "swept": [
+        "eta",
+        "f_cl_i",
+        "E_b_i2"
+      ],
+      "sensitivity": {
+        "eta": {
+          "columns": [
+            "eta"
+          ],
+          "span": {
+            "eta": [
+              0.049999999999999996,
+              0.24871922678490938
+            ]
+          },
+          "n_pairs": 3,
+          "response": {
+            "N_loops_100": 0.8530047781985297,
+            "d_100_nm": 0.10904930490749731,
+            "N_loops_111": 1.4252186578864383,
+            "d_111_nm": 0.06344079008969117,
+            "N_voids": 3.9723317582283135,
+            "d_cavity_nm": 0.00027065909880796823
+          },
+          "peak_response": 3.9723317582283135,
+          "drove_invalid": true,
+          "verdict": "live"
+        },
+        "f_cl_i": {
+          "columns": [
+            "f_cl_i"
+          ],
+          "span": {
+            "f_cl_i": [
+              0.020000000000000004,
+              0.12401708029210569
+            ]
+          },
+          "n_pairs": 0,
+          "response": {
+            "N_loops_100": 0.0,
+            "d_100_nm": 0.0,
+            "N_loops_111": 0.0,
+            "d_111_nm": 0.0,
+            "N_voids": 0.0,
+            "d_cavity_nm": 0.0
+          },
+          "peak_response": 0.0,
+          "drove_invalid": true,
+          "verdict": "inconclusive"
+        },
+        "E_b_i2": {
+          "columns": [
+            "E_b_i2"
+          ],
+          "span": {
+            "E_b_i2": [
+              0.75,
+              0.75
+            ]
+          },
+          "n_pairs": 0,
+          "response": {
+            "N_loops_100": 0.0,
+            "d_100_nm": 0.0,
+            "N_loops_111": 0.0,
+            "d_111_nm": 0.0,
+            "N_voids": 0.0,
+            "d_cavity_nm": 0.0
+          },
+          "peak_response": 0.0,
+          "drove_invalid": false,
+          "verdict": "inconclusive"
+        }
+      },
+      "affordability": {},
+      "rows": [
+        {
+          "row_id": 4503,
+          "label": "S1503_eta0.05_fcli0.124_Ebi20.75",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 2,
+          "log_distance": 1.513,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 3.3241781119557795e+22,
+            "d_100": 5.459817339264349,
+            "N_111": 3.678458636269745e+21,
+            "d_111": 1.1408848030796586,
+            "N_void": 5.158655339472203e+17,
+            "d_void": 0.5609348133843881
+          }
+        },
+        {
+          "row_id": 4511,
+          "label": "S1511_eta0.249_fcli0.124_Ebi20.75",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 2,
+          "log_distance": 1.312,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 6.159717925037027e+22,
+            "d_100": 4.86442805349567,
+            "N_111": 8.921066516944889e+21,
+            "d_111": 1.0685061697709632,
+            "N_void": 2.5650545774211697e+18,
+            "d_void": 0.5610866354954688
+          }
+        },
+        {
+          "row_id": 4501,
+          "label": "S1501_eta0.05_fcli0.02_Ebi20.75",
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 1.536,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 8.086769555383575e+21,
+            "d_100": 60.05848702883352,
+            "N_111": 7.274294228297975e+20,
+            "d_111": 1.1746191770639207,
+            "N_void": 5.161261339433316e+17,
+            "d_void": 0.5608726371193755
+          }
+        },
+        {
+          "row_id": 4507,
+          "label": "S1507_eta0.112_fcli0.124_Ebi20.75",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 2,
+          "log_distance": 1.407,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 4.6535412402356216e+22,
+            "d_100": 5.111961804739293,
+            "N_111": 5.721655427994114e+21,
+            "d_111": 1.1039539789925827,
+            "N_void": 1.1503203424904749e+18,
+            "d_void": 0.5609904987850893
+          }
+        },
+        {
+          "row_id": 4505,
+          "label": "S1505_eta0.112_fcli0.02_Ebi20.75",
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.418,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 1.394022980327545e+22,
+            "d_100": 61.523938682133725,
+            "N_111": 8.012307598854715e+20,
+            "d_111": 1.0710280253143503,
+            "N_void": 1.1512594654937967e+18,
+            "d_void": 0.5608878797673049
+          }
+        },
+        {
+          "row_id": 4509,
+          "label": "S1509_eta0.249_fcli0.02_Ebi20.75",
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.297,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 1.9457181573622167e+22,
+            "d_100": 61.597540098429405,
+            "N_111": 1.1916356631113333e+21,
+            "d_111": 1.0256270284396427,
+            "N_void": 2.5681983986247066e+18,
+            "d_void": 0.5609280328397193
+          }
         }
       ]
     },
@@ -1384,6 +1762,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 2001,
@@ -1438,6 +1817,7 @@
       "n_valid": 1,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 2009,
@@ -1710,6 +2090,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 2102,
@@ -1812,6 +2193,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 2000,
@@ -1844,6 +2226,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 3100,
@@ -1984,6 +2367,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 3000,
@@ -2319,6 +2703,7 @@
           "verdict": "live"
         }
       },
+      "affordability": {},
       "rows": [
         {
           "row_id": 3304,
@@ -2643,6 +3028,7 @@
           "verdict": "live"
         }
       },
+      "affordability": {},
       "rows": [
         {
           "row_id": 3400,
@@ -2827,6 +3213,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 3401,
@@ -2879,6 +3266,7 @@
       "n_valid": 2,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 3500,
@@ -2927,6 +3315,7 @@
       "n_valid": 2,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 3500,
@@ -3074,6 +3463,7 @@
           "verdict": "live"
         }
       },
+      "affordability": {},
       "rows": [
         {
           "row_id": 3605,
@@ -3257,6 +3647,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 3700,
@@ -3493,6 +3884,7 @@
           "verdict": "inconclusive"
         }
       },
+      "affordability": {},
       "rows": [
         {
           "row_id": 3904,
@@ -3631,6 +4023,7 @@
       "n_valid": 1,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 3800,
@@ -3662,6 +4055,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 3800,
@@ -3694,6 +4088,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 3800,
@@ -3727,6 +4122,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 3800,
@@ -3786,6 +4182,7 @@
           "verdict": "inconclusive"
         }
       },
+      "affordability": {},
       "rows": [
         {
           "row_id": 900,
@@ -4304,6 +4701,7 @@
           "verdict": "inconclusive"
         }
       },
+      "affordability": {},
       "rows": [
         {
           "row_id": 1004,
@@ -4622,6 +5020,7 @@
           "verdict": "inconclusive"
         }
       },
+      "affordability": {},
       "rows": [
         {
           "row_id": 1201,
@@ -4898,6 +5297,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 25,
@@ -15082,6 +15482,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 247,
@@ -16253,6 +16654,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 43,
@@ -19768,6 +20170,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 1,
@@ -21476,6 +21879,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 5,
@@ -23173,6 +23577,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 10,
@@ -24878,6 +25283,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 32,
@@ -29853,6 +30259,7 @@
           "verdict": "inconclusive"
         }
       },
+      "affordability": {},
       "rows": [
         {
           "row_id": 22,
@@ -29885,6 +30292,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 302,
@@ -29968,6 +30376,7 @@
           "verdict": "inconclusive"
         }
       },
+      "affordability": {},
       "rows": [
         {
           "row_id": 400,
@@ -30026,6 +30435,7 @@
       "n_valid": 2,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 500,
@@ -30117,6 +30527,7 @@
       "n_valid": 0,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 808,
@@ -30390,6 +30801,7 @@
       "n_valid": 2,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 500,
@@ -30481,6 +30893,7 @@
       "n_valid": 1,
       "swept": [],
       "sensitivity": {},
+      "affordability": {},
       "rows": [
         {
           "row_id": 810,
@@ -30761,6 +31174,7 @@
         "S12_calib",
         "S13_calib",
         "S14_calib",
+        "S15_calib_machine0",
         "S8_15dpa"
       ],
       "peak_response": 0.0,
@@ -30794,12 +31208,12 @@
         "S14_calib",
         "S8_15dpa"
       ],
-      "peak_response": 0.013318665837333876,
+      "peak_response": 0.025125241898299677,
       "response": {
         "N_loops_100": 0.013318665837333876,
-        "d_100_nm": 0.0019492483518690484,
-        "N_loops_111": 0.00446427879630229,
-        "d_111_nm": 0.0003240372931210267,
+        "d_100_nm": 0.025125241898299677,
+        "N_loops_111": 0.005330794942969064,
+        "d_111_nm": 0.0005337979041725172,
         "N_voids": 5.405477754960586e-06,
         "d_cavity_nm": 1.606338511761507e-06
       },
@@ -30809,7 +31223,7 @@
           2.3
         ]
       },
-      "n_pairs": 1,
+      "n_pairs": 2,
       "drove_invalid": true,
       "verdict": "dead",
       "moves": []
@@ -30902,13 +31316,13 @@
       "seen_in": [
         "S14_calib"
       ],
-      "peak_response": 6.748740250226811,
+      "peak_response": 6.927975629990434,
       "response": {
         "N_loops_100": 0.04688019531077403,
-        "d_100_nm": 6.748740250226811,
-        "N_loops_111": 0.4463755649505272,
-        "d_111_nm": 0.033653872046009226,
-        "N_voids": 1.0132979702567084,
+        "d_100_nm": 6.927975629990434,
+        "N_loops_111": 0.4517742558543695,
+        "d_111_nm": 0.03448256923854143,
+        "N_voids": 1.0133164459244863,
         "d_cavity_nm": 0.007512396118883435
       },
       "spans": {
@@ -30925,7 +31339,7 @@
           2.5
         ]
       },
-      "n_pairs": 1,
+      "n_pairs": 2,
       "drove_invalid": true,
       "verdict": "live",
       "moves": [
@@ -30934,11 +31348,45 @@
         "N_111"
       ]
     },
+    "eta": {
+      "columns": [
+        "eta"
+      ],
+      "seen_in": [
+        "S15_calib_machine0"
+      ],
+      "peak_response": 3.9723317582283135,
+      "response": {
+        "N_loops_100": 0.8530047781985297,
+        "d_100_nm": 0.10904930490749731,
+        "N_loops_111": 1.4252186578864383,
+        "d_111_nm": 0.06344079008969117,
+        "N_voids": 3.9723317582283135,
+        "d_cavity_nm": 0.00027065909880796823
+      },
+      "spans": {
+        "eta": [
+          0.049999999999999996,
+          0.24871922678490938
+        ]
+      },
+      "n_pairs": 3,
+      "drove_invalid": true,
+      "verdict": "live",
+      "moves": [
+        "N_void",
+        "N_111",
+        "N_100",
+        "d_100",
+        "d_111"
+      ]
+    },
     "f_cl_i": {
       "columns": [
         "f_cl_i"
       ],
       "seen_in": [
+        "S15_calib_machine0",
         "S8_15dpa"
       ],
       "peak_response": 0.0,
@@ -30952,8 +31400,8 @@
       },
       "spans": {
         "f_cl_i": [
-          0.05,
-          0.12401708029210567
+          0.020000000000000004,
+          0.12401708029210569
         ]
       },
       "n_pairs": 0,
@@ -31000,7 +31448,6 @@
     "Z_v",
     "dH2_abs_conv",
     "dH2_conv",
-    "eta",
     "gamma_s",
     "lambda",
     "loop_net_K_rec",
@@ -31011,6 +31458,25 @@
     "rho_d",
     "s_i"
   ],
+  "affordability": {
+    "E_b_i2": {
+      "unaffordable": [
+        "0.6"
+      ],
+      "affordable": [
+        "0.75"
+      ],
+      "evidence": [
+        "S14_calib: 0 of 6 rows reached dose at E_b_i2=0.6"
+      ],
+      "unaffordable_numeric": [
+        0.6
+      ],
+      "affordable_numeric": [
+        0.75
+      ]
+    }
+  },
   "best": {
     "stage": "S14_calib",
     "row_id": 4400,
@@ -31107,29 +31573,33 @@
     "d_void": 0.2158
   },
   "cost_model": {
+    "Mac.san.rr.com": {
+      "n": 264,
+      "n_timed_out": 0,
+      "median_row_h": 1.58,
+      "max_row_h": 5.51,
+      "min_row_h": 0.33
+    },
     "Nasr-Workstation": {
-      "n": 568,
+      "n": 411,
+      "n_timed_out": 164,
       "median_row_h": 3.35,
-      "max_row_h": 16.07,
-      "min_row_h": 0.04
+      "max_row_h": 19.79,
+      "min_row_h": 0.15
     },
     "MacBook-Pro.local": {
       "n": 480,
+      "n_timed_out": 0,
       "median_row_h": 1.02,
       "max_row_h": 9.2,
       "min_row_h": 0.23
     },
     "MATRIX-PC2": {
       "n": 81,
+      "n_timed_out": 0,
       "median_row_h": 6.5,
       "max_row_h": 14.02,
       "min_row_h": 2.94
-    },
-    "Mac.san.rr.com": {
-      "n": 258,
-      "median_row_h": 1.58,
-      "max_row_h": 4.73,
-      "min_row_h": 0.33
     }
   },
   "policy": {
@@ -31140,49 +31610,143 @@
   },
   "notes": [],
   "next": {
-    "stage": "S17",
-    "machine": 1,
-    "machine_name": "Matrix-PC",
+    "stage": "S18",
+    "machine": 2,
+    "machine_name": "Nasr Workstation",
     "levers": [
-      "i_mobile",
-      "s_i",
-      "phi_max_junc"
+      "f_cl_v",
+      "E_b_v2",
+      "E_b_hV_1"
     ],
     "n_levels": [
       3,
-      3,
+      2,
       2
     ],
-    "n_rows": 18,
-    "design": "design/S17_calib.csv",
-    "labels": "design/S17_labels.json",
+    "n_rows": 12,
+    "design": "design/S18_calib.csv",
+    "labels": "design/S18_labels.json",
     "pinned_to": {
       "stage": "S14_calib",
       "row_id": 4400,
       "label": "E00_V0_Ea2.10_Eb0.75"
     },
-    "rationale": "worst residuals are N_100 (12.4x), d_111 (0.172x), N_111 (4.62x); sweeping i_mobile, s_i, phi_max_junc, which the ledger has not retired",
+    "rationale": "worst residuals are N_100 (12.4x), d_111 (0.172x), N_111 (4.62x); sweeping f_cl_v, E_b_v2, E_b_hV_1, which the ledger has not retired",
     "cost_estimate": {
       "known": true,
       "source": "measured on this machine",
-      "median_row_h": 6.5,
-      "max_row_h": 14.02,
-      "slots": 20,
+      "median_row_h": 3.35,
+      "max_row_h": 19.79,
+      "slots": 12,
       "waves": 1,
-      "est_wall_h": 14.0
+      "est_wall_h": 19.8
     },
     "commands": [
       "python run_ensemble.py \\",
-      "    --design design/S17_calib.csv \\",
+      "    --design design/S18_calib.csv \\",
       "    --conditions conditions_S8.json \\",
       "    --spec parameters_S4.json \\",
-      "    --out results/S17_calib_machine1.jsonl \\",
+      "    --out results/S18_calib_machine2.jsonl \\",
       "    --machine 0 --of 1 \\",
       "    --equations bin_moment --i-discrete 100 --i-bin 36 \\",
       "    --v-discrete 5 --v-bin 20 --allow-mixed \\",
       "    --I 80000 --V 2000 --dose 15.0 --lnl 1 --rtol 1e-5 \\",
       "    --solver-mode full_system \\",
-      "    --timeout-s 72000 --workers 20 --omp-threads 1"
+      "    --timeout-s 72000 --workers 12 --omp-threads 1"
     ]
+  },
+  "next_by_machine": {
+    "1": {
+      "stage": "S17",
+      "machine": 1,
+      "machine_name": "Matrix-PC",
+      "levers": [
+        "i_mobile",
+        "s_i",
+        "phi_max_junc"
+      ],
+      "n_levels": [
+        3,
+        3,
+        2
+      ],
+      "n_rows": 18,
+      "design": "design/S17_calib.csv",
+      "labels": "design/S17_labels.json",
+      "pinned_to": {
+        "stage": "S14_calib",
+        "row_id": 4400,
+        "label": "E00_V0_Ea2.10_Eb0.75"
+      },
+      "rationale": "worst residuals are N_100 (12.4x), d_111 (0.172x), N_111 (4.62x); sweeping i_mobile, s_i, phi_max_junc, which the ledger has not retired",
+      "cost_estimate": {
+        "known": true,
+        "source": "measured on this machine",
+        "median_row_h": 6.5,
+        "max_row_h": 14.02,
+        "slots": 20,
+        "waves": 1,
+        "est_wall_h": 14.0
+      },
+      "commands": [
+        "python run_ensemble.py \\",
+        "    --design design/S17_calib.csv \\",
+        "    --conditions conditions_S8.json \\",
+        "    --spec parameters_S4.json \\",
+        "    --out results/S17_calib_machine1.jsonl \\",
+        "    --machine 0 --of 1 \\",
+        "    --equations bin_moment --i-discrete 100 --i-bin 36 \\",
+        "    --v-discrete 5 --v-bin 20 --allow-mixed \\",
+        "    --I 80000 --V 2000 --dose 15.0 --lnl 1 --rtol 1e-5 \\",
+        "    --solver-mode full_system \\",
+        "    --timeout-s 72000 --workers 20 --omp-threads 1"
+      ]
+    },
+    "2": {
+      "stage": "S18",
+      "machine": 2,
+      "machine_name": "Nasr Workstation",
+      "levers": [
+        "f_cl_v",
+        "E_b_v2",
+        "E_b_hV_1"
+      ],
+      "n_levels": [
+        3,
+        2,
+        2
+      ],
+      "n_rows": 12,
+      "design": "design/S18_calib.csv",
+      "labels": "design/S18_labels.json",
+      "pinned_to": {
+        "stage": "S14_calib",
+        "row_id": 4400,
+        "label": "E00_V0_Ea2.10_Eb0.75"
+      },
+      "rationale": "worst residuals are N_100 (12.4x), d_111 (0.172x), N_111 (4.62x); sweeping f_cl_v, E_b_v2, E_b_hV_1, which the ledger has not retired",
+      "cost_estimate": {
+        "known": true,
+        "source": "measured on this machine",
+        "median_row_h": 3.35,
+        "max_row_h": 19.79,
+        "slots": 12,
+        "waves": 1,
+        "est_wall_h": 19.8
+      },
+      "commands": [
+        "python run_ensemble.py \\",
+        "    --design design/S18_calib.csv \\",
+        "    --conditions conditions_S8.json \\",
+        "    --spec parameters_S4.json \\",
+        "    --out results/S18_calib_machine2.jsonl \\",
+        "    --machine 0 --of 1 \\",
+        "    --equations bin_moment --i-discrete 100 --i-bin 36 \\",
+        "    --v-discrete 5 --v-bin 20 --allow-mixed \\",
+        "    --I 80000 --V 2000 --dose 15.0 --lnl 1 --rtol 1e-5 \\",
+        "    --solver-mode full_system \\",
+        "    --timeout-s 72000 --workers 12 --omp-threads 1"
+      ]
+    }
   }
 }

@@ -270,6 +270,65 @@ def sensitivity(stage: dict, rows: list, targets: dict,
     return out
 
 
+# ---------------------------------------------------------- affordability ---
+def affordability(stage: dict, rows: list, dose_target: float) -> dict:
+    """Which lever VALUES prevent a row from ever reaching dose.
+
+    This is a COST verdict, not a physics one, and it is measured with a
+    controlled contrast: within one stage, a level counts as unaffordable only
+    if it produced zero full-dose rows while ANOTHER level of the same
+    co-varying group -- everything else held equal -- produced at least one.
+
+    S14 is the motivating case.  All six rows at E_b_i2 = 0.60 burned the full
+    20 h budget and reached 0.004-6.06 of 15 dpa; all six at 0.75 finished in
+    5.3-19.8 h.  Nothing about that is visible in the physics verdicts, because
+    a row that never reaches dose is excluded from scoring -- so without this
+    the planner cheerfully proposes another stage in the same dead direction.
+    """
+    design = read_design(stage["design"])
+    if not design:
+        return {}
+    by_id = {str(r["row_id"]): r for r in rows if r.get("row_id") is not None}
+    out = {}
+    for group in covarying_groups(design):
+        tally = {}
+        for rid, drow in design.items():
+            r = by_id.get(rid)
+            if r is None:
+                continue
+            reached = abs((r.get("dose_reached") or 0.0) - dose_target) \
+                <= 0.02 * dose_target
+            key = group_key(drow, group)
+            slot = tally.setdefault(key, [0, 0])
+            slot[0] += 1
+            slot[1] += reached
+        if len(tally) < 2:
+            continue
+        any_ok = any(v[1] > 0 for v in tally.values())
+        # ATTRIBUTE ONLY WHAT IS ATTRIBUTABLE.  A co-varying group that fails
+        # says nothing about which member caused it: S14's V2 level moved
+        # f_cl_v, E_b_v2 and s_v together, so blaming each individually would
+        # cap E_b_v2 at 0.35 on evidence that never isolated it.  Multi-column
+        # groups are recorded under the joined name and never clip a single
+        # column's box.
+        if len(group) > 1:
+            continue
+        for key, (n, ok) in tally.items():
+            for col, val in zip(group, key):
+                rec = out.setdefault(col, {"unaffordable": [], "affordable": [],
+                                           "evidence": []})
+                if ok == 0 and n >= 3 and any_ok:
+                    if val not in rec["unaffordable"]:
+                        rec["unaffordable"].append(val)
+                        rec["evidence"].append(
+                            "%s: 0 of %d rows reached dose at %s=%s"
+                            % (stage.get("stem", "?"), n, col, val))
+                elif ok > 0 and val not in rec["affordable"]:
+                    rec["affordable"].append(val)
+    # Drop columns with nothing adverse to say.
+    return {c: r for c, r in out.items() if r["unaffordable"]}
+
+
 # ------------------------------------------------------------ inventory -----
 def inventory(row: dict, targets: dict):
     """Compare SIA content locked in loops against the measurement.
@@ -304,18 +363,35 @@ def inventory(row: dict, targets: dict):
 
 # ----------------------------------------------------------- cost model -----
 def cost_model(all_rows: list) -> dict:
-    by_machine = {}
+    """Wall time per row, per machine -- from COMPLETED rows only.
+
+    A row cut at the budget records wall_s == the budget, which measures the
+    timeout and not the cost.  Counting those pins max_row_h to the budget, and
+    since plan.py refuses a design whose worst row exceeds the budget, one
+    timed-out stage would make the planner refuse every subsequent design on
+    that machine.  S14 did exactly this: six rows at 20.0 h that never reached
+    dose.  Timeouts are counted separately, because a machine that times out
+    often is still worth knowing about.
+    """
+    done, timed_out = {}, {}
     for r in all_rows:
         w, m = r.get("wall_s"), r.get("machine_id")
-        if w and m:
-            by_machine.setdefault(m, []).append(float(w))
+        if not (w and m):
+            continue
+        tgt = r.get("dose_target")
+        reached = r.get("dose_reached")
+        finished = (tgt is None or reached is None
+                    or abs(reached - tgt) <= 0.02 * tgt)
+        (done if finished else timed_out).setdefault(m, []).append(float(w))
     out = {}
-    for m, ws in by_machine.items():
-        ws.sort()
-        out[m] = {"n": len(ws),
-                  "median_row_h": round(ws[len(ws) // 2] / 3600.0, 2),
-                  "max_row_h": round(ws[-1] / 3600.0, 2),
-                  "min_row_h": round(ws[0] / 3600.0, 2)}
+    for m in set(done) | set(timed_out):
+        ws = sorted(done.get(m, []))
+        rec = {"n": len(ws), "n_timed_out": len(timed_out.get(m, []))}
+        if ws:
+            rec.update({"median_row_h": round(ws[len(ws) // 2] / 3600.0, 2),
+                        "max_row_h": round(ws[-1] / 3600.0, 2),
+                        "min_row_h": round(ws[0] / 3600.0, 2)})
+        out[m] = rec
     return out
 
 
@@ -387,6 +463,8 @@ def ingest() -> dict:
             "n_rows": len(rows), "n_valid": n_valid,
             "swept": swept,
             "sensitivity": sensitivity(meta, rows, targets, stage_dose),
+            "affordability": (affordability(dict(meta, stem=stem), rows, stage_dose)
+                              if in_scope else {}),
             "rows": recs,
         }
 
@@ -442,6 +520,24 @@ def ingest() -> dict:
             all_cols |= {c for c in next(iter(d.values())) if c not in BOOKKEEPING}
     untested = sorted(all_cols - tested_cols)
 
+    # Roll affordability up across in-scope stages.
+    afford = {}
+    for stem, st in stages.items():
+        for col, rec in (st.get("affordability") or {}).items():
+            a = afford.setdefault(col, {"unaffordable": [], "affordable": [],
+                                        "evidence": []})
+            for kind in ("unaffordable", "affordable"):
+                for v in rec.get(kind, []):
+                    if v not in a[kind]:
+                        a[kind].append(v)
+            a["evidence"].extend(rec["evidence"])
+    for col, a in afford.items():
+        for kind in ("unaffordable", "affordable"):
+            try:
+                a[kind + "_numeric"] = sorted(float(v) for v in a[kind])
+            except (TypeError, ValueError):
+                pass
+
     ledger = {
         "schema": 1,
         "updated": None,                     # set below, from CONTENT not clock
@@ -455,12 +551,14 @@ def ingest() -> dict:
         "stages": stages,
         "levers": levers,
         "untested_columns": untested,
+        "affordability": afford,
         "best": best,
         "residuals": best["ratios"] if best else {},
         "cost_model": cost_model(all_rows),
         "policy": prev.get("policy", DEFAULT_POLICY),
         "notes": prev.get("notes", []),      # hand-written insight survives
-        "next": prev.get("next"),            # plan.py owns this field
+        "next": prev.get("next"),            # plan.py owns these two fields
+        "next_by_machine": prev.get("next_by_machine", {}),
     }
 
     # RE-INGESTING THE SAME RESULTS MUST BE A BYTE-FOR-BYTE NO-OP.  The ledger
@@ -613,16 +711,40 @@ def render_guide(led: dict) -> str:
 
     A("## Cost model (measured)")
     A("")
-    A("| machine | rows timed | median row | min | max |")
-    A("|---|---|---|---|---|")
+    A("Completed rows only. A row cut at the budget measures the timeout, not "
+      "the cost, so timeouts are counted in their own column.")
+    A("")
+    A("| machine | completed | median row | min | max | timed out |")
+    A("|---|---|---|---|---|---|")
     for m, cm in sorted(led["cost_model"].items()):
-        A("| %s | %d | %s h | %s h | %s h |"
-          % (m, cm["n"], cm["median_row_h"], cm["min_row_h"], cm["max_row_h"]))
+        if cm["n"]:
+            A("| %s | %d | %s h | %s h | %s h | %d |"
+              % (m, cm["n"], cm["median_row_h"], cm["min_row_h"],
+                 cm["max_row_h"], cm["n_timed_out"]))
+        else:
+            A("| %s | 0 | - | - | - | %d |" % (m, cm["n_timed_out"]))
     A("")
     A("`plan.py` sizes a stage from this table and the machine slot count, and "
       "refuses to propose a design whose estimated cost exceeds the machine "
       "row budget.")
     A("")
+
+    aff = led.get("affordability") or {}
+    if aff:
+        A("## Unaffordable lever values")
+        A("")
+        A("Measured, not assumed: a level counts here only if it produced ZERO "
+          "full-dose rows while another level of the same lever - everything "
+          "else held equal - produced at least one. `plan.py` will not place a "
+          "design point on these values.")
+        A("")
+        A("| lever | unaffordable at | evidence |")
+        A("|---|---|---|")
+        for col, rec in sorted(aff.items()):
+            A("| `%s` | %s | %s |"
+              % (col, ", ".join(str(v) for v in rec["unaffordable"]),
+                 "; ".join(rec["evidence"])))
+        A("")
 
     dep = (led.get("policy") or {}).get("deprioritized_observables") or {}
     if dep:
@@ -642,6 +764,24 @@ def render_guide(led: dict) -> str:
         A("")
         for n in led["notes"]:
             A("- %s" % n)
+        A("")
+
+    claims = led.get("next_by_machine") or {}
+    if claims:
+        A("## Claimed stages")
+        A("")
+        A("One row per machine. A machine claims a stage by running `plan.py "
+          "--write` on it; the claim is not a lock, only a record of what that "
+          "machine was last told to run.")
+        A("")
+        A("| machine | stage | levers | rows | design |")
+        A("|---|---|---|---|---|")
+        for idx in sorted(claims, key=lambda k: int(k)):
+            c = claims[idx]
+            A("| %s (%s) | **%s** | %s | %s | `%s` |"
+              % (idx, c.get("machine_name", "?"), c.get("stage"),
+                 ", ".join("`%s`" % l for l in c.get("levers", [])),
+                 c.get("n_rows", "?"), c.get("design", "")))
         A("")
 
     A("## Next stage")

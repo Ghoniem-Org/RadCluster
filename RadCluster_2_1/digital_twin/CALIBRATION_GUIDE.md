@@ -1,6 +1,6 @@
 # Calibration Guide - EUROFER97 digital twin
 
-*Derived by `learn.py`; content last changed 2026-08-18 22:42:23Z (re-running with no new results leaves this file untouched). Do not hand-edit: edits are overwritten. Durable notes belong in `calibration_ledger.json` under `notes`, which is preserved across regenerations.*
+*Derived by `learn.py`; content last changed 2026-08-19 12:42:43Z (re-running with no new results leaves this file untouched). Do not hand-edit: edits are overwritten. Durable notes belong in `calibration_ledger.json` under `notes`, which is preserved across regenerations.*
 
 ## Goal
 
@@ -39,19 +39,20 @@ A lever is **dead** when its full tested span moves every observable by less tha
 
 | lever | tested span | verdict | valid pairs | peak response | moves | stages |
 |---|---|---|---|---|---|---|
-| `f_cl_v+E_b_v2+s_v` | f_cl_v 0.317->0.7; E_b_v2 0.213->0.35; s_v 1.9->2.5 | **live** (drives rows off-grid) | 1 | 674.9% | d_100, N_void, N_111 | S14_calib |
-| `E_a0_conv` | E_a0_conv 1.8->2.3 | **dead** (drives rows off-grid) | 1 | 1.3% | - | S10_calib, S12_calib, S13_calib, S14_calib, S8_15dpa |
-| `E_b_i2` | E_b_i2 0.55->0.875 | **inconclusive** (drives rows off-grid) | 0 | - | - | S10_calib, S12_calib, S13_calib, S14_calib, S8_15dpa |
+| `f_cl_v+E_b_v2+s_v` | f_cl_v 0.317->0.7; E_b_v2 0.213->0.35; s_v 1.9->2.5 | **live** (drives rows off-grid) | 2 | 692.8% | d_100, N_void, N_111 | S14_calib |
+| `eta` | eta 0.05->0.249 | **live** (drives rows off-grid) | 3 | 397.2% | N_void, N_111, N_100, d_100, d_111 | S15_calib_machine0 |
+| `E_a0_conv` | E_a0_conv 1.8->2.3 | **dead** (drives rows off-grid) | 2 | 2.5% | - | S10_calib, S12_calib, S13_calib, S14_calib, S8_15dpa |
+| `E_b_i2` | E_b_i2 0.55->0.875 | **inconclusive** (drives rows off-grid) | 0 | - | - | S10_calib, S12_calib, S13_calib, S14_calib, S15_calib_machine0, S8_15dpa |
 | `Z_i+Z_p_i+Z_p_v+Z_gb_i+Z_gb_v` | Z_i 1.2->1.35; Z_p_i 1.2->1.45; Z_p_v 0.93->0.98; Z_gb_i 1.2->1.4; Z_gb_v 0.93->0.98 | **inconclusive** (drives rows off-grid) | 0 | - | - | S12_calib |
 | `d_g+rho_p` | d_g 1e-06->4e-06; rho_p 1e+19->1e+20 | **inconclusive** (drives rows off-grid) | 0 | - | - | S13_calib |
-| `f_cl_i` | f_cl_i 0.05->0.124 | **inconclusive** (drives rows off-grid) | 0 | - | - | S8_15dpa |
+| `f_cl_i` | f_cl_i 0.02->0.124 | **inconclusive** (drives rows off-grid) | 0 | - | - | S15_calib_machine0, S8_15dpa |
 | `i_mobile` | i_mobile 40->100 | **inconclusive** (drives rows off-grid) | 0 | - | - | S8_15dpa |
 
 ### Never varied
 
 These columns exist in the design but have never taken more than one value, so the campaign has no evidence about them:
 
-`B_111`, `E_b_hV_1`, `E_m_h`, `E_m_i`, `E_m_v`, `L_hat`, `Z_i_loop`, `Z_v`, `dH2_abs_conv`, `dH2_conv`, `eta`, `gamma_s`, `lambda`, `loop_net_K_rec`, `loop_net_chi`, `loop_net_w_c`, `phi_max_junc`, `r_p`, `rho_d`, `s_i`
+`B_111`, `E_b_hV_1`, `E_m_h`, `E_m_i`, `E_m_v`, `L_hat`, `Z_i_loop`, `Z_v`, `dH2_abs_conv`, `dH2_conv`, `gamma_s`, `lambda`, `loop_net_K_rec`, `loop_net_chi`, `loop_net_w_c`, `phi_max_junc`, `r_p`, `rho_d`, `s_i`
 
 ## Stage history
 
@@ -66,7 +67,8 @@ Only stages that ran to 15.0 dpa are in scope; the rest are listed for provenanc
 | `S11eq_full_system` | 0.002 | out | 1 | 1 | - | 1 |
 | `S12_calib` | 15 | in | 12 | 0 | `E_b_i2`, `Z_i+Z_p_i+Z_p_v+Z_gb_i+Z_gb_v`, `E_a0_conv` | - |
 | `S13_calib` | 15 | in | 12 | 0 | `E_b_i2`, `E_a0_conv`, `d_g+rho_p` | - |
-| `S14_calib` | 15 | in | 5 | 3 | `f_cl_v+E_b_v2+s_v`, `E_b_i2`, `E_a0_conv` | 2 |
+| `S14_calib` | 15 | in | 12 | 4 | `f_cl_v+E_b_v2+s_v`, `E_b_i2`, `E_a0_conv` | 2 |
+| `S15_calib_machine0` | 15 | in | 6 | 3 | `eta`, `f_cl_i`, `E_b_i2` | 2 |
 | `S1_calib` | 1 | out | 2 | 0 | - | - |
 | `S1_lnl0` | 1 | out | 12 | 1 | - | 0 |
 | `S1_lnl1` | 1 | out | 4 | 0 | - | - |
@@ -105,14 +107,24 @@ Only stages that ran to 15.0 dpa are in scope; the rest are listed for provenanc
 
 ## Cost model (measured)
 
-| machine | rows timed | median row | min | max |
-|---|---|---|---|---|
-| MATRIX-PC2 | 81 | 6.5 h | 2.94 h | 14.02 h |
-| Mac.san.rr.com | 258 | 1.58 h | 0.33 h | 4.73 h |
-| MacBook-Pro.local | 480 | 1.02 h | 0.23 h | 9.2 h |
-| Nasr-Workstation | 568 | 3.35 h | 0.04 h | 16.07 h |
+Completed rows only. A row cut at the budget measures the timeout, not the cost, so timeouts are counted in their own column.
+
+| machine | completed | median row | min | max | timed out |
+|---|---|---|---|---|---|
+| MATRIX-PC2 | 81 | 6.5 h | 2.94 h | 14.02 h | 0 |
+| Mac.san.rr.com | 264 | 1.58 h | 0.33 h | 5.51 h | 0 |
+| MacBook-Pro.local | 480 | 1.02 h | 0.23 h | 9.2 h | 0 |
+| Nasr-Workstation | 411 | 3.35 h | 0.15 h | 19.79 h | 164 |
 
 `plan.py` sizes a stage from this table and the machine slot count, and refuses to propose a design whose estimated cost exceeds the machine row budget.
+
+## Unaffordable lever values
+
+Measured, not assumed: a level counts here only if it produced ZERO full-dose rows while another level of the same lever - everything else held equal - produced at least one. `plan.py` will not place a design point on these values.
+
+| lever | unaffordable at | evidence |
+|---|---|---|
+| `E_b_i2` | 0.6 | S14_calib: 0 of 6 rows reached dose at E_b_i2=0.6 |
 
 ## Deferred observables
 
@@ -121,28 +133,37 @@ The planner will not propose levers for these until the entry is removed from `c
 - **N_void** - Missed by ~300x AND nearly unresponsive to its own governing parameters: the S14 vacancy triple moved N_void only 2.57e18 -> 9.08e18 (3.5x) while moving loop content 160x. A residual that large with a response that small is evidence of a structural defect in the cavity channel, not a parameter that needs tuning. Re-enable once cavity nucleation is shown to respond at all.
 - **d_void** - Pinned at 0.56-0.57 nm across every row of every stage, including a 160x swing in loop content. Same reasoning as N_void.
 
+## Claimed stages
+
+One row per machine. A machine claims a stage by running `plan.py --write` on it; the claim is not a lock, only a record of what that machine was last told to run.
+
+| machine | stage | levers | rows | design |
+|---|---|---|---|---|
+| 1 (Matrix-PC) | **S17** | `i_mobile`, `s_i`, `phi_max_junc` | 18 | `design/S17_calib.csv` |
+| 2 (Nasr Workstation) | **S18** | `f_cl_v`, `E_b_v2`, `E_b_hV_1` | 12 | `design/S18_calib.csv` |
+
 ## Next stage
 
-**S17** - worst residuals are N_100 (12.4x), d_111 (0.172x), N_111 (4.62x); sweeping i_mobile, s_i, phi_max_junc, which the ledger has not retired
+**S18** - worst residuals are N_100 (12.4x), d_111 (0.172x), N_111 (4.62x); sweeping f_cl_v, E_b_v2, E_b_hV_1, which the ledger has not retired
 
-Sweeping: `i_mobile`, `s_i`, `phi_max_junc`
+Sweeping: `f_cl_v`, `E_b_v2`, `E_b_hV_1`
 
-Design: `design/S17_calib.csv` (18 rows)
+Design: `design/S18_calib.csv` (12 rows)
 
 Run it with:
 
 ```bash
 python run_ensemble.py \
-    --design design/S17_calib.csv \
+    --design design/S18_calib.csv \
     --conditions conditions_S8.json \
     --spec parameters_S4.json \
-    --out results/S17_calib_machine1.jsonl \
+    --out results/S18_calib_machine2.jsonl \
     --machine 0 --of 1 \
     --equations bin_moment --i-discrete 100 --i-bin 36 \
     --v-discrete 5 --v-bin 20 --allow-mixed \
     --I 80000 --V 2000 --dose 15.0 --lnl 1 --rtol 1e-5 \
     --solver-mode full_system \
-    --timeout-s 72000 --workers 20 --omp-threads 1
+    --timeout-s 72000 --workers 12 --omp-threads 1
 ```
 
 ## Multi-machine protocol

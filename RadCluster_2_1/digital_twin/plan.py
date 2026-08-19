@@ -106,6 +106,22 @@ PRIOR_BOX = {
     "E_b_hV_1":     (1.0, 3.0, "linear"),
 }
 
+# NUMERICAL-VALIDITY CEILINGS, distinct from the physical prior box above.
+# A value can be perfectly physical and still make the run unusable -- not by
+# timing out (that is `affordability`, learned from results) but by driving the
+# solver grid into pile-up, which invalidates the whole row including the
+# observables the stage was actually about.  Entries are curated, and each one
+# cites the evidence.  Intersected with PRIOR_BOX by box_for().
+VALIDITY_BOX = {
+    # S14: f_cl_v = 0.5 ran grid-clean to 15 dpa (occ_100 = 0.34); f_cl_v = 0.7
+    # piled at the ceiling (occ_100 = 0.90, grid_limited).  The boundary inside
+    # (0.5, 0.7) is unresolved, so 0.5 is the highest value known to work.
+    # NOTE the caveat: S14 moved f_cl_v, E_b_v2 and s_v together, so the
+    # pile-up is not attributable to f_cl_v alone.  The cap is conservative for
+    # that reason and can be lifted once a stage varies f_cl_v on its own.
+    "f_cl_v": (None, 0.5),
+}
+
 # A lever whose corrective direction retains less than this fraction of its
 # prior box -- after affordability clipping -- is not worth a stage.
 MIN_USABLE_SPAN = 0.10
@@ -262,6 +278,11 @@ def box_for(col: str, led: dict, base: float):
     value known to fail.
     """
     lo, hi, kind = PRIOR_BOX[col]
+    vlo, vhi = VALIDITY_BOX.get(col, (None, None))
+    if vlo is not None:
+        lo = max(lo, vlo)
+    if vhi is not None:
+        hi = min(hi, vhi)
     rec = (led.get("affordability") or {}).get(col)
     if not rec:
         return lo, hi, kind

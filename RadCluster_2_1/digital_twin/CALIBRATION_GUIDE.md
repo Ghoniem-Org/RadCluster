@@ -138,13 +138,13 @@ One row per machine. A machine claims a stage by running `plan.py --write` on it
 | machine | stage | levers | rows | design |
 |---|---|---|---|---|
 | 1 (Matrix-PC) | **S17** | `i_mobile`, `s_i`, `phi_max_junc` | 18 | `design/S17_calib.csv` |
-| 2 (Nasr Workstation) | **S18** | `gamma_s`, `E_b_v2`, `E_b_hV_1` | 12 | `design/S18_calib.csv` |
+| 2 (Nasr Workstation) | **S18** | `f_cl_v`, `E_b_v2`, `E_b_hV_1` | 12 | `design/S18_calib.csv` |
 
 ## Next stage
 
-**S18** - worst residuals are N_100 (12.4x), d_111 (0.172x), N_111 (4.62x); sweeping gamma_s, E_b_v2, E_b_hV_1, which the ledger has not retired
+**S18** - worst residuals are N_100 (12.4x), d_111 (0.172x), N_111 (4.62x); sweeping f_cl_v, E_b_v2, E_b_hV_1, which the ledger has not retired
 
-Sweeping: `gamma_s`, `E_b_v2`, `E_b_hV_1`
+Sweeping: `f_cl_v`, `E_b_v2`, `E_b_hV_1`
 
 Design: `design/S18_calib.csv` (12 rows)
 

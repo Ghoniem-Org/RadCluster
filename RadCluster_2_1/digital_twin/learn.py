@@ -305,6 +305,14 @@ def affordability(stage: dict, rows: list, dose_target: float) -> dict:
         if len(tally) < 2:
             continue
         any_ok = any(v[1] > 0 for v in tally.values())
+        # ATTRIBUTE ONLY WHAT IS ATTRIBUTABLE.  A co-varying group that fails
+        # says nothing about which member caused it: S14's V2 level moved
+        # f_cl_v, E_b_v2 and s_v together, so blaming each individually would
+        # cap E_b_v2 at 0.35 on evidence that never isolated it.  Multi-column
+        # groups are recorded under the joined name and never clip a single
+        # column's box.
+        if len(group) > 1:
+            continue
         for key, (n, ok) in tally.items():
             for col, val in zip(group, key):
                 rec = out.setdefault(col, {"unaffordable": [], "affordable": [],

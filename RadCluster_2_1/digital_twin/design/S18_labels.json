@@ -1,14 +1,14 @@
 {
- "4800": "S1800_gammas1.5_Ebv20.1_EbhV11",
- "4801": "S1801_gammas1.5_Ebv20.1_EbhV13",
- "4802": "S1802_gammas1.5_Ebv20.45_EbhV11",
- "4803": "S1803_gammas1.5_Ebv20.45_EbhV13",
- "4804": "S1804_gammas2.25_Ebv20.1_EbhV11",
- "4805": "S1805_gammas2.25_Ebv20.1_EbhV13",
- "4806": "S1806_gammas2.25_Ebv20.45_EbhV11",
- "4807": "S1807_gammas2.25_Ebv20.45_EbhV13",
- "4808": "S1808_gammas3_Ebv20.1_EbhV11",
- "4809": "S1809_gammas3_Ebv20.1_EbhV13",
- "4810": "S1810_gammas3_Ebv20.45_EbhV11",
- "4811": "S1811_gammas3_Ebv20.45_EbhV13"
+ "4800": "S1800_fclv0.05_Ebv20.1_EbhV11",
+ "4801": "S1801_fclv0.05_Ebv20.1_EbhV13",
+ "4802": "S1802_fclv0.05_Ebv20.45_EbhV11",
+ "4803": "S1803_fclv0.05_Ebv20.45_EbhV13",
+ "4804": "S1804_fclv0.275_Ebv20.1_EbhV11",
+ "4805": "S1805_fclv0.275_Ebv20.1_EbhV13",
+ "4806": "S1806_fclv0.275_Ebv20.45_EbhV11",
+ "4807": "S1807_fclv0.275_Ebv20.45_EbhV13",
+ "4808": "S1808_fclv0.5_Ebv20.1_EbhV11",
+ "4809": "S1809_fclv0.5_Ebv20.1_EbhV13",
+ "4810": "S1810_fclv0.5_Ebv20.45_EbhV11",
+ "4811": "S1811_fclv0.5_Ebv20.45_EbhV13"
 }

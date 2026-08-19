@@ -31332,20 +31332,6 @@
     "d_void": 0.2158
   },
   "cost_model": {
-    "MacBook-Pro.local": {
-      "n": 480,
-      "n_timed_out": 0,
-      "median_row_h": 1.02,
-      "max_row_h": 9.2,
-      "min_row_h": 0.23
-    },
-    "Nasr-Workstation": {
-      "n": 411,
-      "n_timed_out": 164,
-      "median_row_h": 3.35,
-      "max_row_h": 19.79,
-      "min_row_h": 0.15
-    },
     "Mac.san.rr.com": {
       "n": 258,
       "n_timed_out": 0,
@@ -31359,6 +31345,20 @@
       "median_row_h": 6.5,
       "max_row_h": 14.02,
       "min_row_h": 2.94
+    },
+    "Nasr-Workstation": {
+      "n": 411,
+      "n_timed_out": 164,
+      "median_row_h": 3.35,
+      "max_row_h": 19.79,
+      "min_row_h": 0.15
+    },
+    "MacBook-Pro.local": {
+      "n": 480,
+      "n_timed_out": 0,
+      "median_row_h": 1.02,
+      "max_row_h": 9.2,
+      "min_row_h": 0.23
     }
   },
   "policy": {
@@ -31373,7 +31373,7 @@
     "machine": 2,
     "machine_name": "Nasr Workstation",
     "levers": [
-      "gamma_s",
+      "f_cl_v",
       "E_b_v2",
       "E_b_hV_1"
     ],
@@ -31390,7 +31390,7 @@
       "row_id": 4400,
       "label": "E00_V0_Ea2.10_Eb0.75"
     },
-    "rationale": "worst residuals are N_100 (12.4x), d_111 (0.172x), N_111 (4.62x); sweeping gamma_s, E_b_v2, E_b_hV_1, which the ledger has not retired",
+    "rationale": "worst residuals are N_100 (12.4x), d_111 (0.172x), N_111 (4.62x); sweeping f_cl_v, E_b_v2, E_b_hV_1, which the ledger has not retired",
     "cost_estimate": {
       "known": true,
       "source": "measured on this machine",
@@ -31466,7 +31466,7 @@
       "machine": 2,
       "machine_name": "Nasr Workstation",
       "levers": [
-        "gamma_s",
+        "f_cl_v",
         "E_b_v2",
         "E_b_hV_1"
       ],
@@ -31483,7 +31483,7 @@
         "row_id": 4400,
         "label": "E00_V0_Ea2.10_Eb0.75"
       },
-      "rationale": "worst residuals are N_100 (12.4x), d_111 (0.172x), N_111 (4.62x); sweeping gamma_s, E_b_v2, E_b_hV_1, which the ledger has not retired",
+      "rationale": "worst residuals are N_100 (12.4x), d_111 (0.172x), N_111 (4.62x); sweeping f_cl_v, E_b_v2, E_b_hV_1, which the ledger has not retired",
       "cost_estimate": {
         "known": true,
         "source": "measured on this machine",

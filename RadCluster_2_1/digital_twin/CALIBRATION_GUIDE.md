@@ -123,20 +123,20 @@ The planner will not propose levers for these until the entry is removed from `c
 
 ## Next stage
 
-**S16** - worst residuals are N_100 (12.4x), d_111 (0.172x), N_111 (4.62x); sweeping B_111, L_hat, E_m_i, which the ledger has not retired
+**S17** - worst residuals are N_100 (12.4x), d_111 (0.172x), N_111 (4.62x); sweeping i_mobile, s_i, phi_max_junc, which the ledger has not retired
 
-Sweeping: `B_111`, `L_hat`, `E_m_i`
+Sweeping: `i_mobile`, `s_i`, `phi_max_junc`
 
-Design: `design/S16_calib.csv` (36 rows)
+Design: `design/S17_calib.csv` (18 rows)
 
 Run it with:
 
 ```bash
 python run_ensemble.py \
-    --design design/S16_calib.csv \
+    --design design/S17_calib.csv \
     --conditions conditions_S8.json \
     --spec parameters_S4.json \
-    --out results/S16_calib_machine1.jsonl \
+    --out results/S17_calib_machine1.jsonl \
     --machine 0 --of 1 \
     --equations bin_moment --i-discrete 100 --i-bin 36 \
     --v-discrete 5 --v-bin 20 --allow-mixed \

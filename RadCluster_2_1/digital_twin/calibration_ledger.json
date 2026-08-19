@@ -31140,43 +31140,43 @@
   },
   "notes": [],
   "next": {
-    "stage": "S16",
+    "stage": "S17",
     "machine": 1,
     "machine_name": "Matrix-PC",
     "levers": [
-      "B_111",
-      "L_hat",
-      "E_m_i"
+      "i_mobile",
+      "s_i",
+      "phi_max_junc"
     ],
     "n_levels": [
-      4,
       3,
-      3
+      3,
+      2
     ],
-    "n_rows": 36,
-    "design": "design/S16_calib.csv",
-    "labels": "design/S16_labels.json",
+    "n_rows": 18,
+    "design": "design/S17_calib.csv",
+    "labels": "design/S17_labels.json",
     "pinned_to": {
       "stage": "S14_calib",
       "row_id": 4400,
       "label": "E00_V0_Ea2.10_Eb0.75"
     },
-    "rationale": "worst residuals are N_100 (12.4x), d_111 (0.172x), N_111 (4.62x); sweeping B_111, L_hat, E_m_i, which the ledger has not retired",
+    "rationale": "worst residuals are N_100 (12.4x), d_111 (0.172x), N_111 (4.62x); sweeping i_mobile, s_i, phi_max_junc, which the ledger has not retired",
     "cost_estimate": {
       "known": true,
       "source": "measured on this machine",
       "median_row_h": 6.5,
       "max_row_h": 14.02,
       "slots": 20,
-      "waves": 2,
-      "est_wall_h": 28.0
+      "waves": 1,
+      "est_wall_h": 14.0
     },
     "commands": [
       "python run_ensemble.py \\",
-      "    --design design/S16_calib.csv \\",
+      "    --design design/S17_calib.csv \\",
       "    --conditions conditions_S8.json \\",
       "    --spec parameters_S4.json \\",
-      "    --out results/S16_calib_machine1.jsonl \\",
+      "    --out results/S17_calib_machine1.jsonl \\",
       "    --machine 0 --of 1 \\",
       "    --equations bin_moment --i-discrete 100 --i-bin 36 \\",
       "    --v-discrete 5 --v-bin 20 --allow-mixed \\",

@@ -109,6 +109,13 @@ PRIOR_BOX = {
 BOOKKEEPING = {"row_id", "condition", "cond_row_id", "matrix", "base_idx",
                "param_j", "theta_id"}
 
+# Levers that are COUNTS, not continuous parameters.  run_ensemble takes
+# i_mobile through int() at construction (line ~413), so an evenly spaced
+# float grid would run 32 while the design recorded 32.5 -- the row's own
+# provenance would then disagree with what was computed, and learn.py would
+# pair rows on a value no solver ever saw.  Round here instead.
+INTEGER_LEVERS = {"i_mobile"}
+
 
 def load_ledger() -> dict:
     if not LEDGER.exists():
@@ -243,8 +250,15 @@ def levels_for(col: str, base: float, n: int, prefer: int = 0) -> list:
         lo, hi, _ = PRIOR_BOX[col]
     if kind == "log" and lo > 0:
         a, b = math.log10(lo), math.log10(hi)
-        return [10 ** (a + (b - a) * i / (n - 1)) for i in range(n)]
-    return [lo + (hi - lo) * i / (n - 1) for i in range(n)]
+        vals = [10 ** (a + (b - a) * i / (n - 1)) for i in range(n)]
+    else:
+        vals = [lo + (hi - lo) * i / (n - 1) for i in range(n)]
+    if col in INTEGER_LEVERS:
+        # sorted(set(...)) can return FEWER levels than asked when the box is
+        # narrow; that is correct -- duplicate rows would just be re-running
+        # the same point -- and build_design sizes the factorial off the list.
+        vals = sorted({int(round(v)) for v in vals})
+    return vals
 
 
 def prefer_for(col: str, obs: str, ratio) -> int:

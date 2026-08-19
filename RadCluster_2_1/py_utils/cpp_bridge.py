@@ -48,7 +48,39 @@ GRACEFUL_SHUTDOWN_TIMEOUT_S = 60.0
 
 
 def _pin_child_to_cpu_group(pid):
-    """Move a freshly spawned solver.exe onto a specific Windows processor group.
+    """Keep a solver.exe on a specific Windows processor group.
+
+    A SINGLE PIN AT SPAWN DOES NOT HOLD, which is the whole reason this is a
+    retry loop and not one call.  Measured 2026-08-18: pinning 5 already-running
+    solvers moved the load immediately and permanently (group 1: 3.8 % ->
+    14.2 %), but the identical call issued straight after Popen left all 18
+    solvers of a fresh stage homed to group 0.  The child's own startup -- CRT
+    and the OpenMP runtime, which is group-aware -- re-homes the thread after
+    CreateProcess returns, so a pin placed before that is simply overwritten.
+
+    So pin, then re-pin over the first seconds of the row, from a daemon thread
+    that never blocks the row.  Rows run for hours; a few seconds on the wrong
+    socket costs nothing measurable.
+    """
+    group = os.environ.get("RADCLUSTER_CPU_GROUP", "").strip()
+    if not group or sys.platform != "win32":
+        return
+    def _keep():
+        for delay in (0.0, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0):
+            if delay:
+                time.sleep(delay)
+            try:
+                if _pin_once(pid, int(group)) == 0:
+                    return                    # process gone -- row finished
+            except Exception:
+                return
+    t = threading.Thread(target=_keep, daemon=True)
+    t.start()
+
+
+def _pin_once(pid, group):
+    """One pinning pass.  Returns the number of threads moved/confirmed, 0 if
+    the process no longer exists.
 
     NO-OP unless RADCLUSTER_CPU_GROUP is set, so every host that does not opt in
     behaves exactly as before.  Never raises: failing to pin must cost a little
@@ -70,9 +102,6 @@ def _pin_child_to_cpu_group(pid):
     NOT a numerical knob: affinity changes where a thread runs, never what it
     computes.  Rows produced with and without it are directly comparable.
     """
-    group = os.environ.get("RADCLUSTER_CPU_GROUP", "").strip()
-    if not group or sys.platform != "win32":
-        return
     try:
         import ctypes
         from ctypes import wintypes
@@ -101,7 +130,7 @@ def _pin_child_to_cpu_group(pid):
         g = int(group)
         n_cpu = int(k.GetActiveProcessorCount(ctypes.c_ushort(g)))
         if n_cpu <= 0:
-            return
+            return 0
         mask = (1 << n_cpu) - 1
 
         snap = k.CreateToolhelp32Snapshot(0x00000004, 0)   # TH32CS_SNAPTHREAD
@@ -123,8 +152,10 @@ def _pin_child_to_cpu_group(pid):
         if moved:
             logging.debug("pinned solver pid %s (%d thread(s)) to CPU group %d",
                           pid, moved, g)
+        return moved
     except Exception as exc:                       # never lose a row over this
         logging.debug("CPU-group pin skipped for pid %s: %s", pid, exc)
+        return 0
 
 
 def _send_graceful_interrupt(proc):

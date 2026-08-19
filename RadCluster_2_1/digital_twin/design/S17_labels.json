@@ -1,0 +1,20 @@
+{
+ "4700": "S1700_imobile5_si1_phimaxjunc0.05",
+ "4701": "S1701_imobile5_si1_phimaxjunc0.6",
+ "4702": "S1702_imobile5_si2_phimaxjunc0.05",
+ "4703": "S1703_imobile5_si2_phimaxjunc0.6",
+ "4704": "S1704_imobile5_si3_phimaxjunc0.05",
+ "4705": "S1705_imobile5_si3_phimaxjunc0.6",
+ "4706": "S1706_imobile32_si1_phimaxjunc0.05",
+ "4707": "S1707_imobile32_si1_phimaxjunc0.6",
+ "4708": "S1708_imobile32_si2_phimaxjunc0.05",
+ "4709": "S1709_imobile32_si2_phimaxjunc0.6",
+ "4710": "S1710_imobile32_si3_phimaxjunc0.05",
+ "4711": "S1711_imobile32_si3_phimaxjunc0.6",
+ "4712": "S1712_imobile60_si1_phimaxjunc0.05",
+ "4713": "S1713_imobile60_si1_phimaxjunc0.6",
+ "4714": "S1714_imobile60_si2_phimaxjunc0.05",
+ "4715": "S1715_imobile60_si2_phimaxjunc0.6",
+ "4716": "S1716_imobile60_si3_phimaxjunc0.05",
+ "4717": "S1717_imobile60_si3_phimaxjunc0.6"
+}

@@ -82,8 +82,14 @@ DIRECTION = {
     ("E_b_i2", "N_100"): +1, ("E_b_i2", "N_111"): +1,  # small clusters survive
     ("E_b_i2", "d_100"): -1, ("E_b_i2", "d_111"): -1,
     ("B_111", "d_111"): +1,
-    ("f_cl_v", "N_void"): +1, ("E_b_v2", "N_void"): +1,
-    ("gamma_s", "d_void"): -1,
+    ("f_cl_v", "N_void"): +1,
+    # V1 measured both of these directly, one lever at a time:
+    #   gamma_s 3.0 -> 1.5   N_void 0.00036x -> 47860x   (lower capillary
+    #                        penalty, small cavities survive)
+    #   E_m_v   0.50 -> 0.90 N_void 0.165x   -> 6793x    (slower vacancies,
+    #                        less recombination before they cluster)
+    ("gamma_s", "N_void"): -1, ("gamma_s", "d_void"): -1,
+    ("E_m_v", "N_void"): +1, ("E_m_v", "d_void"): +1,
 }
 
 # Prior box.  A design must never leave this; values are physical bounds, not
@@ -160,7 +166,8 @@ def detect(machine_index=None) -> tuple:
 
 
 def build_commands(stage: str, machine: dict, reg: dict, slots: int,
-                   budget_h: float, share: list) -> list:
+                   budget_h: float, share: list, grid_v: int = 2000,
+                   grid_vbin: int = 20) -> list:
     """The run_ensemble invocation(s) for this stage.
 
     THE SHARD INDEX IS NOT THE REGISTRY INDEX.  run_ensemble assigns a row with
@@ -182,8 +189,8 @@ def build_commands(stage: str, machine: dict, reg: dict, slots: int,
             "    --out results/%s_calib_machine%d.jsonl \\" % (stage, reg_index),
             "    --machine %d --of %d \\" % (shard, of),
             "    --equations bin_moment --i-discrete 100 --i-bin 36 \\",
-            "    --v-discrete 5 --v-bin 20 --allow-mixed \\",
-            "    --I 80000 --V 2000 --dose 15.0 --lnl 1 --rtol 1e-5 \\",
+            "    --v-discrete 5 --v-bin %d --allow-mixed \\" % grid_vbin,
+            "    --I 80000 --V %d --dose 15.0 --lnl 1 --rtol 1e-5 \\" % grid_v,
             "    --solver-mode full_system \\",
             "    --timeout-s %d --workers %d --omp-threads 1"
             % (int(budget_h * 3600), workers),
@@ -494,6 +501,10 @@ def main(argv=None):
     ap.add_argument("--stage", default=None)
     ap.add_argument("--levers", default=None,
                     help="comma-separated override, e.g. eta,f_cl_i,E_b_i2")
+    ap.add_argument("--for", dest="for_obs", default=None,
+                    help="observable an explicit --levers override is aimed at, "
+                         "e.g. --for N_void; without it the sweep is symmetric "
+                         "because the corrective direction is unknown")
     ap.add_argument("--levels", default=None,
                     help="comma-separated level count per lever, e.g. 3,2,2")
     ap.add_argument("--row-base", type=int, default=None)
@@ -504,6 +515,14 @@ def main(argv=None):
                          "PRIOR_BOX and the affordability clip, so an override "
                          "cannot smuggle a design outside the physical box or "
                          "into a region measured as unaffordable.")
+    ap.add_argument("--grid-v", type=int, default=2000,
+                    help="max vacancy cluster size (--V). Raise for cavity "
+                         "stages: at V=2000 every setting that grows realistic "
+                         "cavities hits the ceiling and returns GRID+NOCONV.")
+    ap.add_argument("--grid-vbin", type=int, default=20,
+                    help="vacancy bin count. Scale with --grid-v to hold the "
+                         "bin ratio: r = (V/v_discrete)^(1/v_bin), which is "
+                         "1.349 at the V=2000/v_bin=20 default.")
     ap.add_argument("--budget-h", type=float, default=None,
                     help="row budget in hours; overrides machines.json")
     ap.add_argument("--share", default=None,
@@ -529,7 +548,8 @@ def main(argv=None):
                 print("REFUSING --levers %s: the physics never reads it." % c)
                 print("  %s" % unwired[c])
             raise SystemExit(2)
-        why = [(c, "operator override", 0.0, -1) for c in levers]
+        tgt = a.for_obs or "operator override"
+        why = [(c, tgt, 0.0, -1) for c in levers]
         skipped = []
     else:
         levers, why, skipped = pick_levers(led, worst)
@@ -616,7 +636,8 @@ def main(argv=None):
 
     design_rel = "design/%s_calib.csv" % stage
     labels_rel = "design/%s_labels.json" % stage
-    cmd = build_commands(stage, machine, reg, slots, budget_h, share)
+    cmd = build_commands(stage, machine, reg, slots, budget_h, share,
+                         a.grid_v, a.grid_vbin)
 
     if not a.write:
         print("DRY RUN -- nothing written. Re-run with --write to emit:")

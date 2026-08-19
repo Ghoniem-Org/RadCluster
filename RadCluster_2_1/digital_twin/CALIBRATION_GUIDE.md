@@ -1,6 +1,6 @@
 # Calibration Guide - EUROFER97 digital twin
 
-*Derived by `learn.py`; content last changed 2026-08-19 12:51:24Z (re-running with no new results leaves this file untouched). Do not hand-edit: edits are overwritten. Durable notes belong in `calibration_ledger.json` under `notes`, which is preserved across regenerations.*
+*Derived by `learn.py`; content last changed 2026-08-19 16:33:22Z (re-running with no new results leaves this file untouched). Do not hand-edit: edits are overwritten. Durable notes belong in `calibration_ledger.json` under `notes`, which is preserved across regenerations.*
 
 ## Goal
 
@@ -39,9 +39,9 @@ A lever is **dead** when its full tested span moves every observable by less tha
 
 | lever | tested span | verdict | valid pairs | peak response | moves | stages |
 |---|---|---|---|---|---|---|
-| `L_hat` | L_hat 10->3e+03 | **live** (drives rows off-grid) | 4 | 20558.2% | N_100, N_111, d_100, d_111 | S16_calib_machine1 |
-| `E_m_i` | E_m_i 0.25->0.55 | **live** (drives rows off-grid) | 5 | 8406.1% | N_111, d_100, N_100, d_111 | S16_calib_machine1 |
-| `B_111` | B_111 0.2->0.333 | **live** (drives rows off-grid) | 2 | 1267.4% | N_111, N_100, d_111, d_100 | S16_calib_machine1 |
+| `B_111` | B_111 0.2->0.6 | **live** (drives rows off-grid) | 4 | 240263.5% | N_100, N_111, d_111, d_100, d_void | S16_calib_machine1, S20_calib_machine0 |
+| `L_hat` | L_hat 10->3e+03 | **live** (drives rows off-grid) | 11 | 20558.2% | N_100, N_111, d_100, d_111, d_void | S16_calib_machine1, S20_calib_machine0 |
+| `E_m_i` | E_m_i 0.25->0.55 | **live** (drives rows off-grid) | 7 | 8406.1% | N_111, N_100, d_100, d_111 | S16_calib_machine1, S20_calib_machine0 |
 | `f_cl_v+E_b_v2+s_v` | f_cl_v 0.317->0.7; E_b_v2 0.213->0.35; s_v 1.9->2.5 | **live** (drives rows off-grid) | 2 | 692.8% | d_100, N_void, N_111 | S14_calib |
 | `s_i` | s_i 1->3 | **live** | 9 | 436.5% | d_100, N_111, d_111, N_100 | S17_calib_machine1 |
 | `eta` | eta 0.05->0.249 | **live** (drives rows off-grid) | 3 | 397.2% | N_void, N_111, N_100, d_100, d_111 | S15_calib_machine0 |
@@ -80,6 +80,7 @@ Only stages that ran to 15.0 dpa are in scope; the rest are listed for provenanc
 | `S1_lnl0` | 1 | out | 12 | 1 | - | 0 |
 | `S1_lnl1` | 1 | out | 4 | 0 | - | - |
 | `S1_smoke` | 15 | in | 1 | 0 | - | - |
+| `S20_calib_machine0` | 15 | in | 13 | 9 | `E_m_i`, `L_hat`, `B_111` | 2 |
 | `S2_cap` | 1 | out | 6 | 0 | - | - |
 | `S2_nocap` | 1 | out | 10 | 0 | - | - |
 | `S3_nucleation` | 0.02 | out | 8 | 6 | `f_cl_i`, `d_g`, `rho_p+r_p`, `s_i` | 1 |
@@ -120,7 +121,7 @@ Completed rows only. A row cut at the budget measures the timeout, not the cost,
 |---|---|---|---|---|---|
 | MATRIX-PC2 | 102 | 7.58 h | 2.94 h | 14.02 h | 0 |
 | Mac.san.rr.com | 264 | 1.58 h | 0.33 h | 5.51 h | 0 |
-| MacBook-Pro.local | 480 | 1.02 h | 0.23 h | 9.2 h | 0 |
+| MacBook-Pro.local | 493 | 1.02 h | 0.23 h | 9.2 h | 0 |
 | Nasr-Workstation | 411 | 3.35 h | 0.15 h | 19.79 h | 164 |
 
 `plan.py` sizes a stage from this table and the machine slot count, and refuses to propose a design whose estimated cost exceeds the machine row budget.

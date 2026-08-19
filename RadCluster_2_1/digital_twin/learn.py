@@ -384,7 +384,10 @@ def cost_model(all_rows: list) -> dict:
                     or abs(reached - tgt) <= 0.02 * tgt)
         (done if finished else timed_out).setdefault(m, []).append(float(w))
     out = {}
-    for m in set(done) | set(timed_out):
+    # SORTED, or the key order differs per machine and every learn.py run
+    # produces a spurious ledger diff -- the exact churn 72e1c9f fixed
+    # elsewhere.  Unordered iteration here reintroduced it through cost_model.
+    for m in sorted(set(done) | set(timed_out)):
         ws = sorted(done.get(m, []))
         rec = {"n": len(ws), "n_timed_out": len(timed_out.get(m, []))}
         if ws:

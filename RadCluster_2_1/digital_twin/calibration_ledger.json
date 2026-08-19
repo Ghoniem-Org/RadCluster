@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated": "2026-08-19 16:33:22Z",
+  "updated": "2026-08-19 19:09:18Z",
   "goal": {
     "statement": "Find one parameter vector that puts all six observables inside their experimental ranges at EUROFER97 330 C / 15 dpa, neutron.",
     "targets_file": "targets_330C_15dpa.json",
@@ -32533,6 +32533,56 @@
     "r_p",
     "rho_d"
   ],
+  "reachability": {
+    "N_100": {
+      "ratio": 1.6898,
+      "needed_factor": 1.69,
+      "needed_pct": 69.0,
+      "best_single_lever_pct": 240263.5,
+      "best_single_lever": "B_111",
+      "single_lever_sufficient": true
+    },
+    "d_100": {
+      "ratio": 1.0952,
+      "needed_factor": 1.095,
+      "needed_pct": 9.5,
+      "best_single_lever_pct": 692.8,
+      "best_single_lever": "f_cl_v+E_b_v2+s_v",
+      "single_lever_sufficient": true
+    },
+    "N_111": {
+      "ratio": 7.3962,
+      "needed_factor": 7.396,
+      "needed_pct": 639.6,
+      "best_single_lever_pct": 8406.1,
+      "best_single_lever": "E_m_i",
+      "single_lever_sufficient": true
+    },
+    "d_111": {
+      "ratio": 0.1694,
+      "needed_factor": 5.903,
+      "needed_pct": 490.3,
+      "best_single_lever_pct": 88.7,
+      "best_single_lever": "s_i",
+      "single_lever_sufficient": false
+    },
+    "N_void": {
+      "ratio": 0.0017,
+      "needed_factor": 588.235,
+      "needed_pct": 58723.5,
+      "best_single_lever_pct": 397.2,
+      "best_single_lever": "eta",
+      "single_lever_sufficient": false
+    },
+    "d_void": {
+      "ratio": 0.2159,
+      "needed_factor": 4.632,
+      "needed_pct": 363.2,
+      "best_single_lever_pct": 9.8,
+      "best_single_lever": "L_hat",
+      "single_lever_sufficient": false
+    }
+  },
   "affordability": {
     "E_b_i2": {
       "unaffordable": [

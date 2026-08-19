@@ -508,6 +508,39 @@ def ingest() -> dict:
         moving.sort(key=lambda k: -L["response"][k])
         L["moves"] = [SHORT[k] for k in moving]
 
+    # REACHABILITY.  How big a change each observable needs, against the
+    # biggest change any single lever has actually produced across its full
+    # tested span.  S20 is why this exists: it swept E_m_i, L_hat and B_111
+    # over their whole boxes and moved d_111 from 1.05 to at most 1.33 nm,
+    # when reaching the measured 6.2 nm needs +490 %.  Without this the
+    # planner keeps proposing those levers for d_111 forever, because "live"
+    # only means "moves more than 5 %".
+    #
+    # NOT A PROOF OF IMPOSSIBILITY.  Levers can compound, so a residual no
+    # SINGLE lever can close may still be reachable by several together.  It
+    # is recorded as a strong hint and ranked on, never as a hard block.
+    reach = {}
+    if best:
+        for k in OBS:
+            s_ = SHORT[k]
+            ratio = (best["ratios"] or {}).get(s_)
+            if not ratio:
+                continue
+            need = (1.0 / ratio) if ratio < 1 else ratio
+            top, who = 0.0, None
+            for name, L in levers.items():
+                r = L["response"].get(k, 0.0)
+                if r > top:
+                    top, who = r, name
+            reach[s_] = {
+                "ratio": ratio,
+                "needed_factor": round(need, 3),
+                "needed_pct": round((need - 1) * 100, 1),
+                "best_single_lever_pct": round(top * 100, 1),
+                "best_single_lever": who,
+                "single_lever_sufficient": bool(top >= (need - 1.0)),
+            }
+
     # Which physics columns has the campaign never varied AT THE TARGET DOSE?
     # "Never varied" is literal -- the column took one value in every in-scope
     # design.  A column that WAS varied but yielded no valid pair is not listed
@@ -554,6 +587,7 @@ def ingest() -> dict:
         "stages": stages,
         "levers": levers,
         "untested_columns": untested,
+        "reachability": reach,
         "affordability": afford,
         "best": best,
         "residuals": best["ratios"] if best else {},
@@ -659,6 +693,27 @@ def render_guide(led: dict) -> str:
                  fmt(inv["total"]["exp_content"]),
                  fmt(inv["total"]["ratio"])))
             A("")
+
+    rch = led.get("reachability") or {}
+    if rch:
+        A("## Can any lever still close this?")
+        A("")
+        A("How far each observable must move from the best row, against the "
+          "largest change any SINGLE lever has actually produced across its "
+          "full tested span. Levers can compound, so a `no` is a strong hint "
+          "that the residual is structural rather than a proof that it is.")
+        A("")
+        A("| observable | ratio | needs | best single lever | that lever | single lever enough? |")
+        A("|---|---|---|---|---|---|")
+        for s_ in ("N_100", "d_100", "N_111", "d_111", "N_void", "d_void"):
+            r = rch.get(s_)
+            if not r:
+                continue
+            A("| %s | %s x | %+.0f%% | %+.0f%% | `%s` | %s |"
+              % (s_, fmt(r["ratio"]), r["needed_pct"],
+                 r["best_single_lever_pct"], r["best_single_lever"] or "-",
+                 "yes" if r["single_lever_sufficient"] else "**no**"))
+        A("")
 
     A("## What each lever does")
     A("")

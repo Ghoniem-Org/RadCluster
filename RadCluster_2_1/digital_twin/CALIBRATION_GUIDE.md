@@ -1,6 +1,6 @@
 # Calibration Guide - EUROFER97 digital twin
 
-*Derived by `learn.py`; content last changed 2026-08-19 16:33:22Z (re-running with no new results leaves this file untouched). Do not hand-edit: edits are overwritten. Durable notes belong in `calibration_ledger.json` under `notes`, which is preserved across regenerations.*
+*Derived by `learn.py`; content last changed 2026-08-19 19:09:18Z (re-running with no new results leaves this file untouched). Do not hand-edit: edits are overwritten. Durable notes belong in `calibration_ledger.json` under `notes`, which is preserved across regenerations.*
 
 ## Goal
 
@@ -30,6 +30,19 @@ Computed from the row own n<->d relation, so no lattice constant is assumed.
 | <100> | 7.39e+24 | 3.65e+24 | 2.03 x |
 | <111> | 2.6e+23 | 1.23e+24 | 0.212 x |
 | **total** | 7.65e+24 | 4.87e+24 | **1.57 x** |
+
+## Can any lever still close this?
+
+How far each observable must move from the best row, against the largest change any SINGLE lever has actually produced across its full tested span. Levers can compound, so a `no` is a strong hint that the residual is structural rather than a proof that it is.
+
+| observable | ratio | needs | best single lever | that lever | single lever enough? |
+|---|---|---|---|---|---|
+| N_100 | 1.69 x | +69% | +240264% | `B_111` | yes |
+| d_100 | 1.1 x | +10% | +693% | `f_cl_v+E_b_v2+s_v` | yes |
+| N_111 | 7.4 x | +640% | +8406% | `E_m_i` | yes |
+| d_111 | 0.169 x | +490% | +89% | `s_i` | **no** |
+| N_void | 0.0017 x | +58724% | +397% | `eta` | **no** |
+| d_void | 0.216 x | +363% | +10% | `L_hat` | **no** |
 
 ## What each lever does
 

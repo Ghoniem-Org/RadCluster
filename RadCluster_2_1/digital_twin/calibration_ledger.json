@@ -33871,49 +33871,47 @@
   },
   "notes": [],
   "next": {
-    "stage": "S22",
-    "machine": 1,
-    "machine_name": "Matrix-PC",
+    "stage": "V3",
+    "machine": 2,
+    "machine_name": "Nasr Workstation",
     "levers": [
-      "s_i",
-      "eta",
-      "L_hat"
+      "gamma_s",
+      "E_m_v"
     ],
     "n_levels": [
-      5,
-      2,
-      2
+      4,
+      3
     ],
-    "n_rows": 20,
-    "design": "design/S22_calib.csv",
-    "labels": "design/S22_labels.json",
+    "n_rows": 12,
+    "design": "design/V3_calib.csv",
+    "labels": "design/V3_labels.json",
     "pinned_to": {
       "stage": "V1_calib_machine0",
       "row_id": 5109,
       "label": "V109_Zv_lo0.9"
     },
-    "rationale": "worst residuals are d_111 (0.165x), N_111 (5.15x), N_100 (1.27x); sweeping s_i, eta, L_hat, which the ledger has not retired",
+    "rationale": "worst residuals are d_111 (0.165x), N_111 (5.15x), N_100 (1.27x); sweeping gamma_s, E_m_v, which the ledger has not retired",
     "cost_estimate": {
       "known": true,
       "source": "measured on this machine",
-      "median_row_h": 7.89,
-      "max_row_h": 18.87,
-      "slots": 20,
+      "median_row_h": 3.35,
+      "max_row_h": 19.79,
+      "slots": 12,
       "waves": 1,
-      "est_wall_h": 18.9
+      "est_wall_h": 19.8
     },
     "commands": [
       "python run_ensemble.py \\",
-      "    --design design/S22_calib.csv \\",
+      "    --design design/V3_calib.csv \\",
       "    --conditions conditions_S8.json \\",
       "    --spec parameters_S4.json \\",
-      "    --out results/S22_calib_machine1.jsonl \\",
+      "    --out results/V3_calib_machine2.jsonl \\",
       "    --machine 0 --of 1 \\",
       "    --equations bin_moment --i-discrete 100 --i-bin 36 \\",
       "    --v-discrete 5 --v-bin 20 --allow-mixed \\",
-      "    --I 80000 --V 2000 --dose 15.0 --lnl 1 --rtol 1e-5 \\",
+      "    --I 80000 --V 20000 --dose 15.0 --lnl 1 --rtol 1e-5 \\",
       "    --solver-mode full_system \\",
-      "    --timeout-s 108000 --workers 20 --omp-threads 1"
+      "    --timeout-s 72000 --workers 12 --omp-threads 1"
     ]
   },
   "next_by_machine": {
@@ -33964,28 +33962,26 @@
       ]
     },
     "2": {
-      "stage": "S18",
+      "stage": "V3",
       "machine": 2,
       "machine_name": "Nasr Workstation",
       "levers": [
-        "f_cl_v",
-        "E_b_v2",
-        "E_b_hV_1"
+        "gamma_s",
+        "E_m_v"
       ],
       "n_levels": [
-        3,
-        2,
-        2
+        4,
+        3
       ],
       "n_rows": 12,
-      "design": "design/S18_calib.csv",
-      "labels": "design/S18_labels.json",
+      "design": "design/V3_calib.csv",
+      "labels": "design/V3_labels.json",
       "pinned_to": {
-        "stage": "S14_calib",
-        "row_id": 4400,
-        "label": "E00_V0_Ea2.10_Eb0.75"
+        "stage": "V1_calib_machine0",
+        "row_id": 5109,
+        "label": "V109_Zv_lo0.9"
       },
-      "rationale": "worst residuals are N_100 (12.4x), d_111 (0.172x), N_111 (4.62x); sweeping f_cl_v, E_b_v2, E_b_hV_1, which the ledger has not retired",
+      "rationale": "worst residuals are d_111 (0.165x), N_111 (5.15x), N_100 (1.27x); sweeping gamma_s, E_m_v, which the ledger has not retired",
       "cost_estimate": {
         "known": true,
         "source": "measured on this machine",
@@ -33997,14 +33993,14 @@
       },
       "commands": [
         "python run_ensemble.py \\",
-        "    --design design/S18_calib.csv \\",
+        "    --design design/V3_calib.csv \\",
         "    --conditions conditions_S8.json \\",
         "    --spec parameters_S4.json \\",
-        "    --out results/S18_calib_machine2.jsonl \\",
+        "    --out results/V3_calib_machine2.jsonl \\",
         "    --machine 0 --of 1 \\",
         "    --equations bin_moment --i-discrete 100 --i-bin 36 \\",
         "    --v-discrete 5 --v-bin 20 --allow-mixed \\",
-        "    --I 80000 --V 2000 --dose 15.0 --lnl 1 --rtol 1e-5 \\",
+        "    --I 80000 --V 20000 --dose 15.0 --lnl 1 --rtol 1e-5 \\",
         "    --solver-mode full_system \\",
         "    --timeout-s 72000 --workers 12 --omp-threads 1"
       ]

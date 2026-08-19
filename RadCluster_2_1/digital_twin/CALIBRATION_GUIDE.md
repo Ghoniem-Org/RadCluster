@@ -177,30 +177,30 @@ One row per machine. A machine claims a stage by running `plan.py --write` on it
 |---|---|---|---|---|
 | 0 (MacBook Pro) | **S20** | `L_hat`, `B_111`, `E_m_i` | 12 | `design/S20_calib.csv` |
 | 1 (Matrix-PC) | **S22** | `s_i`, `eta`, `L_hat` | 20 | `design/S22_calib.csv` |
-| 2 (Nasr Workstation) | **S18** | `f_cl_v`, `E_b_v2`, `E_b_hV_1` | 12 | `design/S18_calib.csv` |
+| 2 (Nasr Workstation) | **V3** | `gamma_s`, `E_m_v` | 12 | `design/V3_calib.csv` |
 
 ## Next stage
 
-**S22** - worst residuals are d_111 (0.165x), N_111 (5.15x), N_100 (1.27x); sweeping s_i, eta, L_hat, which the ledger has not retired
+**V3** - worst residuals are d_111 (0.165x), N_111 (5.15x), N_100 (1.27x); sweeping gamma_s, E_m_v, which the ledger has not retired
 
-Sweeping: `s_i`, `eta`, `L_hat`
+Sweeping: `gamma_s`, `E_m_v`
 
-Design: `design/S22_calib.csv` (20 rows)
+Design: `design/V3_calib.csv` (12 rows)
 
 Run it with:
 
 ```bash
 python run_ensemble.py \
-    --design design/S22_calib.csv \
+    --design design/V3_calib.csv \
     --conditions conditions_S8.json \
     --spec parameters_S4.json \
-    --out results/S22_calib_machine1.jsonl \
+    --out results/V3_calib_machine2.jsonl \
     --machine 0 --of 1 \
     --equations bin_moment --i-discrete 100 --i-bin 36 \
     --v-discrete 5 --v-bin 20 --allow-mixed \
-    --I 80000 --V 2000 --dose 15.0 --lnl 1 --rtol 1e-5 \
+    --I 80000 --V 20000 --dose 15.0 --lnl 1 --rtol 1e-5 \
     --solver-mode full_system \
-    --timeout-s 108000 --workers 20 --omp-threads 1
+    --timeout-s 72000 --workers 12 --omp-threads 1
 ```
 
 ## Multi-machine protocol

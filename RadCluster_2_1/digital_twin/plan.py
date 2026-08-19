@@ -509,12 +509,10 @@ def main(argv=None):
                     help="comma-separated level count per lever, e.g. 3,2,2")
     ap.add_argument("--row-base", type=int, default=None)
     ap.add_argument("--box", default=None,
-                    help="narrow a lever's span for THIS stage only, e.g. "
-                         "--box i_mobile=5:32 (comma-separated for several). "
-                         "Only ever narrows: the result is intersected with "
-                         "PRIOR_BOX and the affordability clip, so an override "
-                         "cannot smuggle a design outside the physical box or "
-                         "into a region measured as unaffordable.")
+                    help="narrow a lever's box for this stage only, e.g. "
+                         "--box gamma_s=1.5:1.8. Use to target a region a "
+                         "sibling stage does not cover, instead of duplicating "
+                         "it. Clamps into PRIOR_BOX; never widens past it.")
     ap.add_argument("--grid-v", type=int, default=2000,
                     help="max vacancy cluster size (--V). Raise for cavity "
                          "stages: at V=2000 every setting that grows realistic "
@@ -533,6 +531,19 @@ def main(argv=None):
     a = ap.parse_args(argv)
 
     led = load_ledger()
+    if a.box:
+        for item in a.box.split(","):
+            col, rng = item.split("=")
+            lo, hi = (float(x) for x in rng.split(":"))
+            col = col.strip()
+            if col not in PRIOR_BOX:
+                raise SystemExit("--box names unknown lever %r" % col)
+            plo, phi, kind = PRIOR_BOX[col]
+            # Clamp INTO the prior box: a stage may narrow its search, never
+            # widen it past a bound that exists for physical reasons.
+            PRIOR_BOX[col] = (max(lo, plo), min(hi, phi), kind)
+            print("box override: %s -> %.4g .. %.4g"
+                  % (col, PRIOR_BOX[col][0], PRIOR_BOX[col][1]))
     machine, reg = detect(a.machine)
     worst, deferred = residual_rank(led)
 

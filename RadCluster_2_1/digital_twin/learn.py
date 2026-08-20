@@ -150,12 +150,71 @@ def read_design(path) -> dict:
 
 
 # -------------------------------------------------------------- validity ----
+PILE_TOL = 0.05         # mirrors run_ensemble.PILE_TOL
+TOPBIN_TOL = 0.02       # mirrors run_ensemble.TOPBIN_TOL
+
+
+def grid_components(row: dict):
+    """Split `grid_limited` into its parts.  Returns (pile, sia_top, vac_top,
+    unmeasured, decomposable).
+
+    run_ensemble records the components; only the OR of them survives into
+    `grid_limited`, which is too coarse to act on (see classify).
+    """
+    keys = ("pile_100", "pile_111", "pile_v", "topbin_v")
+    if not any(k in row for k in keys):
+        return (False, False, False, False, False)     # old row: cannot split
+    pile = any((row.get(f"pile_{a}") or 0.0) > PILE_TOL
+               for a in ("100", "111", "v"))
+    sia_top = any((row.get(f"topbin_{a}") or 0.0) > TOPBIN_TOL
+                  for a in ("100", "111"))
+    vac_top = (row.get("topbin_v") or 0.0) > TOPBIN_TOL
+    return (pile, sia_top, vac_top, bool(row.get("unmeasured_gates")), True)
+
+
 def classify(row: dict, dose_target: float = 15.0):
-    """Is this row a measurement?  Returns (valid, flags)."""
+    """Is this row a measurement?  Returns (valid, flags).
+
+    THE VACANCY TOP-BIN DOES NOT DISQUALIFY (2026-08-20).  `topbin_v` is the
+    vacancy CONTENT fraction in the top bin, and on a log grid that fraction has
+    a floor set by the bin ratio, not by truncation: for a cavity tail
+    c(n) ~ n^-alpha it tends to 1 - r^-(2-alpha) whatever the ceiling is.  The
+    campaign's cavity tail has alpha ~ 0.47, so at the production r = 1.514 the
+    floor is ~0.47 and TOPBIN_TOL = 0.02 is unreachable at any affordable bin
+    count (it would need ~630 vacancy bins).
+
+    Measured 2026-08-20 on the reference point and on the 4/6 anchor, refining
+    v_bin 20 -> 47 (r 1.514 -> 1.202):
+      * topbin_v fell 0.468 -> 0.1715 and 0.472 -> 0.1718 -- the SAME value to
+        three digits at mean_n_v = 1566 and 7115, a 4.5x span in mean void size.
+        A truncation measure cannot be blind to that; a geometric one is.
+      * the four loop observables moved by <= 0.1 % (grid-exact), and the 4/6
+        anchor still scored 4/6 with every in-band observable still in band.
+    So the vacancy top bin is recorded as a soft TOPBINV flag instead.
+
+    The SIA-axis top bin KEEPS disqualifying: those bins run at r = 1.204, where
+    the geometric floor is small, and the argument above does not transfer.
+    `pile` also keeps disqualifying -- it is measured on the reconstructed
+    distribution and is the real truncation test (1095 of the 1226 grid-flagged
+    rows fail it, so this change rescues 105 rows, not the whole campaign).
+
+    This restores agreement with run_ensemble.py, which withdrew truncation as a
+    reject criterion outright on 2026-08-05 (TRUNCATION_GATES = False); learn.py
+    had reintroduced it, so the ledger and CALIBRATION_GUIDE.md were reporting a
+    best-of-campaign that excluded the campaign's best rows -- and plan.py plans
+    from that ledger.
+    """
     flags = []
-    if row.get("grid_limited"):
+    pile, sia_top, vac_top, unmeas, ok = grid_components(row)
+    if ok:
+        hard_grid = pile or sia_top or unmeas
+        if vac_top:
+            flags.append("TOPBINV")             # soft: recorded, not fatal
+    else:
+        hard_grid = bool(row.get("grid_limited")) \
+            or not row.get("grid_converged", True)
+    if hard_grid:
         flags.append("GRID")
-    if not row.get("grid_converged", True):
         flags.append("NOCONV")
     reached = row.get("dose_reached", 0.0) or 0.0
     if abs(reached - dose_target) > 0.02 * dose_target:

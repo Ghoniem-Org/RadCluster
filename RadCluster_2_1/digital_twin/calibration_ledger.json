@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated": "2026-08-19 23:33:32Z",
+  "updated": "2026-08-20 15:13:57Z",
   "goal": {
     "statement": "Find one parameter vector that puts all six observables inside their experimental ranges at EUROFER97 330 C / 15 dpa, neutron.",
     "targets_file": "targets_330C_15dpa.json",
@@ -15,6 +15,147 @@
     }
   },
   "stages": {
+    "G1a_vb45_machine0": {
+      "design": null,
+      "results": "results/G1a_vb45_machine0.jsonl",
+      "dose_target": 15.0,
+      "in_scope": true,
+      "n_rows": 1,
+      "n_valid": 1,
+      "swept": [],
+      "sensitivity": {},
+      "affordability": {},
+      "rows": [
+        {
+          "row_id": 6200,
+          "label": null,
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 0.9,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 2.169564221540759e+22,
+            "d_100": 5.725083935028501,
+            "N_111": 6.928635247053708e+22,
+            "d_111": 1.265013775516536,
+            "N_void": 8.604437032364861e+19,
+            "d_void": 3.2801680424913924
+          }
+        }
+      ]
+    },
+    "G2a_vb45_machine0": {
+      "design": null,
+      "results": "results/G2a_vb45_machine0.jsonl",
+      "dose_target": 15.0,
+      "in_scope": true,
+      "n_rows": 1,
+      "n_valid": 0,
+      "swept": [],
+      "sensitivity": {},
+      "affordability": {},
+      "rows": [
+        {
+          "row_id": 6400,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "TOPBINV",
+            "GRID",
+            "NOCONV",
+            "NOCONS"
+          ],
+          "n_in_range": 4,
+          "log_distance": 0.514,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 6.881698804667522e+21,
+            "d_100": 5.899620951026925,
+            "N_111": 1.199503281937635e+22,
+            "d_111": 1.0391063746981373,
+            "N_void": 4.930505054488723e+20,
+            "d_void": 5.432636936771859
+          }
+        }
+      ]
+    },
+    "R1_repro_machine0": {
+      "design": null,
+      "results": "results/R1_repro_machine0.jsonl",
+      "dose_target": 15.0,
+      "in_scope": true,
+      "n_rows": 3,
+      "n_valid": 3,
+      "swept": [],
+      "sensitivity": {},
+      "affordability": {},
+      "rows": [
+        {
+          "row_id": 6601,
+          "label": null,
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 2,
+          "log_distance": 0.901,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 2.1682534193351033e+22,
+            "d_100": 5.720689247706707,
+            "N_111": 6.919461397222711e+22,
+            "d_111": 1.264830953873629,
+            "N_void": 8.380552618678175e+19,
+            "d_void": 2.703088916270623
+          }
+        },
+        {
+          "row_id": 6602,
+          "label": null,
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 2,
+          "log_distance": 0.901,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 2.168327673108185e+22,
+            "d_100": 5.720688690869962,
+            "N_111": 6.9196278421736835e+22,
+            "d_111": 1.2648318074578893,
+            "N_void": 8.380530110007707e+19,
+            "d_void": 2.7030729932084387
+          }
+        },
+        {
+          "row_id": 6600,
+          "label": null,
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 2,
+          "log_distance": 0.913,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 2.7905233332329364e+22,
+            "d_100": 5.262373075468037,
+            "N_111": 6.686147057098757e+22,
+            "d_111": 1.2474893378492353,
+            "N_void": 8.317687775373187e+19,
+            "d_void": 2.6554555112172253
+          }
+        }
+      ]
+    },
     "S10_calib": {
       "design": "design/S10_calib.csv",
       "results": "results/S10_calib.jsonl",
@@ -1417,8 +1558,7 @@
           "label": "E07_V1_Ea2.30_Eb0.60",
           "valid": false,
           "flags": [
-            "GRID",
-            "NOCONV",
+            "TOPBINV",
             "DOSE",
             "STARV",
             "NOCONS"
@@ -1440,8 +1580,7 @@
           "label": "E03_V0_Ea2.30_Eb0.60",
           "valid": false,
           "flags": [
-            "GRID",
-            "NOCONV",
+            "TOPBINV",
             "DOSE",
             "STARV",
             "NOCONS"
@@ -1758,8 +1897,8 @@
       "results": "results/S16_calib_machine1.jsonl",
       "dose_target": 15.0,
       "in_scope": true,
-      "n_rows": 27,
-      "n_valid": 18,
+      "n_rows": 28,
+      "n_valid": 21,
       "swept": [
         "E_m_i",
         "L_hat",
@@ -1776,16 +1915,16 @@
               0.55
             ]
           },
-          "n_pairs": 11,
+          "n_pairs": 13,
           "response": {
-            "N_loops_100": 64.72180017234872,
+            "N_loops_100": 414.68268053048604,
             "d_100_nm": 2.3515213222670606,
             "N_loops_111": 84.06102338756598,
             "d_111_nm": 0.6211432638697145,
-            "N_voids": 0.004680960220378894,
-            "d_cavity_nm": 0.002396358322387382
+            "N_voids": 0.007841300481764235,
+            "d_cavity_nm": 0.07300778357875548
           },
-          "peak_response": 84.06102338756598,
+          "peak_response": 414.68268053048604,
           "drove_invalid": true,
           "verdict": "live"
         },
@@ -1799,14 +1938,14 @@
               3000.000000000001
             ]
           },
-          "n_pairs": 10,
+          "n_pairs": 14,
           "response": {
             "N_loops_100": 303.2493681461739,
             "d_100_nm": 0.8517486996284722,
             "N_loops_111": 10.904253047626145,
             "d_111_nm": 0.6439317568557861,
-            "N_voids": 0.0037227041518289594,
-            "d_cavity_nm": 0.000587697614036653
+            "N_voids": 0.007013102462997911,
+            "d_cavity_nm": 0.10522178282811234
           },
           "peak_response": 303.2493681461739,
           "drove_invalid": true,
@@ -1822,16 +1961,16 @@
               0.6
             ]
           },
-          "n_pairs": 11,
+          "n_pairs": 18,
           "response": {
-            "N_loops_100": 60.82331764530832,
-            "d_100_nm": 2.2037214207322258,
-            "N_loops_111": 137.21218362125794,
+            "N_loops_100": 21186.474227259467,
+            "d_100_nm": 3.220932434232995,
+            "N_loops_111": 240.91243577518767,
             "d_111_nm": 0.7471300815028135,
-            "N_voids": 0.005102141590920373,
-            "d_cavity_nm": 0.002295677839057042
+            "N_voids": 0.014336150453800434,
+            "d_cavity_nm": 0.0970574283613278
           },
-          "peak_response": 137.21218362125794,
+          "peak_response": 21186.474227259467,
           "drove_invalid": true,
           "verdict": "live"
         }
@@ -1841,10 +1980,9 @@
         {
           "row_id": 4606,
           "label": "S1606_B1110.2_Lhat3e+03_Emi0.25",
-          "valid": false,
+          "valid": true,
           "flags": [
-            "GRID",
-            "NOCONV",
+            "TOPBINV",
             "NOCONS"
           ],
           "n_in_range": 0,
@@ -1917,10 +2055,9 @@
         {
           "row_id": 4603,
           "label": "S1603_B1110.2_Lhat173_Emi0.25",
-          "valid": false,
+          "valid": true,
           "flags": [
-            "GRID",
-            "NOCONV",
+            "TOPBINV",
             "NOCONS"
           ],
           "n_in_range": 0,
@@ -2354,6 +2491,25 @@
             "d_111": 0.8755881041981433,
             "N_void": 2.559702557308366e+18,
             "d_void": 0.5612837751196619
+          }
+        },
+        {
+          "row_id": 4630,
+          "label": "S1630_B1110.6_Lhat173_Emi0.25",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.327,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 1.5323215986908799e+22,
+            "d_100": 42.90292051820219,
+            "N_111": 2.7189081549521843e+22,
+            "d_111": 2.2742193972947327,
+            "N_void": 2.5489607071469737e+18,
+            "d_void": 0.5617498413879335
           }
         }
       ]
@@ -2987,6 +3143,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -3031,8 +3188,7 @@
           "label": null,
           "valid": false,
           "flags": [
-            "GRID",
-            "NOCONV",
+            "TOPBINV",
             "DOSE",
             "STARV",
             "NOCONS"
@@ -3075,8 +3231,7 @@
           "label": null,
           "valid": false,
           "flags": [
-            "GRID",
-            "NOCONV",
+            "TOPBINV",
             "DOSE",
             "STARV",
             "NOCONS"
@@ -3119,8 +3274,7 @@
           "label": null,
           "valid": false,
           "flags": [
-            "GRID",
-            "NOCONV",
+            "TOPBINV",
             "DOSE",
             "STARV",
             "NOCONS"
@@ -3163,6 +3317,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -3199,6 +3354,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -3222,8 +3378,7 @@
           "label": null,
           "valid": false,
           "flags": [
-            "GRID",
-            "NOCONV",
+            "TOPBINV",
             "DOSE",
             "STARV",
             "NOCONS"
@@ -3245,8 +3400,7 @@
           "label": null,
           "valid": false,
           "flags": [
-            "GRID",
-            "NOCONV",
+            "TOPBINV",
             "DOSE",
             "STARV",
             "NOCONS"
@@ -3325,7 +3479,7 @@
       "dose_target": 15.0,
       "in_scope": true,
       "n_rows": 13,
-      "n_valid": 9,
+      "n_valid": 12,
       "swept": [
         "E_m_i",
         "L_hat",
@@ -3342,16 +3496,16 @@
               0.55
             ]
           },
-          "n_pairs": 2,
+          "n_pairs": 5,
           "response": {
-            "N_loops_100": 2.539124431539825,
-            "d_100_nm": 0.3128328375386993,
-            "N_loops_111": 0.38596684586803454,
-            "d_111_nm": 0.06149325267236583,
-            "N_voids": 0.006214520169203874,
-            "d_cavity_nm": 0.0012154850489598523
+            "N_loops_100": 375.10527741998146,
+            "d_100_nm": 0.5590516759952819,
+            "N_loops_111": 66.47098259263599,
+            "d_111_nm": 0.16825384874474691,
+            "N_voids": 0.007530395213194874,
+            "d_cavity_nm": 0.09375691421619625
           },
-          "peak_response": 2.539124431539825,
+          "peak_response": 375.10527741998146,
           "drove_invalid": true,
           "verdict": "live"
         },
@@ -3365,7 +3519,7 @@
               3000.0000000000014
             ]
           },
-          "n_pairs": 7,
+          "n_pairs": 10,
           "response": {
             "N_loops_100": 0.5062181735153204,
             "d_100_nm": 0.5330744798614797,
@@ -3388,16 +3542,16 @@
               0.6
             ]
           },
-          "n_pairs": 2,
+          "n_pairs": 5,
           "response": {
-            "N_loops_100": 2402.6346369499643,
-            "d_100_nm": 0.408882970848342,
-            "N_loops_111": 36.244873889627314,
-            "d_111_nm": 0.3550757867645944,
+            "N_loops_100": 163010.94430435039,
+            "d_100_nm": 0.8205904976761195,
+            "N_loops_111": 1130.5384436837646,
+            "d_111_nm": 0.3740920151674725,
             "N_voids": 0.03169869294141381,
             "d_cavity_nm": 0.09326504266291746
           },
-          "peak_response": 2402.6346369499643,
+          "peak_response": 163010.94430435039,
           "drove_invalid": true,
           "verdict": "live"
         }
@@ -3424,10 +3578,9 @@
         {
           "row_id": 5008,
           "label": "S2008_Lhat3e+03_B1110.2_Emi0.25",
-          "valid": false,
+          "valid": true,
           "flags": [
-            "GRID",
-            "NOCONV",
+            "TOPBINV",
             "NOCONS"
           ],
           "n_in_range": 0,
@@ -3445,10 +3598,9 @@
         {
           "row_id": 5004,
           "label": "S2004_Lhat173_B1110.2_Emi0.25",
-          "valid": false,
+          "valid": true,
           "flags": [
-            "GRID",
-            "NOCONV",
+            "TOPBINV",
             "NOCONS"
           ],
           "n_in_range": 0,
@@ -3504,10 +3656,9 @@
         {
           "row_id": 5000,
           "label": "S2000_Lhat10_B1110.2_Emi0.25",
-          "valid": false,
+          "valid": true,
           "flags": [
-            "GRID",
-            "NOCONV",
+            "TOPBINV",
             "NOCONS"
           ],
           "n_in_range": 0,
@@ -3736,6 +3887,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -3835,6 +3987,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -3858,6 +4011,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -3881,8 +4035,7 @@
           "label": null,
           "valid": false,
           "flags": [
-            "GRID",
-            "NOCONV",
+            "TOPBINV",
             "DOSE",
             "STARV",
             "NOCONS"
@@ -4011,6 +4164,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -5593,7 +5747,7 @@
       "dose_target": 2.0,
       "in_scope": false,
       "n_rows": 24,
-      "n_valid": 0,
+      "n_valid": 2,
       "swept": [
         "E_a0_conv"
       ],
@@ -5608,18 +5762,18 @@
               1.95
             ]
           },
-          "n_pairs": 0,
+          "n_pairs": 1,
           "response": {
-            "N_loops_100": 0.0,
-            "d_100_nm": 0.0,
-            "N_loops_111": 0.0,
-            "d_111_nm": 0.0,
-            "N_voids": 0.0,
-            "d_cavity_nm": 0.0
+            "N_loops_100": 0.22227504002199194,
+            "d_100_nm": 0.12715356123489086,
+            "N_loops_111": 0.4263440417370479,
+            "d_111_nm": 0.012835434290711212,
+            "N_voids": 0.012645822016742692,
+            "d_cavity_nm": 0.05128999719529137
           },
-          "peak_response": 0.0,
+          "peak_response": 0.4263440417370479,
           "drove_invalid": true,
-          "verdict": "inconclusive"
+          "verdict": "live"
         }
       },
       "affordability": {},
@@ -5627,10 +5781,9 @@
         {
           "row_id": 900,
           "label": null,
-          "valid": false,
+          "valid": true,
           "flags": [
-            "GRID",
-            "NOCONV"
+            "TOPBINV"
           ],
           "n_in_range": 1,
           "log_distance": 1.947,
@@ -5647,10 +5800,9 @@
         {
           "row_id": 902,
           "label": null,
-          "valid": false,
+          "valid": true,
           "flags": [
-            "GRID",
-            "NOCONV"
+            "TOPBINV"
           ],
           "n_in_range": 1,
           "log_distance": 1.906,
@@ -6274,8 +6426,7 @@
           "label": null,
           "valid": false,
           "flags": [
-            "GRID",
-            "NOCONV",
+            "TOPBINV",
             "DOSE",
             "STARV",
             "NOCONS"
@@ -6339,8 +6490,7 @@
           "label": null,
           "valid": false,
           "flags": [
-            "GRID",
-            "NOCONV",
+            "TOPBINV",
             "DOSE",
             "STARV",
             "NOCONS"
@@ -6488,6 +6638,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -6641,6 +6792,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -6664,6 +6816,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -6744,6 +6897,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -6765,6 +6919,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -6786,6 +6941,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -7048,6 +7204,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -7069,6 +7226,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -7090,6 +7248,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -7111,6 +7270,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -7132,6 +7292,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -7216,6 +7377,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -7562,6 +7724,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -8070,6 +8233,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -8135,6 +8299,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -8156,6 +8321,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -8198,6 +8364,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -8219,6 +8386,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -8240,6 +8408,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -8261,6 +8430,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -8282,6 +8452,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -8303,6 +8474,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -8324,6 +8496,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -8455,6 +8628,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -8876,6 +9050,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -8897,6 +9072,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -8918,6 +9094,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -8983,6 +9160,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -9004,6 +9182,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -9091,6 +9270,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -9177,6 +9357,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -9264,6 +9445,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -9285,6 +9467,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -9903,6 +10086,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -9945,6 +10129,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -9987,6 +10172,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -10030,6 +10216,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -10051,6 +10238,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -10072,6 +10260,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -10093,6 +10282,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -10114,6 +10304,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -10135,6 +10326,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -10446,8 +10638,7 @@
           "label": null,
           "valid": false,
           "flags": [
-            "GRID",
-            "NOCONV",
+            "TOPBINV",
             "DOSE"
           ],
           "n_in_range": 1,
@@ -10486,6 +10677,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -10633,6 +10825,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -10655,6 +10848,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -10698,6 +10892,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -10720,6 +10915,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -10742,6 +10938,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -10763,6 +10960,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -10806,6 +11004,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -10828,6 +11027,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -10850,6 +11050,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -11189,6 +11390,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -11210,6 +11412,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -11252,6 +11455,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -11273,8 +11477,7 @@
           "label": null,
           "valid": false,
           "flags": [
-            "GRID",
-            "NOCONV",
+            "TOPBINV",
             "DOSE"
           ],
           "n_in_range": 0,
@@ -11294,6 +11497,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -11315,6 +11519,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -11337,6 +11542,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -11358,6 +11564,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -11380,6 +11587,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -11445,6 +11653,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -11487,6 +11696,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -11508,6 +11718,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -11572,6 +11783,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -11593,6 +11805,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -11636,6 +11849,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -11723,6 +11937,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -11744,6 +11959,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -11765,6 +11981,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -11808,6 +12025,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -11872,6 +12090,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -12230,6 +12449,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -12272,6 +12492,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -12314,6 +12535,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -12335,6 +12557,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -12356,6 +12579,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -12399,6 +12623,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -12530,6 +12755,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -12551,6 +12777,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -12572,6 +12799,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -12593,6 +12821,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -12614,6 +12843,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -12679,6 +12909,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -12854,6 +13085,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -12983,6 +13215,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -13026,6 +13259,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -13068,6 +13302,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -13089,6 +13324,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -13131,6 +13367,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -13153,6 +13390,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -13175,6 +13413,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -13197,6 +13436,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -13219,6 +13459,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -13241,6 +13482,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -13263,6 +13505,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -13284,6 +13527,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -13306,6 +13550,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -13327,6 +13572,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -13349,6 +13595,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -13370,6 +13617,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -13413,6 +13661,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -13540,6 +13789,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -13561,6 +13811,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -13582,6 +13833,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -13603,6 +13855,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -13624,6 +13877,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -13687,6 +13941,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -13750,6 +14005,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -13771,6 +14027,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -13813,6 +14070,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -13834,6 +14092,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -13855,6 +14114,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -13876,6 +14136,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -13916,6 +14177,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -13937,6 +14199,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -13958,6 +14221,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -13979,8 +14243,7 @@
           "label": null,
           "valid": false,
           "flags": [
-            "GRID",
-            "NOCONV",
+            "TOPBINV",
             "DOSE"
           ],
           "n_in_range": 0,
@@ -14796,6 +15059,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -15279,6 +15543,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -15699,6 +15964,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -15720,6 +15986,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -15741,6 +16008,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -15951,6 +16219,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -15972,6 +16241,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -15993,6 +16263,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -16014,6 +16285,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -16035,6 +16307,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -16769,6 +17042,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -16790,6 +17064,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -16811,6 +17086,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -16832,6 +17108,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -16853,6 +17130,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -16895,6 +17173,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -16929,6 +17208,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -17013,6 +17293,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -17097,6 +17378,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -17139,6 +17421,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -17160,6 +17443,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -17242,6 +17526,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -17416,6 +17701,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -17458,6 +17744,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -17563,6 +17850,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -17606,6 +17894,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -17627,6 +17916,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -17755,6 +18045,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -17899,6 +18190,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -18004,6 +18296,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -18046,6 +18339,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -18372,8 +18666,7 @@
           "label": null,
           "valid": false,
           "flags": [
-            "GRID",
-            "NOCONV",
+            "TOPBINV",
             "DOSE",
             "STARV"
           ],
@@ -18712,6 +19005,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -18733,6 +19027,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -18754,6 +19049,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -18775,6 +19071,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -19312,6 +19609,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -19333,6 +19631,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -19354,6 +19653,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -19546,8 +19846,7 @@
           "label": null,
           "valid": false,
           "flags": [
-            "GRID",
-            "NOCONV",
+            "TOPBINV",
             "DOSE",
             "STARV"
           ],
@@ -20467,6 +20766,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -20488,6 +20788,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -20509,6 +20810,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -20530,6 +20832,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -20749,6 +21052,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -20790,6 +21094,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -20986,6 +21291,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -21007,6 +21313,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -21028,6 +21335,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -21049,6 +21357,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -21070,6 +21379,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -21112,6 +21422,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -21133,6 +21444,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -21243,6 +21555,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -21285,6 +21598,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -21306,6 +21620,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -21328,6 +21643,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -21350,6 +21666,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -21414,6 +21731,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -21435,6 +21753,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -21477,6 +21796,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -21498,6 +21818,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -21519,6 +21840,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -21582,6 +21904,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -21681,8 +22004,7 @@
           "label": null,
           "valid": false,
           "flags": [
-            "GRID",
-            "NOCONV",
+            "TOPBINV",
             "DOSE",
             "STARV"
           ],
@@ -21873,6 +22195,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -21894,6 +22217,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -22023,6 +22347,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -22088,8 +22413,7 @@
           "label": null,
           "valid": false,
           "flags": [
-            "GRID",
-            "NOCONV",
+            "TOPBINV",
             "DOSE",
             "STARV"
           ],
@@ -22446,6 +22770,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -22511,6 +22836,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -22577,6 +22903,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -22598,6 +22925,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -22663,6 +22991,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -22684,6 +23013,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -22705,6 +23035,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -22727,6 +23058,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -22748,6 +23080,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -22832,6 +23165,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -22853,6 +23187,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -22895,6 +23230,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -23105,6 +23441,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -23271,6 +23608,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -23292,6 +23630,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -23579,6 +23918,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -23726,6 +24066,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -24145,6 +24486,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -24274,6 +24616,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -24295,6 +24638,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -24338,6 +24682,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -24360,6 +24705,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -24381,6 +24727,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -24403,6 +24750,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -24425,6 +24773,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -24612,8 +24961,7 @@
           "label": null,
           "valid": false,
           "flags": [
-            "GRID",
-            "NOCONV",
+            "TOPBINV",
             "DOSE"
           ],
           "n_in_range": 1,
@@ -24675,6 +25023,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -24759,6 +25108,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -24843,6 +25193,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -24969,6 +25320,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -24990,6 +25342,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -25280,6 +25633,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -25429,6 +25783,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -25830,6 +26185,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -25851,6 +26207,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -25980,6 +26337,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -26001,6 +26359,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -26086,6 +26445,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -26108,6 +26468,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -26129,6 +26490,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -26192,6 +26554,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -26528,6 +26891,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -26696,6 +27060,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -26730,6 +27095,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -26751,6 +27117,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -26772,6 +27139,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -26793,6 +27161,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -26854,6 +27223,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -27274,6 +27644,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -27359,6 +27730,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -27401,6 +27773,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -27422,6 +27795,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -27443,6 +27817,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -27741,6 +28116,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -27762,6 +28138,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -27823,6 +28200,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -27844,6 +28222,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -28252,6 +28631,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -28294,6 +28674,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -28315,6 +28696,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -28336,6 +28718,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -28357,6 +28740,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -28519,6 +28903,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -28584,6 +28969,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -28710,6 +29096,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -28731,6 +29118,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -28880,6 +29268,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -28901,6 +29290,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -28922,6 +29312,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -28943,6 +29334,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -28964,6 +29356,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -28985,6 +29378,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -29028,6 +29422,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -29049,6 +29444,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -29158,6 +29554,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -29179,6 +29576,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -29393,6 +29791,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -29480,6 +29879,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -29567,6 +29967,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -29588,6 +29989,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -29719,6 +30121,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -29741,6 +30144,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -29763,6 +30167,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -29784,6 +30189,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -29805,6 +30211,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -29827,6 +30234,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -29849,6 +30257,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -29871,6 +30280,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -29893,6 +30303,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -29914,6 +30325,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -29936,6 +30348,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -30042,6 +30455,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -30063,6 +30477,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -30105,6 +30520,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -30145,6 +30561,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -30166,6 +30583,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -30187,6 +30605,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -30208,8 +30627,7 @@
           "label": null,
           "valid": false,
           "flags": [
-            "GRID",
-            "NOCONV",
+            "TOPBINV",
             "DOSE"
           ],
           "n_in_range": 0,
@@ -30229,6 +30647,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -31048,6 +31467,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -31153,6 +31573,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -31174,6 +31595,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -31216,6 +31638,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -31237,6 +31660,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -31552,6 +31976,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -31573,6 +31998,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -31615,6 +32041,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -31636,6 +32063,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE"
@@ -31872,7 +32300,7 @@
       "dose_target": 1.0,
       "in_scope": false,
       "n_rows": 4,
-      "n_valid": 2,
+      "n_valid": 3,
       "swept": [],
       "sensitivity": {},
       "affordability": {},
@@ -31882,6 +32310,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV"
           ],
@@ -31938,10 +32367,9 @@
         {
           "row_id": 502,
           "label": null,
-          "valid": false,
+          "valid": true,
           "flags": [
-            "GRID",
-            "NOCONV",
+            "TOPBINV",
             "NOCONS"
           ],
           "n_in_range": 2,
@@ -31994,8 +32422,7 @@
           "label": null,
           "valid": false,
           "flags": [
-            "GRID",
-            "NOCONV",
+            "TOPBINV",
             "DOSE",
             "STARV",
             "NOCONS"
@@ -32038,6 +32465,7 @@
           "label": null,
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "DOSE",
@@ -32104,8 +32532,7 @@
           "label": null,
           "valid": false,
           "flags": [
-            "GRID",
-            "NOCONV",
+            "TOPBINV",
             "DOSE",
             "STARV",
             "NOCONS"
@@ -32501,8 +32928,7 @@
           "label": null,
           "valid": false,
           "flags": [
-            "GRID",
-            "NOCONV",
+            "TOPBINV",
             "DOSE",
             "STARV",
             "NOCONS"
@@ -32603,13 +33029,926 @@
         }
       ]
     },
+    "V10_calib_machine0": {
+      "design": "design/V10_calib.csv",
+      "results": "results/V10_calib_machine0.jsonl",
+      "dose_target": 15.0,
+      "in_scope": true,
+      "n_rows": 12,
+      "n_valid": 6,
+      "swept": [
+        "f_cl_i",
+        "f_cl_v+E_m_v+rho_d",
+        "gamma_s",
+        "dH2_abs_conv"
+      ],
+      "sensitivity": {
+        "f_cl_i": {
+          "columns": [
+            "f_cl_i"
+          ],
+          "span": {
+            "f_cl_i": [
+              0.03,
+              0.12401708029210567
+            ]
+          },
+          "n_pairs": 1,
+          "response": {
+            "N_loops_100": 2.956974964138714,
+            "d_100_nm": 4.267763660837018,
+            "N_loops_111": 0.27599835207984924,
+            "d_111_nm": 0.08615732229044282,
+            "N_voids": 0.1054015171525915,
+            "d_cavity_nm": 0.6874315546622036
+          },
+          "peak_response": 4.267763660837018,
+          "drove_invalid": true,
+          "verdict": "live"
+        },
+        "f_cl_v+E_m_v+rho_d": {
+          "columns": [
+            "f_cl_v",
+            "E_m_v",
+            "rho_d"
+          ],
+          "span": {
+            "f_cl_v": [
+              0.317274,
+              0.55
+            ],
+            "E_m_v": [
+              0.5935251129378614,
+              0.8
+            ],
+            "rho_d": [
+              100000000000000.0,
+              500000000000000.0
+            ]
+          },
+          "n_pairs": 0,
+          "response": {
+            "N_loops_100": 0.0,
+            "d_100_nm": 0.0,
+            "N_loops_111": 0.0,
+            "d_111_nm": 0.0,
+            "N_voids": 0.0,
+            "d_cavity_nm": 0.0
+          },
+          "peak_response": 0.0,
+          "drove_invalid": false,
+          "verdict": "inconclusive"
+        },
+        "gamma_s": {
+          "columns": [
+            "gamma_s"
+          ],
+          "span": {
+            "gamma_s": [
+              2.2179468666938713,
+              2.33
+            ]
+          },
+          "n_pairs": 1,
+          "response": {
+            "N_loops_100": 2.530081878223097,
+            "d_100_nm": 3.958130857100562,
+            "N_loops_111": 0.064035625182431,
+            "d_111_nm": 0.10844644648101776,
+            "N_voids": 0.9124283385736667,
+            "d_cavity_nm": 0.32169694805856475
+          },
+          "peak_response": 3.958130857100562,
+          "drove_invalid": true,
+          "verdict": "live"
+        },
+        "dH2_abs_conv": {
+          "columns": [
+            "dH2_abs_conv"
+          ],
+          "span": {
+            "dH2_abs_conv": [
+              0.26,
+              0.32
+            ]
+          },
+          "n_pairs": 3,
+          "response": {
+            "N_loops_100": 0.06595373328174237,
+            "d_100_nm": 0.40766096500161575,
+            "N_loops_111": 0.23655454241277174,
+            "d_111_nm": 0.06960251504531945,
+            "N_voids": 0.02703680600582503,
+            "d_cavity_nm": 0.07277640570250221
+          },
+          "peak_response": 0.40766096500161575,
+          "drove_invalid": true,
+          "verdict": "live"
+        }
+      },
+      "affordability": {},
+      "rows": [
+        {
+          "row_id": 6003,
+          "label": "V1003_dH2abs0.32",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 2,
+          "log_distance": 0.901,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 2.168327673108185e+22,
+            "d_100": 5.720688690869962,
+            "N_111": 6.9196278421736835e+22,
+            "d_111": 1.2648318074578893,
+            "N_void": 8.380530110007707e+19,
+            "d_void": 2.7030729932084387
+          }
+        },
+        {
+          "row_id": 6002,
+          "label": "V1002_dH2abs0.30",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 0.894,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 2.270741030244547e+22,
+            "d_100": 7.643668552293133,
+            "N_111": 6.196643434320869e+22,
+            "d_111": 1.220022180404253,
+            "N_void": 8.255548163346216e+19,
+            "d_void": 2.6045024373540486
+          }
+        },
+        {
+          "row_id": 6000,
+          "label": "V1000_CONTROL_base_S1700",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 3,
+          "log_distance": 1.258,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 8.46800966666581e+21,
+            "d_100": 6.793655636609046,
+            "N_111": 1.4339724048678026e+22,
+            "d_111": 1.0505866409618843,
+            "N_void": 2.573865791158194e+18,
+            "d_void": 0.5646258174539087
+          }
+        },
+        {
+          "row_id": 6009,
+          "label": "V1009_dH2abs0.30_gs2.24",
+          "valid": false,
+          "flags": [
+            "TOPBINV",
+            "GRID",
+            "NOCONV",
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 0.912,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 8.498966465612914e+22,
+            "d_100": 59.552160074907,
+            "N_111": 3.6591369483608868e+22,
+            "d_111": 1.0032649322010205,
+            "N_void": 5.903000346362231e+20,
+            "d_void": 5.0294398262682565
+          }
+        },
+        {
+          "row_id": 6010,
+          "label": "V1010_ALL_gs2.28_fcli0.06",
+          "valid": false,
+          "flags": [
+            "TOPBINV",
+            "GRID",
+            "NOCONV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 0.88,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 2.9248833546246534e+22,
+            "d_100": 51.14527981944678,
+            "N_111": 4.044779508908306e+22,
+            "d_111": 1.157715410349983,
+            "N_void": 1.645368363634176e+20,
+            "d_void": 3.5919978331447093
+          }
+        },
+        {
+          "row_id": 6004,
+          "label": "V1004_dH2abs0.30_fcli0.06",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.051,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 8.985265406720224e+22,
+            "d_100": 40.26503943525247,
+            "N_111": 4.486380058021892e+22,
+            "d_111": 1.114908336205675,
+            "N_void": 7.385400862003234e+19,
+            "d_void": 0.8140852777222563
+          }
+        },
+        {
+          "row_id": 6008,
+          "label": "V1008_dH2abs0.30_gs2.28",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 0.998,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 8.015901761003921e+22,
+            "d_100": 37.89830891057376,
+            "N_111": 6.593449370670212e+22,
+            "d_111": 1.0877151103113887,
+            "N_void": 1.5788144258043088e+20,
+            "d_void": 3.4423629226619394
+          }
+        },
+        {
+          "row_id": 6006,
+          "label": "V1006_dH2abs0.32_fcli0.06",
+          "valid": false,
+          "flags": [
+            "TOPBINV",
+            "DOSE",
+            "STARV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.079,
+          "dose_reached": 11.087436736174254,
+          "observables": {
+            "N_100": 1.3199603102435153e+23,
+            "d_100": 36.39881771818193,
+            "N_111": 4.347027509389672e+22,
+            "d_111": 1.0983939602697779,
+            "N_void": 7.38329037963205e+19,
+            "d_void": 0.8042205407188125
+          }
+        },
+        {
+          "row_id": 6007,
+          "label": "V1007_dH2abs0.32_fcli0.03",
+          "valid": false,
+          "flags": [
+            "TOPBINV",
+            "GRID",
+            "NOCONV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 0.972,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 3.2284375094006777e+22,
+            "d_100": 49.036932226078875,
+            "N_111": 4.274923058966285e+22,
+            "d_111": 1.3198806732847643,
+            "N_void": 7.395709807463278e+19,
+            "d_void": 0.8565922297565918
+          }
+        },
+        {
+          "row_id": 6011,
+          "label": "V1011_ALL_gs2.24_fcli0.03",
+          "valid": false,
+          "flags": [
+            "TOPBINV",
+            "GRID",
+            "NOCONV",
+            "NOCONS"
+          ],
+          "n_in_range": 2,
+          "log_distance": 0.757,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 7.539786368132228e+21,
+            "d_100": 55.268083967340765,
+            "N_111": 4.9494562531766555e+22,
+            "d_111": 1.5542077459955352,
+            "N_void": 8.401153498376404e+20,
+            "d_void": 5.255221907937165
+          }
+        },
+        {
+          "row_id": 6001,
+          "label": "V1001_dH2abs0.28",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 0.889,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 2.3214349763706425e+22,
+            "d_100": 9.657794527901688,
+            "N_111": 5.595893755460288e+22,
+            "d_111": 1.1825250872790793,
+            "N_void": 8.159912148231399e+19,
+            "d_void": 2.5196984001883833
+          }
+        },
+        {
+          "row_id": 6005,
+          "label": "V1005_dH2abs0.30_fcli0.03",
+          "valid": false,
+          "flags": [
+            "TOPBINV",
+            "GRID",
+            "NOCONV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 0.947,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 2.963459182762024e+22,
+            "d_100": 50.68525947344972,
+            "N_111": 3.385039920609626e+22,
+            "d_111": 1.253361963757831,
+            "N_void": 7.403666821114184e+19,
+            "d_void": 0.9182744551645788
+          }
+        }
+      ]
+    },
+    "V11_calib_machine0": {
+      "design": "design/V11_calib.csv",
+      "results": "results/V11_calib_machine0.jsonl",
+      "dose_target": 15.0,
+      "in_scope": true,
+      "n_rows": 13,
+      "n_valid": 13,
+      "swept": [
+        "f_cl_v+E_m_v+gamma_s+dH2_abs_conv+rho_d",
+        "E_b_hV_1",
+        "loop_net_chi",
+        "loop_net_w_c"
+      ],
+      "sensitivity": {
+        "f_cl_v+E_m_v+gamma_s+dH2_abs_conv+rho_d": {
+          "columns": [
+            "f_cl_v",
+            "E_m_v",
+            "gamma_s",
+            "dH2_abs_conv",
+            "rho_d"
+          ],
+          "span": {
+            "f_cl_v": [
+              0.317274,
+              0.55
+            ],
+            "E_m_v": [
+              0.5935251129378614,
+              0.8
+            ],
+            "gamma_s": [
+              2.2179468666938713,
+              2.33
+            ],
+            "dH2_abs_conv": [
+              0.26,
+              0.32
+            ],
+            "rho_d": [
+              100000000000000.0,
+              500000000000000.0
+            ]
+          },
+          "n_pairs": 1,
+          "response": {
+            "N_loops_100": 1.5606107674200866,
+            "d_100_nm": 0.1579366107338699,
+            "N_loops_111": 3.825495817551386,
+            "d_111_nm": 0.2039290793759274,
+            "N_voids": 31.560089724944895,
+            "d_cavity_nm": 3.7873705198205796
+          },
+          "peak_response": 31.560089724944895,
+          "drove_invalid": false,
+          "verdict": "live"
+        },
+        "E_b_hV_1": {
+          "columns": [
+            "E_b_hV_1"
+          ],
+          "span": {
+            "E_b_hV_1": [
+              2.2131532812533066,
+              3.0
+            ]
+          },
+          "n_pairs": 5,
+          "response": {
+            "N_loops_100": 0.2869472487213458,
+            "d_100_nm": 0.08709076259493842,
+            "N_loops_111": 0.03491926614201479,
+            "d_111_nm": 0.013901600926210067,
+            "N_voids": 0.007555108482018014,
+            "d_cavity_nm": 0.017931544059482496
+          },
+          "peak_response": 0.2869472487213458,
+          "drove_invalid": false,
+          "verdict": "live"
+        },
+        "loop_net_chi": {
+          "columns": [
+            "loop_net_chi"
+          ],
+          "span": {
+            "loop_net_chi": [
+              50.0,
+              1000.0
+            ]
+          },
+          "n_pairs": 7,
+          "response": {
+            "N_loops_100": 0.22299398341776544,
+            "d_100_nm": 0.08709305966451386,
+            "N_loops_111": 0.03489518524368096,
+            "d_111_nm": 0.013901213820626257,
+            "N_voids": 0.007557971037469802,
+            "d_cavity_nm": 0.017937941288108217
+          },
+          "peak_response": 0.22299398341776544,
+          "drove_invalid": false,
+          "verdict": "live"
+        },
+        "loop_net_w_c": {
+          "columns": [
+            "loop_net_w_c"
+          ],
+          "span": {
+            "loop_net_w_c": [
+              100.0,
+              2700.0
+            ]
+          },
+          "n_pairs": 7,
+          "response": {
+            "N_loops_100": 0.9597338427809444,
+            "d_100_nm": 0.5211337869465742,
+            "N_loops_111": 0.1795570442360781,
+            "d_111_nm": 0.08379540017211151,
+            "N_voids": 0.06168575991151726,
+            "d_cavity_nm": 0.11200681366158349
+          },
+          "peak_response": 0.9597338427809444,
+          "drove_invalid": false,
+          "verdict": "live"
+        }
+      },
+      "affordability": {},
+      "rows": [
+        {
+          "row_id": 6106,
+          "label": "V1106_wc900",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 0.879,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 2.76529128364592e+21,
+            "d_100": 8.00477348838162,
+            "N_111": 7.886691812735924e+22,
+            "d_111": 1.3520231915793175,
+            "N_void": 8.770143692464164e+19,
+            "d_void": 2.9434481535757393
+          }
+        },
+        {
+          "row_id": 6112,
+          "label": "V1112_chi400_wc900_EbhV3.0",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 0.879,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 2.764458652125286e+21,
+            "d_100": 8.004640576688308,
+            "N_111": 7.884961274973698e+22,
+            "d_111": 1.3520105773846374,
+            "N_void": 8.770340062396596e+19,
+            "d_void": 2.9435463291124093
+          }
+        },
+        {
+          "row_id": 6110,
+          "label": "V1110_chi400_EbhV2.6",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 2,
+          "log_distance": 0.901,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 2.1682534193351033e+22,
+            "d_100": 5.720689247706707,
+            "N_111": 6.919461397222711e+22,
+            "d_111": 1.264830953873629,
+            "N_void": 8.380552618678175e+19,
+            "d_void": 2.703088916270623
+          }
+        },
+        {
+          "row_id": 6101,
+          "label": "V1101_REFERENCE_V1003",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 2,
+          "log_distance": 0.901,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 2.168327673108185e+22,
+            "d_100": 5.720688690869962,
+            "N_111": 6.9196278421736835e+22,
+            "d_111": 1.2648318074578893,
+            "N_void": 8.380530110007707e+19,
+            "d_void": 2.7030729932084387
+          }
+        },
+        {
+          "row_id": 6105,
+          "label": "V1105_wc300",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 2,
+          "log_distance": 0.874,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 7.967777799476293e+21,
+            "d_100": 7.256912480117572,
+            "N_111": 7.597325902910225e+22,
+            "d_111": 1.318704758935047,
+            "N_void": 8.599126100335315e+19,
+            "d_void": 2.8481230152624173
+          }
+        },
+        {
+          "row_id": 6100,
+          "label": "V1100_CONTROL_base_S1700",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 3,
+          "log_distance": 1.258,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 8.46800966666581e+21,
+            "d_100": 6.793655636609046,
+            "N_111": 1.4339724048678026e+22,
+            "d_111": 1.0505866409618843,
+            "N_void": 2.573865791158194e+18,
+            "d_void": 0.5646258174539087
+          }
+        },
+        {
+          "row_id": 6111,
+          "label": "V1111_wc900_EbhV2.6",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 0.879,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 2.7652892473585094e+21,
+            "d_100": 8.004773484612386,
+            "N_111": 7.886691859999162e+22,
+            "d_111": 1.3520232061247544,
+            "N_void": 8.770143788111738e+19,
+            "d_void": 2.9434482057279
+          }
+        },
+        {
+          "row_id": 6102,
+          "label": "V1102_chi150",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 2,
+          "log_distance": 0.901,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 2.1682623203912257e+22,
+            "d_100": 5.7206819195711685,
+            "N_111": 6.919457255445226e+22,
+            "d_111": 1.2648306800619777,
+            "N_void": 8.380551663235197e+19,
+            "d_void": 2.7030881404426705
+          }
+        },
+        {
+          "row_id": 6104,
+          "label": "V1104_chi1000",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 2,
+          "log_distance": 0.901,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 2.1682623203912257e+22,
+            "d_100": 5.7206819195711685,
+            "N_111": 6.919457255445226e+22,
+            "d_111": 1.2648306800619777,
+            "N_void": 8.380551663235197e+19,
+            "d_void": 2.7030881404426705
+          }
+        },
+        {
+          "row_id": 6103,
+          "label": "V1103_chi400",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 2,
+          "log_distance": 0.901,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 2.1682623203912257e+22,
+            "d_100": 5.7206819195711685,
+            "N_111": 6.919457255445226e+22,
+            "d_111": 1.2648306800619777,
+            "N_void": 8.380551663235197e+19,
+            "d_void": 2.7030881404426705
+          }
+        },
+        {
+          "row_id": 6107,
+          "label": "V1107_wc2700",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 0.919,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 8.731022298780306e+20,
+            "d_100": 7.262858411668813,
+            "N_111": 7.631981272727336e+22,
+            "d_111": 1.3631539377205695,
+            "N_void": 8.897489478304884e+19,
+            "d_void": 3.0058355862723953
+          }
+        },
+        {
+          "row_id": 6108,
+          "label": "V1108_EbhV2.6",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 2,
+          "log_distance": 0.913,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 2.7905233332329364e+22,
+            "d_100": 5.262373075468037,
+            "N_111": 6.686147057098757e+22,
+            "d_111": 1.2474893378492353,
+            "N_void": 8.317687775373187e+19,
+            "d_void": 2.6554555112172253
+          }
+        },
+        {
+          "row_id": 6109,
+          "label": "V1109_EbhV3.0",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 2,
+          "log_distance": 0.901,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 2.168343093732016e+22,
+            "d_100": 5.72067715966962,
+            "N_111": 6.919622405650238e+22,
+            "d_111": 1.2648314367837175,
+            "N_void": 8.380528808835686e+19,
+            "d_void": 2.7030719287146128
+          }
+        }
+      ]
+    },
+    "V12_calib_machine0": {
+      "design": "design/V12_calib.csv",
+      "results": "results/V12_calib_machine0.jsonl",
+      "dose_target": 15.0,
+      "in_scope": true,
+      "n_rows": 2,
+      "n_valid": 2,
+      "swept": [
+        "f_cl_v",
+        "E_m_v",
+        "rho_d",
+        "s_v"
+      ],
+      "sensitivity": {
+        "f_cl_v": {
+          "columns": [
+            "f_cl_v"
+          ],
+          "span": {
+            "f_cl_v": [
+              0.45,
+              0.55
+            ]
+          },
+          "n_pairs": 0,
+          "response": {
+            "N_loops_100": 0.0,
+            "d_100_nm": 0.0,
+            "N_loops_111": 0.0,
+            "d_111_nm": 0.0,
+            "N_voids": 0.0,
+            "d_cavity_nm": 0.0
+          },
+          "peak_response": 0.0,
+          "drove_invalid": false,
+          "verdict": "inconclusive"
+        },
+        "E_m_v": {
+          "columns": [
+            "E_m_v"
+          ],
+          "span": {
+            "E_m_v": [
+              0.8,
+              0.8
+            ]
+          },
+          "n_pairs": 0,
+          "response": {
+            "N_loops_100": 0.0,
+            "d_100_nm": 0.0,
+            "N_loops_111": 0.0,
+            "d_111_nm": 0.0,
+            "N_voids": 0.0,
+            "d_cavity_nm": 0.0
+          },
+          "peak_response": 0.0,
+          "drove_invalid": false,
+          "verdict": "inconclusive"
+        },
+        "rho_d": {
+          "columns": [
+            "rho_d"
+          ],
+          "span": {
+            "rho_d": [
+              100000000000000.0,
+              100000000000000.0
+            ]
+          },
+          "n_pairs": 0,
+          "response": {
+            "N_loops_100": 0.0,
+            "d_100_nm": 0.0,
+            "N_loops_111": 0.0,
+            "d_111_nm": 0.0,
+            "N_voids": 0.0,
+            "d_cavity_nm": 0.0
+          },
+          "peak_response": 0.0,
+          "drove_invalid": false,
+          "verdict": "inconclusive"
+        },
+        "s_v": {
+          "columns": [
+            "s_v"
+          ],
+          "span": {
+            "s_v": [
+              2.5,
+              2.8
+            ]
+          },
+          "n_pairs": 0,
+          "response": {
+            "N_loops_100": 0.0,
+            "d_100_nm": 0.0,
+            "N_loops_111": 0.0,
+            "d_111_nm": 0.0,
+            "N_voids": 0.0,
+            "d_cavity_nm": 0.0
+          },
+          "peak_response": 0.0,
+          "drove_invalid": false,
+          "verdict": "inconclusive"
+        }
+      },
+      "affordability": {},
+      "rows": [
+        {
+          "row_id": 6505,
+          "label": null,
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 4,
+          "log_distance": 0.524,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 6.148259289454491e+21,
+            "d_100": 5.961041113702146,
+            "N_111": 1.1494408334427185e+22,
+            "d_111": 1.0384178791476175,
+            "N_void": 3.9987801628778116e+20,
+            "d_void": 5.4515385853995175
+          }
+        },
+        {
+          "row_id": 6506,
+          "label": null,
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 4,
+          "log_distance": 0.516,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 6.18484286447248e+21,
+            "d_100": 5.904603255277572,
+            "N_111": 1.1462636519419674e+22,
+            "d_111": 1.0378828435306846,
+            "N_void": 4.405283492455766e+20,
+            "d_void": 5.458377551706293
+          }
+        }
+      ]
+    },
     "V1_calib_machine0": {
       "design": "design/V1_calib.csv",
       "results": "results/V1_calib_machine0.jsonl",
       "dose_target": 15.0,
       "in_scope": true,
       "n_rows": 13,
-      "n_valid": 9,
+      "n_valid": 10,
       "swept": [
         "f_cl_v",
         "E_m_v",
@@ -32652,17 +33991,17 @@
               0.9
             ]
           },
-          "n_pairs": 1,
+          "n_pairs": 3,
           "response": {
-            "N_loops_100": 0.0004852808598262426,
-            "d_100_nm": 0.00010719974888417916,
-            "N_loops_111": 5.798742318907646e-05,
-            "d_111_nm": 1.081343376907462e-05,
-            "N_voids": 0.8347689068909477,
-            "d_cavity_nm": 0.00017011589944448957
+            "N_loops_100": 14.578654833158073,
+            "d_100_nm": 0.2507434844755496,
+            "N_loops_111": 1.3119103289784801,
+            "d_111_nm": 0.030664129428000564,
+            "N_voids": 41110.86840499608,
+            "d_cavity_nm": 3.7089250246254952
           },
-          "peak_response": 0.8347689068909477,
-          "drove_invalid": true,
+          "peak_response": 41110.86840499608,
+          "drove_invalid": false,
           "verdict": "live"
         },
         "gamma_s": {
@@ -32936,10 +34275,9 @@
         {
           "row_id": 5108,
           "label": "V108_Emv_hi0.9",
-          "valid": false,
+          "valid": true,
           "flags": [
-            "GRID",
-            "NOCONV",
+            "TOPBINV",
             "NOCONS"
           ],
           "n_in_range": 1,
@@ -32978,6 +34316,7 @@
           "label": "V105_gammas_lo1.5",
           "valid": false,
           "flags": [
+            "TOPBINV",
             "GRID",
             "NOCONV",
             "NOCONS"
@@ -33013,6 +34352,1954 @@
             "d_111": 0.9639912927303107,
             "N_void": 6.461705422711172e+18,
             "d_void": 0.5613231434096955
+          }
+        }
+      ]
+    },
+    "V2_calib_machine0": {
+      "design": "design/V2_calib.csv",
+      "results": "results/V2_calib_machine0.jsonl",
+      "dose_target": 15.0,
+      "in_scope": true,
+      "n_rows": 11,
+      "n_valid": 7,
+      "swept": [
+        "E_m_v",
+        "gamma_s"
+      ],
+      "sensitivity": {
+        "E_m_v": {
+          "columns": [
+            "E_m_v"
+          ],
+          "span": {
+            "E_m_v": [
+              0.5935251129378614,
+              0.9
+            ]
+          },
+          "n_pairs": 4,
+          "response": {
+            "N_loops_100": 21.20113574928068,
+            "d_100_nm": 0.09717015341447854,
+            "N_loops_111": 3.0416468861627974,
+            "d_111_nm": 0.027027715252601725,
+            "N_voids": 5236.06560500683,
+            "d_cavity_nm": 7.400370880775981
+          },
+          "peak_response": 5236.06560500683,
+          "drove_invalid": true,
+          "verdict": "live"
+        },
+        "gamma_s": {
+          "columns": [
+            "gamma_s"
+          ],
+          "span": {
+            "gamma_s": [
+              1.8,
+              2.55
+            ]
+          },
+          "n_pairs": 4,
+          "response": {
+            "N_loops_100": 0.9962292726444365,
+            "d_100_nm": 0.7874012410946094,
+            "N_loops_111": 0.9937681905564137,
+            "d_111_nm": 0.3995671825513978,
+            "N_voids": 0.9998426579882173,
+            "d_cavity_nm": 0.8770634319371018
+          },
+          "peak_response": 0.9998426579882173,
+          "drove_invalid": true,
+          "verdict": "live"
+        }
+      },
+      "affordability": {},
+      "rows": [
+        {
+          "row_id": 5211,
+          "label": "V211_gs2.55_Emv0.775",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 2,
+          "log_distance": 1.21,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 3.2392751356730855e+21,
+            "d_100": 6.037167356949384,
+            "N_111": 8.745591288336948e+21,
+            "d_111": 1.029456178285769,
+            "N_void": 2.893895882336207e+18,
+            "d_void": 0.6726689189973626
+          }
+        },
+        {
+          "row_id": 5207,
+          "label": "V207_gs2.30_Emv0.650",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 2,
+          "log_distance": 1.192,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 4.213581616382867e+21,
+            "d_100": 6.232283705961369,
+            "N_111": 1.0129975937527177e+22,
+            "d_111": 1.0374067820964854,
+            "N_void": 3.27851396106538e+18,
+            "d_void": 0.6962053637616769
+          }
+        },
+        {
+          "row_id": 5200,
+          "label": "V200_CONTROL_base_newgrid",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 3,
+          "log_distance": 1.258,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 8.46800966666581e+21,
+            "d_100": 6.793655636609046,
+            "N_111": 1.4339724048678026e+22,
+            "d_111": 1.0505866409618843,
+            "N_void": 2.573865791158194e+18,
+            "d_void": 0.5646258174539087
+          }
+        },
+        {
+          "row_id": 5212,
+          "label": "V212_gs2.55_Emv0.900",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 4,
+          "log_distance": 0.48,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 6.118625853227352e+21,
+            "d_100": 5.854757173370577,
+            "N_111": 1.1991416053907415e+22,
+            "d_111": 1.041658865177126,
+            "N_void": 1.0062450491735403e+21,
+            "d_void": 5.650668399548501
+          }
+        },
+        {
+          "row_id": 5204,
+          "label": "V204_gs2.05_Emv0.650",
+          "valid": false,
+          "flags": [
+            "TOPBINV",
+            "GRID",
+            "NOCONV",
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 0.802,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 1.2147761775050337e+22,
+            "d_100": 62.35767777261512,
+            "N_111": 1.1744936275173691e+22,
+            "d_111": 0.9535208747653211,
+            "N_void": 1.0255627418459754e+20,
+            "d_void": 4.772379918718826
+          }
+        },
+        {
+          "row_id": 5202,
+          "label": "V202_gs1.80_Emv0.775",
+          "valid": false,
+          "flags": [
+            "TOPBINV",
+            "GRID",
+            "NOCONV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.458,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 1.5350860131580384e+23,
+            "d_100": 53.23195325636458,
+            "N_111": 1.0878520719892647e+23,
+            "d_111": 1.0838617943325166,
+            "N_void": 4.050186801888707e+23,
+            "d_void": 5.695026876420521
+          }
+        },
+        {
+          "row_id": 5206,
+          "label": "V206_gs2.05_Emv0.900",
+          "valid": false,
+          "flags": [
+            "TOPBINV",
+            "GRID",
+            "NOCONV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.505,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 1.8330311644955215e+23,
+            "d_100": 52.08135592896709,
+            "N_111": 1.236742430313653e+23,
+            "d_111": 1.0927990101438065,
+            "N_void": 4.918022756652282e+23,
+            "d_void": 5.704170811942763
+          }
+        },
+        {
+          "row_id": 5203,
+          "label": "V203_gs1.80_Emv0.900",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 2.211,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 1.622664615143717e+24,
+            "d_100": 26.466249243884373,
+            "N_111": 1.924227010222346e+24,
+            "d_111": 1.7348466554566584,
+            "N_void": 6.39527255163509e+24,
+            "d_void": 5.932491310519761
+          }
+        },
+        {
+          "row_id": 5205,
+          "label": "V205_gs2.05_Emv0.775",
+          "valid": false,
+          "flags": [
+            "TOPBINV",
+            "GRID",
+            "NOCONV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 0.941,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 2.732142930206785e+22,
+            "d_100": 61.1150062641691,
+            "N_111": 2.5345059184434416e+22,
+            "d_111": 0.9937955084132156,
+            "N_void": 3.2221255903731524e+22,
+            "d_void": 5.684697475616134
+          }
+        },
+        {
+          "row_id": 5209,
+          "label": "V209_gs2.30_Emv0.900",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 0.932,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 9.354629745598954e+22,
+            "d_100": 5.626691742130548,
+            "N_111": 4.094178570481078e+22,
+            "d_111": 1.0642397017914096,
+            "N_void": 1.7169792701030201e+22,
+            "d_void": 5.668103906057656
+          }
+        },
+        {
+          "row_id": 5208,
+          "label": "V208_gs2.30_Emv0.775",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 3,
+          "log_distance": 0.539,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 5.936755873290221e+21,
+            "d_100": 5.889650588357821,
+            "N_111": 1.113243617119448e+22,
+            "d_111": 1.0362326994551023,
+            "N_void": 3.211364535107907e+20,
+            "d_void": 5.471674779901159
+          }
+        }
+      ]
+    },
+    "V5_calib_machine0": {
+      "design": "design/V5_calib.csv",
+      "results": "results/V5_calib_machine0.jsonl",
+      "dose_target": 15.0,
+      "in_scope": true,
+      "n_rows": 4,
+      "n_valid": 4,
+      "swept": [
+        "E_m_v",
+        "gamma_s",
+        "Z_i",
+        "Z_v",
+        "rho_d"
+      ],
+      "sensitivity": {
+        "E_m_v": {
+          "columns": [
+            "E_m_v"
+          ],
+          "span": {
+            "E_m_v": [
+              0.5935251129378614,
+              0.9
+            ]
+          },
+          "n_pairs": 0,
+          "response": {
+            "N_loops_100": 0.0,
+            "d_100_nm": 0.0,
+            "N_loops_111": 0.0,
+            "d_111_nm": 0.0,
+            "N_voids": 0.0,
+            "d_cavity_nm": 0.0
+          },
+          "peak_response": 0.0,
+          "drove_invalid": false,
+          "verdict": "inconclusive"
+        },
+        "gamma_s": {
+          "columns": [
+            "gamma_s"
+          ],
+          "span": {
+            "gamma_s": [
+              2.2179468666938713,
+              2.55
+            ]
+          },
+          "n_pairs": 0,
+          "response": {
+            "N_loops_100": 0.0,
+            "d_100_nm": 0.0,
+            "N_loops_111": 0.0,
+            "d_111_nm": 0.0,
+            "N_voids": 0.0,
+            "d_cavity_nm": 0.0
+          },
+          "peak_response": 0.0,
+          "drove_invalid": false,
+          "verdict": "inconclusive"
+        },
+        "Z_i": {
+          "columns": [
+            "Z_i"
+          ],
+          "span": {
+            "Z_i": [
+              1.0,
+              1.35
+            ]
+          },
+          "n_pairs": 0,
+          "response": {
+            "N_loops_100": 0.0,
+            "d_100_nm": 0.0,
+            "N_loops_111": 0.0,
+            "d_111_nm": 0.0,
+            "N_voids": 0.0,
+            "d_cavity_nm": 0.0
+          },
+          "peak_response": 0.0,
+          "drove_invalid": false,
+          "verdict": "inconclusive"
+        },
+        "Z_v": {
+          "columns": [
+            "Z_v"
+          ],
+          "span": {
+            "Z_v": [
+              1.0,
+              1.0
+            ]
+          },
+          "n_pairs": 0,
+          "response": {
+            "N_loops_100": 0.0,
+            "d_100_nm": 0.0,
+            "N_loops_111": 0.0,
+            "d_111_nm": 0.0,
+            "N_voids": 0.0,
+            "d_cavity_nm": 0.0
+          },
+          "peak_response": 0.0,
+          "drove_invalid": false,
+          "verdict": "inconclusive"
+        },
+        "rho_d": {
+          "columns": [
+            "rho_d"
+          ],
+          "span": {
+            "rho_d": [
+              100000000000000.0,
+              1e+16
+            ]
+          },
+          "n_pairs": 0,
+          "response": {
+            "N_loops_100": 0.0,
+            "d_100_nm": 0.0,
+            "N_loops_111": 0.0,
+            "d_111_nm": 0.0,
+            "N_voids": 0.0,
+            "d_cavity_nm": 0.0
+          },
+          "peak_response": 0.0,
+          "drove_invalid": false,
+          "verdict": "inconclusive"
+        }
+      },
+      "affordability": {},
+      "rows": [
+        {
+          "row_id": 5511,
+          "label": "V511_rhod1e16_Zi1.10",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 0.901,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 9.534774751028138e+21,
+            "d_100": 11.623988973928094,
+            "N_111": 4.666335368196122e+22,
+            "d_111": 1.1867947661504028,
+            "N_void": 5.781867687965957e+19,
+            "d_void": 8.950675620758139
+          }
+        },
+        {
+          "row_id": 5510,
+          "label": "V510_Emv0.80",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 2,
+          "log_distance": 1.086,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 3.2094260162258073e+21,
+            "d_100": 6.026415798422087,
+            "N_111": 8.695061966364767e+21,
+            "d_111": 1.0290144388990126,
+            "N_void": 5.543835132605657e+18,
+            "d_void": 5.127649497912769
+          }
+        },
+        {
+          "row_id": 5506,
+          "label": "V506_Zi1.00",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 0.79,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 5.104080209894266e+21,
+            "d_100": 7.549924094742937,
+            "N_111": 1.532239380594877e+22,
+            "d_111": 1.0821052311281454,
+            "N_void": 5.401821681985378e+19,
+            "d_void": 8.55107208199051
+          }
+        },
+        {
+          "row_id": 5500,
+          "label": "V500_CONTROL_base_S1700",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 3,
+          "log_distance": 1.218,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 8.284113825567761e+21,
+            "d_100": 6.785016464536603,
+            "N_111": 1.416948277058113e+22,
+            "d_111": 1.0501344159324824,
+            "N_void": 2.9279995009188065e+18,
+            "d_void": 1.0225844240223345
+          }
+        }
+      ]
+    },
+    "V6_calib_machine0": {
+      "design": "design/V6_calib.csv",
+      "results": "results/V6_calib_machine0.jsonl",
+      "dose_target": 15.0,
+      "in_scope": true,
+      "n_rows": 9,
+      "n_valid": 9,
+      "swept": [
+        "E_m_v",
+        "gamma_s",
+        "Z_i",
+        "Z_v",
+        "rho_d"
+      ],
+      "sensitivity": {
+        "E_m_v": {
+          "columns": [
+            "E_m_v"
+          ],
+          "span": {
+            "E_m_v": [
+              0.5935251129378614,
+              0.9
+            ]
+          },
+          "n_pairs": 1,
+          "response": {
+            "N_loops_100": 0.003638936189819808,
+            "d_100_nm": 0.0007444695778244803,
+            "N_loops_111": 0.004989386083980696,
+            "d_111_nm": 0.00035232620001834913,
+            "N_voids": 0.8066751367842964,
+            "d_cavity_nm": 0.6628739162646817
+          },
+          "peak_response": 0.8066751367842964,
+          "drove_invalid": false,
+          "verdict": "live"
+        },
+        "gamma_s": {
+          "columns": [
+            "gamma_s"
+          ],
+          "span": {
+            "gamma_s": [
+              2.2179468666938713,
+              2.55
+            ]
+          },
+          "n_pairs": 0,
+          "response": {
+            "N_loops_100": 0.0,
+            "d_100_nm": 0.0,
+            "N_loops_111": 0.0,
+            "d_111_nm": 0.0,
+            "N_voids": 0.0,
+            "d_cavity_nm": 0.0
+          },
+          "peak_response": 0.0,
+          "drove_invalid": false,
+          "verdict": "inconclusive"
+        },
+        "Z_i": {
+          "columns": [
+            "Z_i"
+          ],
+          "span": {
+            "Z_i": [
+              1.0,
+              1.35
+            ]
+          },
+          "n_pairs": 2,
+          "response": {
+            "N_loops_100": 0.6674381459411116,
+            "d_100_nm": 0.295577752390243,
+            "N_loops_111": 0.866353999025913,
+            "d_111_nm": 0.07036850290562136,
+            "N_voids": 0.18743661727935756,
+            "d_cavity_nm": 0.13330009441638924
+          },
+          "peak_response": 0.866353999025913,
+          "drove_invalid": false,
+          "verdict": "live"
+        },
+        "Z_v": {
+          "columns": [
+            "Z_v"
+          ],
+          "span": {
+            "Z_v": [
+              1.0,
+              1.35
+            ]
+          },
+          "n_pairs": 0,
+          "response": {
+            "N_loops_100": 0.0,
+            "d_100_nm": 0.0,
+            "N_loops_111": 0.0,
+            "d_111_nm": 0.0,
+            "N_voids": 0.0,
+            "d_cavity_nm": 0.0
+          },
+          "peak_response": 0.0,
+          "drove_invalid": false,
+          "verdict": "inconclusive"
+        },
+        "rho_d": {
+          "columns": [
+            "rho_d"
+          ],
+          "span": {
+            "rho_d": [
+              100000000000000.0,
+              1e+16
+            ]
+          },
+          "n_pairs": 2,
+          "response": {
+            "N_loops_100": 0.766301212141663,
+            "d_100_nm": 0.49076261632632057,
+            "N_loops_111": 1.8520961667161697,
+            "d_111_nm": 0.0771490565515236,
+            "N_voids": 0.16108721547169724,
+            "d_cavity_nm": 0.5526638933222957
+          },
+          "peak_response": 1.8520961667161697,
+          "drove_invalid": false,
+          "verdict": "live"
+        }
+      },
+      "affordability": {},
+      "rows": [
+        {
+          "row_id": 5612,
+          "label": "V612_rhod1e15_Emv0.84",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 1.05,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 5.716786437533093e+21,
+            "d_100": 8.962429626810387,
+            "N_111": 2.4914456391035254e+22,
+            "d_111": 1.1084689048033305,
+            "N_void": 9.704294190943584e+18,
+            "d_void": 3.0362618807535577
+          }
+        },
+        {
+          "row_id": 5602,
+          "label": "V602_rhod1e15",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 0.846,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 5.737665435932988e+21,
+            "d_100": 8.96910685400345,
+            "N_111": 2.503938756289295e+22,
+            "d_111": 1.1088595850872982,
+            "N_void": 5.019682429629316e+19,
+            "d_void": 9.00630958931485
+          }
+        },
+        {
+          "row_id": 5611,
+          "label": "V611_rhod1e16_Zi1.10",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 0.937,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 9.56719727874114e+21,
+            "d_100": 11.620177098294427,
+            "N_111": 4.673236374506076e+22,
+            "d_111": 1.1868883955649376,
+            "N_void": 4.078810234330298e+19,
+            "d_void": 7.8057677644299295
+          }
+        },
+        {
+          "row_id": 5603,
+          "label": "V603_rhod1e16",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 0.846,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 5.737662474634919e+21,
+            "d_100": 8.969108242910222,
+            "N_111": 2.503938897414494e+22,
+            "d_111": 1.1088596052135424,
+            "N_void": 5.019682551622664e+19,
+            "d_void": 9.00630969744222
+          }
+        },
+        {
+          "row_id": 5609,
+          "label": "V609_Emv0.84",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 2,
+          "log_distance": 0.976,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 3.236586375095908e+21,
+            "d_100": 6.011976372802037,
+            "N_111": 8.73548959596307e+21,
+            "d_111": 1.0290766148485306,
+            "N_void": 1.1567703305892565e+19,
+            "d_void": 6.787428592123723
+          }
+        },
+        {
+          "row_id": 5608,
+          "label": "V608_Zv1.35_ZEROBIAS",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 0.81,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 5.998881261508096e+21,
+            "d_100": 8.250352697357373,
+            "N_111": 1.941677307525903e+22,
+            "d_111": 1.1027060601747856,
+            "N_void": 5.61310754088079e+19,
+            "d_void": 9.455911415495102
+          }
+        },
+        {
+          "row_id": 5604,
+          "label": "V604_Zi1.20",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 2,
+          "log_distance": 0.765,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 4.0808190395876675e+21,
+            "d_100": 6.761133427460646,
+            "N_111": 1.1593282986123379e+22,
+            "d_111": 1.0550441176914027,
+            "N_void": 5.845436155162873e+19,
+            "d_void": 9.571130786566949
+          }
+        },
+        {
+          "row_id": 5606,
+          "label": "V606_Zi1.00",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 0.787,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 5.157550525371981e+21,
+            "d_100": 7.55476101837375,
+            "N_111": 1.5438106208272455e+22,
+            "d_111": 1.0825486457960491,
+            "N_void": 5.796165855373446e+19,
+            "d_void": 9.560411475082734
+          }
+        },
+        {
+          "row_id": 5600,
+          "label": "V600_CONTROL_base_S1700",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 3,
+          "log_distance": 1.256,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 8.39820963710815e+21,
+            "d_100": 6.7902062218774235,
+            "N_111": 1.427472451476323e+22,
+            "d_111": 1.0504128457040742,
+            "N_void": 2.5641599704515077e+18,
+            "d_void": 0.6040421976417102
+          }
+        }
+      ]
+    },
+    "V7_calib_machine0": {
+      "design": "design/V7_calib.csv",
+      "results": "results/V7_calib_machine0.jsonl",
+      "dose_target": 15.0,
+      "in_scope": true,
+      "n_rows": 13,
+      "n_valid": 10,
+      "swept": [
+        "E_m_v",
+        "gamma_s",
+        "rho_d"
+      ],
+      "sensitivity": {
+        "E_m_v": {
+          "columns": [
+            "E_m_v"
+          ],
+          "span": {
+            "E_m_v": [
+              0.5935251129378614,
+              0.88
+            ]
+          },
+          "n_pairs": 9,
+          "response": {
+            "N_loops_100": 0.7077705886662988,
+            "d_100_nm": 0.637465234262558,
+            "N_loops_111": 0.1683369027752557,
+            "d_111_nm": 0.04620713423122158,
+            "N_voids": 76.71467122186743,
+            "d_cavity_nm": 2.656332897128589
+          },
+          "peak_response": 76.71467122186743,
+          "drove_invalid": true,
+          "verdict": "live"
+        },
+        "gamma_s": {
+          "columns": [
+            "gamma_s"
+          ],
+          "span": {
+            "gamma_s": [
+              2.1,
+              2.55
+            ]
+          },
+          "n_pairs": 9,
+          "response": {
+            "N_loops_100": 0.9250319691879271,
+            "d_100_nm": 0.7027597088760793,
+            "N_loops_111": 0.6387743885004847,
+            "d_111_nm": 0.04028699450979345,
+            "N_voids": 0.9977446349534222,
+            "d_cavity_nm": 0.8420386782401715
+          },
+          "peak_response": 0.9977446349534222,
+          "drove_invalid": true,
+          "verdict": "live"
+        },
+        "rho_d": {
+          "columns": [
+            "rho_d"
+          ],
+          "span": {
+            "rho_d": [
+              100000000000000.0,
+              1000000000000000.0
+            ]
+          },
+          "n_pairs": 0,
+          "response": {
+            "N_loops_100": 0.0,
+            "d_100_nm": 0.0,
+            "N_loops_111": 0.0,
+            "d_111_nm": 0.0,
+            "N_voids": 0.0,
+            "d_cavity_nm": 0.0
+          },
+          "peak_response": 0.0,
+          "drove_invalid": false,
+          "verdict": "inconclusive"
+        }
+      },
+      "affordability": {},
+      "rows": [
+        {
+          "row_id": 5712,
+          "label": "V712_gs2.55_Emv0.88",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 0.936,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 5.737300067404789e+21,
+            "d_100": 8.959380205038073,
+            "N_111": 2.4961134094374784e+22,
+            "d_111": 1.108565001065335,
+            "N_void": 2.2514688457164857e+19,
+            "d_void": 1.2061165855884781
+          }
+        },
+        {
+          "row_id": 5711,
+          "label": "V711_gs2.55_Emv0.84",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 1.062,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 5.736348252097938e+21,
+            "d_100": 8.966111607201498,
+            "N_111": 2.496657042876561e+22,
+            "d_111": 1.1086476828452894,
+            "N_void": 1.0134910128160256e+19,
+            "d_void": 0.8465071612491297
+          }
+        },
+        {
+          "row_id": 5710,
+          "label": "V710_gs2.55_Emv0.80",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 1.19,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 5.73602439819709e+21,
+            "d_100": 8.969224646502607,
+            "N_111": 2.4969320916607704e+22,
+            "d_111": 1.1086865587942578,
+            "N_void": 4.638149424880361e+18,
+            "d_void": 0.6299047872122026
+          }
+        },
+        {
+          "row_id": 5700,
+          "label": "V700_CONTROL_base_S1700",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 3,
+          "log_distance": 1.258,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 8.46800966666581e+21,
+            "d_100": 6.793655636609046,
+            "N_111": 1.4339724048678026e+22,
+            "d_111": 1.0505866409618843,
+            "N_void": 2.573865791158194e+18,
+            "d_void": 0.5646258174539087
+          }
+        },
+        {
+          "row_id": 5707,
+          "label": "V707_gs2.40_Emv0.80",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 0.949,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 7.067476832474932e+21,
+            "d_100": 9.2561426783112,
+            "N_111": 2.817429806080797e+22,
+            "d_111": 1.1179694504241002,
+            "N_void": 2.1670843835062428e+19,
+            "d_void": 1.5271927972633341
+          }
+        },
+        {
+          "row_id": 5701,
+          "label": "V701_gs2.10_Emv0.80",
+          "valid": false,
+          "flags": [
+            "TOPBINV",
+            "GRID",
+            "NOCONV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 0.92,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 2.356317426530102e+22,
+            "d_100": 55.73317533104524,
+            "N_111": 4.398949448139071e+22,
+            "d_111": 1.059601131934592,
+            "N_void": 1.7992183807254492e+22,
+            "d_void": 5.665616195441399
+          }
+        },
+        {
+          "row_id": 5704,
+          "label": "V704_gs2.25_Emv0.80",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 0.934,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 4.481278462129624e+22,
+            "d_100": 18.40764375836946,
+            "N_111": 6.816396449225438e+22,
+            "d_111": 1.1411242402291022,
+            "N_void": 1.2845354148734791e+20,
+            "d_void": 3.5824642857078155
+          }
+        },
+        {
+          "row_id": 5703,
+          "label": "V703_gs2.10_Emv0.88",
+          "valid": false,
+          "flags": [
+            "TOPBINV",
+            "GRID",
+            "NOCONV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.309,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 6.196266126546641e+22,
+            "d_100": 48.78440952194586,
+            "N_111": 1.2212099434377048e+23,
+            "d_111": 1.1656276530959822,
+            "N_void": 1.869398978253913e+23,
+            "d_void": 5.699606472397977
+          }
+        },
+        {
+          "row_id": 5709,
+          "label": "V709_gs2.40_Emv0.88",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 2,
+          "log_distance": 0.615,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 8.68465826305065e+21,
+            "d_100": 9.764086268200817,
+            "N_111": 3.291707213423128e+22,
+            "d_111": 1.1322443693799842,
+            "N_void": 1.5066252897939025e+21,
+            "d_void": 5.583925264891761
+          }
+        },
+        {
+          "row_id": 5706,
+          "label": "V706_gs2.25_Emv0.88",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 0.971,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 7.652995557248715e+22,
+            "d_100": 30.14187669902016,
+            "N_111": 6.9101230089296364e+22,
+            "d_111": 1.0883961592863354,
+            "N_void": 9.98272474397375e+21,
+            "d_void": 5.625995536260216
+          }
+        },
+        {
+          "row_id": 5705,
+          "label": "V705_gs2.25_Emv0.84",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 0.844,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 4.841809697388131e+22,
+            "d_100": 19.157939272805468,
+            "N_111": 6.875041797347059e+22,
+            "d_111": 1.13117599369689,
+            "N_void": 1.2121094014909486e+21,
+            "d_void": 5.358952127130193
+          }
+        },
+        {
+          "row_id": 5702,
+          "label": "V702_gs2.10_Emv0.84",
+          "valid": false,
+          "flags": [
+            "TOPBINV",
+            "GRID",
+            "NOCONV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.11,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 3.554272413095971e+22,
+            "d_100": 53.28999730396141,
+            "N_111": 6.7155718297799155e+22,
+            "d_111": 1.0971606053257708,
+            "N_void": 6.748785466375373e+22,
+            "d_void": 5.688806211089776
+          }
+        },
+        {
+          "row_id": 5708,
+          "label": "V708_gs2.40_Emv0.84",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 2,
+          "log_distance": 0.83,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 7.098740141820882e+21,
+            "d_100": 9.247228192678033,
+            "N_111": 2.8177074440397826e+22,
+            "d_111": 1.1178397613465025,
+            "N_void": 5.063568697691853e+19,
+            "d_void": 2.310227385502652
+          }
+        }
+      ]
+    },
+    "V8_calib_machine0": {
+      "design": "design/V8_calib.csv",
+      "results": "results/V8_calib_machine0.jsonl",
+      "dose_target": 15.0,
+      "in_scope": true,
+      "n_rows": 13,
+      "n_valid": 12,
+      "swept": [
+        "f_cl_v",
+        "E_m_v",
+        "gamma_s",
+        "rho_d",
+        "s_v"
+      ],
+      "sensitivity": {
+        "f_cl_v": {
+          "columns": [
+            "f_cl_v"
+          ],
+          "span": {
+            "f_cl_v": [
+              0.317274,
+              0.8
+            ]
+          },
+          "n_pairs": 4,
+          "response": {
+            "N_loops_100": 1.769273806309973,
+            "d_100_nm": 0.2293998867328364,
+            "N_loops_111": 0.7061038010282508,
+            "d_111_nm": 0.027928177030375423,
+            "N_voids": 1.501722983007562,
+            "d_cavity_nm": 0.05520650594688736
+          },
+          "peak_response": 1.769273806309973,
+          "drove_invalid": true,
+          "verdict": "live"
+        },
+        "E_m_v": {
+          "columns": [
+            "E_m_v"
+          ],
+          "span": {
+            "E_m_v": [
+              0.5935251129378614,
+              0.84
+            ]
+          },
+          "n_pairs": 1,
+          "response": {
+            "N_loops_100": 1.7061825358476859,
+            "d_100_nm": 0.07258653079931998,
+            "N_loops_111": 0.5159152473744733,
+            "d_111_nm": 0.0044961007954420484,
+            "N_voids": 3.696018271765766,
+            "d_cavity_nm": 0.033809470065075065
+          },
+          "peak_response": 3.696018271765766,
+          "drove_invalid": false,
+          "verdict": "live"
+        },
+        "gamma_s": {
+          "columns": [
+            "gamma_s"
+          ],
+          "span": {
+            "gamma_s": [
+              2.2179468666938713,
+              2.36
+            ]
+          },
+          "n_pairs": 5,
+          "response": {
+            "N_loops_100": 0.6320281424268298,
+            "d_100_nm": 0.08239115403324615,
+            "N_loops_111": 0.3154723369939876,
+            "d_111_nm": 0.014920833719385462,
+            "N_voids": 0.7461579862050696,
+            "d_cavity_nm": 0.275216656307971
+          },
+          "peak_response": 0.7461579862050696,
+          "drove_invalid": true,
+          "verdict": "live"
+        },
+        "rho_d": {
+          "columns": [
+            "rho_d"
+          ],
+          "span": {
+            "rho_d": [
+              100000000000000.0,
+              1000000000000000.0
+            ]
+          },
+          "n_pairs": 3,
+          "response": {
+            "N_loops_100": 2.256031212725465,
+            "d_100_nm": 1.11397362058311,
+            "N_loops_111": 3.635423906798933,
+            "d_111_nm": 0.12057800685338282,
+            "N_voids": 0.9401049747797187,
+            "d_cavity_nm": 0.6401595490166436
+          },
+          "peak_response": 3.635423906798933,
+          "drove_invalid": true,
+          "verdict": "live"
+        },
+        "s_v": {
+          "columns": [
+            "s_v"
+          ],
+          "span": {
+            "s_v": [
+              2.5,
+              3.0
+            ]
+          },
+          "n_pairs": 1,
+          "response": {
+            "N_loops_100": 0.23159495440756328,
+            "d_100_nm": 0.05655697591543474,
+            "N_loops_111": 0.048072511783150085,
+            "d_111_nm": 0.0036451360389901932,
+            "N_voids": 0.1298658920921688,
+            "d_cavity_nm": 0.018180033682370755
+          },
+          "peak_response": 0.23159495440756328,
+          "drove_invalid": false,
+          "verdict": "live"
+        }
+      },
+      "affordability": {},
+      "rows": [
+        {
+          "row_id": 5808,
+          "label": "V808_gs2.36_rhod1e+15_fclv0.80",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 0.886,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 2.3703114409814335e+22,
+            "d_100": 11.681974449128083,
+            "N_111": 5.2938282759729155e+22,
+            "d_111": 1.1561741261242329,
+            "N_void": 8.375803835983205e+19,
+            "d_void": 2.1032694610408074
+          }
+        },
+        {
+          "row_id": 5807,
+          "label": "V807_gs2.36_rhod1e+15_fclv0.32",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 0.898,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 8.559324959419045e+21,
+            "d_100": 9.502176285515405,
+            "N_111": 3.10287584658236e+22,
+            "d_111": 1.1247615854488515,
+            "N_void": 3.3480141058279145e+19,
+            "d_void": 1.9932301868755469
+          }
+        },
+        {
+          "row_id": 5800,
+          "label": "V800_CONTROL_base_S1700",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 3,
+          "log_distance": 1.258,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 8.46800966666581e+21,
+            "d_100": 6.793655636609046,
+            "N_111": 1.4339724048678026e+22,
+            "d_111": 1.0505866409618843,
+            "N_void": 2.573865791158194e+18,
+            "d_void": 0.5646258174539087
+          }
+        },
+        {
+          "row_id": 5803,
+          "label": "V803_gs2.30_rhod1e+15_fclv0.32",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 0.862,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 1.550065989013455e+22,
+            "d_100": 10.35536691617692,
+            "N_111": 4.219021138773015e+22,
+            "d_111": 1.141798166025213,
+            "N_void": 6.6420023873067926e+19,
+            "d_void": 2.750104847501158
+          }
+        },
+        {
+          "row_id": 5802,
+          "label": "V802_gs2.30_rhod1e+14_fclv0.80",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 2,
+          "log_distance": 0.573,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 1.9783459951583007e+22,
+            "d_100": 5.381023191416082,
+            "N_111": 1.6683585432180616e+22,
+            "d_111": 1.0345744712911822,
+            "N_void": 1.0810540380949348e+21,
+            "d_void": 5.42164909894558
+          }
+        },
+        {
+          "row_id": 5804,
+          "label": "V804_gs2.30_rhod1e+15_fclv0.80",
+          "valid": false,
+          "flags": [
+            "TOPBINV",
+            "GRID",
+            "NOCONV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.01,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 1.256066003607903e+23,
+            "d_100": 58.066221128652835,
+            "N_111": 4.137408392689504e+22,
+            "d_111": 1.0037362034208082,
+            "N_void": 1.9395622680942556e+20,
+            "d_void": 3.5707328488558323
+          }
+        },
+        {
+          "row_id": 5812,
+          "label": "V812_gs2.33_rhod1e14_fclv0.55",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 4,
+          "log_distance": 0.505,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 8.776795973372173e+21,
+            "d_100": 5.55180791835045,
+            "N_111": 1.272114942348694e+22,
+            "d_111": 1.036270412599858,
+            "N_void": 7.531577795207956e+20,
+            "d_void": 5.502761950953488
+          }
+        },
+        {
+          "row_id": 5810,
+          "label": "V810_gs2.33_rhod1e14_sv3.0",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 4,
+          "log_distance": 0.514,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 8.617893893142421e+21,
+            "d_100": 5.705666924907217,
+            "N_111": 1.2823496631520502e+22,
+            "d_111": 1.0377225116871776,
+            "N_void": 6.283077334591371e+20,
+            "d_void": 5.4854230248112446
+          }
+        },
+        {
+          "row_id": 5809,
+          "label": "V809_gs2.33_rhod1e14_centre",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 3,
+          "log_distance": 0.524,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 1.1215301021999491e+22,
+            "d_100": 5.400245377173006,
+            "N_111": 1.3471085550372611e+22,
+            "d_111": 1.0339536101202842,
+            "N_void": 7.220814903691725e+20,
+            "d_void": 5.3874784844999875
+          }
+        },
+        {
+          "row_id": 5805,
+          "label": "V805_gs2.36_rhod1e+14_fclv0.32",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 4,
+          "log_distance": 0.517,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 5.142955923696501e+21,
+            "d_100": 5.848189812086579,
+            "N_111": 1.0520719956452552e+22,
+            "d_111": 1.0345853392838316,
+            "N_void": 3.838723866763774e+20,
+            "d_void": 5.539205449049806
+          }
+        },
+        {
+          "row_id": 5801,
+          "label": "V801_gs2.30_rhod1e+14_fclv0.32",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 3,
+          "log_distance": 0.505,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 9.4181547137378e+21,
+            "d_100": 5.647925999097013,
+            "N_111": 1.370549424453789e+22,
+            "d_111": 1.0411919990069196,
+            "N_void": 1.108940577765666e+21,
+            "d_void": 5.604287981851611
+          }
+        },
+        {
+          "row_id": 5806,
+          "label": "V806_gs2.36_rhod1e+14_fclv0.80",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 4,
+          "log_distance": 0.523,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 7.279756507608419e+21,
+            "d_100": 5.526073899590939,
+            "N_111": 1.142037574645175e+22,
+            "d_111": 1.031765855704062,
+            "N_void": 4.135258642538264e+20,
+            "d_void": 5.284393224549807
+          }
+        },
+        {
+          "row_id": 5811,
+          "label": "V811_gs2.33_rhod1e14_Emv0.84",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 0.647,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 3.0350651760009726e+22,
+            "d_100": 5.008260299778952,
+            "N_111": 2.0421023984495788e+22,
+            "d_111": 1.0386023697691962,
+            "N_void": 3.3909078724774897e+21,
+            "d_void": 5.5696262770479255
+          }
+        }
+      ]
+    },
+    "V9_calib_machine0": {
+      "design": "design/V9_calib.csv",
+      "results": "results/V9_calib_machine0.jsonl",
+      "dose_target": 15.0,
+      "in_scope": true,
+      "n_rows": 13,
+      "n_valid": 13,
+      "swept": [
+        "f_cl_v+E_m_v+gamma_s",
+        "dH2_conv",
+        "dH2_abs_conv",
+        "rho_d"
+      ],
+      "sensitivity": {
+        "f_cl_v+E_m_v+gamma_s": {
+          "columns": [
+            "f_cl_v",
+            "E_m_v",
+            "gamma_s"
+          ],
+          "span": {
+            "f_cl_v": [
+              0.317274,
+              0.55
+            ],
+            "E_m_v": [
+              0.5935251129378614,
+              0.8
+            ],
+            "gamma_s": [
+              2.2179468666938713,
+              2.33
+            ]
+          },
+          "n_pairs": 1,
+          "response": {
+            "N_loops_100": 0.03646503946752633,
+            "d_100_nm": 0.1827952113979162,
+            "N_loops_111": 0.11287348485205351,
+            "d_111_nm": 0.013626889781235607,
+            "N_voids": 291.61734706916786,
+            "d_cavity_nm": 8.745856071136327
+          },
+          "peak_response": 291.61734706916786,
+          "drove_invalid": false,
+          "verdict": "live"
+        },
+        "dH2_conv": {
+          "columns": [
+            "dH2_conv"
+          ],
+          "span": {
+            "dH2_conv": [
+              0.4394554538170355,
+              0.75
+            ]
+          },
+          "n_pairs": 3,
+          "response": {
+            "N_loops_100": 0.0001181886385658304,
+            "d_100_nm": 5.993163948447844e-06,
+            "N_loops_111": 3.826451983268697e-06,
+            "d_111_nm": 1.015711943885833e-06,
+            "N_voids": 4.2121488145641095e-05,
+            "d_cavity_nm": 1.0391489675853904e-05
+          },
+          "peak_response": 0.0001181886385658304,
+          "drove_invalid": false,
+          "verdict": "dead"
+        },
+        "dH2_abs_conv": {
+          "columns": [
+            "dH2_abs_conv"
+          ],
+          "span": {
+            "dH2_abs_conv": [
+              0.26,
+              0.55
+            ]
+          },
+          "n_pairs": 10,
+          "response": {
+            "N_loops_100": 0.9998194233684649,
+            "d_100_nm": 0.8782037832617446,
+            "N_loops_111": 1.7267847190447019,
+            "d_111_nm": 0.2428000130078629,
+            "N_voids": 1.737670154837884,
+            "d_cavity_nm": 0.6588356355113558
+          },
+          "peak_response": 1.737670154837884,
+          "drove_invalid": false,
+          "verdict": "live"
+        },
+        "rho_d": {
+          "columns": [
+            "rho_d"
+          ],
+          "span": {
+            "rho_d": [
+              100000000000000.0,
+              700000000000000.0
+            ]
+          },
+          "n_pairs": 9,
+          "response": {
+            "N_loops_100": 10.598836326663339,
+            "d_100_nm": 0.5752767720416081,
+            "N_loops_111": 1.4733211218685036,
+            "d_111_nm": 0.07578809261386987,
+            "N_voids": 0.9491686806013718,
+            "d_cavity_nm": 0.4920831238387353
+          },
+          "peak_response": 10.598836326663339,
+          "drove_invalid": false,
+          "verdict": "live"
+        }
+      },
+      "affordability": {},
+      "rows": [
+        {
+          "row_id": 5912,
+          "label": "V912_dH2abs0.55_rhod5e14",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.494,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 7.002436491200001e+18,
+            "d_100": 1.1070789352205288,
+            "N_111": 8.902485271112423e+22,
+            "d_111": 1.3878959880285295,
+            "N_void": 8.804650542298097e+19,
+            "d_void": 2.9627955949402756
+          }
+        },
+        {
+          "row_id": 5911,
+          "label": "V911_dH2abs0.55_rhod3e14",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.581,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 2.059429232390983e+18,
+            "d_100": 1.0651851410728423,
+            "N_111": 4.274243488963898e+22,
+            "d_111": 1.290120236092522,
+            "N_void": 2.4630813649559916e+20,
+            "d_void": 5.021911605011533
+          }
+        },
+        {
+          "row_id": 5909,
+          "label": "V909_dH2conv0.60",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 0.755,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 1.8623287208635529e+21,
+            "d_100": 2.7227311236112626,
+            "N_111": 4.095048789352327e+22,
+            "d_111": 1.2755985434612507,
+            "N_void": 1.8873170383330705e+20,
+            "d_void": 4.7614712661056675
+          }
+        },
+        {
+          "row_id": 5910,
+          "label": "V910_dH2conv0.75",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 0.755,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 1.8623192597945734e+21,
+            "d_100": 2.7227318389202018,
+            "N_111": 4.0950494565137935e+22,
+            "d_111": 1.2755985989640835,
+            "N_void": 1.8873204813430168e+20,
+            "d_void": 4.761473407908396
+          }
+        },
+        {
+          "row_id": 5907,
+          "label": "V907_dH2abs0.35_rhod5e+14",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 0.904,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 1.3986293170946055e+22,
+            "d_100": 3.27192551227174,
+            "N_111": 8.129662307965699e+22,
+            "d_111": 1.3396110731288688,
+            "N_void": 8.621980215630771e+19,
+            "d_void": 2.8627476958870077
+          }
+        },
+        {
+          "row_id": 5900,
+          "label": "V900_CONTROL_base_S1700",
+          "valid": true,
+          "flags": [
+            "NOCONS"
+          ],
+          "n_in_range": 3,
+          "log_distance": 1.258,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 8.46800966666581e+21,
+            "d_100": 6.793655636609046,
+            "N_111": 1.4339724048678026e+22,
+            "d_111": 1.0505866409618843,
+            "N_void": 2.573865791158194e+18,
+            "d_void": 0.5646258174539087
+          }
+        },
+        {
+          "row_id": 5906,
+          "label": "V906_dH2abs0.45_rhod3e+14",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 1.541,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 2.6460181140711526e+18,
+            "d_100": 1.100153438080066,
+            "N_111": 4.2742173321554165e+22,
+            "d_111": 1.2901181635088907,
+            "N_void": 2.4629987807171776e+20,
+            "d_void": 5.021884407954928
+          }
+        },
+        {
+          "row_id": 5903,
+          "label": "V903_dH2abs0.35_rhod1e+14",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 0.66,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 1.205835893967608e+21,
+            "d_100": 2.689411090805238,
+            "N_111": 3.2869416898942896e+22,
+            "d_111": 1.2729896212856098,
+            "N_void": 1.6961944560233973e+21,
+            "d_void": 5.636252367755702
+          }
+        },
+        {
+          "row_id": 5901,
+          "label": "V901_dH2abs0.26_rhod1e+14",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 4,
+          "log_distance": 0.505,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 8.776795973372173e+21,
+            "d_100": 5.55180791835045,
+            "N_111": 1.272114942348694e+22,
+            "d_111": 1.036270412599858,
+            "N_void": 7.531577795207956e+20,
+            "d_void": 5.502761950953488
+          }
+        },
+        {
+          "row_id": 5902,
+          "label": "V902_dH2abs0.26_rhod3e+14",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 0.768,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 1.140473833675775e+22,
+            "d_100": 8.745634056614136,
+            "N_111": 2.736091044175374e+22,
+            "d_111": 1.1062521312214102,
+            "N_void": 8.996998270969014e+19,
+            "d_void": 3.02737142698497
+          }
+        },
+        {
+          "row_id": 5904,
+          "label": "V904_dH2abs0.35_rhod3e+14",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 0,
+          "log_distance": 0.755,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 1.862539390789446e+21,
+            "d_100": 2.722715521239698,
+            "N_111": 4.095033787063637e+22,
+            "d_111": 1.2755973033246668,
+            "N_void": 1.8872409879441152e+20,
+            "d_void": 4.761423929620789
+          }
+        },
+        {
+          "row_id": 5908,
+          "label": "V908_dH2abs0.35_rhod7e+14",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 0.904,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 1.3986286328947709e+22,
+            "d_100": 3.271925740933247,
+            "N_111": 8.129660759157428e+22,
+            "d_111": 1.3396111149862013,
+            "N_void": 8.62198044096018e+19,
+            "d_void": 2.8627479340038087
+          }
+        },
+        {
+          "row_id": 5905,
+          "label": "V905_dH2abs0.45_rhod1e+14",
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 1,
+          "log_distance": 1.573,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 1.645720012828215e+18,
+            "d_100": 1.0879116223452323,
+            "N_111": 3.4687835856648507e+22,
+            "d_111": 1.2878768822587672,
+            "N_void": 1.736341357973659e+21,
+            "d_void": 5.638988492936997
           }
         }
       ]
@@ -33241,16 +36528,17 @@
       ],
       "seen_in": [
         "S15_calib_machine0",
-        "S8_15dpa"
+        "S8_15dpa",
+        "V10_calib_machine0"
       ],
-      "peak_response": 0.0,
+      "peak_response": 4.267763660837018,
       "response": {
-        "N_loops_100": 0.0,
-        "d_100_nm": 0.0,
-        "N_loops_111": 0.0,
-        "d_111_nm": 0.0,
-        "N_voids": 0.0,
-        "d_cavity_nm": 0.0
+        "N_loops_100": 2.956974964138714,
+        "d_100_nm": 4.267763660837018,
+        "N_loops_111": 0.27599835207984924,
+        "d_111_nm": 0.08615732229044282,
+        "N_voids": 0.1054015171525915,
+        "d_cavity_nm": 0.6874315546622036
       },
       "spans": {
         "f_cl_i": [
@@ -33258,10 +36546,17 @@
           0.12401708029210569
         ]
       },
-      "n_pairs": 0,
+      "n_pairs": 1,
       "drove_invalid": true,
-      "verdict": "inconclusive",
-      "moves": []
+      "verdict": "live",
+      "moves": [
+        "d_100",
+        "N_100",
+        "d_void",
+        "N_111",
+        "N_void",
+        "d_111"
+      ]
     },
     "E_m_i": {
       "columns": [
@@ -33271,14 +36566,14 @@
         "S16_calib_machine1",
         "S20_calib_machine0"
       ],
-      "peak_response": 84.06102338756598,
+      "peak_response": 414.68268053048604,
       "response": {
-        "N_loops_100": 64.72180017234872,
+        "N_loops_100": 414.68268053048604,
         "d_100_nm": 2.3515213222670606,
         "N_loops_111": 84.06102338756598,
         "d_111_nm": 0.6211432638697145,
-        "N_voids": 0.006214520169203874,
-        "d_cavity_nm": 0.002396358322387382
+        "N_voids": 0.007841300481764235,
+        "d_cavity_nm": 0.09375691421619625
       },
       "spans": {
         "E_m_i": [
@@ -33286,14 +36581,15 @@
           0.55
         ]
       },
-      "n_pairs": 13,
+      "n_pairs": 18,
       "drove_invalid": true,
       "verdict": "live",
       "moves": [
-        "N_111",
         "N_100",
+        "N_111",
         "d_100",
-        "d_111"
+        "d_111",
+        "d_void"
       ]
     },
     "L_hat": {
@@ -33310,8 +36606,8 @@
         "d_100_nm": 0.8517486996284722,
         "N_loops_111": 10.904253047626145,
         "d_111_nm": 0.6439317568557861,
-        "N_voids": 0.0037227041518289594,
-        "d_cavity_nm": 0.09783573772633103
+        "N_voids": 0.007013102462997911,
+        "d_cavity_nm": 0.10522178282811234
       },
       "spans": {
         "L_hat": [
@@ -33319,7 +36615,7 @@
           3000.0000000000014
         ]
       },
-      "n_pairs": 17,
+      "n_pairs": 24,
       "drove_invalid": true,
       "verdict": "live",
       "moves": [
@@ -33338,14 +36634,14 @@
         "S16_calib_machine1",
         "S20_calib_machine0"
       ],
-      "peak_response": 2402.6346369499643,
+      "peak_response": 163010.94430435039,
       "response": {
-        "N_loops_100": 2402.6346369499643,
-        "d_100_nm": 2.2037214207322258,
-        "N_loops_111": 137.21218362125794,
+        "N_loops_100": 163010.94430435039,
+        "d_100_nm": 3.220932434232995,
+        "N_loops_111": 1130.5384436837646,
         "d_111_nm": 0.7471300815028135,
         "N_voids": 0.03169869294141381,
-        "d_cavity_nm": 0.09326504266291746
+        "d_cavity_nm": 0.0970574283613278
       },
       "spans": {
         "B_111": [
@@ -33353,7 +36649,7 @@
           0.6
         ]
       },
-      "n_pairs": 13,
+      "n_pairs": 23,
       "drove_invalid": true,
       "verdict": "live",
       "moves": [
@@ -33467,16 +36763,18 @@
       ],
       "seen_in": [
         "S18_calib_machine2",
-        "V1_calib_machine0"
+        "V12_calib_machine0",
+        "V1_calib_machine0",
+        "V8_calib_machine0"
       ],
       "peak_response": 4.495523169722984,
       "response": {
         "N_loops_100": 1.9092712649341395,
-        "d_100_nm": 0.14235682669647454,
-        "N_loops_111": 0.3863393341140484,
+        "d_100_nm": 0.2293998867328364,
+        "N_loops_111": 0.7061038010282508,
         "d_111_nm": 0.039357918535802616,
         "N_voids": 4.495523169722984,
-        "d_cavity_nm": 0.0002846629370815146
+        "d_cavity_nm": 0.05520650594688736
       },
       "spans": {
         "f_cl_v": [
@@ -33484,14 +36782,15 @@
           0.8
         ]
       },
-      "n_pairs": 3,
+      "n_pairs": 7,
       "drove_invalid": true,
       "verdict": "live",
       "moves": [
         "N_void",
         "N_100",
         "N_111",
-        "d_100"
+        "d_100",
+        "d_void"
       ]
     },
     "E_b_v2": {
@@ -33527,7 +36826,40 @@
         "E_b_hV_1"
       ],
       "seen_in": [
-        "S18_calib_machine2"
+        "S18_calib_machine2",
+        "V11_calib_machine0"
+      ],
+      "peak_response": 0.2869472487213458,
+      "response": {
+        "N_loops_100": 0.2869472487213458,
+        "d_100_nm": 0.08709076259493842,
+        "N_loops_111": 0.03491926614201479,
+        "d_111_nm": 0.013901600926210067,
+        "N_voids": 0.007555108482018014,
+        "d_cavity_nm": 0.017931544059482496
+      },
+      "spans": {
+        "E_b_hV_1": [
+          2.2131532812533066,
+          3.0
+        ]
+      },
+      "n_pairs": 5,
+      "drove_invalid": false,
+      "verdict": "live",
+      "moves": [
+        "N_100",
+        "d_100"
+      ]
+    },
+    "f_cl_v+E_m_v+rho_d": {
+      "columns": [
+        "f_cl_v",
+        "E_m_v",
+        "rho_d"
+      ],
+      "seen_in": [
+        "V10_calib_machine0"
       ],
       "peak_response": 0.0,
       "response": {
@@ -33539,9 +36871,17 @@
         "d_cavity_nm": 0.0
       },
       "spans": {
-        "E_b_hV_1": [
-          3.0,
-          3.0
+        "f_cl_v": [
+          0.317274,
+          0.55
+        ],
+        "E_m_v": [
+          0.5935251129378614,
+          0.8
+        ],
+        "rho_d": [
+          100000000000000.0,
+          500000000000000.0
         ]
       },
       "n_pairs": 0,
@@ -33549,50 +36889,27 @@
       "verdict": "inconclusive",
       "moves": []
     },
-    "E_m_v": {
-      "columns": [
-        "E_m_v"
-      ],
-      "seen_in": [
-        "V1_calib_machine0"
-      ],
-      "peak_response": 0.8347689068909477,
-      "response": {
-        "N_loops_100": 0.0004852808598262426,
-        "d_100_nm": 0.00010719974888417916,
-        "N_loops_111": 5.798742318907646e-05,
-        "d_111_nm": 1.081343376907462e-05,
-        "N_voids": 0.8347689068909477,
-        "d_cavity_nm": 0.00017011589944448957
-      },
-      "spans": {
-        "E_m_v": [
-          0.5,
-          0.9
-        ]
-      },
-      "n_pairs": 1,
-      "drove_invalid": true,
-      "verdict": "live",
-      "moves": [
-        "N_void"
-      ]
-    },
     "gamma_s": {
       "columns": [
         "gamma_s"
       ],
       "seen_in": [
-        "V1_calib_machine0"
+        "V10_calib_machine0",
+        "V1_calib_machine0",
+        "V2_calib_machine0",
+        "V5_calib_machine0",
+        "V6_calib_machine0",
+        "V7_calib_machine0",
+        "V8_calib_machine0"
       ],
-      "peak_response": 0.999638731686173,
+      "peak_response": 3.958130857100562,
       "response": {
-        "N_loops_100": 0.6195473681372854,
-        "d_100_nm": 0.11059707441357736,
-        "N_loops_111": 0.39175890897703236,
-        "d_111_nm": 0.020234883911735446,
-        "N_voids": 0.999638731686173,
-        "d_cavity_nm": 0.045715458428738476
+        "N_loops_100": 2.530081878223097,
+        "d_100_nm": 3.958130857100562,
+        "N_loops_111": 0.9937681905564137,
+        "d_111_nm": 0.3995671825513978,
+        "N_voids": 0.9998426579882173,
+        "d_cavity_nm": 0.8770634319371018
       },
       "spans": {
         "gamma_s": [
@@ -33600,13 +36917,279 @@
           3.0
         ]
       },
+      "n_pairs": 20,
+      "drove_invalid": true,
+      "verdict": "live",
+      "moves": [
+        "d_100",
+        "N_100",
+        "N_void",
+        "N_111",
+        "d_void",
+        "d_111"
+      ]
+    },
+    "dH2_abs_conv": {
+      "columns": [
+        "dH2_abs_conv"
+      ],
+      "seen_in": [
+        "V10_calib_machine0",
+        "V9_calib_machine0"
+      ],
+      "peak_response": 1.737670154837884,
+      "response": {
+        "N_loops_100": 0.9998194233684649,
+        "d_100_nm": 0.8782037832617446,
+        "N_loops_111": 1.7267847190447019,
+        "d_111_nm": 0.2428000130078629,
+        "N_voids": 1.737670154837884,
+        "d_cavity_nm": 0.6588356355113558
+      },
+      "spans": {
+        "dH2_abs_conv": [
+          0.26,
+          0.55
+        ]
+      },
+      "n_pairs": 13,
+      "drove_invalid": true,
+      "verdict": "live",
+      "moves": [
+        "N_void",
+        "N_111",
+        "N_100",
+        "d_100",
+        "d_void",
+        "d_111"
+      ]
+    },
+    "f_cl_v+E_m_v+gamma_s+dH2_abs_conv+rho_d": {
+      "columns": [
+        "f_cl_v",
+        "E_m_v",
+        "gamma_s",
+        "dH2_abs_conv",
+        "rho_d"
+      ],
+      "seen_in": [
+        "V11_calib_machine0"
+      ],
+      "peak_response": 31.560089724944895,
+      "response": {
+        "N_loops_100": 1.5606107674200866,
+        "d_100_nm": 0.1579366107338699,
+        "N_loops_111": 3.825495817551386,
+        "d_111_nm": 0.2039290793759274,
+        "N_voids": 31.560089724944895,
+        "d_cavity_nm": 3.7873705198205796
+      },
+      "spans": {
+        "f_cl_v": [
+          0.317274,
+          0.55
+        ],
+        "E_m_v": [
+          0.5935251129378614,
+          0.8
+        ],
+        "gamma_s": [
+          2.2179468666938713,
+          2.33
+        ],
+        "dH2_abs_conv": [
+          0.26,
+          0.32
+        ],
+        "rho_d": [
+          100000000000000.0,
+          500000000000000.0
+        ]
+      },
       "n_pairs": 1,
+      "drove_invalid": false,
+      "verdict": "live",
+      "moves": [
+        "N_void",
+        "N_111",
+        "d_void",
+        "N_100",
+        "d_111",
+        "d_100"
+      ]
+    },
+    "loop_net_chi": {
+      "columns": [
+        "loop_net_chi"
+      ],
+      "seen_in": [
+        "V11_calib_machine0"
+      ],
+      "peak_response": 0.22299398341776544,
+      "response": {
+        "N_loops_100": 0.22299398341776544,
+        "d_100_nm": 0.08709305966451386,
+        "N_loops_111": 0.03489518524368096,
+        "d_111_nm": 0.013901213820626257,
+        "N_voids": 0.007557971037469802,
+        "d_cavity_nm": 0.017937941288108217
+      },
+      "spans": {
+        "loop_net_chi": [
+          50.0,
+          1000.0
+        ]
+      },
+      "n_pairs": 7,
+      "drove_invalid": false,
+      "verdict": "live",
+      "moves": [
+        "N_100",
+        "d_100"
+      ]
+    },
+    "loop_net_w_c": {
+      "columns": [
+        "loop_net_w_c"
+      ],
+      "seen_in": [
+        "V11_calib_machine0"
+      ],
+      "peak_response": 0.9597338427809444,
+      "response": {
+        "N_loops_100": 0.9597338427809444,
+        "d_100_nm": 0.5211337869465742,
+        "N_loops_111": 0.1795570442360781,
+        "d_111_nm": 0.08379540017211151,
+        "N_voids": 0.06168575991151726,
+        "d_cavity_nm": 0.11200681366158349
+      },
+      "spans": {
+        "loop_net_w_c": [
+          100.0,
+          2700.0
+        ]
+      },
+      "n_pairs": 7,
+      "drove_invalid": false,
+      "verdict": "live",
+      "moves": [
+        "N_100",
+        "d_100",
+        "N_111",
+        "d_void",
+        "d_111",
+        "N_void"
+      ]
+    },
+    "E_m_v": {
+      "columns": [
+        "E_m_v"
+      ],
+      "seen_in": [
+        "V12_calib_machine0",
+        "V1_calib_machine0",
+        "V2_calib_machine0",
+        "V5_calib_machine0",
+        "V6_calib_machine0",
+        "V7_calib_machine0",
+        "V8_calib_machine0"
+      ],
+      "peak_response": 41110.86840499608,
+      "response": {
+        "N_loops_100": 21.20113574928068,
+        "d_100_nm": 0.637465234262558,
+        "N_loops_111": 3.0416468861627974,
+        "d_111_nm": 0.04620713423122158,
+        "N_voids": 41110.86840499608,
+        "d_cavity_nm": 7.400370880775981
+      },
+      "spans": {
+        "E_m_v": [
+          0.5,
+          0.9
+        ]
+      },
+      "n_pairs": 18,
       "drove_invalid": true,
       "verdict": "live",
       "moves": [
         "N_void",
         "N_100",
+        "d_void",
         "N_111",
+        "d_100"
+      ]
+    },
+    "rho_d": {
+      "columns": [
+        "rho_d"
+      ],
+      "seen_in": [
+        "V12_calib_machine0",
+        "V1_calib_machine0",
+        "V5_calib_machine0",
+        "V6_calib_machine0",
+        "V7_calib_machine0",
+        "V8_calib_machine0",
+        "V9_calib_machine0"
+      ],
+      "peak_response": 10.598836326663339,
+      "response": {
+        "N_loops_100": 10.598836326663339,
+        "d_100_nm": 1.11397362058311,
+        "N_loops_111": 3.635423906798933,
+        "d_111_nm": 0.12057800685338282,
+        "N_voids": 0.9491686806013718,
+        "d_cavity_nm": 0.6401595490166436
+      },
+      "spans": {
+        "rho_d": [
+          10000000000000.0,
+          1e+16
+        ]
+      },
+      "n_pairs": 15,
+      "drove_invalid": true,
+      "verdict": "live",
+      "moves": [
+        "N_100",
+        "N_111",
+        "d_100",
+        "N_void",
+        "d_void",
+        "d_111"
+      ]
+    },
+    "s_v": {
+      "columns": [
+        "s_v"
+      ],
+      "seen_in": [
+        "V12_calib_machine0",
+        "V8_calib_machine0"
+      ],
+      "peak_response": 0.23159495440756328,
+      "response": {
+        "N_loops_100": 0.23159495440756328,
+        "d_100_nm": 0.05655697591543474,
+        "N_loops_111": 0.048072511783150085,
+        "d_111_nm": 0.0036451360389901932,
+        "N_voids": 0.1298658920921688,
+        "d_cavity_nm": 0.018180033682370755
+      },
+      "spans": {
+        "s_v": [
+          2.5,
+          3.0
+        ]
+      },
+      "n_pairs": 1,
+      "drove_invalid": false,
+      "verdict": "live",
+      "moves": [
+        "N_100",
+        "N_void",
         "d_100"
       ]
     },
@@ -33615,7 +37198,9 @@
         "Z_v"
       ],
       "seen_in": [
-        "V1_calib_machine0"
+        "V1_calib_machine0",
+        "V5_calib_machine0",
+        "V6_calib_machine0"
       ],
       "peak_response": 0.651718352850658,
       "response": {
@@ -33629,7 +37214,7 @@
       "spans": {
         "Z_v": [
           0.9,
-          1.05
+          1.35
         ]
       },
       "n_pairs": 3,
@@ -33641,98 +37226,166 @@
         "d_100"
       ]
     },
-    "rho_d": {
+    "Z_i": {
       "columns": [
-        "rho_d"
+        "Z_i"
       ],
       "seen_in": [
-        "V1_calib_machine0"
+        "V5_calib_machine0",
+        "V6_calib_machine0"
       ],
-      "peak_response": 0.7395092006855066,
+      "peak_response": 0.866353999025913,
       "response": {
-        "N_loops_100": 0.25679965155173257,
-        "d_100_nm": 0.6007126043496402,
-        "N_loops_111": 0.7395092006855066,
-        "d_111_nm": 0.10431336507165434,
-        "N_voids": 0.019181260591675908,
-        "d_cavity_nm": 0.0014316638702503992
+        "N_loops_100": 0.6674381459411116,
+        "d_100_nm": 0.295577752390243,
+        "N_loops_111": 0.866353999025913,
+        "d_111_nm": 0.07036850290562136,
+        "N_voids": 0.18743661727935756,
+        "d_cavity_nm": 0.13330009441638924
       },
       "spans": {
-        "rho_d": [
-          10000000000000.0,
-          1000000000000000.0
+        "Z_i": [
+          1.0,
+          1.35
         ]
       },
-      "n_pairs": 1,
-      "drove_invalid": true,
+      "n_pairs": 2,
+      "drove_invalid": false,
       "verdict": "live",
       "moves": [
         "N_111",
-        "d_100",
         "N_100",
+        "d_100",
+        "N_void",
+        "d_void",
         "d_111"
       ]
+    },
+    "f_cl_v+E_m_v+gamma_s": {
+      "columns": [
+        "f_cl_v",
+        "E_m_v",
+        "gamma_s"
+      ],
+      "seen_in": [
+        "V9_calib_machine0"
+      ],
+      "peak_response": 291.61734706916786,
+      "response": {
+        "N_loops_100": 0.03646503946752633,
+        "d_100_nm": 0.1827952113979162,
+        "N_loops_111": 0.11287348485205351,
+        "d_111_nm": 0.013626889781235607,
+        "N_voids": 291.61734706916786,
+        "d_cavity_nm": 8.745856071136327
+      },
+      "spans": {
+        "f_cl_v": [
+          0.317274,
+          0.55
+        ],
+        "E_m_v": [
+          0.5935251129378614,
+          0.8
+        ],
+        "gamma_s": [
+          2.2179468666938713,
+          2.33
+        ]
+      },
+      "n_pairs": 1,
+      "drove_invalid": false,
+      "verdict": "live",
+      "moves": [
+        "N_void",
+        "d_void",
+        "d_100",
+        "N_111"
+      ]
+    },
+    "dH2_conv": {
+      "columns": [
+        "dH2_conv"
+      ],
+      "seen_in": [
+        "V9_calib_machine0"
+      ],
+      "peak_response": 0.0001181886385658304,
+      "response": {
+        "N_loops_100": 0.0001181886385658304,
+        "d_100_nm": 5.993163948447844e-06,
+        "N_loops_111": 3.826451983268697e-06,
+        "d_111_nm": 1.015711943885833e-06,
+        "N_voids": 4.2121488145641095e-05,
+        "d_cavity_nm": 1.0391489675853904e-05
+      },
+      "spans": {
+        "dH2_conv": [
+          0.4394554538170355,
+          0.75
+        ]
+      },
+      "n_pairs": 3,
+      "drove_invalid": false,
+      "verdict": "dead",
+      "moves": []
     }
   },
   "untested_columns": [
     "E_m_h",
     "Z_i_loop",
-    "dH2_abs_conv",
-    "dH2_conv",
     "lambda",
     "loop_net_K_rec",
-    "loop_net_chi",
-    "loop_net_w_c",
     "r_p"
   ],
   "reachability": {
     "N_100": {
-      "ratio": 1.2715,
-      "needed_factor": 1.272,
-      "needed_pct": 27.2,
-      "best_single_lever_pct": 240263.5,
+      "ratio": 1.2311,
+      "needed_factor": 1.231,
+      "needed_pct": 23.1,
+      "best_single_lever_pct": 16301094.4,
       "best_single_lever": "B_111",
       "single_lever_sufficient": true
     },
     "d_100": {
-      "ratio": 0.9024,
-      "needed_factor": 1.108,
-      "needed_pct": 10.8,
+      "ratio": 0.9443,
+      "needed_factor": 1.059,
+      "needed_pct": 5.9,
       "best_single_lever_pct": 692.8,
       "best_single_lever": "f_cl_v+E_b_v2+s_v",
       "single_lever_sufficient": true
     },
     "N_111": {
-      "ratio": 5.1481,
-      "needed_factor": 5.148,
-      "needed_pct": 414.8,
-      "best_single_lever_pct": 13721.2,
+      "ratio": 6.2132,
+      "needed_factor": 6.213,
+      "needed_pct": 521.3,
+      "best_single_lever_pct": 113053.8,
       "best_single_lever": "B_111",
       "single_lever_sufficient": true
     },
     "d_111": {
-      "ratio": 0.1647,
-      "needed_factor": 6.072,
-      "needed_pct": 507.2,
+      "ratio": 0.168,
+      "needed_factor": 5.952,
+      "needed_pct": 495.2,
       "best_single_lever_pct": 88.7,
       "best_single_lever": "s_i",
       "single_lever_sufficient": false
     },
     "N_void": {
-      "ratio": 0.0017,
-      "needed_factor": 588.235,
-      "needed_pct": 58723.5,
-      "best_single_lever_pct": 449.6,
-      "best_single_lever": "f_cl_v",
-      "single_lever_sufficient": false
+      "ratio": 0.6708,
+      "needed_factor": 1.491,
+      "needed_pct": 49.1,
+      "best_single_lever_pct": 4111086.8,
+      "best_single_lever": "E_m_v",
+      "single_lever_sufficient": true
     },
     "d_void": {
-      "ratio": 0.2158,
-      "needed_factor": 4.634,
-      "needed_pct": 363.4,
-      "best_single_lever_pct": 9.8,
-      "best_single_lever": "L_hat",
-      "single_lever_sufficient": false
+      "ratio": 2.1733,
+      "needed_factor": 2.173,
+      "needed_pct": 117.3,
+      "best_single_lever_pct": 874.6,
+      "best_single_lever": "f_cl_v+E_m_v+gamma_s",
+      "single_lever_sufficient": true
     }
   },
   "affordability": {
@@ -33755,39 +37408,40 @@
     }
   },
   "best": {
-    "stage": "V1_calib_machine0",
-    "row_id": 5109,
-    "label": "V109_Zv_lo0.9",
-    "n_in_range": 3,
-    "log_distance": 1.24,
+    "stage": "V2_calib_machine0",
+    "row_id": 5212,
+    "label": "V212_gs2.55_Emv0.900",
+    "n_in_range": 4,
+    "log_distance": 0.48,
     "flags": [
+      "TOPBINV",
       "NOCONS"
     ],
     "observables": {
-      "N_100": 6.319398633553164e+21,
-      "d_100": 5.594645594814676,
-      "N_111": 9.935918242587256e+21,
-      "d_111": 1.0213946808645125,
-      "N_void": 2.5709118270492303e+18,
-      "d_void": 0.5611100666377895
+      "N_100": 6.118625853227352e+21,
+      "d_100": 5.854757173370577,
+      "N_111": 1.1991416053907415e+22,
+      "d_111": 1.041658865177126,
+      "N_void": 1.0062450491735403e+21,
+      "d_void": 5.650668399548501
     },
     "ratios": {
-      "N_100": 1.2715,
-      "d_100": 0.9024,
-      "N_111": 5.1481,
-      "d_111": 0.1647,
-      "N_void": 0.0017,
-      "d_void": 0.2158
+      "N_100": 1.2311,
+      "d_100": 0.9443,
+      "N_111": 6.2132,
+      "d_111": 0.168,
+      "N_void": 0.6708,
+      "d_void": 2.1733
     },
     "params": {
       "eta": "0.24871922678490935",
       "f_cl_i": "0.12401708029210567",
       "f_cl_v": "0.317274",
       "E_m_i": "0.40180861951964941",
-      "E_m_v": "0.59352511293786137",
+      "E_m_v": "0.9",
       "E_m_h": "0.073504445612117275",
       "L_hat": "1016.1241310866882",
-      "gamma_s": "2.2179468666938713",
+      "gamma_s": "2.55",
       "E_b_v2": "0.2129",
       "lambda": "0.71570901078164628",
       "B_111": "0.31368786867246468",
@@ -33804,7 +37458,7 @@
       "loop_net_w_c": "100.0",
       "loop_net_K_rec": "1e-06",
       "s_i": "1.0",
-      "Z_v": "0.9",
+      "Z_v": "1.0",
       "Z_p_i": "1.45",
       "Z_p_v": "0.93",
       "Z_gb_i": "1.4",
@@ -33817,55 +37471,55 @@
     },
     "inventory": {
       "100": {
-        "model_N": 6.319398633553164e+21,
-        "model_mean_n": 597.2837892177781,
-        "model_content": 3.774474361426283e+24,
+        "model_N": 6.118625853227352e+21,
+        "model_mean_n": 654.1138453523065,
+        "model_content": 4.0022778851265807e+24,
         "exp_N": 4.97e+21,
-        "exp_mean_n_at_target_d": 733.5317998700087,
-        "exp_content": 3.645653045353943e+24,
-        "ratio": 1.0353355940539957
+        "exp_mean_n_at_target_d": 733.5317998700086,
+        "exp_content": 3.6456530453539424e+24,
+        "ratio": 1.0978219362446255
       },
       "111": {
-        "model_N": 9.935918242587256e+21,
-        "model_mean_n": 17.234426447934073,
-        "model_content": 1.7123985214455642e+23,
+        "model_N": 1.1991416053907415e+22,
+        "model_mean_n": 17.925062552393946,
+        "model_content": 2.149468828580714e+23,
         "exp_N": 1.93e+21,
-        "exp_mean_n_at_target_d": 635.0282271633631,
-        "exp_content": 1.2256044784252908e+24,
-        "ratio": 0.13971868996804968
+        "exp_mean_n_at_target_d": 635.028227163363,
+        "exp_content": 1.2256044784252905e+24,
+        "ratio": 0.17538030142827515
       },
       "total": {
-        "model_content": 3.945714213570839e+24,
+        "model_content": 4.217224767984652e+24,
         "exp_content": 4.871257523779233e+24,
-        "ratio": 0.8099991007064771
+        "ratio": 0.8657363622017734
       }
     }
   },
   "residuals": {
-    "N_100": 1.2715,
-    "d_100": 0.9024,
-    "N_111": 5.1481,
-    "d_111": 0.1647,
-    "N_void": 0.0017,
-    "d_void": 0.2158
+    "N_100": 1.2311,
+    "d_100": 0.9443,
+    "N_111": 6.2132,
+    "d_111": 0.168,
+    "N_void": 0.6708,
+    "d_void": 2.1733
   },
   "cost_model": {
     "MATRIX-PC2": {
-      "n": 116,
+      "n": 117,
       "n_timed_out": 5,
       "median_row_h": 8.26,
       "max_row_h": 18.87,
       "min_row_h": 2.94
     },
     "Mac.san.rr.com": {
-      "n": 264,
-      "n_timed_out": 0,
-      "median_row_h": 1.58,
+      "n": 343,
+      "n_timed_out": 1,
+      "median_row_h": 1.44,
       "max_row_h": 5.51,
-      "min_row_h": 0.33
+      "min_row_h": 0.29
     },
     "MacBook-Pro.local": {
-      "n": 506,
+      "n": 521,
       "n_timed_out": 0,
       "median_row_h": 1.02,
       "max_row_h": 9.2,

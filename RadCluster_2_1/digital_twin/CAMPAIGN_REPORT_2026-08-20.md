@@ -9,17 +9,36 @@ the six observables are not measurements at any affordable grid.
 
 ## 1. Headline
 
-| observable | band | best verified value | status |
-|---|---|---|---|
-| d_100  | [3.4, 7.0] nm            | 5.55 / 5.90 / 5.71 across 3 grids | **in band, grid-stable** |
-| N_111  | [1.73e21, 1.5e22] m^-3   | 1.20–1.38e22                      | in band, moves 15 % with grid |
-| N_100  | [4.67e21, 9e21] m^-3     | 6.88–9.50e21                      | in band on 2 of 3 grids |
-| N_void | [3.6e20, 3.01e21] m^-3   | 4.93–7.53e20                      | **NOT MEASURABLE — unconverged axis** |
-| d_111  | [3.4, 7.0] nm            | 1.04 (three digits, every grid)   | **out — structural** |
-| d_cavity | [2.12, 2.9] nm         | 5.43 → 8.74 as V grows            | **NOT MEASURABLE — grid artifact** |
+**Best VERIFIED result: 3 of 4 measurable observables in band.**
 
-An earlier "4/6" claim in this campaign counted band membership on numbers that
-move when the discretization moves.  It is withdrawn.
+`V500_CONTROL_base_S1700` (stage V5, row 5500), extent-tested at
+V = 2000 / 20000 / 200000 -- a **100x** range:
+
+| observable | model | band | in band | extent-verified |
+|---|---|---|---|---|
+| N_100   | 8.284e21 | [4.67e21, 9e21]   | YES | YES |
+| d_100   | 6.785    | [3.4, 7.0]        | YES | YES |
+| N_111   | 1.417e22 | [1.73e21, 1.5e22] | YES | YES |
+| d_111   | 1.050    | [3.4, 7.0]        | no  | YES |
+| N_void  | 2.93e18  | [3.6e20, 3.01e21] | no  | **NO - never verifiable** |
+| d_void  | 1.023    | [2.12, 2.9]       | no  | **NO - grid artefact** |
+
+That row is the campaign's ORIGINAL anchor.  Twelve stages moved away from it
+chasing cavity numbers that were functions of the grid.
+
+**Leading unverified candidate: V15 row 7100** (`E_b_i2` 0.60, `dH2_abs_conv`
+0.36, `loop_net_w_c` 5, `rho_d` 5e14) -- N_100 5.54e21, d_100 4.24,
+N_111 9.06e21, all three in band, every value inside its declared prior, at the
+`rho_d` where loop observables drift <= 4 % over a 16x grid range.  It is NOT
+claimed: it has one extent point, and under the campaign's own rule that makes
+it UNVERIFIED until its pair lands.
+
+**Two of the six targets are not measurable at all** (S2, S6): `d_cavity` is
+0.2825*(0.37V)^(1/3) to 0.04 %, and `N_void` has never survived a change of grid
+extent in 1592 rows.  The campaign is therefore scored out of FOUR.
+
+An earlier "4/6" in this campaign counted band membership on numbers that move
+when the discretisation moves.  It is withdrawn.
 
 ## 2. The decisive finding: the cavity axis is pinned to the grid
 
@@ -182,6 +201,59 @@ Two consequences:
    kept the SIA top bin as a disqualifier; this is one clear counter-example against
    that choice, but one case is not enough to loosen it — it should be re-probed on a
    proper I-ladder before changing.
+
+## 6c. What each in-prior lever does at rho_d = 5e14 (V13/V15)
+
+The three loop targets separate onto three levers, and the separation HELD when
+stacked -- the first stacked prediction in this campaign to survive a run:
+
+| lever | sets | effect on the others |
+|---|---|---|
+| `dH2_abs_conv` 0.34 -> 0.36 | **d_100** 8.72 -> 5.59 | N_100 -15 % |
+| `E_b_i2` 0.75 -> 0.60       | **N_111** 1.59e23 -> 1.10e22 (14.5x) | N_100 crashes |
+| `loop_net_w_c` 200 -> 5     | **N_100** back up into band | N_111 ~ unchanged |
+
+`E_m_i` 0.40 -> 0.30 is a second route to the first pair (N_100 -79 %,
+N_111 -53 %, d_100 unchanged).
+
+**Objective (a) result.**  N_100 only reaches its band when `loop_net_w_c` is
+about 5 b_111 or lower -- the loop -> network loss channel must be NEARLY OFF.
+The w_c sweep is monotone (5 -> 5.54e21, 15 -> 3.27e21, 40 -> 1.43e21,
+70 -> 8.35e20).  The channel exists to saturate loop density, but at the setting
+where <100> density matches experiment it is barely active.  The campaign had
+been running w_c = 100-2700, most of it outside the declared box [1, 200].
+
+## 6d. The self-learning loop, redesigned (commits a92e8cf, 0a12d54, f1dc0af)
+
+The campaign produced no improvement for twelve stages because it optimised an
+objective that was one-third noise, ranked from a sample that excluded its own
+best rows, and had no working way to tell the difference.  Four fixes:
+
+| failure | fix |
+|---|---|
+| scored grid artefacts as results | `learn.py`: an observable is scored only if it survives a change of grid EXTENT (`EXTENT_TOL` = 10 %); rows rank on `n_in_range_verified` FIRST, so an unverified row can never displace a verified one |
+| never generated its own verification | `verify.py`: finds the unverified rows the ledger rests on and emits/launches the same theta at 4x extent with the bin ratio held |
+| ledger discarded its own best rows | the vacancy top bin became a soft `TOPBINV` flag (it is geometric: 0.1705/0.1708/0.1715/0.1718 across a 34x span in mean void size) |
+| designs silently left their priors | `run_ensemble.py`: prior-box audit at the design chokepoint, stamped into provenance as `prior_violations` |
+
+Pairing is on `theta_hash`, which is built from design columns only and is
+therefore grid-independent, so pairs form ACROSS stage files: every grid ladder
+retroactively certifies rows everywhere in the ledger.  `plan.py` inherits the
+anchor fix for free -- it reads `led["best"]`, which now ranks by verified count.
+
+THE INVARIANT for any verification row: `theta_hash` includes `theta_id`, so the
+row must copy its parent verbatim except `row_id` and `cond_row_id`.  Renumber
+`theta_id` and the pair never forms and the CPU is wasted silently.  (The
+V12/V13/V15 designs renumber it and so cannot pair with their parents.)
+
+Coverage after the change -- the diagnosis in one table:
+
+| observable | rows ever extent-verified (of 1592) |
+|---|---|
+| d_100, d_111 | 30 |
+| N_100, N_111 | 26 |
+| d_cavity | 7 |
+| **N_void** | **0** |
 
 ## 7. What would actually close this
 

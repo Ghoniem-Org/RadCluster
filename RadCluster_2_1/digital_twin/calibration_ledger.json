@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated": "2026-08-20 19:06:15Z",
+  "updated": "2026-08-20 20:13:25Z",
   "goal": {
     "statement": "Find one parameter vector that puts all six observables inside their experimental ranges at EUROFER97 330 C / 15 dpa, neutron.",
     "targets_file": "targets_330C_15dpa.json",
@@ -347,13 +347,15 @@
           "valid": true,
           "flags": [
             "TOPBINV",
-            "NOCONS",
-            "UNVERIFIED"
+            "NOCONS"
           ],
           "n_in_range": 4,
-          "n_verified": 0,
-          "n_in_range_verified": 0,
-          "verified": [],
+          "n_verified": 2,
+          "n_in_range_verified": 1,
+          "verified": [
+            "d_100_nm",
+            "d_111_nm"
+          ],
           "log_distance": 0.514,
           "dose_reached": 15.000000000000002,
           "observables": {
@@ -372,8 +374,8 @@
       "results": "results/G3b_V80k_machine0.jsonl",
       "dose_target": 15.0,
       "in_scope": true,
-      "n_rows": 4,
-      "n_valid": 4,
+      "n_rows": 5,
+      "n_valid": 5,
       "swept": [],
       "sensitivity": {},
       "affordability": {},
@@ -488,6 +490,32 @@
             "d_111": 1.0877951441740388,
             "N_void": 3.980629344779903e+20,
             "d_void": 8.487048896210421
+          }
+        },
+        {
+          "row_id": 6700,
+          "label": null,
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 4,
+          "n_verified": 2,
+          "n_in_range_verified": 1,
+          "verified": [
+            "d_100_nm",
+            "d_111_nm"
+          ],
+          "log_distance": 0.544,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 7.923810773430447e+21,
+            "d_100": 6.392205405228911,
+            "N_111": 1.4569640568131403e+22,
+            "d_111": 1.0542835594864277,
+            "N_void": 7.471592970313179e+20,
+            "d_void": 8.76188371094741
           }
         }
       ]
@@ -40473,13 +40501,15 @@
             "TOPBINV",
             "GRID",
             "NOCONV",
-            "NOCONS",
-            "UNVERIFIED"
+            "NOCONS"
           ],
           "n_in_range": 4,
-          "n_verified": 0,
-          "n_in_range_verified": 0,
-          "verified": [],
+          "n_verified": 2,
+          "n_in_range_verified": 1,
+          "verified": [
+            "d_100_nm",
+            "d_111_nm"
+          ],
           "log_distance": 0.514,
           "dose_reached": 15.000000000000002,
           "observables": {
@@ -40548,8 +40578,8 @@
       "results": "results/V13_calib_machine0.jsonl",
       "dose_target": 15.0,
       "in_scope": true,
-      "n_rows": 8,
-      "n_valid": 8,
+      "n_rows": 9,
+      "n_valid": 9,
       "swept": [
         "E_m_i",
         "B_111",
@@ -40566,19 +40596,19 @@
           "span": {
             "E_m_i": [
               0.3,
-              0.4018086195196494
+              0.6
             ]
           },
-          "n_pairs": 1,
+          "n_pairs": 3,
           "response": {
-            "N_loops_100": 0.790028200204059,
-            "d_100_nm": 0.02238909442593784,
-            "N_loops_111": 0.5332169181244746,
-            "d_111_nm": 0.11463444813403889,
+            "N_loops_100": 38.931941186289954,
+            "d_100_nm": 0.5837768852618299,
+            "N_loops_111": 3.258201784032459,
+            "d_111_nm": 0.35261951868842056,
             "N_voids": 0.7752621345235624,
-            "d_cavity_nm": 0.4435730422536923
+            "d_cavity_nm": 0.5418157291431744
           },
-          "peak_response": 0.790028200204059,
+          "peak_response": 38.931941186289954,
           "drove_invalid": false,
           "verdict": "live"
         },
@@ -40890,6 +40920,348 @@
             "d_111": 1.7086436586418212,
             "N_void": 9.672834095313914e+20,
             "d_void": 5.552101729004421
+          }
+        },
+        {
+          "row_id": 6908,
+          "label": null,
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "log_distance": 1.292,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 2.6202100746299985e+23,
+            "d_100": 13.495597564305578,
+            "N_111": 3.167764518201236e+23,
+            "d_111": 1.024808334787869,
+            "N_void": 9.804766362987145e+19,
+            "d_void": 2.130858242035505
+          }
+        }
+      ]
+    },
+    "V14a_V20k_machine0": {
+      "design": null,
+      "results": "results/V14a_V20k_machine0.jsonl",
+      "dose_target": 15.0,
+      "in_scope": true,
+      "n_rows": 3,
+      "n_valid": 3,
+      "swept": [],
+      "sensitivity": {},
+      "affordability": {},
+      "rows": [
+        {
+          "row_id": 7000,
+          "label": null,
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS"
+          ],
+          "n_in_range": 4,
+          "n_verified": 2,
+          "n_in_range_verified": 1,
+          "verified": [
+            "d_100_nm",
+            "d_111_nm"
+          ],
+          "log_distance": 0.514,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 6.878674162980964e+21,
+            "d_100": 5.900471046072477,
+            "N_111": 1.1994232787618713e+22,
+            "d_111": 1.039115960673626,
+            "N_void": 4.928162930674276e+20,
+            "d_void": 5.43005003591254
+          }
+        },
+        {
+          "row_id": 7001,
+          "label": null,
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 3,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "log_distance": 0.522,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 1.0601408849635789e+22,
+            "d_100": 5.783260341095598,
+            "N_111": 1.4260016928265588e+22,
+            "d_111": 1.0416112625708935,
+            "N_void": 8.327352218533345e+20,
+            "d_void": 5.4899813532873445
+          }
+        },
+        {
+          "row_id": 7002,
+          "label": null,
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 3,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "log_distance": 0.522,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 1.0605452475662827e+22,
+            "d_100": 5.781340942289601,
+            "N_111": 1.4258137865822237e+22,
+            "d_111": 1.0415794849263191,
+            "N_void": 8.326029779601178e+20,
+            "d_void": 5.489938843371903
+          }
+        }
+      ]
+    },
+    "V15_calib_machine0": {
+      "design": "design/V15_calib.csv",
+      "results": "results/V15_calib_machine0.jsonl",
+      "dose_target": 15.0,
+      "in_scope": true,
+      "n_rows": 5,
+      "n_valid": 5,
+      "swept": [
+        "E_m_i",
+        "E_b_i2",
+        "dH2_abs_conv",
+        "loop_net_w_c"
+      ],
+      "sensitivity": {
+        "E_m_i": {
+          "columns": [
+            "E_m_i"
+          ],
+          "span": {
+            "E_m_i": [
+              0.4018086195196494,
+              0.4018086195196494
+            ]
+          },
+          "n_pairs": 0,
+          "response": {
+            "N_loops_100": 0.0,
+            "d_100_nm": 0.0,
+            "N_loops_111": 0.0,
+            "d_111_nm": 0.0,
+            "N_voids": 0.0,
+            "d_cavity_nm": 0.0
+          },
+          "peak_response": 0.0,
+          "drove_invalid": false,
+          "verdict": "inconclusive"
+        },
+        "E_b_i2": {
+          "columns": [
+            "E_b_i2"
+          ],
+          "span": {
+            "E_b_i2": [
+              0.6,
+              0.6
+            ]
+          },
+          "n_pairs": 0,
+          "response": {
+            "N_loops_100": 0.0,
+            "d_100_nm": 0.0,
+            "N_loops_111": 0.0,
+            "d_111_nm": 0.0,
+            "N_voids": 0.0,
+            "d_cavity_nm": 0.0
+          },
+          "peak_response": 0.0,
+          "drove_invalid": false,
+          "verdict": "inconclusive"
+        },
+        "dH2_abs_conv": {
+          "columns": [
+            "dH2_abs_conv"
+          ],
+          "span": {
+            "dH2_abs_conv": [
+              0.36,
+              0.36
+            ]
+          },
+          "n_pairs": 0,
+          "response": {
+            "N_loops_100": 0.0,
+            "d_100_nm": 0.0,
+            "N_loops_111": 0.0,
+            "d_111_nm": 0.0,
+            "N_voids": 0.0,
+            "d_cavity_nm": 0.0
+          },
+          "peak_response": 0.0,
+          "drove_invalid": false,
+          "verdict": "inconclusive"
+        },
+        "loop_net_w_c": {
+          "columns": [
+            "loop_net_w_c"
+          ],
+          "span": {
+            "loop_net_w_c": [
+              5.0,
+              70.0
+            ]
+          },
+          "n_pairs": 10,
+          "response": {
+            "N_loops_100": 0.8493002655030714,
+            "d_100_nm": 0.2349688302756039,
+            "N_loops_111": 0.22141316860630234,
+            "d_111_nm": 0.04595109050748958,
+            "N_voids": 0.3936917517736467,
+            "d_cavity_nm": 0.015615913386065383
+          },
+          "peak_response": 0.8493002655030714,
+          "drove_invalid": false,
+          "verdict": "live"
+        }
+      },
+      "affordability": {},
+      "rows": [
+        {
+          "row_id": 7100,
+          "label": null,
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 4,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "log_distance": 0.415,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 5.54296362571951e+21,
+            "d_100": 4.244810873360602,
+            "N_111": 9.060617585542505e+21,
+            "d_111": 1.633306535688307,
+            "N_void": 6.88334271328269e+20,
+            "d_void": 5.465001929485074
+          }
+        },
+        {
+          "row_id": 7104,
+          "label": null,
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 3,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "log_distance": 0.47,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 1.4299076363599434e+21,
+            "d_100": 5.066264282007771,
+            "N_111": 1.0685175972309672e+22,
+            "d_111": 1.695528648171069,
+            "N_void": 9.106203854980439e+20,
+            "d_void": 5.538743559510754
+          }
+        },
+        {
+          "row_id": 7105,
+          "label": null,
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 3,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "log_distance": 0.523,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 8.353231467220632e+20,
+            "d_100": 5.242209119015307,
+            "N_111": 1.1066757634687456e+22,
+            "d_111": 1.7083587521361947,
+            "N_void": 9.593257964133317e+20,
+            "d_void": 5.550342926270592
+          }
+        },
+        {
+          "row_id": 7102,
+          "label": null,
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 3,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "log_distance": 0.42,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 3.2697301732655707e+21,
+            "d_100": 4.630758400420122,
+            "N_111": 9.790907334038525e+21,
+            "d_111": 1.6631001775273369,
+            "N_void": 7.919311335642053e+20,
+            "d_void": 5.504539611052576
+          }
+        },
+        {
+          "row_id": 7103,
+          "label": null,
+          "valid": true,
+          "flags": [
+            "TOPBINV",
+            "NOCONS",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 3,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "log_distance": 0.438,
+          "dose_reached": 15.000000000000002,
+          "observables": {
+            "N_100": 2.1926893372618032e+21,
+            "d_100": 4.867848091236601,
+            "N_111": 1.0268659123847453e+22,
+            "d_111": 1.680902465738465,
+            "N_void": 8.564001945539786e+20,
+            "d_void": 5.5242872976680575
           }
         }
       ]
@@ -43607,7 +43979,8 @@
         "S14_calib",
         "S15_calib_machine0",
         "S8_15dpa",
-        "V13_calib_machine0"
+        "V13_calib_machine0",
+        "V15_calib_machine0"
       ],
       "peak_response": 9.912464231332422,
       "response": {
@@ -43863,7 +44236,8 @@
       "seen_in": [
         "S16_calib_machine1",
         "S20_calib_machine0",
-        "V13_calib_machine0"
+        "V13_calib_machine0",
+        "V15_calib_machine0"
       ],
       "peak_response": 414.68268053048604,
       "response": {
@@ -43872,15 +44246,15 @@
         "N_loops_111": 84.06102338756598,
         "d_111_nm": 0.6211432638697145,
         "N_voids": 0.7752621345235624,
-        "d_cavity_nm": 0.4435730422536923
+        "d_cavity_nm": 0.5418157291431744
       },
       "spans": {
         "E_m_i": [
           0.25,
-          0.55
+          0.6
         ]
       },
-      "n_pairs": 19,
+      "n_pairs": 21,
       "drove_invalid": true,
       "verdict": "live",
       "moves": [
@@ -44238,6 +44612,7 @@
       "seen_in": [
         "V10_calib_machine0",
         "V13_calib_machine0",
+        "V15_calib_machine0",
         "V9_calib_machine0"
       ],
       "peak_response": 1.737670154837884,
@@ -44357,33 +44732,34 @@
       ],
       "seen_in": [
         "V11_calib_machine0",
-        "V13_calib_machine0"
+        "V13_calib_machine0",
+        "V15_calib_machine0"
       ],
       "peak_response": 0.9597338427809444,
       "response": {
         "N_loops_100": 0.9597338427809444,
         "d_100_nm": 0.5211337869465742,
-        "N_loops_111": 0.1795570442360781,
+        "N_loops_111": 0.22141316860630234,
         "d_111_nm": 0.08379540017211151,
-        "N_voids": 0.06256212748523793,
+        "N_voids": 0.3936917517736467,
         "d_cavity_nm": 0.11430828785109115
       },
       "spans": {
         "loop_net_w_c": [
-          100.0,
+          5.0,
           2700.0
         ]
       },
-      "n_pairs": 10,
+      "n_pairs": 20,
       "drove_invalid": false,
       "verdict": "live",
       "moves": [
         "N_100",
         "d_100",
+        "N_void",
         "N_111",
         "d_void",
-        "d_111",
-        "N_void"
+        "d_111"
       ]
     },
     "E_m_v": {
@@ -44836,7 +45212,7 @@
       "min_row_h": 0.29
     },
     "MacBook-Pro.local": {
-      "n": 541,
+      "n": 551,
       "n_timed_out": 0,
       "median_row_h": 1.02,
       "max_row_h": 9.2,

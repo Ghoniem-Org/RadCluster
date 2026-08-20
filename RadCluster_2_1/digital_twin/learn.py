@@ -315,6 +315,45 @@ def score(row: dict, targets: dict, ext: dict = None) -> dict:
             "n_in_range_verified": n_ok_ver, "verified": sorted(ver), "per": per}
 
 
+def worst_margin(row: dict, targets: dict, only: set = None) -> float:
+    """Decades from the nearest band edge, for the observable closest to one.
+
+    Band membership is BINARY and so rewards edge-sitting: V15 row 7109 counts
+    the same 3/4 as row 7100 while sitting 1 % inside the N_111 ceiling
+    (1.49e22 against 1.5e22) where 7100 is 18 % clear on its tightest
+    observable.  One of those is a calibration; the other is a coin flip against
+    solver noise and the next grid change.  `log_distance` cannot separate them
+    either -- it is a global RMS to the target CENTRES, so it says nothing about
+    proximity to an EDGE.
+
+    Returned in decades so it is scale-free across densities and diameters.
+    Negative when an observable is outside its band (how far out it is).
+    None when nothing is scoreable.
+    """
+    o = targets["observables"]
+    ms = []
+    for k in (only if only is not None else OBS):
+        v = row.get(k)
+        if v is None or v <= 0:
+            continue
+        lo, hi = o[k]["lo"], o[k]["hi"]
+        if lo <= v <= hi:
+            ms.append(min(math.log10(v / lo), math.log10(hi / v)))
+        else:
+            ms.append(-min(abs(math.log10(v / lo)), abs(math.log10(v / hi))))
+    return min(ms) if ms else None
+
+
+def _margin_or_none(row: dict, targets: dict, sc: dict):
+    """worst_margin over the VERIFIED AND IN-BAND observables, else None."""
+    only = {k for k in sc["verified"]
+            if sc["per"].get(k) and sc["per"][k]["in_range"]}
+    if not only:
+        return None
+    wm = worst_margin(row, targets, only)
+    return round(wm, 3) if wm is not None else None
+
+
 def log_distance(row: dict, targets: dict) -> float:
     """RMS of log10(model/target) over the six.  Scale-free, so a 300x miss on
     voids is not drowned out by a 1.2x miss on a diameter."""
@@ -593,6 +632,17 @@ def ingest() -> dict:
                    "n_verified": sc["n_verified"],
                    "n_in_range_verified": sc["n_in_range_verified"],
                    "verified": sc["verified"],
+                   # Over the observables that are BOTH verified AND in band:
+                   # this measures how robust the in-band CLAIMS are.  Folding
+                   # in the out-of-band ones would just restate what
+                   # n_in_range_verified already says, and would drown the
+                   # edge-sitting signal it exists to expose.
+                   # `only=set()` must mean "nothing to measure" -> None, NOT
+                   # "fall back to all six".  An `or None` here would silently
+                   # score an UNVERIFIED row against every observable including
+                   # the out-of-band ones, which reads as a terrible margin and
+                   # is really just an absence of evidence.
+                   "worst_margin": _margin_or_none(r, targets, sc),
                    "log_distance": round(log_distance(r, targets), 3),
                    "dose_reached": r.get("dose_reached"),
                    "observables": {SHORT[k]: (sc["per"][k]["value"]
@@ -605,6 +655,7 @@ def ingest() -> dict:
                         "n_verified": sc["n_verified"],
                         "n_in_range_verified": sc["n_in_range_verified"],
                         "verified": sc["verified"],
+                        "worst_margin": rec["worst_margin"],
                         "V_tested": (ext.get(r.get("theta_hash")) or {}).get("V_tested"),
                         "log_distance": rec["log_distance"],
                         "flags": flags,
@@ -620,9 +671,16 @@ def ingest() -> dict:
                 # happens to sit in -- that is exactly how a grid artefact
                 # (d_cavity = 0.2825*(0.37V)^(1/3)) took the top of this
                 # leaderboard for twelve stages.
+                # Margin breaks ties BEFORE log_distance: between two rows with
+                # the same verified count, the one further from a band EDGE is
+                # the better calibration, and log_distance (RMS to the target
+                # centres) cannot see edges at all.
                 def rank(c):
                     return (c["n_in_range_verified"], c["n_verified"],
-                            c["n_in_range"], -c["log_distance"])
+                            c["n_in_range"],
+                            c["worst_margin"] if c["worst_margin"] is not None
+                            else -9.9,
+                            -c["log_distance"])
                 if best is None or rank(cand) > rank(best):
                     best = cand
 

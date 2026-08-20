@@ -232,9 +232,75 @@ def classify(row: dict, dose_target: float = 15.0):
     return (not (hard & set(flags))), flags
 
 
-def score(row: dict, targets: dict) -> dict:
+# ------------------------------------------------- EXTENT VERIFICATION -----
+# An observable is a MEASUREMENT only if it survives a change of grid EXTENT.
+# Refinement at fixed extent is NOT sufficient and never was: on 2026-08-20 the
+# reference theta moved mean_n_v by only -3.8 % from v_bin 20 -> 47 and then by
+# +316 % when V went 20000 -> 80000.  Occupancy gives no warning either (a point
+# at occ_v = 0.042 was wrong by 14x, another at occ_v = 0.013 by 5x).
+#
+# The test: same theta_hash (computed from DESIGN columns only, so it is
+# grid-independent) run at two different V.  If an observable moves by more than
+# EXTENT_TOL it is an artefact of the discretisation, not a prediction, and it
+# MUST NOT be scored.  This is what makes the campaign self-correcting: the
+# ledger now refuses to call something a measurement until the grid says so.
+EXTENT_TOL = 0.10
+
+
+def recover_V(row: dict):
+    """Vacancy ceiling V.  Not stored directly; occ_v = mean_n_v / V is."""
+    occ, mn = row.get("occ_v"), row.get("mean_n_v")
+    if not occ or mn is None or occ <= 0:
+        return None
+    return int(round(mn / occ))
+
+
+def extent_pairs(all_rows: list) -> dict:
+    """theta_hash -> {observable: max relative drift across grid EXTENTS}.
+
+    Only thetas actually run at two or more distinct V contribute.  Everything
+    else is UNVERIFIED -- not passed, not failed, simply not yet tested.
+    """
+    by_theta = {}
+    for r in all_rows:
+        th, V = r.get("theta_hash"), recover_V(r)
+        if not th or not V or r.get("solver_rc", 0) != 0:
+            continue
+        by_theta.setdefault(th, {}).setdefault(V, r)
+    out = {}
+    for th, byV in by_theta.items():
+        if len(byV) < 2:
+            continue
+        drift = {}
+        for k in OBS:
+            vals = [r.get(k) for r in byV.values() if r.get(k) not in (None, 0)]
+            if len(vals) < 2:
+                continue
+            drift[k] = max(vals) / min(vals) - 1.0
+        if drift:
+            out[th] = {"drift": drift, "V_tested": sorted(byV)}
+    return out
+
+
+def verified_obs(row: dict, ext: dict) -> set:
+    """The observables this row is entitled to be scored on."""
+    e = ext.get(row.get("theta_hash"))
+    if not e:
+        return set()
+    return {k for k, d in e["drift"].items() if d <= EXTENT_TOL}
+
+
+def score(row: dict, targets: dict, ext: dict = None) -> dict:
+    """Band membership, reported THREE ways.
+
+    `n_in_range`          - every observable, the historical figure.
+    `n_verified`          - how many observables survived an extent change.
+    `n_in_range_verified` - in band AND extent-verified.  THIS is the score
+                            that ranks rows; the other two are diagnostics.
+    """
     o = targets["observables"]
-    per, n_ok = {}, 0
+    ver = verified_obs(row, ext or {})
+    per, n_ok, n_ok_ver = {}, 0, 0
     for k in OBS:
         v = row.get(k)
         if v is None:
@@ -242,9 +308,11 @@ def score(row: dict, targets: dict) -> dict:
             continue
         ok = o[k]["lo"] <= v <= o[k]["hi"]
         n_ok += ok
-        per[k] = {"value": v, "in_range": bool(ok),
+        n_ok_ver += (ok and k in ver)
+        per[k] = {"value": v, "in_range": bool(ok), "verified": k in ver,
                   "ratio": v / o[k]["target"] if o[k]["target"] else None}
-    return {"n_in_range": n_ok, "per": per}
+    return {"n_in_range": n_ok, "n_verified": len(ver),
+            "n_in_range_verified": n_ok_ver, "verified": sorted(ver), "per": per}
 
 
 def log_distance(row: dict, targets: dict) -> float:
@@ -483,12 +551,22 @@ def ingest() -> dict:
     prev = json.loads(LEDGER.read_text(encoding="utf-8")) if LEDGER.exists() else {}
 
     goal_dose = float(targets["condition"]["dose_dpa"])
-    stages, all_rows, best = {}, [], None
+
+    # TWO PASSES.  Extent verification is a GLOBAL property of a theta -- the
+    # pair that proves an observable may live in a different stage file (the
+    # grid ladders are their own stages) -- so every row must be on the table
+    # before any row can be scored.
+    rows_by_stage = {}
     for stem, meta in sorted(stages_meta.items()):
         rows = read_rows(meta["results"])
-        if not rows:
-            continue
-        all_rows.extend(rows)
+        if rows:
+            rows_by_stage[stem] = rows
+    all_rows = [r for rows in rows_by_stage.values() for r in rows]
+    ext = extent_pairs(all_rows)
+
+    stages, best = {}, None
+    for stem, rows in rows_by_stage.items():
+        meta = stages_meta[stem]
 
         # A stage is IN SCOPE only if it ran to the dose the targets describe.
         # The T-series ran to 1 dpa; scoring those against a 15 dpa target set
@@ -504,12 +582,17 @@ def ingest() -> dict:
         for r in rows:
             valid, flags = classify(r, stage_dose)
             n_valid += valid
-            sc = score(r, targets)
+            sc = score(r, targets, ext)
+            if sc["n_verified"] == 0:
+                flags = flags + ["UNVERIFIED"]     # no extent pair exists yet
             drow = design.get(str(r.get("row_id")), {})
             rec = {"row_id": r.get("row_id"),
                    "label": meta["labels"].get(str(r.get("row_id"))),
                    "valid": valid, "flags": flags,
                    "n_in_range": sc["n_in_range"],
+                   "n_verified": sc["n_verified"],
+                   "n_in_range_verified": sc["n_in_range_verified"],
+                   "verified": sc["verified"],
                    "log_distance": round(log_distance(r, targets), 3),
                    "dose_reached": r.get("dose_reached"),
                    "observables": {SHORT[k]: (sc["per"][k]["value"]
@@ -519,6 +602,10 @@ def ingest() -> dict:
             if valid and in_scope:
                 cand = {"stage": stem, "row_id": r.get("row_id"),
                         "label": rec["label"], "n_in_range": sc["n_in_range"],
+                        "n_verified": sc["n_verified"],
+                        "n_in_range_verified": sc["n_in_range_verified"],
+                        "verified": sc["verified"],
+                        "V_tested": (ext.get(r.get("theta_hash")) or {}).get("V_tested"),
                         "log_distance": rec["log_distance"],
                         "flags": flags,
                         "observables": rec["observables"],
@@ -528,8 +615,15 @@ def ingest() -> dict:
                         "params": {c: v for c, v in drow.items()
                                    if c not in BOOKKEEPING},
                         "inventory": inventory(r, targets)}
-                if best is None or (cand["n_in_range"], -cand["log_distance"]) > \
-                                   (best["n_in_range"], -best["log_distance"]):
+                # RANK ON THE VERIFIED COUNT FIRST.  An unverified row can no
+                # longer displace a verified one no matter how many bands it
+                # happens to sit in -- that is exactly how a grid artefact
+                # (d_cavity = 0.2825*(0.37V)^(1/3)) took the top of this
+                # leaderboard for twelve stages.
+                def rank(c):
+                    return (c["n_in_range_verified"], c["n_verified"],
+                            c["n_in_range"], -c["log_distance"])
+                if best is None or rank(cand) > rank(best):
                     best = cand
 
         swept = ["+".join(g) for g in covarying_groups(design)] if design else []

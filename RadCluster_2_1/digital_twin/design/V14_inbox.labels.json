@@ -1,0 +1,5 @@
+{
+ "7000": "anchor as-is (gamma_s 2.33, phi 0.05)",
+ "7001": "anchor + gamma_s 2.30 (in box)",
+ "7002": "anchor + gamma_s 2.30 + phi_max_junc 0.10 (fully in box)"
+}

@@ -1305,6 +1305,44 @@ def main(argv=None):
 
     spec = json.loads(a.spec.read_text(encoding="utf-8"))
     rows, meta = read_design(a.design)
+
+    # ---------------------------------------------------- PRIOR-BOX AUDIT --
+    # Every design reaches the solver through here, so this is the one place a
+    # value outside its declared prior can be caught.  plan.py already clips to
+    # PRIOR_BOX; HAND-BUILT designs do not, and that is how the campaign came to
+    # be running loop_net_w_c = 300 (box [1, 200]), gamma_s = 2.33 (box
+    # [1.7, 2.3]) and phi_max_junc = 0.05 (box [0.1, 1.0]) -- discovered
+    # 2026-08-20, after those values had already been used to justify a
+    # "best row".  A fit outside its own prior is not a calibration result.
+    #
+    # This WARNS rather than refuses: side-studies deliberately probe outside
+    # the box (the T-series liveness probes did), and a hard stop would break
+    # them.  But it is loud, it names every offender, and it stamps the rows so
+    # the ledger can see it -- silence was the actual failure.
+    _box = {p["key"]: (p["lo"], p["hi"]) for p in spec.get("parameters", [])
+            if p.get("lo") is not None and p.get("hi") is not None}
+    _viol = {}
+    for _r in rows:
+        for _k, (_lo, _hi) in _box.items():
+            _v = _r.get(_k)
+            if _v is None or isinstance(_v, str):
+                continue
+            if not (_lo <= float(_v) <= _hi):
+                _viol.setdefault(_k, {"box": (_lo, _hi), "vals": set(),
+                                      "rows": []})
+                _viol[_k]["vals"].add(float(_v))
+                _viol[_k]["rows"].append(_r.get("row_id"))
+    if _viol:
+        print(f"  !! PRIOR-BOX VIOLATIONS in {a.design.name}: "
+              f"{len(_viol)} parameter(s)")
+        for _k, _d in sorted(_viol.items()):
+            _vs = ", ".join(f"{v:g}" for v in sorted(_d["vals"]))
+            print(f"     {_k}: {_vs}  outside [{_d['box'][0]:g}, "
+                  f"{_d['box'][1]:g}]  ({len(_d['rows'])} row(s))")
+        print("     These rows are RUN, but a result that depends on them is "
+              "not a calibration inside the declared prior.")
+    _prior_viol = {k: {"box": list(d["box"]), "values": sorted(d["vals"]),
+                       "rows": d["rows"]} for k, d in _viol.items()}
     conds = (json.loads(a.conditions.read_text(encoding="utf-8"))
              if a.conditions.exists() else
              {"N2": {"T_K": 573.15}, "N5": {"T_K": 623.15},
@@ -1486,6 +1524,9 @@ def main(argv=None):
             # apply the per-mode observable-fidelity restriction without having
             # to resolve the hash back to a configuration
             "equations": a.equations,
+            # Carried per row so the ledger can tell a calibration result from
+            # one that left its own prior box.  Empty dict = fully in-prior.
+            "prior_violations": _prior_viol or None,
             "python": platform.python_version()}
     print(f"machine {a.machine}/{a.of}  rows {len(mine)} "
           f"({len(done)} done, {len(todo)} to run)  workers {a.workers}")

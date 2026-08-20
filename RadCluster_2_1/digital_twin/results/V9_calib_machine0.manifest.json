@@ -1,0 +1,126 @@
+{
+  "schema_version": "1",
+  "written_at_unix": 1787227363.4709718,
+  "written_at": "2026-08-20 05:02:43",
+  "campaign": {
+    "design_file": "design/V9_calib.csv",
+    "design_sha256": null,
+    "tier": null,
+    "N": null,
+    "p": null,
+    "conditions": null,
+    "parameters": null,
+    "parameters_version": null,
+    "revision_pending": null,
+    "rows_total": null
+  },
+  "machine": {
+    "index": 0,
+    "of": 1,
+    "weights": null,
+    "rows_assigned": 13,
+    "machine_id": "Mac.san.rr.com",
+    "platform": "macOS-26.5.1-arm64-arm-64bit",
+    "python": "3.11.7",
+    "cpu_count": 16,
+    "workers": 14,
+    "omp_num_threads": "1"
+  },
+  "code": {
+    "git_sha": "d0cf94604b89bd9c4e57bc09689e966c74813068",
+    "solver_sha256": "00c68d242b46e8b9",
+    "solver_path": "/Users/ghoni/Documents/GitHub/RadCluster/RadCluster_2_1/build/solver",
+    "workbook_sha256": "4a217b516d9f5fab"
+  },
+  "run_config": {
+    "I": 80000,
+    "V": 20000,
+    "dose": 15.0,
+    "equations": "bin_moment",
+    "rtol": 1e-05,
+    "atol": 1e-20,
+    "C_floor": 1e-25,
+    "solver_mode": "full_system",
+    "linsol": "gmres",
+    "preconditioner": "Woodbury",
+    "loop_conversion": 1,
+    "i_mobile_default": 40,
+    "v_mobile_default": 5,
+    "n_points": 40,
+    "timeout_s": 43200.0,
+    "lnl": 1,
+    "i_discrete": 100,
+    "v_discrete": 5,
+    "I_bin": 36,
+    "V_bin": 20,
+    "shape_function": "linear"
+  },
+  "run_cfg_sha": "23f858f9f6b5e456",
+  "conditions_file": "conditions_S8.json",
+  "conditions": {
+    "_comment": [
+      "S8: the 15 dpa reconciliation run.  Same 330 C condition as S2-S7, but",
+      "carried to the ACTUAL dose of the measurement instead of the 0.02 dpa",
+      "screening dose.  dose_dpa is read per-condition by run_ensemble",
+      "(cond.get('dose_dpa', cfg['dose'])), so it overrides --dose.",
+      "",
+      "Why this matters: every conclusion from S1-S7 compared a 0.02 dpa run to",
+      "15 dpa data -- a factor of 750 in dose.  The S1 finding that E_a0_conv",
+      "cannot satisfy N_100/d_100 and f_100 simultaneously (0/81 points) was",
+      "diagnosed at that mismatched dose and may simply not be a real conflict",
+      "here.",
+      "",
+      "rho_d is null on purpose so the DESIGN column controls it -- apply_theta",
+      "writes condition values AFTER the row loop.",
+      "",
+      "G = 1e-7 dpa/s is the EXPERIMENTAL rate (set 2026-08-16), replacing the",
+      "1e-6 accelerated rate that S1-S7 screened at.  t_end = dose/G = 1.5e8 s,",
+      "about 14 decades of log-spaced time against the 10 decades of the",
+      "screening runs.",
+      "",
+      "This is not a cosmetic change.  Dropping G by 10x at fixed dose gives",
+      "every thermal process 10x longer per dpa, so emission, diffusion and",
+      "coarsening all gain ground on production -- which is the direction the",
+      "reconciliation needs (fewer, larger loops; more cavity growth).  It also",
+      "means the S1-S7 screening conclusions were drawn at a dose rate the",
+      "measurement never saw, and their PARAMETER RANKINGS may not transfer even",
+      "though their mechanisms should."
+    ],
+    "S330": {
+      "label": "330 C, G=1e-7 (experimental rate), 15 dpa (BOR-60 EUROFER97)",
+      "T_K": 603.15,
+      "cascade": "fission",
+      "G": 1e-07,
+      "rho_d": null,
+      "dose_dpa": 15.0
+    }
+  },
+  "rows": {
+    "assigned": 13,
+    "completed": 13,
+    "admissible": 13,
+    "inadmissible": 0,
+    "failed": 0,
+    "not_started": 0
+  },
+  "timing": {
+    "session_wall_s": 5910.0,
+    "row_wall_mean_s": 2340.1846153846154,
+    "row_wall_median_s": 1815.1,
+    "row_wall_p90_s": 3559.02,
+    "core_hours": 8.450666666666667
+  },
+  "stopped": null,
+  "admissibility_rule": {
+    "pile_tol": 0.05,
+    "occ_tol": 0.1,
+    "delta_FP_tol": 0.01,
+    "pile_top_frac": 0.02,
+    "axes": [
+      "sia_111",
+      "sia_100",
+      "vacancy"
+    ],
+    "note": "delta_FP is blind to SIA-axis truncation (the <100> pile-up held delta_FP at 1e-8 while 96% of content sat at n=I), so grid adequacy is judged by pile/occupancy. It is NOT blind to the VACANCY axis -- delta_FP rests on the swelling identity S = S_I + Delta J^d and S is the vacancy inventory. The vacancy axis was unchecked until 2026-08-02; at the check_machine probe (V=120) mean_n_v moved 18.7->136 and swelling 58x on going to V=240."
+  }
+}

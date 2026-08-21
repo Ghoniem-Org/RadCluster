@@ -255,6 +255,70 @@ Coverage after the change -- the diagnosis in one table:
 | d_cavity | 7 |
 | **N_void** | **0** |
 
+## 6e. The void campaign (W1-W7): density is reachable, size is not
+
+Started from V500 (the verified 3/4 loop row) on the author's objective: land
+cavity density AND size without losing the loops.
+
+**The observable was wrong before the physics was.**  `d_cavity` derives from
+`mean_n_v`, a number-weighted mean over a distribution the author identifies as
+BIMODAL -- small He-stabilised bubbles plus a grown-void population.  A mean
+across two modes reports the valley between them.  Measured: `mean_n_v` drifts
+314-56000 % with grid extent while `N_voids`, a pure count, drifts 13-108 %, and
+on one row the legacy d_cavity read 0.661 nm while a real population sat at
+2.09 nm.  Size-resolved fields were added (S3 of this section).
+
+**What each lever does to the cavity channel**
+
+| lever | density | size |
+|---|---|---|
+| `f_cl_v` 0.32->0.70, `s_v` 2.5->1.8, `eta` 0.25->0.35 | +21 to +71 % | ZERO (d frozen 0.56-0.57) |
+| `Z_v` 1.00->0.95 | zero (bit-identical) | zero -- extra vacancies go to RECOMBINATION |
+| `rho_d` 1e14->2.5e14 | zero | zero, and costs the loops |
+| `E_b_hV_1` 2.21->2.80 | zero (bit-identical) | zero -- not in the fission He path |
+| **`E_m_v` 0.594->0.80** | **1e12 -> 1.1e21** | rises WITH density, cannot be separated |
+
+Cascade supply was never the constraint: at 15 dpa with eta=0.25, f_cl_v=0.32 the
+cascades make ~1e29 clustered vacancies/m^3 against a 1.5e21 target -- five
+orders of magnitude of surplus.  SURVIVAL is the constraint.
+
+**Result.**  Cavity DENSITY reaches the band (N_cav_tem = 1.11e21 at E_m_v 0.80
+against a 1.5e21 target).  Cavity SIZE does not, and cannot: `E_m_v` is the only
+lever with authority and it raises count and size together.
+
+**And the cavity-active region is not converged.**  Three independent extent
+pairs at E_m_v 0.75-0.78: N drifts 95-143 %, d drifts 55 %, all PINNED -- and
+each LOSES N_111 at the larger grid, i.e. the unbounded cavity population drags
+the loops through the vacancy balance.  So:
+
+| region | cavities | loops |
+|---|---|---|
+| E_m_v = 0.594 (V500) | BOUNDED (ratio 1.00) but negligible, N_bub ~ 1e12 | 3/4 in band, 2.2 % over 100x in V |
+| E_m_v >= 0.70 | present but UNBOUNDED | contaminated by the coupling |
+
+**There is no setting with converged loops AND a converged, correct cavity
+population.**
+
+**Why -- and it is structural.**  The fission (Case 2) reduction assigns He as
+`ell_bar * m^(2/3)` from ONE scalar `ell_bar = Q_tot / C_vac_tot`
+(rate_kernels.cpp:258-273).  Two cavities of the same size therefore carry the
+same He and the same binding, so a He-rich stable branch cannot coexist with a
+He-poor growing branch.  That is precisely the bimodality the measurement shows,
+and it is unreachable by any parameter.  It also explains the inert lever:
+`E_b_hV_1` never enters that path (it uses `delta_He`/`beta_He_exp`).
+
+The He SUPPLY is adequate -- 1 appm/dpa x 15 dpa = 1.27e24 He/m^3 is 847 He per
+cavity at the experimental density, He/V ~ 1.09, right where an equilibrium
+bubble sits.  The model cannot concentrate it into bubbles, not lacks it.
+
+**Three retractions, all the same error.**  "Bounded at V=5000", "the bubble size
+is in band at 2.85 nm", and "the shape is invariant to four digits" were each
+drawn from rows sharing ONE grid and each overturned by the extent pair.  A
+bounded window's diameter is a property of the window (d_cav_bub = 2.854-2.856
+across a 5e7 range in count); a tail-inclusive diameter is grid-contaminated
+(3.40 -> 5.29).  No cavity claim without its extent pair, however clean the
+trend.
+
 ## 7. What would actually close this
 
 ### 7.1 The cavity channel does NOT need a size cap (G5 + author, 2026-08-20)

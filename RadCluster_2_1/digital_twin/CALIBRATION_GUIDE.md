@@ -1,6 +1,6 @@
 # Calibration Guide - EUROFER97 digital twin
 
-*Derived by `learn.py`; content last changed 2026-08-20 21:21:30Z (re-running with no new results leaves this file untouched). Do not hand-edit: edits are overwritten. Durable notes belong in `calibration_ledger.json` under `notes`, which is preserved across regenerations.*
+*Derived by `learn.py`; content last changed 2026-08-20 21:49:14Z (re-running with no new results leaves this file untouched). Do not hand-edit: edits are overwritten. Durable notes belong in `calibration_ledger.json` under `notes`, which is preserved across regenerations.*
 
 ## Goal
 
@@ -69,7 +69,7 @@ A lever is **dead** when its full tested span moves every observable by less tha
 | `dH2_abs_conv` | dH2_abs_conv 0.26->0.55 | **live** (drives rows off-grid) | 19 | 173.8% | N_void, N_111, N_100, d_100, d_void, d_111 | V10_calib_machine0, V13_calib_machine0, V15_calib_machine0, V9_calib_machine0 |
 | `phi_max_junc` | phi_max_junc 0.05->0.6 | **live** | 6 | 163.9% | N_100, d_100, N_111, d_111 | S17_calib_machine1 |
 | `i_mobile` | i_mobile 5->100 | **live** (drives rows off-grid) | 8 | 132.7% | N_100, N_111, d_100, d_111 | S17_calib_machine1, S8_15dpa, V13_calib_machine0 |
-| `loop_net_w_c` | loop_net_w_c 5->2.7e+03 | **live** | 26 | 96.0% | N_100, d_100, N_void, N_111, d_void, d_111 | V11_calib_machine0, V13_calib_machine0, V15_calib_machine0 |
+| `loop_net_w_c` | loop_net_w_c 5->2.7e+03 | **live** | 32 | 96.0% | N_100, d_100, N_void, N_111, d_void, d_111 | V11_calib_machine0, V13_calib_machine0, V15_calib_machine0 |
 | `Z_i` | Z_i 1->1.35 | **live** | 2 | 86.6% | N_111, N_100, d_100, N_void, d_void, d_111 | V5_calib_machine0, V6_calib_machine0 |
 | `Z_v` | Z_v 0.9->1.35 | **live** | 3 | 65.2% | N_111, N_100, d_100 | V1_calib_machine0, V5_calib_machine0, V6_calib_machine0 |
 | `E_b_hV_1` | E_b_hV_1 2.21->3 | **live** | 5 | 28.7% | N_100, d_100 | S18_calib_machine2, V11_calib_machine0 |
@@ -159,7 +159,7 @@ Only stages that ran to 15.0 dpa are in scope; the rest are listed for provenanc
 | `V13_calib_machine0` | 15 | in | 9 | 9 | `E_m_i`, `B_111`, `E_b_i2`, `dH2_abs_conv`, `i_mobile`, `loop_net_w_c` | 2 |
 | `V14a_V20k_machine0` | 15 | in | 3 | 3 | - | 4 |
 | `V14b_V80k_machine0` | 15 | in | 2 | 1 | - | 2 |
-| `V15_calib_machine0` | 15 | in | 12 | 12 | `E_m_i`, `E_b_i2`, `dH2_abs_conv`, `loop_net_w_c` | 4 |
+| `V15_calib_machine0` | 15 | in | 13 | 13 | `E_m_i`, `E_b_i2`, `dH2_abs_conv`, `loop_net_w_c` | 4 |
 | `V1_calib_machine0` | 15 | in | 13 | 10 | `f_cl_v`, `E_m_v`, `gamma_s`, `E_b_v2`, `Z_v`, `rho_d` | 3 |
 | `V2_calib_machine0` | 15 | in | 11 | 7 | `E_m_v`, `gamma_s` | 4 |
 | `V5_calib_machine0` | 15 | in | 4 | 4 | `E_m_v`, `gamma_s`, `Z_i`, `Z_v`, `rho_d` | 3 |
@@ -176,7 +176,7 @@ Completed rows only. A row cut at the budget measures the timeout, not the cost,
 |---|---|---|---|---|---|
 | MATRIX-PC2 | 117 | 8.26 h | 2.94 h | 18.87 h | 5 |
 | Mac.san.rr.com | 349 | 1.45 h | 0.29 h | 5.51 h | 1 |
-| MacBook-Pro.local | 560 | 1.02 h | 0.02 h | 9.2 h | 0 |
+| MacBook-Pro.local | 561 | 1.02 h | 0.02 h | 9.2 h | 0 |
 | Nasr-Workstation | 415 | 3.35 h | 0.15 h | 19.79 h | 164 |
 
 `plan.py` sizes a stage from this table and the machine slot count, and refuses to propose a design whose estimated cost exceeds the machine row budget.

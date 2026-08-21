@@ -840,6 +840,61 @@ def observe(res, sim, cfg, d_min_nm):
         if k_v.sum() > 0:
             pile_v = float(k_v[int((1 - PILE_TOP_FRAC) * V):].sum() / k_v.sum())
     out["pile_v"] = pile_v
+
+    # ── SIZE-RESOLVED CAVITY DIAGNOSTIC (2026-08-20) ──────────────────────
+    # THE CAVITY DISTRIBUTION IS BIMODAL (author): small near-equilibrium
+    # bubbles held open by He gas pressure, plus a separate population that has
+    # crossed the critical radius and grows like a void.  `mean_n_v` is a
+    # number-weighted mean over BOTH, so it reports the valley between the modes
+    # -- a size at which there is no population -- and it is dragged by whatever
+    # the void tail is doing.  That is why `mean_n_v` drifts 314-56000 % with
+    # grid extent while `N_voids`, a pure count carried by the numerous small
+    # bubbles, drifts only 13-108 % on the same pairs.
+    #
+    # d_cavity_nm is derived from mean_n_v and inherits the defect, so the
+    # campaign has been scoring the cavity SIZE on a statistic with no physical
+    # referent.  These fields resolve the modes instead: densities and
+    # number-weighted mean diameters inside diameter WINDOWS, plus the content
+    # fraction carried by the large-void tail.
+    #
+    # d(m) = 2*(3*m*Omega/4pi)^(1/3) -- the same spherical relation as
+    # d_cavity_nm, so the window figures and the legacy figure are comparable.
+    if c_v is not None and V > 0:
+        m_ax = np.arange(1, V + 1)
+        d_m = 2.0 * (3.0 * m_ax * Om / (4.0 * np.pi)) ** (1.0 / 3.0) * 1e9  # nm
+        cv = np.maximum(c_v, 0.0)
+        tot_n = float(cv.sum())
+        tot_k = float((m_ax * cv).sum())
+        # 1-4 nm is the BUBBLE window (author, 2026-08-20): near-equilibrium
+        # He-stabilised bubbles.  Below 1 nm is the di/tri-vacancy cloud no TEM
+        # resolves and which is not a cavity population; above ~4 nm a cavity
+        # has crossed the critical radius and is growing as a void.
+        # `tem` is the HONEST comparator against a TEM measurement: everything
+        # resolvable, d >= 1 nm, with NO upper cut.  The bounded windows below
+        # exclude large cavities by construction, so their diameter is partly a
+        # property of the window -- d_cav_bub sits at 2.856 nm across a 5e7
+        # range in N_cav_bub, which is the window's centroid, not a mode.
+        for lo, hi, tag in ((1.0, np.inf, "tem"),    # <-- what TEM would report
+                            (1.0, 4.0, "bub"),      # He-bubble window
+                            (1.0, 10.0, "1_10"),
+                            (2.0, 4.0, "2_4"),
+                            (4.0, np.inf, "void")):  # grown-void tail
+            sel = (d_m >= lo) & (d_m < hi)
+            n_sel = float(cv[sel].sum())
+            out[f"N_cav_{tag}"] = n_sel / Om if n_sel > 0 else 0.0
+            out[f"d_cav_{tag}"] = (float((d_m[sel] * cv[sel]).sum() / n_sel)
+                                   if n_sel > 0 else None)
+            out[f"kfrac_cav_{tag}"] = (float((m_ax[sel] * cv[sel]).sum() / tot_k)
+                                       if tot_k > 0 else None)
+        # Modal size: the diameter carrying the most CONTENT, found on a log
+        # grid so the two modes are weighted comparably.  For a bimodal
+        # distribution this tracks a real peak where the mean tracks nothing.
+        if tot_n > 0:
+            kk = m_ax * cv
+            out["d_cav_mode"] = float(d_m[int(np.argmax(kk))]) if kk.sum() > 0 else None
+        else:
+            out["d_cav_mode"] = None
+
     out["occ_v"] = (out["mean_n_v"] / V) if V > 0 else None
 
     # occ_v is recorded but deliberately NOT a reject criterion.  The occupancy

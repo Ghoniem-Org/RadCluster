@@ -257,16 +257,69 @@ Coverage after the change -- the diagnosis in one table:
 
 ## 7. What would actually close this
 
-1. **A size cap on the cavity channel.** The `dH2_abs_conv` spec note already
-   anticipates the analogue for ⟨100⟩ loops ("restore the lower bound only after a
-   size cap exists").  The same pathology is on the vacancy axis and needs the same fix.
-2. **Test whether the pinning is the bin-moment closure or the physics** by running a
-   reduced-V case in `discrete` mode against `bin_moment`.  Not yet done.
-3. **`B_111` at rho_d >= 5e14** — zero clean pairs exist in 1565 rows.  It is the
-   ledger's strongest lever on N_111 (5.15x) and N_111 is the binding constraint in the
-   converged-cavity region, but its authority there is unmeasured.
-4. **Replace `occ_v`/`topbin_v` with a real convergence test**: same theta at two grid
-   EXTENTS, reject when `mean_n_v` scales with V.
+### 7.1 The cavity channel does NOT need a size cap (G5 + author, 2026-08-20)
+
+An earlier draft recommended adding a size cap to the cavity formulation.  That
+was wrong on two counts.
+
+**G5 -- the closure is not the problem.**  Same theta, same I, run in BOTH
+solvers at two extents:
+
+| solver | mean_n_v V=1000 -> V=4000 | ratio |
+|---|---|---|
+| discrete   | 13.54 -> 67.26 | 4.97 PINNED |
+| bin_moment | 12.83 -> 65.04 | 5.07 PINNED |
+
+The bin-moment closure reproduces discrete to 5.2 % on the cavity mean and 0.4 %
+on the loops (d_100 11.539 vs 11.496; N_100 2.291e22 vs 2.26e22).  It is
+faithful.  The unbounded growth is in the PHYSICS AT THESE PARAMETERS, not in
+the discretisation -- both solvers do it.
+
+**And the physics does not want a cap.**  Cavities in EUROFER97 at 330 C are
+1-3 nm; at the target values they hold ~1.2e24 m^-3 of vacancies against
+~4.9e24 m^-3 of SIA content in the loops -- a factor of 4 SMALLER.  There is no
+inventory that needs saturating.  A model producing 8 nm cavities at 15 dpa has
+the GROWTH BALANCE wrong; bolting on a cap would hide that, not fix it.
+
+So the correct statement is not "the cavity channel lacks a mechanism" but
+**"the cavity growth parameters are in the wrong regime, and the campaign never
+searched the regime that matters."**
+
+### 7.2 The untested lever: the dislocation bias ratio
+
+Void growth is driven by the dislocation bias -- dislocations preferentially
+absorb SIAs, leaving the vacancy excess that feeds cavities.  The campaign ran
+`Z_i` = 1.35 against `Z_v` = 1.0, a bias of **1.35**, and never swept it with an
+extent check.  Inside the declared boxes `Z_i` reaches 1.02 and `Z_v` reaches
+1.05 -- a bias of **0.97**, which should not grow voids at all.
+
+`E_m_v` and `rho_d` were tested (both fail to bound growth); the BIAS RATIO,
+the strongest of the three, was not.  That is the gap.
+
+**Lead:** row 382 (T3, V=5000) reports d_void = 2.35 nm against a ceiling
+prediction of 3.47 -- **32 % BELOW** the formula, the only row in 1614 that does
+not track it.  That is what genuinely self-limited growth looks like, and it is
+the place to start.
+
+### 7.3 The rest
+
+1. **d_111 needs a formulation change.**  1.04-1.63 nm against 6.2, stable to
+   three digits across every grid and lever.  <111> loops above `i_mobile` have
+   no sink loss, no effective junction loss and negligible network loss -- they
+   never grow because <100> takes the mobile-SIA flux through the boosted
+   absorption gate.  Best single lever: +89 % against a +507 % requirement.
+2. **Re-derive every lever sensitivity from the corrected ledger.**  The
+   pre-2026-08-20 verdicts were computed partly against the two artefact
+   observables and partly across spans outside the prior boxes.
+3. **`loop_net_chi` is inert by construction** (`P_ld` saturates to 1.0 for
+   every chi >= 50) and its box is [1, 60].  Objective (a) is carried entirely
+   by `loop_net_w_c`, and N_100 only lands in band when w_c <~ 5 b_111 -- i.e.
+   with the loop -> network channel NEARLY OFF.
+4. **Do not generalise a grid property from one theta.**  Three times in this
+   campaign a convergence claim measured at a single parameter point failed to
+   transfer (v_bin refinement at the anchor; "loops are grid-exact"; "loops
+   decouple at rho_d = 5e14" -- row 7100 drifts 16-49 % at that same rho_d).
+   Extent-verify the theta you intend to report, not a neighbour.
 
 ## 8. Provenance
 

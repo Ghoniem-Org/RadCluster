@@ -1,0 +1,22 @@
+{
+ "_comment": [
+  "F3: Case 1 (per-size Q_m helium) with the FISSION cascade source held",
+  "by mirror_production.  F1/F2 could not answer the question they were built",
+  "for: `cascade` also swaps the cascade source spectrum, and the fusion sheet",
+  "carries v_cascade 10 -> 20 and i_cascade 20 -> 50 -- parameters no design",
+  "column controls.  v_cascade is a direct void-nucleation lever, and doubling",
+  "it raised cavity density 100-1000x, swamping the He formulation entirely.",
+  "",
+  "Here the ONLY difference from the S8 baseline is the He formulation (FISSION He rate (1 appm/dpa, unchanged)).",
+  "This is a diagnostic, not a fusion prediction."
+ ],
+ "S330": {
+  "label": "330 C, 15 dpa, Case 1 per-size He, fission cascade source, FISSION He rate (1 appm/dpa, unchanged)",
+  "T_K": 603.15,
+  "cascade": "fusion",
+  "G": 1e-07,
+  "rho_d": null,
+  "dose_dpa": 15.0,
+  "mirror_production": true
+ }
+}

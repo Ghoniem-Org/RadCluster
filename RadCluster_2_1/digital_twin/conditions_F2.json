@@ -1,0 +1,18 @@
+{
+ "_comment": [
+  "F2: F1 with the helium SUPPLY raised to the fusion rate (10 appm/dpa,",
+  "1.27e25 He/m^3 at 15 dpa) while everything else is held.  F1 and F2 together",
+  "separate the two hypotheses the void campaign could not: F1 asks whether the",
+  "per-size He FORMULATION bounds the cavities at fixed supply; F2 asks whether",
+  "supply is also limiting.  Reading either alone would confound them."
+ ],
+ "S330": {
+  "label": "330 C, G=1e-7, 15 dpa, Case 1 at the FUSION He rate (10 appm/dpa)",
+  "T_K": 603.15,
+  "cascade": "fusion",
+  "G": 1e-07,
+  "rho_d": null,
+  "dose_dpa": 15.0,
+  "G_He_r": 10.0
+ }
+}

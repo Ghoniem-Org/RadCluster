@@ -391,3 +391,132 @@ Stages this session: V11 (loop-network channel), V12 (cavity levers, stopped ear
 G1/G2 (vacancy grid ladders), G3 (`rho_d` convergence scan), G4 (SIA grid ladder),
 R1 (reproducibility replicate — all rows reproduce bit-exactly; the solver is
 deterministic and the harness applies parameters correctly).
+
+---
+
+# Session 2026-08-21 — the ⟨111⟩ comparator, and two silent traps
+
+## 9. `d_111` is a model deficiency, not a comparator artifact
+
+§2 showed `d_cavity_nm` was a grid artifact because it was built from a
+whole-distribution `mean_n_v`. `d_111_nm` and `d_100_nm` are built the same way
+(`run_ensemble.observe`), so the same challenge applied to them. The visible
+DENSITIES (`N_111_vis_*`) had been emitted since the f_100 work; the visible
+DIAMETER never was. It is now.
+
+**The cutoff was set from the data, not chosen.** `docs/Database/MicroData.xlsx`
+carries measured loop size distributions. The 300 C / 15 dpa entries — the closest
+condition to the 330 C / 15 dpa target — have a lower bin edge of **1 nm** and a
+measured mean of **3.43 / 4.68 / 4.76 nm** across three areas. So d_min = 1.0.
+Note this is NOT the 1.25 nm that happened to make `N_111` fit best; choosing the
+window by which answer it produced would have been fitting the comparator.
+
+**L1: rows 7400/7402/7403 at I = 80 000 and 160 000. Drift 0.0 % at every entry.**
+
+| quantity | unwindowed | @0.8 | **@1.0** | @1.25 | @1.5 | band |
+|---|---|---|---|---|---|---|
+| `d_111` | 1.049 | 1.058 | **1.160** | 1.363 | 1.602 | [3.4, 7.0] ✗ |
+| `d_100` | 6.683 | — | 6.693 | — | — | ✓ |
+
+**The window does not rescue `d_111`.** The hypothesis was mine and it is refuted.
+The ⟨111⟩ distribution is a dense pile sitting just ABOVE the cutoff — not a few
+visible loops buried under invisible ones — so windowing barely moves the mean.
+This is the opposite of the `d_cavity` case, and the reason it had to be measured
+rather than argued.
+
+**What the window does change is the density.** `N_111_vis_1` = 7.79e21,
+extent-converged, and inside the ORIGINAL 1.1e22 ceiling. The 2026-08-19 raise to
+1.5e22 was compensating for the wrong comparator and can be withdrawn.
+
+### 9.1 The defect is a character PARTITION error, not a supply error
+
+| | N (m⁻³) | d (nm) | SIA/loop | SIA content (m⁻³) |
+|---|---|---|---|---|
+| measured ⟨111⟩ | 1.93e21 | 6.20 | 636 | 1.23e24 |
+| **model ⟨111⟩** | 1.43e22 | 1.05 | **18** | **2.60e23** |
+| measured ⟨100⟩ | 4.97e21 | 6.20 | 735 | 3.65e24 |
+| model ⟨100⟩ | 8.62e21 | 6.68 | 854 | 7.36e24 |
+
+Total SIA content is 1.56× measured — the right order — and ⟨100⟩ is essentially
+correct. The defect is confined to ⟨111⟩: **7.4× too many loops, each 35× too
+small, holding 4.7× too little SIA content.** Interstitials that should build
+⟨111⟩ loops end up in ⟨100⟩. This points at the ⟨111⟩ growth/dissociation balance
+(`B_111`, `E_b_i2`, the derived `A_111`) — not at helium, and not at the grid.
+
+## 10. Two silent traps found while setting up the Case 1 test
+
+Both would have produced confident, wrong answers.
+
+**(a) The spectrum sheet is selected at build time, the design writes to one sheet.**
+`parameters_S4.json` pins `eta`, `f_cl_i`, `f_cl_v`, `s_i`, `s_v` to
+`production_fission`, but `bin_moment_rates.py:711` and `rate_equations.py:155`
+read `production_fusion` when the cascade is fusion. Any Case 1 run would have
+**silently discarded the entire calibrated production vector**, substituted
+workbook defaults, and still reported the design row in provenance. Fixed by
+mirroring design writes to both sheets (a no-op for fission runs).
+
+**(b) `cascade` switches two things at once.** It selects the He coupling case
+AND the cascade source spectrum, and those sheets differ in four parameters no
+design column controls:
+
+| | fission | fusion |
+|---|---|---|
+| `i_cascade` (max SIA cluster) | 20 | 50 |
+| `v_cascade` (max vacancy cluster) | 10 | 20 |
+| `C_i`, `C_v` | 0.1093 / 0.1506 | 0.0553 / 0.1296 |
+
+`v_cascade` is a direct void-nucleation lever. F1/F2 (Case 1, un-mirrored) returned
+cavity densities 100–1000× over band and loops 25× over — attributing that to the
+helium formulation would have been wrong. **F1/F2 are void as evidence about
+helium and are not cited as such.** Fixed with a `mirror_production` condition flag,
+verified on all four parameters. `G_He_r` is now also condition-settable, so the He
+SUPPLY and the He FORMULATION can finally be moved independently — previously
+`cascade` was the only way to change the supply, which made Case 1 vs Case 2
+unfalsifiable in principle.
+
+## 11. Status of the Case 1 question — OPEN
+
+The corrected test (F3/F4: Case 1 with the fission cascade source held, at 1 and
+10 appm/dpa) was launched and **stopped by the author before any rows completed**.
+Whether a per-size `Q_m` bounds the cavity population is therefore **unanswered**.
+
+What is established about Case 1 is structural, from the code alone: it carries
+`Q_m(V)` and computes `ell_bar_m(m) = Q_m[m]/c_v[m]` per size class
+(`rate_kernels.cpp:751-795`), so `ell(m)` is free rather than assigned
+`ell_bar·m^(2/3)` from one scalar. That is the structure a critical radius needs,
+and hence the structure bubble/void coexistence needs. It remains untested here.
+
+Caveat for whoever runs it: in `bin_moment` mode Case 1 stores Q **per bin**, not
+per size (`rate_kernels.cpp:2176`). Still size-resolved, but coarser than the
+discrete branch.
+
+### Helium supply is not the obstacle
+
+At the workbook rate (`G_He_r` = 1 appm/dpa, Reactions sheet — authoritative, and
+NOT the 0.75 spectrum default) 15 dpa gives **1.27e24 He/m³**. Holding the measured
+cavity population as equilibrium bubbles needs 5.9e23 (He/V = 0.5) to 1.17e24
+(He/V = 1.0) at the central target of 1.5e21 at 2.6 nm. The supply sits inside that
+range. The measured BOR-60 population is quantitatively consistent with being
+He-stabilized bubbles at the helium this model already generates; what the Case 2
+reduction cannot do is LOCALIZE that helium.
+
+## 12. Corrections issued this session
+
+1. **"Windowing will close `d_111`"** — refuted by L1's own measurement (1.16 nm
+   against a 3.4 nm floor). Withdrawn.
+2. **"The model has no coordinate to represent bubbles vs voids"** — true of
+   Case 2, false of the code. Case 1 has carried `Q_m` all along.
+3. **He supply "9.55e23 He/m³"** — used the 0.75 spectrum default; the workbook
+   sets `G_He_r` = 1, giving 1.27e24. The corrected figure strengthens the bubble
+   hypothesis rather than weakening it.
+4. **"Cavity density achieved"** (§6e) — too generous. Density enters band only at
+   `E_m_v` ≥ 0.78, where `N_100` is 78–169 % over its ceiling. Reachable in
+   isolation, never jointly.
+
+## 13. Operational note
+
+Killing a run's parent leaves its workers orphaned. 90 such workers from the
+killed W-series were still resident (~36 GB, oldest > 24 h). **Kill children
+first, then the parent.** Also: `pkill -f <pattern>` matches any process whose
+command line contains the pattern — including a monitoring loop that names the
+same file. It killed one this session.

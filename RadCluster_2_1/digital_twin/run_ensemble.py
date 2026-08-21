@@ -263,6 +263,21 @@ def apply_theta(sim, spec: dict, row: dict, cond: dict):
             v = val * B111_M              # spec is in units of b_111
         for sh in sheets:
             put(sh, key, v)
+            # SPECTRUM SHEET MIRROR (2026-08-21).  The spec pins the cascade
+            # parameters (eta, f_cl_i, f_cl_v, s_i, s_v) to `production_fission`,
+            # but rate_equations/bin_moment_rates select the sheet from the
+            # SPECTRUM at build time -- `production_fusion` when cascade is
+            # fusion.  A Case 1 run would therefore silently discard the entire
+            # calibrated production vector and substitute workbook defaults,
+            # while still reporting the design row in provenance: the run would
+            # not be the theta it claims to be.  Mirroring costs nothing on a
+            # fission run (the fusion sheet is never read) and makes the cascade
+            # switch a pure change of He formulation, which is the only way the
+            # Case 1 / Case 2 comparison means anything.
+            if sh in ("production_fission", "production_fusion"):
+                other = ("production_fusion" if sh == "production_fission"
+                         else "production_fission")
+                put(other, key, v)
 
         # derived partners: the <100> binding law is a FIXED offset from <111>
         # so the character ratio cannot absorb the f_100 data (plan S2.1).
@@ -314,6 +329,31 @@ def apply_theta(sim, spec: dict, row: dict, cond: dict):
         put("reactions", "G", float(cond["G"]))
     if cond.get("rho_d") is not None:
         put("reactions", "rho_d", float(cond["rho_d"]))
+    # He PRODUCTION RATE is a property of the IRRADIATION, like G and T, but was
+    # readable only from the workbook -- so `cascade` was the sole way to move
+    # it, which welded the He SUPPLY to the He FORMULATION and made Case 1 vs
+    # Case 2 unfalsifiable.  Exposing it per-condition separates the two.
+    if cond.get("G_He_r") is not None:
+        put("reactions", "G_He_r", float(cond["G_He_r"]))
+
+    # CASCADE-SOURCE MIRROR (2026-08-21).  `cascade` selects TWO things at once:
+    # the He coupling case (Case 1 per-size Q_m vs Case 2 scalar ell_bar) AND the
+    # cascade source spectrum.  Those sheets differ in four parameters no design
+    # column controls -- i_cascade (20 -> 50), v_cascade (10 -> 20), C_i, C_v --
+    # and v_cascade is a direct void-NUCLEATION lever: doubling the largest
+    # vacancy cluster born in a cascade raised cavity density by 100-1000x in
+    # F1/F2 and buried the very effect the run was built to isolate.  (The
+    # workbook labels these m1/n1; the parsed dict keys are i_cascade/v_cascade.)
+    #
+    # With mirror_production the fission source is copied wholesale onto the
+    # fusion sheet, so `cascade` becomes a PURE switch of He formulation and
+    # Case 1 vs Case 2 is answerable.  This is a DIAGNOSTIC setting, not a
+    # fusion prediction: a real fusion calculation wants the fusion spectrum.
+    # Default off, so no other condition file changes behaviour.
+    if cond.get("mirror_production"):
+        for k, v in d.production_fission.items():
+            d.production_fusion[k] = v
+        written["production_fusion.<mirrored>"] = "from production_fission"
     return written
 
 
@@ -800,19 +840,54 @@ def observe(res, sim, cfg, d_min_nm):
                     # across cutoffs is itself the floor on sigma_model for
                     # f_100 (plan S3.1-4; convention alone moved one measurement
                     # 0.824 -> 0.408).
+                    # SIZE-RESOLVED LOOP DIAMETER (added 2026-08-21).  The
+                    # visible DENSITIES have been emitted here since the f_100
+                    # work, but `d_111_nm` / `d_100_nm` above are built from the
+                    # whole-distribution mean_n -- the same construction that
+                    # made d_cavity_nm a grid artifact (report S2).  TEM measures
+                    # only resolvable loops, so the windowed mean is the honest
+                    # comparator regardless of which way it moves the answer.
+                    #
+                    # WHAT IT ACTUALLY MEASURED (L1, I = 80k and 160k, drift
+                    # 0.0 % at every entry).  The window does NOT rescue d_111:
+                    # 1.049 nm unwindowed -> 1.160 at d_min = 1.0 (the cutoff the
+                    # 300 C/15 dpa distributions in MicroData.xlsx justify) ->
+                    # 1.602 at 1.5, against a band of [3.4, 7.0].  The <111>
+                    # population is a dense pile just ABOVE the cutoff, not a few
+                    # visible loops buried under invisible ones, so windowing
+                    # barely moves the mean.  d_111 is a real model deficiency,
+                    # not a comparator artifact -- the opposite of the d_cavity
+                    # case, and the reason this had to be measured, not argued.
+                    #
+                    # What the window DOES change is the density: N_111_vis at
+                    # d_min = 1.0 is 7.79e21, inside the ORIGINAL 1.1e22 ceiling,
+                    # so the 2026-08-19 raise to 1.5e22 is unnecessary here.
                     for dm in cfg.get("d_min_sweep", [0.8, 1.0, 1.25, 1.5]):
-                        a0 = float(c100[dd100 >= dm].sum())
-                        a1 = float(c111[dd111 >= dm].sum())
+                        s0m, s1m = dd100 >= dm, dd111 >= dm
+                        a0 = float(c100[s0m].sum())
+                        a1 = float(c111[s1m].sum())
                         tag = f"{dm:g}".replace(".", "p")
                         out[f"f_100_tem_{tag}"] = ((a0 / (a0 + a1))
                                                    if (a0 + a1) > 0 else None)
                         out[f"N_100_vis_{tag}"] = a0 / Om
                         out[f"N_111_vis_{tag}"] = a1 / Om
-                    v0 = float(c100[dd100 >= d_min_nm].sum())
-                    v1 = float(c111[dd111 >= d_min_nm].sum())
+                        # Number-weighted, matching the database convention.
+                        out[f"d_100_vis_{tag}"] = (
+                            float((dd100[s0m] * c100[s0m]).sum() / a0)
+                            if a0 > 0 else None)
+                        out[f"d_111_vis_{tag}"] = (
+                            float((dd111[s1m] * c111[s1m]).sum() / a1)
+                            if a1 > 0 else None)
+                    m0, m1 = dd100 >= d_min_nm, dd111 >= d_min_nm
+                    v0 = float(c100[m0].sum())
+                    v1 = float(c111[m1].sum())
                     f_tem = v0 / (v0 + v1) if (v0 + v1) > 0 else None
                     out["N_100_visible"] = v0 / Om
                     out["N_111_visible"] = v1 / Om
+                    out["d_100_visible"] = (float((dd100[m0]*c100[m0]).sum()/v0)
+                                            if v0 > 0 else None)
+                    out["d_111_visible"] = (float((dd111[m1]*c111[m1]).sum()/v1)
+                                            if v1 > 0 else None)
     out["pile_111"], out["pile_100"] = pile111, pile100
     out["f_100_number"], out["f_100_content"] = f_num, f_cont
     out["f_100_tem"], out["d_min_tem_nm"] = f_tem, d_min_nm

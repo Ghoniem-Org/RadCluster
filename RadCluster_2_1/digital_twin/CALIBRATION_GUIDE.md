@@ -1,6 +1,6 @@
 # Calibration Guide - EUROFER97 digital twin
 
-*Derived by `learn.py`; content last changed 2026-08-20 21:49:14Z (re-running with no new results leaves this file untouched). Do not hand-edit: edits are overwritten. Durable notes belong in `calibration_ledger.json` under `notes`, which is preserved across regenerations.*
+*Derived by `learn.py`; content last changed 2026-08-21 14:24:38Z (re-running with no new results leaves this file untouched). Do not hand-edit: edits are overwritten. Durable notes belong in `calibration_ledger.json` under `notes`, which is preserved across regenerations.*
 
 ## Goal
 
@@ -10,16 +10,16 @@ Condition: **EUROFER97, 330 C, 15.0 dpa, neutron** - targets in `targets_330C_15
 
 ## Where the campaign stands
 
-Best valid row: **V500_CONTROL_base_S1700** from `V5_calib_machine0` - **3/6** observables in range, log-distance 1.218.
+Best valid row: **7403** from `W3a_V5k_machine0` - **4/6** observables in range, log-distance 0.811.
 
 | observable | model | target | range | ratio | in range |
 |---|---|---|---|---|---|
-| N_100 | 8.28e+21 | 4.97e+21 | 4.67e+21 - 9e+21 | 1.67 x | yes |
-| d_100 | 6.79 | 6.2 | 3.4 - 7 | 1.09 x | yes |
-| N_111 | 1.42e+22 | 1.93e+21 | 1.73e+21 - 1.5e+22 | 7.34 x | yes |
+| N_100 | 8.77e+21 | 4.97e+21 | 4.67e+21 - 9e+21 | 1.76 x | yes |
+| d_100 | 6.72 | 6.2 | 3.4 - 7 | 1.08 x | yes |
+| N_111 | 1.43e+22 | 1.93e+21 | 1.73e+21 - 1.5e+22 | 7.42 x | yes |
 | d_111 | 1.05 | 6.2 | 3.4 - 7 | 0.169 x | **no** |
-| N_void | 2.93e+18 | 1.5e+21 | 3.6e+20 - 3.01e+21 | 0.002 x | **no** |
-| d_void | 1.02 | 2.6 | 2.12 - 2.9 | 0.393 x | **no** |
+| N_void | 3.84e+19 | 1.5e+21 | 3.6e+20 - 3.01e+21 | 0.0256 x | **no** |
+| d_void | 2.3 | 2.6 | 2.12 - 2.9 | 0.883 x | yes |
 
 ### Defect inventory (SIA content locked in loops)
 
@@ -27,9 +27,9 @@ Computed from the row own n<->d relation, so no lattice constant is assumed.
 
 | character | model N x nbar | experiment N x nbar | ratio |
 |---|---|---|---|
-| <100> | 7.28e+24 | 3.65e+24 | 2 x |
-| <111> | 2.58e+23 | 1.23e+24 | 0.211 x |
-| **total** | 7.54e+24 | 4.87e+24 | **1.55 x** |
+| <100> | 7.55e+24 | 3.65e+24 | 2.07 x |
+| <111> | 2.61e+23 | 1.23e+24 | 0.213 x |
+| **total** | 7.81e+24 | 4.87e+24 | **1.6 x** |
 
 ## Can any lever still close this?
 
@@ -37,12 +37,12 @@ How far each observable must move from the best row, against the largest change 
 
 | observable | ratio | needs | best single lever | that lever | single lever enough? |
 |---|---|---|---|---|---|
-| N_100 | 1.67 x | +67% | +16301094% | `B_111` | yes |
-| d_100 | 1.09 x | +9% | +693% | `f_cl_v+E_b_v2+s_v` | yes |
-| N_111 | 7.34 x | +634% | +113054% | `B_111` | yes |
-| d_111 | 0.169 x | +490% | +89% | `s_i` | **no** |
-| N_void | 0.002 x | +49900% | +4111087% | `E_m_v` | yes |
-| d_void | 0.393 x | +154% | +875% | `f_cl_v+E_m_v+gamma_s` | yes |
+| N_100 | 1.76 x | +76% | +16301094% | `B_111` | yes |
+| d_100 | 1.08 x | +8% | +693% | `f_cl_v+E_b_v2+s_v` | yes |
+| N_111 | 7.42 x | +642% | +113054% | `B_111` | yes |
+| d_111 | 0.169 x | +491% | +89% | `s_i` | **no** |
+| N_void | 0.0256 x | +3806% | +4111087% | `E_m_v` | yes |
+| d_void | 0.883 x | +13% | +875% | `f_cl_v+E_m_v+gamma_s` | yes |
 
 ## What each lever does
 
@@ -94,6 +94,7 @@ Only stages that ran to 15.0 dpa are in scope; the rest are listed for provenanc
 
 | stage | dose | scope | rows | valid | swept | best in-range |
 |---|---|---|---|---|---|---|
+| `AUTOVERIFY_7100` | 15 | in | 1 | 1 | - | 4 |
 | `G1a_vb45_machine0` | 15 | in | 1 | 1 | - | 1 |
 | `G1b_V80k_machine0` | 15 | in | 1 | 1 | - | 1 |
 | `G1c_V320k_machine0` | 15 | in | 1 | 1 | - | 1 |
@@ -102,6 +103,8 @@ Only stages that ran to 15.0 dpa are in scope; the rest are listed for provenanc
 | `G3a_V20k_machine0` | 15 | in | 5 | 5 | - | 4 |
 | `G3b_V80k_machine0` | 15 | in | 5 | 5 | - | 4 |
 | `G4_I160k_machine0` | 15 | in | 1 | 1 | - | 4 |
+| `G5a_disc_V1k` | 15 | in | 1 | 0 | - | - |
+| `G5b_disc_V4k` | 15 | in | 1 | 0 | - | - |
 | `G5c_bm_V1k` | 15 | in | 1 | 0 | - | - |
 | `G5d_bm_V4k` | 15 | in | 1 | 0 | - | - |
 | `R1_repro_machine0` | 15 | in | 3 | 3 | - | 2 |
@@ -153,12 +156,13 @@ Only stages that ran to 15.0 dpa are in scope; the rest are listed for provenanc
 | `T9_crossover_batch1` | 16.3 | out | 12 | 0 | - | - |
 | `T9_ladder_validation` | 0.05 | out | 4 | 2 | - | 1 |
 | `T9_screen_partial` | 2 | out | 13 | 1 | - | 0 |
+| `TEST_modes` | 15 | in | 1 | 0 | - | - |
 | `V10_calib_machine0` | 15 | in | 12 | 6 | `f_cl_i`, `f_cl_v+E_m_v+rho_d`, `gamma_s`, `dH2_abs_conv` | 3 |
 | `V11_calib_machine0` | 15 | in | 13 | 13 | `f_cl_v+E_m_v+gamma_s+dH2_abs_conv+rho_d`, `E_b_hV_1`, `loop_net_chi`, `loop_net_w_c` | 3 |
 | `V12_calib_machine0` | 15 | in | 5 | 3 | `f_cl_v`, `E_m_v`, `rho_d`, `s_v` | 4 |
 | `V13_calib_machine0` | 15 | in | 9 | 9 | `E_m_i`, `B_111`, `E_b_i2`, `dH2_abs_conv`, `i_mobile`, `loop_net_w_c` | 2 |
 | `V14a_V20k_machine0` | 15 | in | 3 | 3 | - | 4 |
-| `V14b_V80k_machine0` | 15 | in | 2 | 1 | - | 2 |
+| `V14b_V80k_machine0` | 15 | in | 3 | 2 | - | 4 |
 | `V15_calib_machine0` | 15 | in | 13 | 13 | `E_m_i`, `E_b_i2`, `dH2_abs_conv`, `loop_net_w_c` | 4 |
 | `V1_calib_machine0` | 15 | in | 13 | 10 | `f_cl_v`, `E_m_v`, `gamma_s`, `E_b_v2`, `Z_v`, `rho_d` | 3 |
 | `V2_calib_machine0` | 15 | in | 11 | 7 | `E_m_v`, `gamma_s` | 4 |
@@ -167,6 +171,14 @@ Only stages that ran to 15.0 dpa are in scope; the rest are listed for provenanc
 | `V7_calib_machine0` | 15 | in | 13 | 10 | `E_m_v`, `gamma_s`, `rho_d` | 3 |
 | `V8_calib_machine0` | 15 | in | 13 | 12 | `f_cl_v`, `E_m_v`, `gamma_s`, `rho_d`, `s_v` | 4 |
 | `V9_calib_machine0` | 15 | in | 13 | 13 | `f_cl_v+E_m_v+gamma_s`, `dH2_conv`, `dH2_abs_conv`, `rho_d` | 4 |
+| `W1a_V20k_machine0` | 15 | in | 13 | 7 | - | 3 |
+| `W2a_V5k_machine0` | 15 | in | 2 | 2 | - | 0 |
+| `W3a_V5k_machine0` | 15 | in | 6 | 6 | - | 4 |
+| `W3b_V20k_machine0` | 15 | in | 3 | 3 | - | 3 |
+| `W5a_V5k_machine0` | 15 | in | 6 | 6 | - | 4 |
+| `W5b_V20k_machine0` | 15 | in | 2 | 2 | - | 3 |
+| `W6a_V5k_machine0` | 15 | in | 5 | 4 | - | 2 |
+| `W6b_V20k_machine0` | 15 | in | 3 | 3 | - | 2 |
 
 ## Cost model (measured)
 
@@ -175,8 +187,8 @@ Completed rows only. A row cut at the budget measures the timeout, not the cost,
 | machine | completed | median row | min | max | timed out |
 |---|---|---|---|---|---|
 | MATRIX-PC2 | 117 | 8.26 h | 2.94 h | 18.87 h | 5 |
-| Mac.san.rr.com | 349 | 1.45 h | 0.29 h | 5.51 h | 1 |
-| MacBook-Pro.local | 561 | 1.02 h | 0.02 h | 9.2 h | 0 |
+| Mac.san.rr.com | 366 | 1.43 h | 0.04 h | 5.51 h | 1 |
+| MacBook-Pro.local | 587 | 1.02 h | 0.02 h | 9.2 h | 2 |
 | Nasr-Workstation | 415 | 3.35 h | 0.15 h | 19.79 h | 164 |
 
 `plan.py` sizes a stage from this table and the machine slot count, and refuses to propose a design whose estimated cost exceeds the machine row budget.

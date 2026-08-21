@@ -1,0 +1,23 @@
+{
+ "_comment": [
+  "F1: identical to conditions_S8.json in every respect EXCEPT cascade, which",
+  "selects Case 1 (he_mode=1).  Case 1 carries Q_m -- a helium inventory per",
+  "size class -- so ell(m) = Q_m/c_v[m] is free to vary with m instead of being",
+  "assigned ell_bar*m^(2/3) from one scalar as Case 2 does.  That is the only",
+  "structure in the model that can put a stable small-cavity branch and a",
+  "growing large one on the same size axis.",
+  "",
+  "G_He_r is deliberately ABSENT, so it keeps the workbook value of 1 appm/dpa",
+  "-- the same helium supply as every S8 run.  The comparison against the BOR-60",
+  "fission data therefore stays honest: the He FORMULATION changes, the He",
+  "SUPPLY does not.  F2 is the arm that moves the supply."
+ ],
+ "S330": {
+  "label": "330 C, G=1e-7, 15 dpa, Case 1 (per-size He) at the FISSION He rate",
+  "T_K": 603.15,
+  "cascade": "fusion",
+  "G": 1e-07,
+  "rho_d": null,
+  "dose_dpa": 15.0
+ }
+}

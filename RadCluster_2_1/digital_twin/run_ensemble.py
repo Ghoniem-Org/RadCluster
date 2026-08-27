@@ -1473,6 +1473,46 @@ def main(argv=None):
               "not a calibration inside the declared prior.")
     _prior_viol = {k: {"box": list(d["box"]), "values": sorted(d["vals"]),
                        "rows": d["rows"]} for k, d in _viol.items()}
+
+    # ── DUAL-DECLARED PARAMETER AUDIT (2026-08-21) ──────────────────────────
+    # A key can appear in BOTH spec["parameters"] and spec["fixed"].  apply_theta
+    # resolves that deterministically -- a sampled value beats the fixed default
+    # -- but only if the DESIGN actually carries the column.  When it does not,
+    # the fixed value silently wins and the parameter is not calibrated at all,
+    # while the spec still advertises it as a Tier-3 calibration parameter with
+    # a prior box.
+    #
+    # This is not hypothetical.  n_ref_conv and T_star_conv_C were promoted from
+    # fixed to sampled on 2026-08-14 (spec ids 27, 28) and their `fixed` entries
+    # were never removed.  Exactly ONE design in the repository carries the
+    # columns (T13_nref.csv), so every other run in the campaign -- every V, W,
+    # G and L stage -- used n_ref_conv = 50 and T_star_conv_C = 450, the
+    # PRE-PROMOTION values, against declared nominals of 2982 and a box reaching
+    # 200.  Nothing reported it.
+    #
+    # Deliberately NOT auto-resolved: changing which value wins is a physics
+    # decision (T13 shows n_ref_conv inert over 1908-4294, while T_star -> 330 C
+    # drives <100> to 4e23 m^-3 and 22 nm), so this names the ambiguity and
+    # records what was actually in force, and leaves the choice to the author.
+    _fixed_vals = {f["key"]: f["value"] for f in spec.get("fixed", [])}
+    _sampled = {p["key"] for p in spec.get("parameters", [])}
+    _cols = set().union(*(set(r) for r in rows)) if rows else set()
+    _dual = {}
+    for _k in sorted(_sampled & set(_fixed_vals)):
+        _in_design = _k in _cols
+        _dual[_k] = {"fixed_value": _fixed_vals[_k],
+                     "in_design": _in_design,
+                     "in_force": "design" if _in_design else "fixed"}
+    _dual_silent = {k: v for k, v in _dual.items() if not v["in_design"]}
+    if _dual_silent:
+        print(f"  !! DUAL-DECLARED (sampled AND fixed), design carries neither "
+              f"column: {len(_dual_silent)} parameter(s)")
+        for _k, _d in sorted(_dual_silent.items()):
+            _b = next((f"[{p['lo']:g}, {p['hi']:g}]"
+                       for p in spec.get("parameters", [])
+                       if p["key"] == _k and p.get("lo") is not None), "?")
+            print(f"     {_k}: held at FIXED {_d['fixed_value']!r}, "
+                  f"declared prior {_b} -- NOT calibrated in this run.")
     conds = (json.loads(a.conditions.read_text(encoding="utf-8"))
              if a.conditions.exists() else
              {"N2": {"T_K": 573.15}, "N5": {"T_K": 623.15},
@@ -1657,6 +1697,9 @@ def main(argv=None):
             # Carried per row so the ledger can tell a calibration result from
             # one that left its own prior box.  Empty dict = fully in-prior.
             "prior_violations": _prior_viol or None,
+            # Which dual-declared parameters were actually in force, and
+            # whether the design or the fixed default supplied the value.
+            "dual_declared": _dual or None,
             "python": platform.python_version()}
     print(f"machine {a.machine}/{a.of}  rows {len(mine)} "
           f"({len(done)} done, {len(todo)} to run)  workers {a.workers}")

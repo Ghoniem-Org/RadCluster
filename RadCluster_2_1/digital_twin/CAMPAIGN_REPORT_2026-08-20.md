@@ -520,3 +520,52 @@ killed W-series were still resident (~36 GB, oldest > 24 h). **Kill children
 first, then the parent.** Also: `pkill -f <pattern>` matches any process whose
 command line contains the pattern — including a monitoring loop that names the
 same file. It killed one this session.
+
+## 14. Case 1 ANSWERED — per-size helium does not bound the cavities
+
+§11 left this open. It is now closed, and the answer is negative.
+
+**Correction to §10(b) first.** F3/F4 (mirrored) returned BIT-IDENTICAL results to
+F1/F2 (un-mirrored). The reason: `bin_moment_rates.py:711` selects the production
+sheet from `input_data.derived['spectrum']`, which is read from the workbook
+Reactions sheet and is always `'fission'` -- NOT from `cascade`. The fusion
+production sheet is never consulted, so `i_cascade`/`v_cascade`/`C_i`/`C_v` never
+differed and there was no cascade-source confound.
+
+Consequently **`cascade` changes only `he_mode`, and F1/F2 were already a clean
+Case 1 test.** Declaring them "void as evidence about helium" in commit 23f746c
+was wrong: the 100-1000x cavity densities were caused by Case 1 itself, not by
+`v_cascade`. Having just found two genuine silent traps, a third was read into a
+result that was in fact a physical finding. The `mirror_production` guard remains
+valid for the case where a workbook sets `spectrum = fusion`, but it was inert
+here and explains nothing about F1/F2.
+
+**The measurement.** Same theta, same He supply (1 appm/dpa), only `he_mode`
+differing:
+
+| E_m_v | mode | N_voids | d_cav V5k → V20k | drift | N_100 | N_111 |
+|---|---|---|---|---|---|---|
+| 0.594 | Case 2 | 2.46e18 | 0.559 → 0.559 | **0 %** | 8.47e21 ✓ | 1.43e22 |
+| 0.594 | Case 1 | 7.50e18 | 0.558 → 0.618 | 11 % | 7.14e21 ✓ | 1.90e22 ✗ |
+| 0.700 | Case 2 | 2.11e19 | 1.581 → 3.291 | 108 % | 8.54e21 ✓ | 1.43e22 |
+| 0.700 | Case 1 | 2.67e23 | 3.595 → 5.660 | 57 % | 4.19e22 ✗ | 1.35e23 ✗ |
+
+Zero of six rows pass the criterion fixed in advance (`d_cav` in [2.12, 2.9] with
+< 10 % extent drift and loops in band). Case 1 triples cavity nucleation at the
+loop-best point while keeping cavities sub-nm and INTRODUCING grid drift where
+Case 2 had none; above E_m_v = 0.70 it over-produces cavities 100x and loops 10x.
+At 10 appm/dpa (F4) it is worse again: N_v ~ 3e24, N_111 ~ 5e24.
+
+**Conclusion.** Giving helium a size coordinate is NOT sufficient for bubble/void
+coexistence here. `ell(m) = Q_m/c_v[m]` is still a per-class MEAN, so cavities of
+equal size share one gas loading and the saddle-node structure a conversion event
+requires -- gas-rich stable below a critical radius, gas-poor growing above -- has
+no room to form. The bimodal population the author describes needs the joint
+(m, ell) state, not a size-resolved mean of it. Note also that the fixed criterion
+was applied as written: Case 1 was not credited for being "closer" on any single
+axis when it failed the conjunction.
+
+Cost note: F3/F4 was CPU spent chasing a confound that did not exist. The check
+that would have prevented it -- trace which sheet is ACTUALLY read, rather than
+which one the switch appears to select -- takes one smoke test, and was run only
+after the results came back identical.

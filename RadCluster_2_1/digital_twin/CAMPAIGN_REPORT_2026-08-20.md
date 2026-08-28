@@ -569,3 +569,116 @@ Cost note: F3/F4 was CPU spent chasing a confound that did not exist. The check
 that would have prevented it -- trace which sheet is ACTUALLY read, rather than
 which one the switch appears to select -- takes one smoke test, and was run only
 after the results came back identical.
+
+## 15. ⟨111⟩ formulation review — the mechanism, and a fix that already exists
+
+§9.1 localized the defect: 7.4× too many ⟨111⟩ loops at 1/35 the size, while
+⟨100⟩ and total SIA content are right. This section identifies why.
+
+### 15.1 The binding law is NOT the constraint — my nominated target was wrong
+
+I proposed reviewing `B_111` / `E_b_i2` / `A_111`. At the loop-best theta, for a
+⟨111⟩ loop at n = 18:
+
+| channel | rate coefficient |
+|---|---|
+| capture `K_SIA_grow` | 1.269e+09 |
+| thermal emission `G_SIA` | 4.830e-05 |
+
+Thirteen orders of magnitude. Emission is irrelevant above n ≈ 10, so no setting
+of the binding law can change `d_111`. **The dissociation balance is not the
+mechanism and should not be pursued.**
+
+### 15.2 The real mechanism: ⟨111⟩ loops cannot coarsen
+
+`reaction_rates.py:507-513`:
+
+```
+if n > i_mobile:  D = 0            # sessile - no coalescence as projectile
+elif n < 4:       D = Di_cluster_3D(n)
+else:             D = D1D(n) / rot_factor
+```
+
+with `rot_factor = 1 + B_rot·L̂²`. Measured on the campaign theta:
+
+| n | 1–3 | 4 | 5 | ≥ 6 |
+|---|---|---|---|---|
+| `D_SIA_eff` | 1.218e-12 | 6.645e-19 | 5.316e-19 | **0** |
+
+D falls 1.8e6× between n = 3 and n = 4 and is exactly zero above `i_mobile` = 5.
+So only n ≤ 3 genuinely moves, and **loop–loop coalescence is dead**: it needs a
+mobile projectile, and no loop qualifies. A ⟨111⟩ loop can grow only by capturing
+monomers one at a time.
+
+Note `rot_factor` = 2.712e6 here, against the "≈ 6568" the source comment assumes
+— because it scales as L̂² and the campaign runs `L_hat` = 1016, not 50. `L_hat`
+is inside its prior [3.5, 3500], but the quadratic consequence for capture was
+plainly not anticipated when that comment was written.
+
+### 15.3 The flux competition is 85:15 against ⟨111⟩
+
+Capture scales with loop radius, so the larger ⟨100⟩ population wins the mobile
+SIA flux even though it is 40 % fewer in number:
+
+| | per-loop coefficient | × gate | population-weighted share |
+|---|---|---|---|
+| ⟨111⟩ at n = 18 | 1.269e+09 | — | **15.0 %** |
+| ⟨100⟩ at n = 854 | 8.742e+09 (6.89×) | ×1.367 → 9.41× | **85.0 %** |
+
+This is rich-get-richer: bigger ⟨100⟩ captures more, so it gets bigger. And the
+graph is a one-way funnel — three ⟨111⟩ → ⟨100⟩ edges (Marian junction, Dudarev
+unary, absorption-as-partner) and **no back-conversion**. ⟨100⟩ is an absorbing
+state that feeds on ⟨111⟩.
+
+Two smells in that gate: `conv_psuccess_abs` = 1.367 is a *success probability
+above unity* (the kernel runs at 137 % of the collision rate), and it sits there
+because `dH2_abs_conv` = 0.26 is pinned at its prior FLOOR — a bound the spec
+itself records as numerical, not physical, chosen to stop ⟨100⟩ running away.
+
+Arithmetic on what a flux-share fix could buy: n must go 18 → 636 (35×). Giving
+⟨111⟩ 100 % of the flux is only 6.7×. **Rebalancing the competition cannot close
+`d_111`** — consistent with §7's measured +89 % against a +507 % requirement.
+
+### 15.4 The fix already exists and has never been switched on
+
+`reaction_rates.py:516-541` documents this exact defect (2026-08-16) and
+implements the remedy:
+
+> `D_SIA_eff` is hard-truncated to zero at `i_mobile`, so a loop that grows past
+> the cutoff can never take part in a coalescence again... **That is why the
+> ½⟨111⟩ mean size is pinned AT the cutoff**: `mean_n_111/i_mobile` = 1.32 ± 0.75
+> at i_mobile = 40 and 0.84 ± 0.25 at i_mobile = 100 across 16 runs, i.e. the mean
+> tracks the cutoff rather than the physics. Real ½⟨111⟩ loops in bcc Fe stay
+> glissile to large size and coarsen by 1-D glide.
+
+`D_loop_coal` continues the 1-D glide law past the cutoff, as a separate array so
+large loops do not simultaneously become visible to the fixed-sink and cavity
+channels. It is gated by `LOOP_COAL`, **default 0**.
+
+`LOOP_COAL` appears in **none of the 79 designs, not in `parameters_S4.json`
+(neither `parameters` nor `fixed`), and not in the workbook Reactions sheet.**
+`re.get('LOOP_COAL', 0)` has therefore been 0 in every run of this campaign. The
+mechanism the report has spent three sessions calling "structural" has a switch,
+and the switch has never been flipped.
+
+This also explains the shape of the failure rather than just its size: a mean that
+tracks a numerical cutoff is exactly what §9 measured — a dense pile of loops just
+above the TEM cutoff, which is why windowing could not rescue `d_111`.
+
+### 15.5 Recommended next test
+
+Enable `LOOP_COAL = 1` at the loop-best theta and re-measure `d_111` / `N_111`,
+at two grid extents as usual. `loop_coal_pref` gives the capture-geometry
+prefactor the 1-D-glide isotropic-equivalent estimate understates (the same
+correction `absorb_boost_100` was created for on the ⟨100⟩ side, and likewise
+left at 1.0).
+
+Predictions, stated before the run so they can fail: ⟨111⟩ loop NUMBER falls and
+mean SIZE rises at roughly fixed SIA content; `N_111` moves toward 1.93e21 from
+1.43e22; `d_111` rises from 1.16 nm. Whether it reaches 3.4 nm is exactly the
+open question. Risk to watch: coarsening frees mobile SIAs that ⟨100⟩ may absorb,
+so `N_100`/`d_100` — currently the model's best-fitting observables — must be
+re-checked, not assumed.
+
+Both `LOOP_COAL` and `loop_coal_pref` should be added to the spec so the
+dual-declaration audit (§ commit 4181488) can see them.

@@ -1,0 +1,29 @@
+{
+ "_comment": [
+  "C1: LOOP_COAL = 1 with loop_coal_pref = 1.0.",
+  "reaction_rates.py:516-541 implements the missing 1/2<111> loop-loop",
+  "coalescence edge and rhs_bin_moment:1691 consumes it, but LOOP_COAL is",
+  "absent from the workbook, the spec and all 79 designs, so it has been 0",
+  "in every run of this campaign.  This is the first time it is on.",
+  "",
+  "loop_coal_pref is the capture-geometry prefactor.  D_loop_coal carries",
+  "D1D(n)/rot_factor with rot_factor = 1 + B_rot*L_hat^2 = 2.712e6 at the",
+  "campaign's L_hat = 1016 -- the rate a randomly placed SPHERICAL sink",
+  "sees from a rotating 1-D glider.  A coaxial 1/2<111> loop is a planar",
+  "trap, not a sphere, so the true capture rate can exceed that estimate by",
+  "up to ~rot_factor.  The ladder 1 / 30 / 1000 spans that range in logs.",
+  "",
+  "SCREEN ONLY, single extent.  Whatever wins gets an I = 160k extent pair",
+  "before any claim is made -- a single-grid number is not a result."
+ ],
+ "S330": {
+  "T_K": 603.15,
+  "cascade": "fission",
+  "G": 1e-07,
+  "rho_d": null,
+  "dose_dpa": 15.0,
+  "label": "330 C, 15 dpa, LOOP_COAL=1, pref=1.0",
+  "LOOP_COAL": 1,
+  "loop_coal_pref": 1.0
+ }
+}

@@ -1,0 +1,22 @@
+{
+ "_comment": [
+  "M2: i_cascade = 200 (workbook fission default 20).  The M1 ladder showed",
+  "mean_n_111 saturates at ~21 across i_mobile = 5..100 and is IDENTICAL with",
+  "LOOP_COAL on or off at i_mobile >= 50 -- two independent ways of lifting the",
+  "coalescence restriction converge on one ceiling, so neither is the limiter.",
+  "n ~ 21 against i_cascade = 20 is the coincidence under test.",
+  "",
+  "PREDICTION, stated before the run: if mean_n_111 tracks i_cascade, <111> size",
+  "is inherited from the cascade source rather than grown.  If it stays ~21, the",
+  "source is not the limiter either and the ceiling is kinetic."
+ ],
+ "S330": {
+  "label": "330 C, 15 dpa, i_cascade = 200",
+  "T_K": 603.15,
+  "cascade": "fission",
+  "G": 1e-07,
+  "rho_d": null,
+  "dose_dpa": 15.0,
+  "i_cascade": 200
+ }
+}

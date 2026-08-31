@@ -682,3 +682,109 @@ re-checked, not assumed.
 
 Both `LOOP_COAL` and `loop_coal_pref` should be added to the spec so the
 dual-declaration audit (§ commit 4181488) can see them.
+
+## 16. LOOP_COAL: a 16-day-stale binary, and a clean regression
+
+§15.4 recommended enabling `LOOP_COAL`. The first attempt returned four
+BIT-IDENTICAL arms including `loop_coal_pref = 1000`. Cause:
+
+* `build/solver` was built **2026-08-02 19:08**; the `LOOP_COAL` source landed
+  **2026-08-18** (commit 6d86c0b).
+* `build/solver` hashed to `00c68d242b46e8b9` — exactly the `solver_sha256`
+  recorded in **every run's provenance in this campaign**.
+* `strings build/solver | grep -c loop_coal` = **0**.
+
+I had verified the Python → cpp_bridge → parameters.h → `rhs_bin_moment` chain
+and confirmed the code sits in the right kernel. What I did not check was
+whether the compiled ARTEFACT matched the source I was reading.
+
+**Blast radius, contained.** Exactly one commit touched `cpp_utils/` since the
+build: +109 lines, zero deletions, ONE additive hunk at `rate_kernels.cpp:1688`,
+all inside `if (P.loop_coal)`. Everything before that line — Case 2 (233-750)
+and Case 1 (756-1123) — is byte-identical to what the binary ran, so every prior
+conclusion is unaffected.
+
+**Regression guard.** The rebuilt binary (`276bb0fd522728a2`) with `LOOP_COAL`
+off reproduces the old binary to **0.000e+00 %** on all rows and all seven
+observables. The rebuild is clean.
+
+**Result at pref = 1** (fine grid): `d_111` 1.050 → 1.139 (+8.4 %, needs +224 %),
+`N_111` 1.430e22 → 1.645e22 (+15 %, WRONG DIRECTION), and `N_100` out of band at
+9.66e21. ⟨111⟩ SIA content rose **+35 %** — genuine coarsening holds content
+fixed while number falls, so this is added nucleation, not merging.
+`pref = 30` and `pref = 1000` ran 13 h 50 m and produced ZERO rows; the higher
+prefactors are unaffordable.
+
+## 17. Six mechanisms, one invariant: ⟨111⟩ size is stiff at n ≈ 20
+
+Author-directed exploration, coarse grid (i_bin 18 / v_bin 20, extents held).
+The coarsening cost was measured, not assumed: `mean_n_111` and `d_111` shift
+**0.1 %** against the fine grid, `N_100` 9.7 % — acceptable for screening, and
+the ⟨111⟩ observables under test are essentially unaffected.
+
+| lever | range explored | mean_n_111 |
+|---|---|---|
+| `i_mobile` | 5 → 100 (20×) | 18.3 → 20.7 |
+| `LOOP_COAL` | off → on (pref 1) | 18.3 → 21.5 |
+| `i_cascade` | 10 → 50 | 23.0 → 24.2 |
+| `E_m_v` | 0.594 → 0.720 | no change |
+| absorption gate | 1.367 → 0.106 (⟨100⟩ annihilated) | 18.3 → 24.7 |
+| `n_ref_conv` | conversion disabled above n = 9 | 18.2 → 24.6 |
+
+Target is 636. Every lever lands in **18-25**.
+
+Three of these deserve individual note.
+
+**The flux-competition hypothesis is DEAD.** §15.3 attributed the ⟨111⟩ deficit
+to ⟨100⟩ taking 85 % of the mobile SIA flux. Driving `dH2_abs_conv` to 0.45
+collapses `N_100` by 11,000× to 6.6e17 — ⟨100⟩ is effectively annihilated and
+⟨111⟩ has ~100 % of the flux. `d_111` reaches 1.224 nm and SATURATES. My own
+arithmetic had predicted n ≈ 122 at full flux; the measurement gives 24.7.
+
+**The conversion-threshold hypothesis is DEAD.** `Gamma_uni` is active only over
+n = 4..33, and that ceiling tracks `n_ref_conv` (10 → 9, 50 → 33, 100 → 53). At
+`n_ref_conv` = 10, loops escape at n = 9 and are then permanently immune — and
+still stop at 24.6.
+
+**`i_cascade` closes the CONTENT gap but not the partition.** At `i_cascade` = 50
+the ⟨111⟩ SIA content is 1.18e24 against a measured 1.23e24 — the long-standing
+4.7× deficit closes — but the material is distributed over 25× too many loops.
+Content is fixable; number-vs-size is not.
+
+### 17.1 Why: the growth law has no intrinsic size scale
+
+`K_SIA_grow / K_SIA_shrink` = **2.8602 at every size** (n = 5, 18, 100, 636 —
+identical to five digits). There is no critical radius, no size at which growth
+accelerates. With a scale-free growth law the mean is set by the
+nucleation-to-growth RATIO, and every lever above changes nucleation and growth
+together, leaving the ratio intact. The invariance across six experiments is a
+property of the formulation, not a coincidence.
+
+### 17.2 Correction
+
+§15/earlier sessions claimed the `E_m_v` invariance ruled out vacancy shrinkage.
+That reasoning was wrong: in a sink-limited steady state `c_v` scales inversely
+with `D_v`, so the FLUX can be invariant while mobility changes 100×. Shrinkage
+was never ruled out, and the constant 2.86 ratio is consistent with growth and
+shrink being locked together at all sizes.
+
+### 17.3 Conclusion
+
+⟨111⟩ loop size is a **stiff invariant at n ≈ 20**, insensitive to mobility,
+coalescence, cascade source, vacancy kinetics, character competition, and
+conversion thermodynamics. Closing `d_111` requires a size-dependent term in the
+⟨111⟩ growth law that does not exist in the present formulation — the same
+category of gap as the cavity channel, where the missing structure is the joint
+(m, ℓ) state. Both remaining discrepancies are now formulation gaps with
+specific diagnoses, not untested parameters. **The parameter search for `d_111`
+should stop.**
+
+### 17.4 Process note
+
+Provenance records `solver_sha256` but nothing compares it against source mtime
+or git SHA. A build-staleness check belongs at the design chokepoint beside the
+prior-box and dual-declaration audits; it would have caught §16 before the CPU
+was spent. Also: `pkill -f <pattern>` matches any process whose command line
+contains the pattern, including a monitor naming the same file — it killed one
+this session. And killing a run's parent orphans its workers: kill children
+first.

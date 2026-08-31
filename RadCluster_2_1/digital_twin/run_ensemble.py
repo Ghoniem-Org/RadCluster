@@ -336,6 +336,35 @@ def apply_theta(sim, spec: dict, row: dict, cond: dict):
     if cond.get("G_He_r") is not None:
         put("reactions", "G_He_r", float(cond["G_He_r"]))
 
+    # ½<111> LOOP COARSENING (2026-08-21).  reaction_rates.py:516-541 implements
+    # the missing loop-loop coalescence edge -- D_loop_coal continues the 1-D
+    # glide law past the i_mobile cutoff, so a loop that grows past it can still
+    # coalesce -- and rhs_bin_moment:1691 consumes it.  The whole chain is wired.
+    # But the switch reads `re.get('LOOP_COAL', 0)` from the workbook Reactions
+    # sheet, LOOP_COAL is absent from that sheet, from parameters_S4.json and
+    # from all 79 designs, so it has been 0 in EVERY run of this campaign.  The
+    # mechanism three sessions called structural had a switch nobody flipped.
+    # Exposed per-condition so the test costs no workbook edit.
+    if cond.get("LOOP_COAL") is not None:
+        put("reactions", "LOOP_COAL", float(cond["LOOP_COAL"]))
+    if cond.get("loop_coal_pref") is not None:
+        put("reactions", "loop_coal_pref", float(cond["loop_coal_pref"]))
+
+    # CASCADE CLUSTER-SIZE CUTOFFS (2026-08-30).  i_cascade / v_cascade are the
+    # largest SIA / vacancy clusters a cascade injects (workbook Production
+    # sheet: 20 and 10 for fission).  They are not design columns and have never
+    # been varied.  Exposed because the M1 ladder showed mean_n_111 SATURATES at
+    # ~21 across i_mobile = 5..100 and is identical with LOOP_COAL on or off at
+    # i_mobile >= 50 -- two independent ways of lifting the coalescence
+    # restriction converge on the same ceiling, so the limiter is neither of
+    # them.  n ~ 21 against i_cascade = 20 is the coincidence this tests.
+    if cond.get("i_cascade") is not None:
+        for _sh in ("production_fission", "production_fusion"):
+            put(_sh, "i_cascade", float(cond["i_cascade"]))
+    if cond.get("v_cascade") is not None:
+        for _sh in ("production_fission", "production_fusion"):
+            put(_sh, "v_cascade", float(cond["v_cascade"]))
+
     # CASCADE-SOURCE MIRROR (2026-08-21).  `cascade` selects TWO things at once:
     # the He coupling case (Case 1 per-size Q_m vs Case 2 scalar ell_bar) AND the
     # cascade source spectrum.  Those sheets differ in four parameters no design

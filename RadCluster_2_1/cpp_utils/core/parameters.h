@@ -118,6 +118,9 @@ struct Parameters {
     double A_sph_inv_O23;            // A_sph / Ω^{2/3}  [m^-2]
     double A_loop_inv_O23;           // A_loop / Ω^{2/3} [m^-2]  (loop geometry for n≥4)
     double Z_i_loop;                 // SIA dislocation bias at loops (Table 26, Eq. P3_i)
+    // Per-size loop bias Z_i^loop(n) (Wolfer).  Empty => use the scalar above,
+    // which reproduces every pre-2026-08-31 run bit-for-bit.
+    std::vector<double> Z_i_loop_arr;
     double Z_ii;                     // SIA-SIA coalescence bias factor (elastic interaction)
 
     // ── Scalar physics ────────────────────────────────────────────────────────
@@ -454,6 +457,16 @@ inline Parameters build_parameters(const std::map<std::string, double>& p) {
     P.A_sph_inv_O23  = optional_param(p, "A_sph_inv_O23", 0.0);
     P.A_loop_inv_O23 = optional_param(p, "A_loop_inv_O23", 0.0);
     P.Z_i_loop       = optional_param(p, "Z_i_loop", 1.05);
+    // Size-dependent bias array, only if the bridge shipped it.
+    {
+        P.Z_i_loop_arr.clear();
+        if (p.count("Z_i_loop_arr_0")) {
+            P.Z_i_loop_arr.assign(P.I, P.Z_i_loop);
+            for (int k = 0; k < P.I; ++k)
+                P.Z_i_loop_arr[k] = optional_param(
+                    p, "Z_i_loop_arr_" + std::to_string(k), P.Z_i_loop);
+        }
+    }
     P.Z_ii           = optional_param(p, "Z_ii", 1.0);
 
     // Scalar physics

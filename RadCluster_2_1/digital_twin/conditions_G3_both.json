@@ -1,0 +1,26 @@
+{
+ "_comment": [
+  "G3_both: author-directed <111> growth-law test (2026-08-31).",
+  "sia_D_flat=1 -> mobile clusters diffuse at the MONOMER value, removing the",
+  "1.8e6x cliff at n=4 and the D1D/rot_factor (2.7e6) suppression, so raising",
+  "i_mobile genuinely raises the interstitial flux.",
+  "Z_loop_model=1 -> Wolfer size-dependent loop bias replaces the constant",
+  "Z_i^loop; K_grow/K_shrink becomes n-dependent (4.88 at n=5 -> 3.18 at 636)",
+  "instead of 2.8602 at every size, so v(n) can have a zero crossing.",
+  "Refs: Wolfer & Ashkin JAP 47 (1976) 791; Wolfer, J.Comput.-Aided Mater.Des.",
+  "14 (2007) 403; Rauh & Simon pss(a) 46 (1978) 499; Golubov/Barashev/Stoller",
+  "CNM Vol.1 Ch.1.13 (2012).  Capture radii r_c^i=3b, r_c^v=1b are ORDER-OF-",
+  "MAGNITUDE defaults, not taken from a table -- replace from source before",
+  "publishing.  r_c^v=1b reproduces the legacy Z_v^loop=1.0 exactly."
+ ],
+ "S330": {
+  "label": "330 C 15 dpa G3_both",
+  "T_K": 603.15,
+  "cascade": "fission",
+  "G": 1e-07,
+  "rho_d": null,
+  "dose_dpa": 15.0,
+  "sia_D_flat": 1,
+  "Z_loop_model": 1
+ }
+}

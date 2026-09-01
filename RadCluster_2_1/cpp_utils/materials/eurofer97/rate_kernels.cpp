@@ -147,7 +147,10 @@ static inline double K_ii_coal(const Parameters& P, int n, int np) {
     if (n >= 4) {
         target_factor = std::sqrt(static_cast<double>(n));
         target_pref   = P.A_loop_inv_O23;
-        target_bias   = P.Z_i_loop;
+        // Size-dependent Wolfer bias when the bridge shipped the array; the
+        // scalar otherwise (bit-identical to every pre-2026-08-31 run).
+        target_bias   = (!P.Z_i_loop_arr.empty() && n >= 1 && n <= P.I)
+                        ? P.Z_i_loop_arr[n - 1] : P.Z_i_loop;
     } else {
         target_factor = std::cbrt(static_cast<double>(n));
         target_pref   = P.A_sph_inv_O23;
@@ -1769,7 +1772,10 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
                 const double Dsum = Da + Db;
                 if (Dsum < 1e-300) continue;
                 const double sf = std::sqrt(na) + std::sqrt(nb);
-                const double K  = P.Z_ii * P.Z_i_loop * P.A_loop_inv_O23 * sf * Dsum;
+                const int    ia = std::min(I, std::max(1, static_cast<int>(na + 0.5)));
+                const double Zt = (!P.Z_i_loop_arr.empty())
+                                  ? P.Z_i_loop_arr[ia - 1] : P.Z_i_loop;
+                const double K  = P.Z_ii * Zt * P.A_loop_inv_O23 * sf * Dsum;
                 // a == b: 1/2 K c^2 (each event consumes TWO of the same class)
                 const double r = (a == b) ? 0.5 * K * cls[a].cnt * cls[a].cnt
                                           : K * cls[a].cnt * cls[b].cnt;

@@ -339,6 +339,15 @@ def write_param_file(sim, solver_config, path, y0_override=None):
         lines.append(f"KII_{k}={v:.17e}")
     for k, v in enumerate(rr.K_SIA_shrink):
         lines.append(f"KIV_{k}={v:.17e}")
+    # Per-size SIA loop bias Z_i^loop(n).  K_ii_coal recomputes the SIA capture
+    # rate inside the C++ from a SCALAR P.Z_i_loop, so a size-dependent bias
+    # written only into K_SIA_grow (KII) would be silently ignored -- KII is
+    # consumed only for the top-bin term.  Shipping the array is what makes the
+    # Wolfer bias reach the growth path.  Absent -> C++ falls back to the scalar.
+    _zarr = getattr(rr, "Z_i_loop_arr", None)
+    if _zarr is not None:
+        for k, v in enumerate(_zarr):
+            lines.append(f"Z_i_loop_arr_{k}={v:.17e}")
     for k, v in enumerate(rr.G_SIA):
         lines.append(f"GII_{k}={v:.17e}")
     for k, v in enumerate(rr.k2_SIA):

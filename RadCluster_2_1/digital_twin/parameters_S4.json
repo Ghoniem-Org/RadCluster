@@ -438,6 +438,78 @@
    "hi": 2.8,
    "prior": "U",
    "note": "cascade VACANCY power-law exponent.  LOWER s_v shifts cascade vacancy production toward LARGER clusters at fixed f_cl_v -- i.e. more viable void NUCLEI rather than more monovacancies.  Added 2026-08-17 when the void deficit was re-diagnosed as nucleation-limited (density 600x low while size responds), not purely a vacancy-supply problem."
+  },
+  {
+   "id": 40,
+   "key": "Z_loop_model",
+   "sheet": "reactions",
+   "tier": 3,
+   "lo": 0,
+   "hi": 1,
+   "nominal": 0,
+   "prior": "INT",
+   "units": "-",
+   "note": "0 = constant Z_i^loop (legacy), 1 = Wolfer size-dependent bias."
+  },
+  {
+   "id": 41,
+   "key": "r_cap_i_b",
+   "sheet": "reactions",
+   "tier": 2,
+   "lo": 1.0,
+   "hi": 10.0,
+   "nominal": 3.0,
+   "prior": "U",
+   "units": "b",
+   "note": "SIA drift capture radius in units of b. Sets the STRENGTH of the size-dependent loop bias. Default 3.0 is an order-of-magnitude value, NOT from a table -- replace from Wolfer (2007) / CNM Ch.1.13."
+  },
+  {
+   "id": 42,
+   "key": "r_cap_v_b",
+   "sheet": "reactions",
+   "tier": 2,
+   "lo": 0.5,
+   "hi": 3.0,
+   "nominal": 1.0,
+   "prior": "U",
+   "units": "b",
+   "note": "vacancy drift capture radius; 1.0 reproduces the legacy Z_v^loop = 1.0 exactly."
+  },
+  {
+   "id": 43,
+   "key": "sia_D_flat",
+   "sheet": "reactions",
+   "tier": 3,
+   "lo": 0,
+   "hi": 1,
+   "nominal": 0,
+   "prior": "INT",
+   "units": "-",
+   "note": "1 = every mobile cluster diffuses at the monomer value."
+  },
+  {
+   "id": 44,
+   "key": "LOOP_COAL",
+   "sheet": "reactions",
+   "tier": 3,
+   "lo": 0,
+   "hi": 1,
+   "nominal": 0,
+   "prior": "INT",
+   "units": "-",
+   "note": "1/2<111> loop-loop coalescence past the i_mobile cutoff (D_loop_coal)."
+  },
+  {
+   "id": 45,
+   "key": "loop_coal_pref",
+   "sheet": "reactions",
+   "tier": 2,
+   "lo": 1.0,
+   "hi": 3000000.0,
+   "nominal": 1.0,
+   "prior": "LN",
+   "units": "-",
+   "note": "Capture-geometry prefactor for 1-D glide loop-loop encounters. D_loop_coal carries D1D/rot_factor with rot_factor = 1 + B_rot*L_hat^2 = 2.7e6 at L_hat=1016 -- the rate a SPHERICAL sink sees from a rotating 1-D glider. A coaxial loop is a planar trap, so the physical value is up to ~rot_factor. Earlier tests reached only 1e3."
   }
  ],
  "fixed": [

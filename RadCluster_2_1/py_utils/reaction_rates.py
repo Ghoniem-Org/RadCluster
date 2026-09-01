@@ -75,6 +75,9 @@ def _opt_pos_float(v):
     return f
 
 
+_Z_WOLFER_MAX = 5.0   # clamp: bias is unphysical below r_L ~ r_c/8
+
+
 def _num(v, default):
     """Workbook cell → float, falling back to ``default`` for a blank/absent
     cell.  Unlike :func:`_opt_pos_float` this accepts zero and negatives — it is
@@ -364,6 +367,85 @@ class ReactionRates:
         # Used in K_SIA_grow, K_SIA_loop, K_SIA_shrink, and k2_SIA below.
         rot_factor = 1.0 + B_rot * L_hat**2    # ≈ 6568 for B_rot=2.627, L_hat=50
 
+        # ══ AUTHOR-DIRECTED MODEL OPTIONS (2026-08-31) ═══════════════════════
+        # Both default OFF, so every prior run reproduces bit-for-bit.
+        #
+        # (1) sia_D_flat -- SIZE-INDEPENDENT CLUSTER DIFFUSIVITY.
+        #     Legacy: n<4 diffuse at Di_eff/n^s_3D, 4<=n<=i_mobile at
+        #     D1D(n)/rot_factor (a factor 2.7e6 suppression at L_hat=1016), and
+        #     n>i_mobile exactly 0.  Measured consequence: D falls 1.8e6x between
+        #     n=3 and n=4, so the coalescence sum over mobile projectiles --
+        #     which the kernel DOES carry, over np=1..i_mobile -- collapses to
+        #     the monomer term (n=4,5 contribute ~5e-7 of it).
+        #     The 1-D-glide isotropic-equivalent D1D/rot_factor is the rate a
+        #     randomly placed SPHERICAL sink sees from a rotating 1-D glider;
+        #     Heinisch (docs/Literature, "The effects of one-dimensional glide on
+        #     the reaction kinetics of interstitial clusters") shows 1-D migration
+        #     gives kinetics no scalar isotropic D reproduces, and Osetsky
+        #     ("Stability and mobility of defect clusters and dislocation loops in
+        #     metals") and Trinkaus, Singh & Foreman (1993) establish that
+        #     1/2<111> loops in bcc Fe stay glissile at ALL sizes with migration
+        #     barriers of a few tens of meV, essentially size-independent.
+        #     With sia_D_flat=1 every mobile cluster n <= i_mobile diffuses at the
+        #     monomer value Di_eff.  Raising i_mobile then genuinely raises the
+        #     net interstitial flux instead of adding near-immobile species.
+        sia_D_flat = int(_num(re.get('sia_D_flat', 0), 0))
+
+        # (2) Z_loop_model -- SIZE-DEPENDENT LOOP BIAS (Wolfer).
+        #     Legacy: Z_i^loop is a CONSTANT and Z_v^loop is hard-wired to 1.0,
+        #     so the drift bracket [Z_i^loop D_i c_1 - D_v c_v] carries no n and
+        #     v(n) = C n^(1/2) has no zero crossing -- no critical radius at any
+        #     size.  That is why <111> mean size was a stiff invariant at n~20
+        #     across six independent levers (report S17).
+        #
+        #     The bias originates in the elastic interaction between a point
+        #     defect's relaxation volume and the loop strain field; an SIA has a
+        #     much larger relaxation volume than a vacancy, hence Z_i > Z_v.  The
+        #     interaction defines a DRIFT CAPTURE RADIUS r_c^j (the distance at
+        #     which |E_int| = kT), and because that is a length, the capture
+        #     efficiency of a loop of radius r_L necessarily depends on r_L.
+        #
+        #     Form used (toroidal sink, log capture efficiency):
+        #         Z_j^loop(r_L) = ln(8 r_L / r_0) / ln(8 r_L / r_c^j)
+        #     -> 1 as r_c^j -> r_0 (neutral sink), and -> 1 as r_L -> infinity
+        #     (large loops approach the unbiased geometric limit).  r_0 is the
+        #     core radius, taken as b.
+        #
+        #     SOURCE.  Wolfer & Ashkin, "Diffusion of vacancies and interstitials
+        #     to edge dislocations", J. Appl. Phys. 47 (1976) 791; Wolfer, "The
+        #     Dislocation Bias", J. Computer-Aided Mater. Des. 14 (2007) 403-417;
+        #     loop/toroidal capture efficiency after Rauh & Simon, phys. stat.
+        #     sol. (a) 46 (1978) 499, in the form used by Golubov, Barashev &
+        #     Stoller, "Radiation Damage Theory", Comprehensive Nuclear Materials
+        #     Vol. 1 Ch. 1.13 (2012).
+        #
+        #     CAVEAT -- READ BEFORE TRUSTING THE NUMBERS.  None of these papers is
+        #     in docs/Literature.  The FUNCTIONAL FORM above is standard and I am
+        #     confident in it; the capture radii r_c^i / r_c^v are exposed as
+        #     parameters (in units of b) rather than hard-coded, with defaults
+        #     3.0 b and 1.0 b.  Those defaults are order-of-magnitude values, NOT
+        #     taken from a specific table, and should be replaced with values read
+        #     from Wolfer (2007) or CNM Ch. 1.13 before any published result.
+        #     r_c^v = 1.0 b reproduces the legacy Z_v^loop = 1.0 exactly.
+        Z_loop_model = int(_num(re.get('Z_loop_model', 0), 0))
+        r_cap_i_b    = float(_num(re.get('r_cap_i_b', 3.0), 3.0))
+        r_cap_v_b    = float(_num(re.get('r_cap_v_b', 1.0), 1.0))
+
+        def _r_loop(n):
+            """Radius of a prismatic loop of n SIAs: pi r^2 = n*Omega/b."""
+            return np.sqrt(max(n, 1.0) * Omega / (np.pi * b_111))
+
+        def _Z_wolfer(n, r_cap_b):
+            """Z_j^loop(r_L) = ln(8 r_L / r_0) / ln(8 r_L / r_c^j), r_0 = b."""
+            r_L = _r_loop(n)
+            r0  = b_111
+            rc  = r_cap_b * b_111
+            x0, xj = 8.0 * r_L / r0, 8.0 * r_L / rc
+            # Guard the singular/inverted branch at r_L <~ r_c/8.
+            if xj <= 1.05 or x0 <= 1.0:
+                return _Z_WOLFER_MAX
+            return float(min(np.log(x0) / np.log(xj), _Z_WOLFER_MAX))
+
         # SIA growth (absorbs mono-SIA): LOOP geometry for n ≥ 4 (Eq. P3_i)
         # SIA clusters of size n ≥ 4 form prismatic dislocation loops whose
         # capture cross-section scales as the circumference (∝ n^{1/2}), not
@@ -377,16 +459,22 @@ class ReactionRates:
         #   stress field of the prismatic loop (Eq. P3_i, Table 26).
         K_SIA_grow_arr = np.zeros(I)
         for ni in range(1, I + 1):
-            if ni < 4:
+            Zi_n = (_Z_wolfer(ni, r_cap_i_b) if Z_loop_model else Z_i_loop)
+            if ni < 4 and not sia_D_flat:
                 K_SIA_grow_arr[ni - 1] = K_sph(Di_eff, ni)
             elif ni <= i_mobile:
-                D_n_3D = D1D(ni) / rot_factor   # effective 3D via rotation correction
+                # sia_D_flat: every mobile cluster carries the MONOMER diffusivity,
+                # so the projectile term is Di_eff rather than D1D/rot_factor.
+                D_n_3D = Di_eff if sia_D_flat else D1D(ni) / rot_factor
                 K_SIA_grow_arr[ni - 1] = (A_loop * float(ni)**0.5
-                                           * Z_i_loop * (Di_eff + D_n_3D) * inv_Omega23)
+                                           * Zi_n * (Di_eff + D_n_3D) * inv_Omega23)
             else:
                 K_SIA_grow_arr[ni - 1] = (A_loop * float(ni)**0.5
-                                           * Z_i_loop * Di_eff * inv_Omega23)
+                                           * Zi_n * Di_eff * inv_Omega23)
         self.K_SIA_grow = K_SIA_grow_arr
+        self.Z_i_loop_arr = np.array(
+            [(_Z_wolfer(ni, r_cap_i_b) if Z_loop_model else Z_i_loop)
+             for ni in range(1, I + 1)])
 
         # SIA loop-capture rate  K_loop(n)  (Eq. 132) — same mobility logic
         K_SIA_loop_arr = np.zeros(I)
@@ -406,15 +494,19 @@ class ReactionRates:
         # vacancy capture by the loop is purely geometric (no elastic preference).
         K_SIA_shrink_arr = np.zeros(I)
         for ni in range(1, I + 1):
-            if ni < 4:
+            # Legacy Z_v^loop is hard-wired to 1.0.  Under Z_loop_model the
+            # vacancy side gets its OWN capture radius, so the drift bracket
+            # [Z_i D_i c_1 - Z_v D_v c_v] finally carries n on BOTH sides.
+            Zv_n = (_Z_wolfer(ni, r_cap_v_b) if Z_loop_model else 1.0)
+            if ni < 4 and not sia_D_flat:
                 K_SIA_shrink_arr[ni - 1] = K_sph(Dv_eff, ni)
             elif ni <= i_mobile:
-                D_n_3D = D1D(ni) / rot_factor
+                D_n_3D = Di_eff if sia_D_flat else D1D(ni) / rot_factor
                 K_SIA_shrink_arr[ni - 1] = (A_loop * float(ni)**0.5
-                                              * (Dv_eff + D_n_3D) * inv_Omega23)
+                                              * Zv_n * (Dv_eff + D_n_3D) * inv_Omega23)
             else:
                 K_SIA_shrink_arr[ni - 1] = (A_loop * float(ni)**0.5
-                                              * Dv_eff * inv_Omega23)
+                                              * Zv_n * Dv_eff * inv_Omega23)
         self.K_SIA_shrink = K_SIA_shrink_arr
 
         # Thermal SIA emission from loop (Eq. 138)
@@ -507,6 +599,8 @@ class ReactionRates:
         for n in range(1, I + 1):
             if n > i_mobile:
                 pass  # sessile: D = 0
+            elif sia_D_flat:
+                D_SIA_eff[n - 1] = Di_eff        # size-independent (author, 2026-08-31)
             elif n < 4:
                 D_SIA_eff[n - 1] = Di_cluster_3D(n)
             else:

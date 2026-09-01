@@ -350,6 +350,19 @@ def apply_theta(sim, spec: dict, row: dict, cond: dict):
     if cond.get("loop_coal_pref") is not None:
         put("reactions", "loop_coal_pref", float(cond["loop_coal_pref"]))
 
+    # <111> GROWTH-LAW OPTIONS (author-directed, 2026-08-31).  Both default off
+    # in reaction_rates.py, so omitting them reproduces every prior run exactly.
+    #   sia_D_flat    : mobile clusters diffuse at the MONOMER value (removes the
+    #                   1.8e6x cliff at n=4 and the D1D/rot_factor suppression),
+    #                   so raising i_mobile actually raises the interstitial flux.
+    #   Z_loop_model  : size-dependent Wolfer loop bias in place of the constant
+    #                   Z_i^loop, putting n inside the drift bracket so v(n) can
+    #                   have a zero crossing (a critical radius) at all.
+    #   r_cap_i_b / r_cap_v_b : drift capture radii in units of b.
+    for _k in ("sia_D_flat", "Z_loop_model", "r_cap_i_b", "r_cap_v_b"):
+        if cond.get(_k) is not None:
+            put("reactions", _k, float(cond[_k]))
+
     # CASCADE CLUSTER-SIZE CUTOFFS (2026-08-30).  i_cascade / v_cascade are the
     # largest SIA / vacancy clusters a cascade injects (workbook Production
     # sheet: 20 and 10 for fission).  They are not design columns and have never

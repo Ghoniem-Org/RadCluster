@@ -1,0 +1,102 @@
+{
+  "schema_version": "1",
+  "written_at_unix": 1788368971.659275,
+  "written_at": "2026-09-02 10:09:31",
+  "campaign": {
+    "design_file": "design/Q1_short.csv",
+    "design_sha256": null,
+    "tier": null,
+    "N": null,
+    "p": null,
+    "conditions": null,
+    "parameters": null,
+    "parameters_version": null,
+    "revision_pending": null,
+    "rows_total": null
+  },
+  "machine": {
+    "index": 0,
+    "of": 1,
+    "weights": null,
+    "rows_assigned": 1,
+    "machine_id": "MacBook-Pro.local",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "python": "3.11.7",
+    "cpu_count": 16,
+    "workers": 1,
+    "omp_num_threads": "8"
+  },
+  "code": {
+    "git_sha": "2198ae9281ed39cd5980a3325e2f1f68c47c1713",
+    "solver_sha256": "4a4bc32089de7dc8",
+    "solver_path": "/Users/ghoni/Documents/GitHub/RadCluster/RadCluster_2_1/build/solver",
+    "workbook_sha256": "79f700b60e1c6b1e"
+  },
+  "run_config": {
+    "I": 20000,
+    "V": 2000,
+    "dose": 2.0,
+    "equations": "bin_moment",
+    "rtol": 0.0001,
+    "atol": 1e-20,
+    "C_floor": 1e-25,
+    "solver_mode": "full_system",
+    "linsol": "gmres",
+    "preconditioner": "Woodbury",
+    "loop_conversion": 1,
+    "i_mobile_default": 40,
+    "v_mobile_default": 5,
+    "n_points": 40,
+    "timeout_s": 3600.0,
+    "lnl": 1,
+    "i_discrete": 40,
+    "v_discrete": 5,
+    "I_bin": 14,
+    "V_bin": 16,
+    "shape_function": "linear"
+  },
+  "run_cfg_sha": "d15e65f5fe4ff2c1",
+  "conditions_file": "conditions_Q1.json",
+  "conditions": {
+    "_comment": [
+      "Q1: short trend run. Same 330 C / G=1e-7 condition as S330, but",
+      "carried to 2 dpa instead of 15 so it finishes in minutes."
+    ],
+    "S330": {
+      "label": "330 C, G=1e-7, 2 dpa (SHORT trend run)",
+      "T_K": 603.15,
+      "cascade": "fission",
+      "G": 1e-07,
+      "rho_d": null,
+      "dose_dpa": 2.0
+    }
+  },
+  "rows": {
+    "assigned": 1,
+    "completed": 1,
+    "admissible": 1,
+    "inadmissible": 0,
+    "failed": 0,
+    "not_started": 0
+  },
+  "timing": {
+    "session_wall_s": 203.5,
+    "row_wall_mean_s": 203.1,
+    "row_wall_median_s": 203.1,
+    "row_wall_p90_s": 203.1,
+    "core_hours": 0.056416666666666664
+  },
+  "stopped": null,
+  "admissibility_rule": {
+    "pile_tol": 0.05,
+    "occ_tol": 0.1,
+    "delta_FP_tol": 0.01,
+    "pile_top_frac": 0.02,
+    "axes": [
+      "sia_111",
+      "sia_100",
+      "vacancy"
+    ],
+    "note": "delta_FP is blind to SIA-axis truncation (the <100> pile-up held delta_FP at 1e-8 while 96% of content sat at n=I), so grid adequacy is judged by pile/occupancy. It is NOT blind to the VACANCY axis -- delta_FP rests on the swelling identity S = S_I + Delta J^d and S is the vacancy inventory. The vacancy axis was unchecked until 2026-08-02; at the check_machine probe (V=120) mean_n_v moved 18.7->136 and swelling 58x on going to V=240."
+  }
+}

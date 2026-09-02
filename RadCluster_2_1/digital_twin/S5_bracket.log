@@ -1,0 +1,11 @@
+  row budget 10800 s, OMP_NUM_THREADS=1
+  !! PRIOR-BOX VIOLATIONS in S5_bracket.csv: 2 parameter(s)
+     n_ref_conv: 30  outside [50, 5000]  (8 row(s))
+     phi_max_junc: 0.05  outside [0.1, 1]  (8 row(s))
+     These rows are RUN, but a result that depends on them is not a calibration inside the declared prior.
+  !! DUAL-DECLARED (sampled AND fixed), design carries neither column: 1 parameter(s)
+     T_star_conv_C: held at FIXED 450, declared prior [200, 450] -- NOT calibrated in this run.
+machine 0/1  rows 8 (0 done, 8 to run)  workers 8
+  provenance {"git_sha": "4bde3bf117812657652b6f286c69e95a6e1e96f3", "machine_id": "MacBook-Pro.local", "solver_sha256": "4a4bc32089de7dc8", "workbook_sha256": "4a217b516d9f5fab", "design_sha256": "", "run_cfg_sha": "fcbdf204850cfa97", "timeout_s": 10800.0, "stop_after_s": 0.0, "workers": 8, "omp_threads": 1, "weights_sha": "", "weights_map_sha": "6634b0b460b5c26f", "of": 1, "equations": "bin_moment", "prior_violations": {"phi_max_junc": {"box": [0.1, 1.0], "values": [0.05], "rows": [8700, 8701, 8702, 8703, 8704, 8705, 8706, 8707]}, "n_ref_conv": {"box": [50.0, 5000.0], "values": [30.0], "rows": [8700, 8701, 8702, 8703, 8704, 8705, 8706, 8707]}}, "dual_declared": {"T_star_conv_C": {"fixed_value": 450, "in_design": false, "in_force": "fixed"}, "n_ref_conv": {"fixed_value": 50, "in_design": true, "in_force": "design"}}, "python": "3.11.7"}
+  row   8702 S330  S  ok   d100= 15.96 N100=7.226e+20 pile=0.0 dFP= 7.3e-03 7603s
+  row   8700 S330  S  ok   d100=  5.65 N100=5.754e+21 pile=0.0 dFP= 5.0e-02 34686s

@@ -1,0 +1,4 @@
+{"_comment":["Q1: short trend run. Same 330 C / G=1e-7 condition as S330, but",
+             "carried to 2 dpa instead of 15 so it finishes in minutes."],
+ "S330":{"label":"330 C, G=1e-7, 2 dpa (SHORT trend run)","T_K":603.15,
+         "cascade":"fission","G":1e-07,"rho_d":null,"dose_dpa":2.0}}

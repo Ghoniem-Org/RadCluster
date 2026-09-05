@@ -1,0 +1,15 @@
+  row budget 72000 s, OMP_NUM_THREADS=2
+  !! DUAL-DECLARED (sampled AND fixed), design carries neither column: 2 parameter(s)
+     T_star_conv_C: held at FIXED 450, declared prior [200, 450] -- NOT calibrated in this run.
+     n_ref_conv: held at FIXED 50, declared prior [50, 5000] -- NOT calibrated in this run.
+machine 0/1  rows 6 (0 done, 6 to run)  workers 6
+  provenance {"git_sha": "f281fcf6af2a4e376eaab9d237c7fbb7a77db364", "machine_id": "MacBook-Pro.local", "solver_sha256": "87c5a71a21087cd3", "workbook_sha256": "79f700b60e1c6b1e", "design_sha256": "", "run_cfg_sha": "3cad7ae524c98421", "timeout_s": 72000.0, "stop_after_s": 0.0, "workers": 6, "omp_threads": 2, "weights_sha": "", "weights_map_sha": "6634b0b460b5c26f", "of": 1, "equations": "bin_moment", "prior_violations": null, "dual_declared": {"T_star_conv_C": {"fixed_value": 450, "in_design": false, "in_force": "fixed"}, "n_ref_conv": {"fixed_value": 50, "in_design": false, "in_force": "fixed"}}, "python": "3.11.7"}
+  row   9405 S330  S  ok   d100=  1.79 N100=8.204e+17 pile=0.0 dFP= 8.2e-02 761s
+  row   9402 S330  S  ok   d100=  1.79 N100=8.202e+17 pile=0.0 dFP= 8.2e-02 810s
+  row   9400 S330  S  ok   d100=  6.67 N100=2.181e+21 pile=0.0 dFP= 4.2e-02 1067s
+  row   9401 S330  S  ok   d100=  3.56 N100=6.520e+20 pile=0.0 dFP= 5.6e-02 1343s
+  row   9403 S330  S  ok   d100=  6.67 N100=2.181e+21 pile=0.0 dFP= 4.2e-02 1771s
+  row   9404 S330  S  ok   d100=  3.56 N100=6.520e+20 pile=0.0 dFP= 5.6e-02 2259s
+
+done in 2259s: 6 admissible, 0 inadmissible, 0 failed -> results/B4_n100.jsonl
+  manifest -> B4_n100.manifest.json

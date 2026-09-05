@@ -1,0 +1,14 @@
+  row budget 43200 s, OMP_NUM_THREADS=1
+machine 0/1  rows 13 (0 done, 13 to run)  workers 14
+  provenance {"git_sha": "6438d2fce6d6362f4ed48d8cd148dd13ed201038", "machine_id": "Mac.san.rr.com", "solver_sha256": "00c68d242b46e8b9", "workbook_sha256": "4a217b516d9f5fab", "design_sha256": "", "run_cfg_sha": "a02ae049dea86285", "timeout_s": 43200.0, "stop_after_s": 0.0, "workers": 14, "omp_threads": 1, "weights_sha": "", "weights_map_sha": "6634b0b460b5c26f", "of": 1, "equations": "bin_moment", "python": "3.11.7"}
+  row   5612 S330  S  ok   d100=  8.96 N100=5.717e+21 pile=0.0 dFP= 8.0e-02 5067s
+  row   5602 S330  S  ok   d100=  8.97 N100=5.738e+21 pile=0.0 dFP= 8.0e-02 5638s
+  row   5611 S330  S  ok   d100= 11.62 N100=9.567e+21 pile=0.0 dFP= 1.5e-01 5668s
+  row   5603 S330  S  ok   d100=  8.97 N100=5.738e+21 pile=0.0 dFP= 8.0e-02 5721s
+  row   5609 S330  S  ok   d100=  6.01 N100=3.237e+21 pile=0.0 dFP= 9.2e-02 5883s
+  row   5608 S330  S  ok   d100=  8.25 N100=5.999e+21 pile=0.0 dFP= 1.8e-01 6382s
+  row   5604 S330  S  ok   d100=  6.76 N100=4.081e+21 pile=0.0 dFP= 1.2e-01 6721s
+  row   5606 S330  S  ok   d100=  7.55 N100=5.158e+21 pile=0.0 dFP= 1.7e-01 6968s
+  row   5600 S330  S  ok   d100=  6.79 N100=8.398e+21 pile=0.0 dFP= 1.8e-01 6993s
+/opt/anaconda3/lib/python3.11/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 5 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '

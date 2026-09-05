@@ -1,0 +1,12 @@
+  row budget 21600 s, OMP_NUM_THREADS=1
+  !! PRIOR-BOX VIOLATIONS in S8_cavsize.csv: 3 parameter(s)
+     gamma_s: 2.8, 3.4  outside [1.7, 2.3]  (4 row(s))
+     n_ref_conv: 30  outside [50, 5000]  (6 row(s))
+     phi_max_junc: 0.05  outside [0.1, 1]  (3 row(s))
+     These rows are RUN, but a result that depends on them is not a calibration inside the declared prior.
+  !! DUAL-DECLARED (sampled AND fixed), design carries neither column: 1 parameter(s)
+     T_star_conv_C: held at FIXED 450, declared prior [200, 450] -- NOT calibrated in this run.
+machine 0/1  rows 6 (0 done, 6 to run)  workers 4
+  provenance {"git_sha": "542f1acdb0480e209d34d7e56b23d49d559a02cd", "machine_id": "MacBook-Pro.local", "solver_sha256": "4a4bc32089de7dc8", "workbook_sha256": "4a217b516d9f5fab", "design_sha256": "", "run_cfg_sha": "c3e58ed3bbf16869", "timeout_s": 21600.0, "stop_after_s": 0.0, "workers": 4, "omp_threads": 1, "weights_sha": "", "weights_map_sha": "6634b0b460b5c26f", "of": 1, "equations": "bin_moment", "prior_violations": {"phi_max_junc": {"box": [0.1, 1.0], "values": [0.05], "rows": [9000, 9002, 9004]}, "n_ref_conv": {"box": [50.0, 5000.0], "values": [30.0], "rows": [9000, 9001, 9002, 9003, 9004, 9005]}, "gamma_s": {"box": [1.7, 2.3], "values": [2.8, 3.4], "rows": [9002, 9003, 9004, 9005]}}, "dual_declared": {"T_star_conv_C": {"fixed_value": 450, "in_design": false, "in_force": "fixed"}, "n_ref_conv": {"fixed_value": 50, "in_design": true, "in_force": "design"}}, "python": "3.11.7"}
+/opt/anaconda3/lib/python3.11/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 5 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '

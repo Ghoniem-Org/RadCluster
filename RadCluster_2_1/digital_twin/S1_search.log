@@ -1,0 +1,30 @@
+  row budget 10800 s, OMP_NUM_THREADS=1
+  !! PRIOR-BOX VIOLATIONS in S1_search.csv: 1 parameter(s)
+     phi_max_junc: 0.05  outside [0.1, 1]  (16 row(s))
+     These rows are RUN, but a result that depends on them is not a calibration inside the declared prior.
+  !! DUAL-DECLARED (sampled AND fixed), design carries neither column: 2 parameter(s)
+     T_star_conv_C: held at FIXED 450, declared prior [200, 450] -- NOT calibrated in this run.
+     n_ref_conv: held at FIXED 50, declared prior [50, 5000] -- NOT calibrated in this run.
+machine 0/1  rows 16 (0 done, 16 to run)  workers 8
+  provenance {"git_sha": "7350748f336382b3cd1ed15208f32cc766bb7de6", "machine_id": "MacBook-Pro.local", "solver_sha256": "4a4bc32089de7dc8", "workbook_sha256": "4a217b516d9f5fab", "design_sha256": "", "run_cfg_sha": "fcbdf204850cfa97", "timeout_s": 10800.0, "stop_after_s": 0.0, "workers": 8, "omp_threads": 1, "weights_sha": "", "weights_map_sha": "6634b0b460b5c26f", "of": 1, "equations": "bin_moment", "prior_violations": {"phi_max_junc": {"box": [0.1, 1.0], "values": [0.05], "rows": [8300, 8301, 8302, 8303, 8304, 8305, 8306, 8307, 8308, 8309, 8310, 8311, 8312, 8313, 8314, 8315]}}, "dual_declared": {"T_star_conv_C": {"fixed_value": 450, "in_design": false, "in_force": "fixed"}, "n_ref_conv": {"fixed_value": 50, "in_design": false, "in_force": "fixed"}}, "python": "3.11.7"}
+  row   8306 S330  S  ok   d100=  1.09 N100=8.316e+18 pile=0.0 dFP= 3.6e-01 227s
+  row   8304 S330  S  ok   d100=  1.69 N100=2.765e+20 pile=0.0 dFP= 3.6e-01 244s
+  row   8302 S330  S  ok   d100=  1.32 N100=1.377e+20 pile=0.0 dFP= 4.7e-01 322s
+  row   8308 S330  S  ok   d100=  1.15 N100=1.245e+20 pile=0.0 dFP= 6.7e-01 278s
+  row   8300 S330  S  ok   d100= 10.25 N100=6.985e+22 pile=0.0 dFP= 5.1e-01 686s
+
+  SIGTERM received -- not submitting further rows; in-flight rows will finish and be written. Re-run to resume. Send SIGTERM again to abort immediately.
+
+Traceback (most recent call last):
+  File "/Users/ghoni/Documents/GitHub/RadCluster/RadCluster_2_1/digital_twin/run_ensemble.py", line 2053, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/Users/ghoni/Documents/GitHub/RadCluster/RadCluster_2_1/digital_twin/run_ensemble.py", line 1910, in main
+    rec = fut.result()
+          ^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.11/concurrent/futures/_base.py", line 449, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.11/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+concurrent.futures.process.BrokenProcessPool: A process in the process pool was terminated abruptly while the future was running or pending.

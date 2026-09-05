@@ -1,0 +1,18 @@
+  row budget 21600 s, OMP_NUM_THREADS=1
+  !! PRIOR-BOX VIOLATIONS in M3_absgate.csv: 1 parameter(s)
+     phi_max_junc: 0.05  outside [0.1, 1]  (6 row(s))
+     These rows are RUN, but a result that depends on them is not a calibration inside the declared prior.
+  !! DUAL-DECLARED (sampled AND fixed), design carries neither column: 2 parameter(s)
+     T_star_conv_C: held at FIXED 450, declared prior [200, 450] -- NOT calibrated in this run.
+     n_ref_conv: held at FIXED 50, declared prior [50, 5000] -- NOT calibrated in this run.
+machine 0/1  rows 6 (0 done, 6 to run)  workers 6
+  provenance {"git_sha": "0d1a90f2557114c50c0fe6d8b0d2ac20a9269f8f", "machine_id": "Mac.san.rr.com", "solver_sha256": "276bb0fd522728a2", "workbook_sha256": "4a217b516d9f5fab", "design_sha256": "", "run_cfg_sha": "fcbdf204850cfa97", "timeout_s": 21600.0, "stop_after_s": 0.0, "workers": 6, "omp_threads": 1, "weights_sha": "", "weights_map_sha": "6634b0b460b5c26f", "of": 1, "equations": "bin_moment", "prior_violations": {"phi_max_junc": {"box": [0.1, 1.0], "values": [0.05], "rows": [8100, 8101, 8102, 8103, 8104, 8105]}}, "dual_declared": {"T_star_conv_C": {"fixed_value": 450, "in_design": false, "in_force": "fixed"}, "n_ref_conv": {"fixed_value": 50, "in_design": false, "in_force": "fixed"}}, "python": "3.11.7"}
+  row   8103 S330  S  ok   d100=  1.34 N100=2.496e+18 pile=0.0 dFP= 7.4e-02 225s
+  row   8105 S330  S  ok   d100=  1.06 N100=6.631e+17 pile=0.0 dFP= 7.4e-02 278s
+  row   8104 S330  S  ok   d100=  1.10 N100=8.573e+17 pile=0.0 dFP= 7.4e-02 302s
+  row   8102 S330  S  ok   d100=  2.93 N100=2.431e+21 pile=0.0 dFP= 8.7e-02 391s
+  row   8101 S330  S  ok   d100=  4.56 N100=7.875e+21 pile=0.0 dFP= 1.4e-01 629s
+  row   8100 S330  S  ok   d100=  6.68 N100=7.598e+21 pile=0.0 dFP= 1.8e-01 844s
+
+done in 845s: 6 admissible, 0 inadmissible, 0 failed -> results/M3_absgate.jsonl
+  manifest -> M3_absgate.manifest.json

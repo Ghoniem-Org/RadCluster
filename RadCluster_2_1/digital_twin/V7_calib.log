@@ -1,0 +1,19 @@
+  row budget 43200 s, OMP_NUM_THREADS=1
+machine 0/1  rows 13 (0 done, 13 to run)  workers 14
+  provenance {"git_sha": "af385d758df4e70416833fbe10aa5ab4d4209109", "machine_id": "Mac.san.rr.com", "solver_sha256": "00c68d242b46e8b9", "workbook_sha256": "4a217b516d9f5fab", "design_sha256": "", "run_cfg_sha": "23f858f9f6b5e456", "timeout_s": 43200.0, "stop_after_s": 0.0, "workers": 14, "omp_threads": 1, "weights_sha": "", "weights_map_sha": "6634b0b460b5c26f", "of": 1, "equations": "bin_moment", "python": "3.11.7"}
+  row   5712 S330  S  ok   d100=  8.96 N100=5.737e+21 pile=0.0 dFP= 8.0e-02 1479s
+  row   5711 S330  S  ok   d100=  8.97 N100=5.736e+21 pile=0.0 dFP= 8.0e-02 1615s
+  row   5710 S330  S  ok   d100=  8.97 N100=5.736e+21 pile=0.0 dFP= 8.0e-02 1835s
+  row   5700 S330  S  ok   d100=  6.79 N100=8.468e+21 pile=0.0 dFP= 1.8e-01 1856s
+  row   5707 S330  S  ok   d100=  9.26 N100=7.067e+21 pile=0.0 dFP= 9.2e-02 2065s
+  row   5701 S330  S  ok   d100= 55.73 N100=2.356e+22 pile=0.8362295376429687 dFP= 4.2e-01 2285s
+  row   5704 S330  S  ok   d100= 18.41 N100=4.481e+22 pile=0.0 dFP= 3.5e-01 2335s
+  row   5703 S330  S  ok   d100= 48.78 N100=6.196e+22 pile=0.6986349426825816 dFP= 2.0e-01 2628s
+  row   5709 S330  S  ok   d100=  9.76 N100=8.685e+21 pile=0.0 dFP= 9.1e-02 3127s
+  row   5706 S330  S  ok   d100= 30.14 N100=7.653e+22 pile=0.0 dFP= 3.7e-01 3127s
+  row   5705 S330  S  ok   d100= 19.16 N100=4.842e+22 pile=0.0 dFP= 3.7e-01 3492s
+  row   5702 S330  S  ok   d100= 53.29 N100=3.554e+22 pile=0.791788477203264 dFP= 1.8e-01 3757s
+  row   5708 S330  S  ok   d100=  9.25 N100=7.099e+21 pile=0.0 dFP= 9.2e-02 4318s
+
+done in 4319s: 13 admissible, 0 inadmissible, 0 failed -> results/V7_calib_machine0.jsonl
+  manifest -> V7_calib_machine0.manifest.json

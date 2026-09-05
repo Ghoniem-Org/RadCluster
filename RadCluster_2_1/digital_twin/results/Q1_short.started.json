@@ -1,0 +1,10 @@
+{
+  "unix": 1788368768.184225,
+  "at": "2026-09-02 10:06:08",
+  "machine": 0,
+  "workers": 1,
+  "rows_assigned": 1,
+  "rows_already_done": 0,
+  "rows_to_run": 1,
+  "machine_id": "MacBook-Pro.local"
+}

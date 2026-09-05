@@ -1,0 +1,9 @@
+  row budget 43200 s, OMP_NUM_THREADS=1
+machine 0/1  rows 13 (0 done, 13 to run)  workers 14
+  provenance {"git_sha": "d7be1258ada93e9c3b4a322191907cb8e793674b", "machine_id": "MacBook-Pro.local", "solver_sha256": "00c68d242b46e8b9", "workbook_sha256": "4a217b516d9f5fab", "design_sha256": "", "run_cfg_sha": "9b1c6dca1f56431a", "timeout_s": 43200.0, "stop_after_s": 0.0, "workers": 14, "omp_threads": 1, "weights_sha": "", "weights_map_sha": "6634b0b460b5c26f", "of": 1, "equations": "bin_moment", "python": "3.11.7"}
+  row   5511 S330  S  ok   d100= 11.62 N100=9.535e+21 pile=0.0 dFP= 1.5e-01 5048s
+  row   5510 S330  S  ok   d100=  6.03 N100=3.209e+21 pile=0.0 dFP= 9.2e-02 5108s
+  row   5506 S330  S  ok   d100=  7.55 N100=5.104e+21 pile=0.0 dFP= 1.7e-01 5591s
+  row   5500 S330  S  ok   d100=  6.79 N100=8.284e+21 pile=0.0 dFP= 1.8e-01 5696s
+/opt/anaconda3/lib/python3.11/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 5 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '

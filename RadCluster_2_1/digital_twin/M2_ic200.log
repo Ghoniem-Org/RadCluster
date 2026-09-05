@@ -1,0 +1,13 @@
+  row budget 21600 s, OMP_NUM_THREADS=2
+  !! PRIOR-BOX VIOLATIONS in M2_icascade.csv: 1 parameter(s)
+     phi_max_junc: 0.05  outside [0.1, 1]  (1 row(s))
+     These rows are RUN, but a result that depends on them is not a calibration inside the declared prior.
+  !! DUAL-DECLARED (sampled AND fixed), design carries neither column: 2 parameter(s)
+     T_star_conv_C: held at FIXED 450, declared prior [200, 450] -- NOT calibrated in this run.
+     n_ref_conv: held at FIXED 50, declared prior [50, 5000] -- NOT calibrated in this run.
+machine 0/1  rows 1 (0 done, 1 to run)  workers 1
+  provenance {"git_sha": "0d1a90f2557114c50c0fe6d8b0d2ac20a9269f8f", "machine_id": "Mac.san.rr.com", "solver_sha256": "276bb0fd522728a2", "workbook_sha256": "4a217b516d9f5fab", "design_sha256": "", "run_cfg_sha": "fcbdf204850cfa97", "timeout_s": 21600.0, "stop_after_s": 0.0, "workers": 1, "omp_threads": 2, "weights_sha": "", "weights_map_sha": "6634b0b460b5c26f", "of": 1, "equations": "bin_moment", "prior_violations": {"phi_max_junc": {"box": [0.1, 1.0], "values": [0.05], "rows": [8000]}}, "dual_declared": {"T_star_conv_C": {"fixed_value": 450, "in_design": false, "in_force": "fixed"}, "n_ref_conv": {"fixed_value": 50, "in_design": false, "in_force": "fixed"}}, "python": "3.11.7"}
+  row   8000 S330  S  ok   d100= 18.41 N100=1.358e+23 pile=0.0 dFP= 4.1e-01 830s
+
+done in 831s: 1 admissible, 0 inadmissible, 0 failed -> results/M2_ic200.jsonl
+  manifest -> M2_ic200.manifest.json

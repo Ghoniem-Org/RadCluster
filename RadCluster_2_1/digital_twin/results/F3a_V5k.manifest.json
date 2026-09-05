@@ -1,0 +1,110 @@
+{
+  "schema_version": "1",
+  "written_at_unix": 1787880791.6831841,
+  "written_at": "2026-08-27 18:33:11",
+  "campaign": {
+    "design_file": "design/L1_visible.csv",
+    "design_sha256": null,
+    "tier": null,
+    "N": null,
+    "p": null,
+    "conditions": null,
+    "parameters": null,
+    "parameters_version": null,
+    "revision_pending": null,
+    "rows_total": null
+  },
+  "machine": {
+    "index": 0,
+    "of": 1,
+    "weights": null,
+    "rows_assigned": 3,
+    "machine_id": "MacBook-Pro.local",
+    "platform": "macOS-26.5.1-arm64-arm-64bit",
+    "python": "3.11.7",
+    "cpu_count": 16,
+    "workers": 3,
+    "omp_num_threads": "1"
+  },
+  "code": {
+    "git_sha": "41814882d42ac84c7188fa46dce9e6aaf24e9d72",
+    "solver_sha256": "00c68d242b46e8b9",
+    "solver_path": "/Users/ghoni/Documents/GitHub/RadCluster/RadCluster_2_1/build/solver",
+    "workbook_sha256": "4a217b516d9f5fab"
+  },
+  "run_config": {
+    "I": 80000,
+    "V": 5000,
+    "dose": 15.0,
+    "equations": "bin_moment",
+    "rtol": 1e-05,
+    "atol": 1e-20,
+    "C_floor": 1e-25,
+    "solver_mode": "full_system",
+    "linsol": "gmres",
+    "preconditioner": "Woodbury",
+    "loop_conversion": 1,
+    "i_mobile_default": 40,
+    "v_mobile_default": 5,
+    "n_points": 40,
+    "timeout_s": 21600.0,
+    "lnl": 1,
+    "i_discrete": 100,
+    "v_discrete": 5,
+    "I_bin": 37,
+    "V_bin": 41,
+    "shape_function": "linear"
+  },
+  "run_cfg_sha": "f01d57541f140b96",
+  "conditions_file": "conditions_F3.json",
+  "conditions": {
+    "_comment": [
+      "F3: Case 1 (per-size Q_m helium) with the FISSION cascade source held",
+      "by mirror_production.  F1/F2 could not answer the question they were built",
+      "for: `cascade` also swaps the cascade source spectrum, and the fusion sheet",
+      "carries v_cascade 10 -> 20 and i_cascade 20 -> 50 -- parameters no design",
+      "column controls.  v_cascade is a direct void-nucleation lever, and doubling",
+      "it raised cavity density 100-1000x, swamping the He formulation entirely.",
+      "",
+      "Here the ONLY difference from the S8 baseline is the He formulation (FISSION He rate (1 appm/dpa, unchanged)).",
+      "This is a diagnostic, not a fusion prediction."
+    ],
+    "S330": {
+      "label": "330 C, 15 dpa, Case 1 per-size He, fission cascade source, FISSION He rate (1 appm/dpa, unchanged)",
+      "T_K": 603.15,
+      "cascade": "fusion",
+      "G": 1e-07,
+      "rho_d": null,
+      "dose_dpa": 15.0,
+      "mirror_production": true
+    }
+  },
+  "rows": {
+    "assigned": 3,
+    "completed": 3,
+    "admissible": 3,
+    "inadmissible": 0,
+    "failed": 0,
+    "not_started": 0
+  },
+  "timing": {
+    "session_wall_s": 6991.7,
+    "row_wall_mean_s": 4906.3,
+    "row_wall_median_s": 4843.0,
+    "row_wall_p90_s": 6561.5599999999995,
+    "core_hours": 4.088583333333333
+  },
+  "stopped": null,
+  "admissibility_rule": {
+    "pile_tol": 0.05,
+    "occ_tol": 0.1,
+    "delta_FP_tol": 0.01,
+    "pile_top_frac": 0.02,
+    "axes": [
+      "sia_111",
+      "sia_100",
+      "vacancy"
+    ],
+    "note": "delta_FP is blind to SIA-axis truncation (the <100> pile-up held delta_FP at 1e-8 while 96% of content sat at n=I), so grid adequacy is judged by pile/occupancy. It is NOT blind to the VACANCY axis -- delta_FP rests on the swelling identity S = S_I + Delta J^d and S is the vacancy inventory. The vacancy axis was unchecked until 2026-08-02; at the check_machine probe (V=120) mean_n_v moved 18.7->136 and swelling 58x on going to V=240."
+  }
+}

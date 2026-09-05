@@ -1,0 +1,14 @@
+  row budget 72000 s, OMP_NUM_THREADS=1
+machine 0/1  rows 12 (0 done, 12 to run)  workers 14
+  provenance {"git_sha": "859e6cc1b4ea11ec7628039d695c1fc5e79ce8fc", "machine_id": "Mac.san.rr.com", "solver_sha256": "00c68d242b46e8b9", "workbook_sha256": "4a217b516d9f5fab", "design_sha256": "", "run_cfg_sha": "7f4cd1c59f2c81c7", "timeout_s": 72000.0, "stop_after_s": 0.0, "workers": 14, "omp_threads": 1, "weights_sha": "", "weights_map_sha": "6634b0b460b5c26f", "of": 1, "equations": "bin_moment", "python": "3.11.7"}
+  row   4503 S330  S  ok   d100=  5.46 N100=3.324e+22 pile=0.0 dFP= 2.4e-01 2105s
+  row   4511 S330  S  ok   d100=  4.86 N100=6.160e+22 pile=0.0 dFP= 3.5e-01 3491s
+  row   4501 S330  S  ok   d100= 60.06 N100=8.087e+21 pile=0.8740725407424215 dFP= 1.5e-01 5211s
+  row   4507 S330  S  ok   d100=  5.11 N100=4.654e+22 pile=0.0 dFP= 3.0e-01 5263s
+  row   4505 S330  S  ok   d100= 61.52 N100=1.394e+22 pile=0.917765894695072 dFP= 2.6e-01 19315s
+  row   4509 S330  S  ok   d100= 61.60 N100=1.946e+22 pile=0.9216982183659091 dFP= 3.8e-01 19818s
+
+  SIGTERM received -- not submitting further rows; in-flight rows will finish and be written. Re-run to resume. Send SIGTERM again to abort immediately.
+
+/opt/anaconda3/lib/python3.11/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 5 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '

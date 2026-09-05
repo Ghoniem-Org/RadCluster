@@ -504,7 +504,7 @@ the underlying representation is coarse-grained.
 | Mode | Description |
 |---|---|
 | `full_system` | Full system, SUNDIALS CVODE BDF, dense/band/GMRES linear solver. |
-| `active_window` | Two independent sliding windows (SIA + VAC) + OpenMP-parallel RHS. Thread count is auto-picked from `N_eq` (overridable via `OMP_NUM_THREADS`); when OpenMP is unavailable or the auto-pick lands on 1, the same code path runs serial transparently. |
+| `active_window` | Two independent sliding windows (SIA + VAC) + OpenMP-parallel RHS. Thread count is auto-picked from `max(N_eq, I+V)` (overridable via `OMP_NUM_THREADS`); when OpenMP is unavailable or the auto-pick lands on 1, the same code path runs serial transparently. The metric is the **RHS sweep length**, not the ODE count: `bin_moment` integrates O(100) unknowns while still sweeping the reconstructed per-size spectra `c_n[I]` and `c_v[V]`, so keying off `N_eq` alone left large bin-moment runs single-threaded. On Apple silicon the pick is capped at the performance-core count — the parallel regions are barrier-synchronised, so a thread on an efficiency core stalls every join. |
 
 Legacy aliases `cpp_full` → `full_system` and `sliding_OpenMP` → `active_window` are accepted silently for back-compatibility with older configs and saved output directories.
 

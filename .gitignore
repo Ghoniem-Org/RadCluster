@@ -44,3 +44,7 @@ RadCluster_2_1/digital_twin/results/*.pid
 # machine that pulled it halted at startup, because run_ensemble checks
 # STOP_FILE.exists() inside the submission loop. Never version this.
 RadCluster_2_1/digital_twin/CAMPAIGN_STOP
+
+# Per-machine "already tallied" sentinels (zero-byte, written by ad-hoc
+# tally loops, referenced by nothing that is versioned). Local like *.pid.
+RadCluster_2_1/digital_twin/results/*.seen

@@ -44,6 +44,21 @@ struct UserData {
     bool window_active;
 };
 
+// ── Startup: size-only kernel tables ─────────────────────────────────────────
+
+/**
+ * Populate the y-independent size lookup tables in P (cbrt/sqrt/pow23/xi, the
+ * fused Marian junction yield, and the per-bin Σn / Σn² reconstruction
+ * moments).  Must be called ONCE after build_parameters() and BEFORE the first
+ * RHS evaluation.  Idempotent.
+ *
+ * Purely a cost optimization: every entry is produced by the same std:: call
+ * the kernel made inline before, and the kernel expressions are otherwise
+ * unchanged, so the RHS remains bit-identical.  If this is never called the
+ * kernels fall back to computing the values inline (correct, just slower).
+ */
+void build_kernel_tables(Parameters& P);
+
 // ── RHS callbacks ─────────────────────────────────────────────────────────────
 
 /**

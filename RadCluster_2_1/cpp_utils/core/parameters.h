@@ -289,6 +289,46 @@ struct Parameters {
     std::vector<int> jac_color_offsets;
     int              jac_n_colors;
 
+    // ── Size-only lookup tables (y-INDEPENDENT; built once by
+    //    build_kernel_tables() in rate_kernels.cpp) ──────────────────────────
+    // The bin-moment RHS sweeps the reconstructed per-size spectra c_n[I] and
+    // c_v[V] on EVERY call, and the Woodbury preconditioner issues
+    // (2*prec_bw+1) + prec_rank RHS calls per Jacobian rebuild.  The capture
+    // kernels K_ii / K_vv / K_vi / K_1D_eff and the Marian junction yield
+    // depend only on the INTEGER cluster sizes, so recomputing their
+    // cbrt/sqrt/pow/log/exp per call costs O(I+V) transcendentals per RHS for
+    // values that never change.  These tables hoist that work to startup.
+    //
+    // Every table entry is produced by the SAME std:: call the kernel used
+    // before, and the kernel expressions are otherwise untouched, so results
+    // are bit-identical to the pre-table solver.
+    //   size_tab_max == 0  ⇒  tables unbuilt; accessors fall back to std::.
+    int size_tab_max = 0;              // tables valid for sizes 1..size_tab_max
+    std::vector<double> cbrt_tab;      // [size_tab_max] cbrt(s),  index s-1
+    std::vector<double> sqrt_tab;      // [size_tab_max] sqrt(s),  index s-1
+    std::vector<double> pow23_tab;     // [size_tab_max] pow(s, 2/3), index s-1
+    std::vector<double> xi_tab;        // [size_tab_max] cbrt(3s/8π), index s-1
+    // Marian junction yield fused with the SIA coalescence kernel:
+    //   phiK_junc_tab[(np-1)*I + (npp-1)] = conv_phi_junc(np,npp)·K_ii(npp,np)
+    // Only projectiles np = 1..i_mobile ever appear, so the table is
+    // i_mobile × I.  Empty when loop_conversion is off.
+    std::vector<double> phiK_junc_tab;
+    int phiK_junc_stride = 0;          // == I when the table is populated
+    // Per-bin Σn and Σn² over the bin's integer sizes — the linear
+    // (hat-function) reconstruction's normal-equation moments.  Depend only
+    // on the bin edges, but were recomputed per RHS call at O(I) cost.
+    std::vector<double> bin_S1,  bin_S2;    // [I_bin]
+    std::vector<double> vbin_S1, vbin_S2;   // [V_bin]
+
+    // ── bin_moment RHS scratch ────────────────────────────────────────────────
+    // rhs_bin_moment used to heap-allocate ~5 vectors of length I or V on every
+    // call (≈4 MB of malloc/free per RHS at I=V=1e5).  These persist across
+    // calls; the RHS refills them.  Safe to share: CVODE calls the RHS serially,
+    // and the OpenMP regions inside it are joined before the next call.
+    std::vector<double> bm_c_n, bm_dc_n, bm_c_v, bm_dc_v, bm_GVV_eff;
+    std::vector<double> bm_c_n100, bm_d111, bm_d100;
+    std::vector<double> bm_coal_dmu0, bm_coal_dmu1, bm_coal_dmu2;
+
     // ── Diagnostics ────────────────────────────────────────────────────────────
     bool verbose;   // if false, suppress per-timestep [diag] / [ci5_rates] output
 };

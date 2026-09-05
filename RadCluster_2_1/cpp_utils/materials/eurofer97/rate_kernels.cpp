@@ -68,6 +68,24 @@
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+// Size-only table accessors.  Each returns exactly what the corresponding
+// std:: call returned before the tables existed — build_kernel_tables() fills
+// the entries with that same call — so substituting them anywhere in the
+// kernels leaves the arithmetic bit-identical.  The bounds test falls back to
+// the direct call when the tables are unbuilt or the size is off the end.
+static inline double sz_cbrt(const Parameters& P, int s) {
+    return (s >= 1 && s <= P.size_tab_max) ? P.cbrt_tab[s - 1]
+                                           : std::cbrt(static_cast<double>(s));
+}
+static inline double sz_sqrt(const Parameters& P, int s) {
+    return (s >= 1 && s <= P.size_tab_max) ? P.sqrt_tab[s - 1]
+                                           : std::sqrt(static_cast<double>(s));
+}
+static inline double sz_pow23(const Parameters& P, int s) {
+    return (s >= 1 && s <= P.size_tab_max) ? P.pow23_tab[s - 1]
+                                           : std::pow(static_cast<double>(s), 2.0 / 3.0);
+}
+
 static inline double K_1D_eff(const Parameters& P, int n_idx, int m_idx) {
     // Mixed 1D/3D effective rate (Eq. 141)
     // K_n,m^eff = K_1D_pref[n] · m^{1/3} / (1 + B_rot · L̂² · m^{-1/3})
@@ -76,8 +94,7 @@ static inline double K_1D_eff(const Parameters& P, int n_idx, int m_idx) {
     if (n < 4 || n > P.i_mobile) return 0.0;
     double k_pref = P.K_1D_pref[n_idx];
     if (k_pref < 1e-300) return 0.0;
-    double m_f   = static_cast<double>(m);
-    double m13   = std::cbrt(m_f);
+    double m13   = sz_cbrt(P, m);
     double denom = 1.0 + P.B_rot * P.L_hat * P.L_hat / m13;
     return k_pref * m13 / denom;
 }
@@ -145,23 +162,23 @@ static inline double K_ii_coal(const Parameters& P, int n, int np) {
     // Target (n) geometry: loop for n ≥ 4, spherical for n < 4
     double target_factor, target_pref, target_bias;
     if (n >= 4) {
-        target_factor = std::sqrt(static_cast<double>(n));
+        target_factor = sz_sqrt(P, n);
         target_pref   = P.A_loop_inv_O23;
         // Size-dependent Wolfer bias when the bridge shipped the array; the
         // scalar otherwise (bit-identical to every pre-2026-08-31 run).
         target_bias   = (!P.Z_i_loop_arr.empty() && n >= 1 && n <= P.I)
                         ? P.Z_i_loop_arr[n - 1] : P.Z_i_loop;
     } else {
-        target_factor = std::cbrt(static_cast<double>(n));
+        target_factor = sz_cbrt(P, n);
         target_pref   = P.A_sph_inv_O23;
         target_bias   = 1.0;
     }
     // Projectile (np) geometry: loop for np ≥ 4, spherical for np < 4
     double proj_factor;
     if (np >= 4) {
-        proj_factor = std::sqrt(static_cast<double>(np));
+        proj_factor = sz_sqrt(P, np);
     } else {
-        proj_factor = std::cbrt(static_cast<double>(np));
+        proj_factor = sz_cbrt(P, np);
     }
     // Combined size factor uses average of target and projectile prefactors
     // weighted by their respective geometry.  For simplicity and consistency
@@ -176,8 +193,7 @@ static inline double K_ii_coal(const Parameters& P, int n, int np) {
 static inline double K_vv_coal(const Parameters& P, int m, int mp) {
     double D_mp = P.D_VAC_eff[mp - 1];
     if (D_mp < 1e-300) return 0.0;
-    double size_factor = std::cbrt(static_cast<double>(m))
-                       + std::cbrt(static_cast<double>(mp));
+    double size_factor = sz_cbrt(P, m) + sz_cbrt(P, mp);
     return P.A_sph_inv_O23 * size_factor * D_mp;
 }
 
@@ -187,7 +203,7 @@ static inline double K_vv_coal(const Parameters& P, int m, int mp) {
 static inline double K_vi_coal(const Parameters& P, int n, int mp) {
     double D_mp = P.D_VAC_eff[mp - 1];
     if (D_mp < 1e-300) return 0.0;
-    return P.A_sph_inv_O23 * std::cbrt(static_cast<double>(n)) * D_mp;
+    return P.A_sph_inv_O23 * sz_cbrt(P, n) * D_mp;
 }
 
 // ── Case 2 — fission/decoupled (Eq. 175) ─────────────────────────────────────
@@ -221,16 +237,109 @@ static inline double conv_phi_junc(const Parameters& P, int a, int b) {
 // Marian absorption kernel for ⟨100⟩_m + ½⟨111⟩_n → ⟨100⟩_{m+n}:
 //   8π(ξ_m + ξ_n)·D^{111}_n / Ω^{2/3}   (sessile ⟨100⟩ contributes D=0, so only
 //   the mobile ½⟨111⟩ partner drives the capture).  m, n are 1-indexed.
+static inline double xi_of(const Parameters& P, int s) {
+    static const double PI = 3.14159265358979323846;
+    return (s >= 1 && s <= P.size_tab_max)
+           ? P.xi_tab[s - 1]
+           : std::cbrt(3.0 * static_cast<double>(s) / (8.0 * PI));
+}
+
 static inline double K_100_absorb(const Parameters& P, int m, int n) {
     static const double PI = 3.14159265358979323846;
     const double A_8pi = P.A_sph_inv_O23 * (8.0 * PI / P.A_sph);
-    const double xi_m  = std::cbrt(3.0 * static_cast<double>(m) / (8.0 * PI));
-    const double xi_n  = std::cbrt(3.0 * static_cast<double>(n) / (8.0 * PI));
+    const double xi_m  = xi_of(P, m);
+    const double xi_n  = xi_of(P, n);
     // Uses the ABSORPTION-only gate: a mobile ≤ i_mobile cluster joining a
     // several-hundred-atom ⟨100⟩ loop is templated by the host's existing
     // character, so it does not pay the junction's reversion penalty.
     return A_8pi * (xi_m + xi_n) * P.D_SIA_eff[n - 1] * P.conv_psuccess_abs
          * P.conv_absorb_boost;
+}
+
+// ── Size-only kernel tables ──────────────────────────────────────────────────
+//
+// Builds every y-independent quantity the RHS kernels used to recompute per
+// call.  See the comment block on Parameters::size_tab_max for why this
+// matters: at I = V = 1e5 the bin-moment RHS was issuing O(I+V) cbrt/sqrt/
+// pow/log/exp calls per evaluation, and the Woodbury preconditioner makes
+// (2·prec_bw+1) + prec_rank evaluations per Jacobian rebuild.
+//
+// Bit-exactness: each entry is filled by the identical std:: call the kernel
+// made inline, and no kernel expression is re-associated — only the leaf
+// transcendental is replaced by its precomputed value.
+void build_kernel_tables(Parameters& P) {
+    static const double PI = 3.14159265358979323846;
+
+    // ── Leaf size tables ─────────────────────────────────────────────────────
+    // Sized to cover every index the kernels can reach: SIA sizes run to I,
+    // vacancy sizes to V, and the coalescence product size (sn + np) can
+    // exceed both by i_mobile before the overflow guard rejects it.
+    const int S = std::max(P.I, P.V) + std::max(P.i_mobile, P.v_mobile) + 1;
+    if (S < 1) return;
+
+    P.cbrt_tab.resize(S);
+    P.sqrt_tab.resize(S);
+    P.pow23_tab.resize(S);
+    P.xi_tab.resize(S);
+    for (int s = 1; s <= S; ++s) {
+        const double sf = static_cast<double>(s);
+        P.cbrt_tab [s - 1] = std::cbrt(sf);
+        P.sqrt_tab [s - 1] = std::sqrt(sf);
+        P.pow23_tab[s - 1] = std::pow(sf, 2.0 / 3.0);
+        P.xi_tab   [s - 1] = std::cbrt(3.0 * sf / (8.0 * PI));
+    }
+    // Publish only once every leaf table is complete — the accessors read
+    // size_tab_max to decide whether the tables are usable, and K_ii_coal
+    // below goes through them.
+    P.size_tab_max = S;
+
+    // ── Per-bin Σn and Σn² (linear-reconstruction normal equations) ──────────
+    // Recomputed on every RHS call at O(I) / O(V) total cost, for values fixed
+    // by the bin edges.  Accumulation order is preserved (ascending n), so the
+    // sums are bit-identical to the in-loop version.
+    if (!P.sia_bin_lo.empty() && !P.sia_bin_hi.empty()) {
+        P.bin_S1.assign(P.I_bin, 0.0);
+        P.bin_S2.assign(P.I_bin, 0.0);
+        for (int k = 0; k < P.I_bin; ++k) {
+            double S1 = 0.0, S2 = 0.0;
+            for (int n = P.sia_bin_lo[k]; n < P.sia_bin_hi[k]; ++n) {
+                const double nf = static_cast<double>(n);
+                S1 += nf; S2 += nf * nf;
+            }
+            P.bin_S1[k] = S1; P.bin_S2[k] = S2;
+        }
+    }
+    if (!P.vac_bin_lo.empty() && !P.vac_bin_hi.empty()) {
+        P.vbin_S1.assign(P.V_bin, 0.0);
+        P.vbin_S2.assign(P.V_bin, 0.0);
+        for (int k = 0; k < P.V_bin; ++k) {
+            double S1 = 0.0, S2 = 0.0;
+            for (int m = P.vac_bin_lo[k]; m < P.vac_bin_hi[k]; ++m) {
+                const double mf = static_cast<double>(m);
+                S1 += mf; S2 += mf * mf;
+            }
+            P.vbin_S1[k] = S1; P.vbin_S2[k] = S2;
+        }
+    }
+
+    // ── Fused Marian junction yield × SIA coalescence kernel ─────────────────
+    // The junction loop evaluates conv_phi_junc(np, npp)·K_ii_coal(npp, np)
+    // for npp = sn - np across sn = 2..I, i.e. O(i_mobile · I) log/exp/cbrt per
+    // RHS call — all of it a function of the two integer sizes alone.  The
+    // product is tabulated (not the factors) because the RHS multiplies them
+    // together first: fusing them here reproduces that association exactly.
+    if (P.loop_conversion && P.i_mobile >= 1 && P.I >= 1) {
+        const long long need = static_cast<long long>(P.i_mobile) * P.I;
+        P.phiK_junc_tab.assign(static_cast<size_t>(need), 0.0);
+        P.phiK_junc_stride = P.I;
+        for (int np = 1; np <= P.i_mobile; ++np) {
+            for (int npp = 1; npp <= P.I; ++npp) {
+                const double ph = conv_phi_junc(P, np, npp);
+                P.phiK_junc_tab[static_cast<size_t>(np - 1) * P.I + (npp - 1)] =
+                    (ph <= 0.0) ? 0.0 : ph * K_ii_coal(P, npp, np);
+            }
+        }
+    }
 }
 
 static int rhs_case2(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
@@ -1150,6 +1259,11 @@ int rhs_full_CD(sunrealtype t, N_Vector y, N_Vector ydot, void* user_data) {
 int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) {
     const UserData*   ud = static_cast<const UserData*>(user_data);
     const Parameters& P  = *ud->P;
+    // Non-const view of the SAME Parameters, used only to reach the persistent
+    // bm_* scratch buffers (UserData::P is already non-const — the
+    // preconditioner writes its own storage through it).  The physics reads
+    // stay on the const reference P.
+    Parameters&       Pm = *ud->P;
 
     const double* y    = N_VGetArrayPointer_Serial(yv);
     double*       dydt = N_VGetArrayPointer_Serial(ydotv);
@@ -1172,11 +1286,10 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
     // SIA bin edges (bins cover sizes i_discrete+1 .. I).  Consumed directly
     // from the explicit edge arrays transmitted by Python — NOT re-derived
     // from r_ratio (numpy.floor vs std::floor can diverge over many bins).
-    std::vector<int> n_lo(Ib), n_hi(Ib);
-    for (int k = 0; k < Ib; ++k) {
-        n_lo[k] = P.sia_bin_lo[k];
-        n_hi[k] = P.sia_bin_hi[k];
-    }
+    // Read straight out of Parameters: the previous per-call copy into local
+    // vectors allocated on every RHS evaluation for no benefit.
+    const int* const n_lo = P.sia_bin_lo.data();
+    const int* const n_hi = P.sia_bin_hi.data();
 
     // Smooth positive-projection for reconstructed concentrations.
     // Hard max(x, 0) creates a Jacobian kink at x=0 that stalls BDF.
@@ -1188,8 +1301,13 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
         return eps * std::log1p(std::exp(x / eps));            // smooth transition
     };
 
-    // Reconstruct full c_n[0..I-1] from discrete + binned
-    std::vector<double> c_n(I, 0.0);
+    // Reconstruct full c_n[0..I-1] from discrete + binned.
+    // Persistent scratch (Parameters::bm_c_n) rather than a fresh heap vector
+    // per call — at I = 1e5 the old std::vector<double> c_n(I, 0.0) cost an
+    // 800 kB malloc/zero/free on every one of the ~29 RHS evaluations the
+    // Woodbury preconditioner makes per Jacobian rebuild.
+    Pm.bm_c_n.assign(I, 0.0);
+    double* const c_n = Pm.bm_c_n.data();
     // Discrete sizes: y[0..i_d-1] = c_1..c_{i_discrete}
     for (int n = 0; n < i_d; ++n)
         c_n[n] = std::max(y[n], 0.0);
@@ -1270,11 +1388,19 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
                 for (int n = n_lo[k]; n < n_hi[k]; ++n)
                     if (n - 1 >= 0 && n - 1 < I) c_n[n - 1] = val;
             } else {
-                // Linear (hat-function / dual-basis) — default and fallback
-                double S1 = 0.0, S2 = 0.0;
-                for (int n = n_lo[k]; n < n_hi[k]; ++n) {
-                    double nf = static_cast<double>(n);
-                    S1 += nf; S2 += nf * nf;
+                // Linear (hat-function / dual-basis) — default and fallback.
+                // Σn and Σn² depend only on the bin edges: taken from the
+                // startup table (same ascending accumulation order, so the
+                // sums are identical) instead of an O(bw) sweep per call.
+                double S1, S2;
+                if (!P.bin_S1.empty()) {
+                    S1 = P.bin_S1[k]; S2 = P.bin_S2[k];
+                } else {
+                    S1 = 0.0; S2 = 0.0;
+                    for (int n = n_lo[k]; n < n_hi[k]; ++n) {
+                        double nf = static_cast<double>(n);
+                        S1 += nf; S2 += nf * nf;
+                    }
                 }
                 double det = bw * S2 - S1 * S1;
                 if (std::abs(det) < 1e-30) {
@@ -1282,6 +1408,12 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
                     for (int n = n_lo[k]; n < n_hi[k]; ++n)
                         if (n - 1 >= 0 && n - 1 < I) c_n[n - 1] = val;
                 } else {
+                    // Pure scatter-free write of c_n[n-1]; no cross-iteration
+                    // dependence and no reduction, so the parallel result is
+                    // bit-identical to the serial one.
+#ifdef CD_HAVE_OPENMP
+#pragma omp parallel for schedule(static, 256) if(n_hi[k] - n_lo[k] > 2048)
+#endif
                     for (int n = n_lo[k]; n < n_hi[k]; ++n) {
                         if (n - 1 < 0 || n - 1 >= I) continue;
                         double nf = static_cast<double>(n);
@@ -1299,14 +1431,12 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
 
     // Vacancy bin edges (bins cover sizes v_discrete+1 .. V).  Consumed
     // directly from the explicit edge arrays transmitted by Python.
-    std::vector<int> m_lo(Kv), m_hi(Kv);
-    for (int k = 0; k < Kv; ++k) {
-        m_lo[k] = P.vac_bin_lo[k];
-        m_hi[k] = P.vac_bin_hi[k];
-    }
+    const int* const m_lo = P.vac_bin_lo.data();
+    const int* const m_hi = P.vac_bin_hi.data();
 
-    // Reconstruct full c_v[0..V-1] from discrete + binned
-    std::vector<double> c_v_vec(V, 0.0);
+    // Reconstruct full c_v[0..V-1] from discrete + binned (persistent scratch)
+    Pm.bm_c_v.assign(V, 0.0);
+    double* const c_v_vec = Pm.bm_c_v.data();
     // Discrete sizes: y[i_VAC..i_VAC+v_d-1] = c_1..c_{v_discrete}
     for (int m = 0; m < v_d; ++m)
         c_v_vec[m] = std::max(y[i_VAC + m], 0.0);
@@ -1381,11 +1511,17 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
                     for (int m = m_lo[k]; m < m_hi[k]; ++m)
                         if (m - 1 >= 0 && m - 1 < V) c_v_vec[m - 1] = std::max(val, 0.0);
                 } else {
-                    // Linear (hat-function) — default and fallback
-                    double S1 = 0.0, S2 = 0.0;
-                    for (int m = m_lo[k]; m < m_hi[k]; ++m) {
-                        double mf = static_cast<double>(m);
-                        S1 += mf; S2 += mf * mf;
+                    // Linear (hat-function) — default and fallback.
+                    // Σm / Σm² from the startup table (see the SIA side).
+                    double S1, S2;
+                    if (!P.vbin_S1.empty()) {
+                        S1 = P.vbin_S1[k]; S2 = P.vbin_S2[k];
+                    } else {
+                        S1 = 0.0; S2 = 0.0;
+                        for (int m = m_lo[k]; m < m_hi[k]; ++m) {
+                            double mf = static_cast<double>(m);
+                            S1 += mf; S2 += mf * mf;
+                        }
                     }
                     double det = bw * S2 - S1 * S1;
                     if (std::abs(det) < 1e-30) {
@@ -1393,6 +1529,10 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
                         for (int m = m_lo[k]; m < m_hi[k]; ++m)
                             if (m - 1 >= 0 && m - 1 < V) c_v_vec[m - 1] = std::max(val, 0.0);
                     } else {
+                        // Scatter-free; parallel result is bit-identical.
+#ifdef CD_HAVE_OPENMP
+#pragma omp parallel for schedule(static, 256) if(m_hi[k] - m_lo[k] > 2048)
+#endif
                         for (int m = m_lo[k]; m < m_hi[k]; ++m) {
                             if (m - 1 < 0 || m - 1 >= V) continue;
                             double mf = static_cast<double>(m);
@@ -1405,7 +1545,7 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
             }
         }
     }
-    const double* c_v = c_v_vec.data();
+    const double* const c_v = c_v_vec;
 
     // He state
     int    i_He_idx = -1;
@@ -1449,7 +1589,7 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
         c_h = c_h_qss_case2(P, c_v, Q_tot);
     }
 
-    const double ci1 = c_n.empty() ? 0.0 : std::max(c_n[0], 0.0);
+    const double ci1 = (I <= 0) ? 0.0 : std::max(c_n[0], 0.0);
     const double cv1 = std::max(c_v[0], 0.0);
 
     // dc_n/dt per-size
@@ -1458,8 +1598,30 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
     // sizes use piecewise-constant reconstruction, which amplifies
     // coalescence rates by O(bw^2) in wide bins.  Monomer-driven growth
     // (monomer absorbed by any cluster) is still computed for all sizes.
-    std::vector<double> dc_n(I, 0.0);
-    for (int n = 0; n < I; ++n) {
+    Pm.bm_dc_n.assign(I, 0.0);
+    double* const dc_n = Pm.bm_dc_n.data();
+
+    // The sweep is split in two at n_head so the O(I) bulk can go parallel.
+    //
+    //   HEAD  n < n_head — the full original body.  Every branch that reads or
+    //         writes an index OTHER than n is confined here: the discrete–
+    //         discrete coalescence block (gated sn <= i_discrete), the n == 0
+    //         monomer-depletion and recombination special cases, the cavity
+    //         absorption branches (n < i_mobile), and the partial-survival
+    //         channel that scatters into dc_n[n-m-1].
+    //   TAIL  n >= n_head — only the size-independent channels survive, and
+    //         they touch dc_n[n] alone.  No scatter, no reduction, so running
+    //         it across threads gives bit-identical results.
+    //
+    // n_head therefore has to clear BOTH gates (i_discrete for the coalescence
+    // block, i_mobile for the cavity/survival branches).  The tail body below
+    // repeats the surviving terms in their original order — keep the two in
+    // step if this loop is ever edited.
+    // Floor of 1 so the tail's unconditional c_n[n-1] read stays in bounds
+    // even in the degenerate i_discrete = i_mobile = 0 configuration.
+    const int n_head = std::min(std::max(std::max(i_d, P.i_mobile), 1), I);
+
+    for (int n = 0; n < n_head; ++n) {
         const int    sn = n + 1;
         const double cn = std::max(c_n[n], 0.0);
         dc_n[n] += P.Pr_SIA[n];
@@ -1556,6 +1718,44 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
         dc_n[n] -= P.k2_SIA[n] * cn;
     }
 
+    // ── TAIL: n >= n_head (the O(I) bulk) ─────────────────────────────────
+    // Same terms, same order, as the head body with every n-gated branch
+    // removed by inspection:
+    //   sn <= i_discrete            false  (n >= i_d)   → coalescence block out
+    //   n == 0                      false                → monomer sink,
+    //                                                      recombination out
+    //   n <  i_mobile               false  (n >= i_mobile) → cavity absorption
+    //                                                        and partial
+    //                                                        survival out
+    // What remains writes dc_n[n] and nothing else.
+#ifdef CD_HAVE_OPENMP
+#pragma omp parallel for schedule(static, 256) if(I - n_head > 2048)
+#endif
+    for (int n = n_head; n < I; ++n) {
+        const int    sn = n + 1;
+        const double cn = std::max(c_n[n], 0.0);
+        dc_n[n] += P.Pr_SIA[n];
+        if (n + 1 < I) dc_n[n] += P.GII[n+1] * std::max(c_n[n+1], 0.0);
+        dc_n[n] -= P.GII[n] * cn;
+
+        // Monomer growth: I_1 + I_n → I_{n+1}  (all sizes, including binned)
+        dc_n[n] += K_ii_coal(P, n, 1) * ci1 * std::max(c_n[n - 1], 0.0);
+        dc_n[n] -= K_ii_coal(P, sn, 1) * cn * ci1;
+
+        // V–I annihilation: all mobile vacancy clusters m' = 1..v_mobile
+        for (int mp = 1; mp <= P.v_mobile; ++mp) {
+            const double c_mp = std::max(c_v[mp - 1], 0.0);
+            double K_s = (mp == 1) ? P.KIV[n] : K_vi_coal(P, sn, mp);
+            if (n + mp < I) {
+                double K_g = (mp == 1) ? P.KIV[n + mp] : K_vi_coal(P, sn + mp, mp);
+                dc_n[n] += K_g * c_mp * std::max(c_n[n + mp], 0.0);
+            }
+            dc_n[n] -= K_s * c_mp * cn;
+        }
+
+        dc_n[n] -= P.k2_SIA[n] * cn;
+    }
+
     // Reflection boundary: suppress overflow reactions whose product exceeds I
     if (P.boundary_flux == 1) {
         // Monomer overflow: I_1 + I_I → I_{I+1}
@@ -1604,7 +1804,12 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
     // Net inventory change: -sn*rate (projectile) + sn*rate (product - target) = 0. ✓
 
     // Accumulate moment corrections per SIA bin [indexed 0..Ib-1]
-    std::vector<double> coal_dmu0(Ib, 0.0), coal_dmu1(Ib, 0.0), coal_dmu2(Ib, 0.0);
+    Pm.bm_coal_dmu0.assign(Ib, 0.0);
+    Pm.bm_coal_dmu1.assign(Ib, 0.0);
+    Pm.bm_coal_dmu2.assign(Ib, 0.0);
+    double* const coal_dmu0 = Pm.bm_coal_dmu0.data();
+    double* const coal_dmu1 = Pm.bm_coal_dmu1.data();
+    double* const coal_dmu2 = Pm.bm_coal_dmu2.data();
 
     for (int n = 1; n < std::min(i_d, P.i_mobile); ++n) {
         const int sn = n + 1;
@@ -1613,7 +1818,7 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
         const double D_sn = P.D_SIA_eff[sn - 1];
         if (D_sn < 1e-300) continue;
         const double pref = P.Z_ii * P.A_sph_inv_O23 * D_sn * cn;
-        const double sn_cbrt = std::cbrt(static_cast<double>(sn));
+        const double sn_cbrt = sz_cbrt(P, sn);
 
         // Single pass over all SIA bins: target loss + product gain + projectile sink
         int kp = 0;  // product bin index (monotonic scan)
@@ -1623,7 +1828,7 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
                 const double c_np = std::max(c_n[np - 1], 0.0);
                 if (c_np < P.C_floor) continue;  // skip negligible sizes
                 const double nf = static_cast<double>(np);
-                const double sf = std::cbrt(nf) + sn_cbrt;
+                const double sf = sz_cbrt(P, np) + sn_cbrt;
                 const double rate = pref * sf * c_np;
 
                 // Projectile loss (per-size dc_n)
@@ -1795,7 +2000,14 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
     // Discrete sizes: direct copy
     for (int n = 0; n < i_d; ++n)
         dydt[n] = dc_n[n];
-    // Binned sizes: project onto PM moments per bin + add coalescence corrections
+    // Binned sizes: project onto PM moments per bin + add coalescence corrections.
+    // Parallel over BINS: each k accumulates its own dmu* in ascending n (order
+    // preserved) and writes only its own dydt slots.  Bit-identical.
+    // Dynamic scheduling — the bins are logarithmic, so the last one holds
+    // orders of magnitude more sizes than the first.
+#ifdef CD_HAVE_OPENMP
+#pragma omp parallel for schedule(dynamic, 1) if(I > 4096)
+#endif
     for (int k = 0; k < Ib; ++k) {
         double dmu0 = 0.0, dmu1 = 0.0, dmu2 = 0.0;
         for (int n = n_lo[k]; n < n_hi[k]; ++n) {
@@ -1820,16 +2032,24 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
     const double ell_bar = (C_vac_tot > 1e-300) ? Q_tot / C_vac_tot : 0.0;
 
     // Precompute He-modified vacancy emission rates for all sizes
-    std::vector<double> GVV_eff(V);
+    Pm.bm_GVV_eff.resize(V);
+    double* const GVV_eff = Pm.bm_GVV_eff.data();
+    // Elementwise in m — no reduction, no scatter — so the parallel result is
+    // bit-identical.  m^{2/3} comes from the startup table (same std::pow
+    // call, hoisted out of the per-RHS sweep).
+#ifdef CD_HAVE_OPENMP
+#pragma omp parallel for schedule(static, 256) if(V > 2048)
+#endif
     for (int m = 0; m < V; ++m) {
-        const double ell_m = ell_bar * std::pow(static_cast<double>(m+1), 2.0/3.0);
+        const double ell_m = ell_bar * sz_pow23(P, m + 1);
         const double ratio = (ell_m > 1e-6) ? ell_m / (m+1) : 0.0;
         const double dE    = (ratio > 1e-10) ? P.delta_He * P.beta_He_exp / (m+1)
                                                * std::pow(ratio, P.beta_He_exp - 1.0) : 0.0;
         GVV_eff[m] = P.GVV[m] * std::exp(std::min(-ell_m * dE / P.kBT, 0.0));
     }
 
-    std::vector<double> dc_v(V, 0.0);
+    Pm.bm_dc_v.assign(V, 0.0);
+    double* const dc_v = Pm.bm_dc_v.data();
     // Pre-accumulate emitted monomers from thermal vacancy emission:
     // V_m → V_{m-1} + V_1 — the emitted V_1 monomer must be added to dc_v[0].
     {
@@ -1838,6 +2058,16 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
             emit_mono += GVV_eff[m] * std::max(c_v[m], 0.0);
         dc_v[0] += emit_mono;
     }
+    // Every branch below accumulates into dc_v[m] and nothing else — the
+    // m == 0 special cases write dc_v[0], which IS their own index, and the
+    // inner sums (sia_shrink_sink, the mobile-projectile sweep) are local to
+    // one iteration, so their accumulation order is untouched.  No scatter,
+    // no cross-iteration reduction ⇒ bit-identical across threads.
+    // Dynamic scheduling: m == 0 carries O(I + V) inner work while every other
+    // iteration is O(1), so static chunks would leave one thread straggling.
+#ifdef CD_HAVE_OPENMP
+#pragma omp parallel for schedule(dynamic, 256) if(V > 2048)
+#endif
     for (int m = 0; m < V; ++m) {
         const double cm    = std::max(c_v[m], 0.0);
         const int sm = m + 1;
@@ -1935,6 +2165,10 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
     // Binned sizes: project onto PM moments per bin
     const int vac_mom_start = i_VAC + v_d;
     if (Kv > 0) {
+        // Parallel over bins — see the SIA projection above.
+#ifdef CD_HAVE_OPENMP
+#pragma omp parallel for schedule(dynamic, 1) if(V > 4096)
+#endif
         for (int k = 0; k < Kv; ++k) {
             double dmu0 = 0.0, dmu1 = 0.0, dmu2 = 0.0;
             for (int m = m_lo[k]; m < m_hi[k]; ++m) {
@@ -1962,9 +2196,14 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
     // projection is linear, the ½⟨111⟩ losses are ADDED onto the already-set
     // SIA moment derivatives and the vacancy-monomer derivative; the ⟨100⟩ block
     // (which evolves ONLY through conversion) is set directly.
-    std::vector<double> c_n100;          // reconstructed ⟨100⟩ per-size (empty=off)
+    // Reconstructed ⟨100⟩ per-size, in persistent scratch.  Sized to 0 when
+    // conversion is off so the `c_n100_on` flag below mirrors the old
+    // `c_n100.empty()` test exactly.
+    double* c_n100 = nullptr;
+    const bool c_n100_on = (P.loop_conversion != 0);
     if (P.loop_conversion) {
-        c_n100.assign(I, 0.0);
+        Pm.bm_c_n100.assign(I, 0.0);
+        c_n100 = Pm.bm_c_n100.data();
         const double* src = y + P.sia100_off;
         // Reconstruct ⟨100⟩ per-size from its moment block (closure mirrors c_n).
         for (int n = 0; n < i_d; ++n)
@@ -2028,10 +2267,16 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
                     for (int n = n_lo[k]; n < n_hi[k]; ++n)
                         if (n - 1 >= 0 && n - 1 < I) c_n100[n - 1] = val;
                 } else {
-                    double S1 = 0.0, S2 = 0.0;
-                    for (int n = n_lo[k]; n < n_hi[k]; ++n) {
-                        double nf = static_cast<double>(n);
-                        S1 += nf; S2 += nf * nf;
+                    // Σn / Σn² from the startup table (see the ½⟨111⟩ side).
+                    double S1, S2;
+                    if (!P.bin_S1.empty()) {
+                        S1 = P.bin_S1[k]; S2 = P.bin_S2[k];
+                    } else {
+                        S1 = 0.0; S2 = 0.0;
+                        for (int n = n_lo[k]; n < n_hi[k]; ++n) {
+                            double nf = static_cast<double>(n);
+                            S1 += nf; S2 += nf * nf;
+                        }
                     }
                     double det = bw * S2 - S1 * S1;
                     if (std::abs(det) < 1e-30) {
@@ -2039,6 +2284,10 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
                         for (int n = n_lo[k]; n < n_hi[k]; ++n)
                             if (n - 1 >= 0 && n - 1 < I) c_n100[n - 1] = val;
                     } else {
+                        // Scatter-free; parallel result is bit-identical.
+#ifdef CD_HAVE_OPENMP
+#pragma omp parallel for schedule(static, 256) if(n_hi[k] - n_lo[k] > 2048)
+#endif
                         for (int n = n_lo[k]; n < n_hi[k]; ++n) {
                             if (n - 1 < 0 || n - 1 >= I) continue;
                             double nf = static_cast<double>(n);
@@ -2052,25 +2301,53 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
         }
 
         // Per-size conversion deltas (mirror rhs_case2 arithmetic exactly).
-        std::vector<double> d111(I, 0.0), d100(I, 0.0);
+        Pm.bm_d111.assign(I, 0.0);
+        Pm.bm_d100.assign(I, 0.0);
+        double* const d111 = Pm.bm_d111.data();
+        double* const d100 = Pm.bm_d100.data();
         double dv1 = 0.0;
         const int nlm = P.conv_n_loop_min;
 
         // (1) Unary ½⟨111⟩_n → ⟨100⟩_n (size-fixed relabel).
+        // Touches only index n-1 of each array — no scatter, no reduction.
+#ifdef CD_HAVE_OPENMP
+#pragma omp parallel for schedule(static, 256) if(I - nlm > 2048)
+#endif
         for (int n = nlm; n <= I; ++n) {
             const double rate = P.Gamma_uni[n - 1] * std::max(c_n[n - 1], 0.0);
             d111[n - 1] -= rate;
             d100[n - 1] += rate;
         }
         // (2) Marian junction: fraction φ of ½⟨111⟩ coalescence GAIN → ⟨100⟩.
+        // φ(np,npp)·K_ii(npp,np) is a function of the two integer sizes
+        // alone, so it comes from the startup table.  The product is stored
+        // FUSED because the original expression multiplied the two together
+        // first — `ph * K * c1 * c2` associates as `((ph*K)*c1)*c2` — so the
+        // tabulated form reproduces the same rounding.  Falls back to the
+        // inline evaluation when the table was not built.
+        const double* const phiK = P.phiK_junc_tab.empty()
+                                 ? nullptr : P.phiK_junc_tab.data();
+        // `moved` is accumulated and consumed inside a single sn iteration, so
+        // its summation order is unchanged by threading; the two writes land
+        // on index sn-1 only.  Bit-identical.
+#ifdef CD_HAVE_OPENMP
+#pragma omp parallel for schedule(static, 256) if(I > 2048)
+#endif
         for (int sn = 2; sn <= I; ++sn) {
             double moved = 0.0;
             for (int np = 1; np <= std::min(sn - 1, P.i_mobile); ++np) {
                 const int npp = sn - np;
                 if (npp < 1 || npp > I) continue;
-                const double ph = conv_phi_junc(P, np, npp);
-                if (ph <= 0.0) continue;
-                moved += ph * K_ii_coal(P, npp, np)
+                double phK;
+                if (phiK) {
+                    phK = phiK[static_cast<size_t>(np - 1) * P.phiK_junc_stride
+                               + (npp - 1)];
+                } else {
+                    const double ph = conv_phi_junc(P, np, npp);
+                    phK = (ph <= 0.0) ? 0.0 : ph * K_ii_coal(P, npp, np);
+                }
+                if (phK == 0.0) continue;   // mirrors the old `ph <= 0` skip
+                moved += phK
                        * std::max(c_n[np  - 1], 0.0)
                        * std::max(c_n[npp - 1], 0.0);
             }
@@ -2120,6 +2397,9 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
 
         // Project d111 onto the ½⟨111⟩ moments and ADD (projection is linear).
         for (int n = 0; n < i_d; ++n) dydt[n] += d111[n];
+#ifdef CD_HAVE_OPENMP
+#pragma omp parallel for schedule(dynamic, 1) if(I > 4096)
+#endif
         for (int k = 0; k < Ib; ++k) {
             double dmu0 = 0.0, dmu1 = 0.0, dmu2 = 0.0;
             for (int n = n_lo[k]; n < n_hi[k]; ++n) {
@@ -2141,6 +2421,9 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
         // through conversion; the whole dydt was zeroed at function entry).
         const int s100 = P.sia100_off;
         for (int n = 0; n < i_d; ++n) dydt[s100 + n] = d100[n];
+#ifdef CD_HAVE_OPENMP
+#pragma omp parallel for schedule(dynamic, 1) if(I > 4096)
+#endif
         for (int k = 0; k < Ib; ++k) {
             double dmu0 = 0.0, dmu1 = 0.0, dmu2 = 0.0;
             for (int n = n_lo[k]; n < n_hi[k]; ++n) {
@@ -2292,7 +2575,7 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
     // one SIA and one vacancy, so it enters the mutual-annihilation flux for both
     // species (keeps δ_FP_sia / δ_FP_vac exact with conversion on) — mirrors the
     // discrete rhs_case2 accounting.
-    if (P.loop_conversion && !c_n100.empty()) {
+    if (P.loop_conversion && c_n100_on) {
         double s100_mut = 0.0, s100_fixed = 0.0;
         for (int n = P.conv_n_loop_min; n <= I; ++n) {
             s100_mut   += P.K_100_shrink[n - 1] * std::max(c_n100[n - 1], 0.0) * cv1;

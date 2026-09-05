@@ -12,7 +12,9 @@
  *   0 = full_system     — full system, CVODE BDF.
  *   4 = active_window   — two independent sliding windows (SIA + VAC) with
  *                          OpenMP-parallel RHS. Thread count is auto-selected
- *                          from N_eq (overridable via OMP_NUM_THREADS); when
+ *                          from max(N_eq, I+V) — the RHS sweep length, which
+ *                          in bin_moment mode is far larger than the ODE count
+ *                          (overridable via OMP_NUM_THREADS); when
  *                          OpenMP is unavailable or the auto-pick lands on 1,
  *                          the same code path simply runs serial.
  *
@@ -58,6 +60,10 @@
 #include <map>
 #include <string>
 #include <vector>
+
+#ifdef __APPLE__
+#include <sys/sysctl.h>   // hw.perflevel0.logicalcpu — performance-core count
+#endif
 
 #ifdef CD_HAVE_OPENMP
 #  include <omp.h>
@@ -160,6 +166,12 @@ int main(int argc, char* argv[]) {
     Parameters P = build_parameters(args);
     const int N_EQ = P.N_eq;
 
+    // Precompute every y-independent kernel quantity (cbrt/sqrt/pow of the
+    // integer sizes, the Marian junction yield, the per-bin reconstruction
+    // moments).  Must precede the first RHS call.  Pure cost optimization —
+    // the RHS arithmetic is unchanged, see build_kernel_tables().
+    build_kernel_tables(P);
+
     // ── Binary output ─────────────────────────────────────────────────────────
     FILE* fp_bin = nullptr;
     FILE* fp_win = nullptr;   // sidecar CSV: t,x_hi_i,x_hi_v per output point
@@ -223,12 +235,19 @@ int main(int argc, char* argv[]) {
     }
 #endif
 
-    // Auto-select OMP thread count from problem size.  Per-row work in the
-    // hot RHS loops scales like O(i_mobile + v_mobile) × O(N), and the loop
-    // length is ~N_eq.  Below ~500 unknowns the parallel overhead dominates;
-    // above that, useful threads ≈ N_eq / 1000 (one thread per ~1k rows of
-    // work), capped at the runtime maximum.  User can still override via
-    // OMP_NUM_THREADS — if it is set in the environment, we honor it as-is.
+    // Auto-select OMP thread count from problem size.
+    //
+    // The metric is the length of the parallel RHS loops, NOT N_eq.  In the
+    // discrete modes the two coincide, but bin_moment integrates only
+    //   i_discrete + n_mom·I_bin + v_discrete + n_mom·V_bin + ...
+    // unknowns (O(100)) while still sweeping the RECONSTRUCTED per-size
+    // spectra c_n[I] and c_v[V] on every call.  Keying off N_eq there put a
+    // 200 000-element sweep on a single thread — an I = V = 1e5 bin_moment
+    // run picked 1 thread for N_eq = 135.  max(N_eq, I + V) covers both.
+    //
+    // User can still override via OMP_NUM_THREADS — if it is set in the
+    // environment, we honor it as-is.
+    const int OMP_WORK = std::max(N_EQ, P.I + P.V);
 #ifdef CD_HAVE_OPENMP
     int omp_threads = 1;
 #ifdef _MSC_VER
@@ -244,23 +263,39 @@ int main(int argc, char* argv[]) {
                   << " honored — using " << omp_threads << " thread"
                   << (omp_threads == 1 ? "" : "s") << "\n";
     } else {
-        const int hw_max = omp_get_max_threads();
+        int hw_max = omp_get_max_threads();
+#ifdef __APPLE__
+        // Apple silicon is heterogeneous (performance + efficiency cores).
+        // The RHS parallel regions are barrier-synchronised sweeps over
+        // equal-sized chunks, so a thread landing on a slow E-core holds up
+        // every join.  Measured on a 12P+4E M-series part, I=V=1e5 bin_moment:
+        // 4 thr 76.4 s, 8 thr 73.5 s, 12 thr 76.9 s, 16 thr 80.1 s — using all
+        // 16 is ~9% SLOWER than staying on the performance cores.  Cap there.
+        {
+            int perf = 0;
+            size_t len = sizeof(perf);
+            if (sysctlbyname("hw.perflevel0.logicalcpu", &perf, &len, nullptr, 0) == 0
+                && perf > 0 && perf < hw_max)
+                hw_max = perf;
+        }
+#endif
         int picked;
-        if      (N_EQ <   500) picked = 1;
-        else if (N_EQ <  2000) picked = 2;
-        else if (N_EQ <  5000) picked = 4;
-        else if (N_EQ < 10000) picked = 8;
-        else if (N_EQ < 20000) picked = 12;
-        else if (N_EQ < 40000) picked = 16;
-        else if (N_EQ < 80000) picked = 20;
+        if      (OMP_WORK <   500) picked = 1;
+        else if (OMP_WORK <  2000) picked = 2;
+        else if (OMP_WORK <  5000) picked = 4;
+        else if (OMP_WORK < 10000) picked = 8;
+        else if (OMP_WORK < 20000) picked = 12;
+        else if (OMP_WORK < 40000) picked = 16;
+        else if (OMP_WORK < 80000) picked = 20;
         else                   picked = hw_max;   // largest problems get all cores
         if (picked > hw_max) picked = hw_max;     // cap at machine maximum
         omp_set_num_threads(picked);
         omp_threads = picked;
         std::cerr << "[OpenMP] auto-selected " << omp_threads
                   << " thread" << (omp_threads == 1 ? "" : "s")
-                  << " for N_eq=" << N_EQ
-                  << " (hw_max=" << hw_max << ")\n";
+                  << " for work=" << OMP_WORK
+                  << " (N_eq=" << N_EQ << ", I+V=" << (P.I + P.V)
+                  << ", hw_max=" << hw_max << ")\n";
     }
     // Emit a machine-readable line so the Python provenance can capture
     // the actual thread count chosen by the solver.

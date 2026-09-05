@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated": "2026-09-05 04:25:35Z",
+  "updated": "2026-09-05 18:03:44Z",
   "goal": {
     "statement": "Find one parameter vector that puts all six observables inside their experimental ranges at EUROFER97 330 C / 15 dpa, neutron.",
     "targets_file": "targets_330C_15dpa.json",
@@ -13517,6 +13517,4135 @@
             "d_111": 0.9297548133983594,
             "N_void": 2.22374684766066e+19,
             "d_void": 2.8394372459208506
+          }
+        }
+      ]
+    },
+    "T2_design_v2_machine0": {
+      "design": null,
+      "results": "results/T2_design_v2_machine0.jsonl",
+      "dose_target": 15.0,
+      "in_scope": true,
+      "n_rows": 154,
+      "n_valid": 0,
+      "swept": [],
+      "sensitivity": {},
+      "affordability": {},
+      "rows": [
+        {
+          "row_id": 72,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 2.427,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 4.638719112731524e+22,
+            "d_100": 2.166265412234222,
+            "N_111": 2.747804498268849e+25,
+            "d_111": 1.1678133267678015,
+            "N_void": 1.6058674311703806e+25,
+            "d_void": 0.9537535099637588
+          }
+        },
+        {
+          "row_id": 84,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 2.33,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 1.1189244336317227e+22,
+            "d_100": 3.015947829745224,
+            "N_111": 1.726620357655751e+25,
+            "d_111": 1.4951232140316713,
+            "N_void": 1.5757586873650725e+25,
+            "d_void": 0.9680029003927924
+          }
+        },
+        {
+          "row_id": 80,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 2.218,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 1.3864129148589714e+22,
+            "d_100": 3.1150912967498097,
+            "N_111": 1.5114150717950886e+25,
+            "d_111": 1.446518767217075,
+            "N_void": 7.165763040094392e+24,
+            "d_void": 1.17682342585943
+          }
+        },
+        {
+          "row_id": 76,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 2.33,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 1.1189498256372728e+22,
+            "d_100": 3.015927288155208,
+            "N_111": 1.7266429524543812e+25,
+            "d_111": 1.4951143771309892,
+            "N_void": 1.5757591141042516e+25,
+            "d_void": 0.9680028405324506
+          }
+        },
+        {
+          "row_id": 88,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 2.504,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 2.170297955814443e+25,
+            "d_100": 1.6112280318611079,
+            "N_111": 6.572823169413084e+23,
+            "d_111": 1.172459708949458,
+            "N_void": 1.9628462617463005e+25,
+            "d_void": 1.0754793847623987
+          }
+        },
+        {
+          "row_id": 24,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 2,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.775,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 3.99268178318731e+21,
+            "d_100": 5.357349668211873,
+            "N_111": 9.508876591732839e+23,
+            "d_111": 5.178864066641396,
+            "N_void": 3.752566655264992e+24,
+            "d_void": 1.3565838653595823
+          }
+        },
+        {
+          "row_id": 100,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 3,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.761,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 6.045731641007953e+21,
+            "d_100": 4.116911363084787,
+            "N_111": 6.497288583854136e+23,
+            "d_111": 4.022026115321206,
+            "N_void": 4.328289639850595e+24,
+            "d_void": 0.9716056206978994
+          }
+        },
+        {
+          "row_id": 92,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.516,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 2.0507886266172454e+20,
+            "d_100": 12.939483252707545,
+            "N_111": 1.2522386842343152e+21,
+            "d_111": 0.8048653926137387,
+            "N_void": 2.819337238309281e+24,
+            "d_void": 0.8534278063546143
+          }
+        },
+        {
+          "row_id": 96,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.514,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 2.0518985858447573e+20,
+            "d_100": 12.939453307037954,
+            "N_111": 1.258151599148238e+21,
+            "d_111": 0.8048923612444181,
+            "N_void": 2.781230330491882e+24,
+            "d_void": 0.8568194811939214
+          }
+        },
+        {
+          "row_id": 104,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.516,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 2.0507886266172454e+20,
+            "d_100": 12.939483252707545,
+            "N_111": 1.2522386842343152e+21,
+            "d_111": 0.8048653926137387,
+            "N_void": 2.819337238309281e+24,
+            "d_void": 0.8534278063546143
+          }
+        },
+        {
+          "row_id": 108,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.516,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 2.0507886204789e+20,
+            "d_100": 12.939483252592478,
+            "N_111": 1.2522386905901975e+21,
+            "d_111": 0.804865355857871,
+            "N_void": 2.819337096814124e+24,
+            "d_void": 0.8534278223729044
+          }
+        },
+        {
+          "row_id": 32,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 0.824,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 4.512784444341344e+22,
+            "d_100": 11.297808535901192,
+            "N_111": 5.700399452206678e+22,
+            "d_111": 0.7740086521755991,
+            "N_void": 2.72607192717974e+21,
+            "d_void": 1.6431041900909542
+          }
+        },
+        {
+          "row_id": 116,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.968,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 3.633580032121348e+23,
+            "d_100": 2.7503969811425937,
+            "N_111": 2.889209963710993e+24,
+            "d_111": 2.250814920148329,
+            "N_void": 1.6964551371739413e+24,
+            "d_void": 1.5588208959216092
+          }
+        },
+        {
+          "row_id": 124,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.285,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 1.8430401273817843e+23,
+            "d_100": 10.242501933696357,
+            "N_111": 1.106444360717266e+23,
+            "d_111": 4.645496061059354,
+            "N_void": 1.7434642656898998e+23,
+            "d_void": 1.795858790686343
+          }
+        },
+        {
+          "row_id": 128,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.271,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 1.141340735450818e+23,
+            "d_100": 10.167492309018247,
+            "N_111": 1.8596219073832822e+23,
+            "d_111": 6.346666728077147,
+            "N_void": 1.3670198849065418e+23,
+            "d_void": 1.8019664961766841
+          }
+        },
+        {
+          "row_id": 120,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.309,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 1.5581068159742795e+23,
+            "d_100": 9.917461531966119,
+            "N_111": 1.8211498516169005e+23,
+            "d_111": 5.489343878710656,
+            "N_void": 1.5662860769097945e+23,
+            "d_void": 1.8000317078329735
+          }
+        },
+        {
+          "row_id": 132,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.29,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 1.1476144024643077e+23,
+            "d_100": 9.944500398777857,
+            "N_111": 2.0249747578987452e+23,
+            "d_111": 6.365168040027073,
+            "N_void": 1.474756929344104e+23,
+            "d_void": 1.7982743500290614
+          }
+        },
+        {
+          "row_id": 136,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.29,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 1.1391096418910342e+23,
+            "d_100": 9.942109689228387,
+            "N_111": 2.0352559879708717e+23,
+            "d_111": 6.368143629730756,
+            "N_void": 1.4724602189051568e+23,
+            "d_void": 1.7982755369972545
+          }
+        },
+        {
+          "row_id": 112,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.577,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 8.968052753158817e+19,
+            "d_100": 12.935877064029574,
+            "N_111": 1.253259111922865e+21,
+            "d_111": 0.804767264142429,
+            "N_void": 2.817760116116106e+24,
+            "d_void": 0.853332691889103
+          }
+        },
+        {
+          "row_id": 28,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.111,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 2.875653064618153e+22,
+            "d_100": 7.995086241908541,
+            "N_111": 5.172526910850472e+23,
+            "d_111": 1.1809113619636005,
+            "N_void": 7.350744379532117e+20,
+            "d_void": 0.7348613115335347
+          }
+        },
+        {
+          "row_id": 40,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.098,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 2.6375016050901224e+22,
+            "d_100": 8.266267883621703,
+            "N_111": 4.915210427027414e+23,
+            "d_111": 1.1792783721696547,
+            "N_void": 7.424091760797248e+20,
+            "d_void": 0.7591825407219003
+          }
+        },
+        {
+          "row_id": 8,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 2,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.036,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 3.026100744603489e+20,
+            "d_100": 12.789710998529632,
+            "N_111": 1.763727360385899e+21,
+            "d_111": 4.758493630512323,
+            "N_void": 2.04663821961355e+23,
+            "d_void": 0.748887042720071
+          }
+        },
+        {
+          "row_id": 36,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.107,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 2.6142506248399504e+22,
+            "d_100": 8.253497660476818,
+            "N_111": 4.92504927878923e+23,
+            "d_111": 1.1801529640734676,
+            "N_void": 4.869156581807152e+20,
+            "d_void": 0.7962866089984748
+          }
+        },
+        {
+          "row_id": 48,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 0.989,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 1.467224750900957e+21,
+            "d_100": 11.901571343735919,
+            "N_111": 4.2962182208842524e+20,
+            "d_111": 0.8050980810765832,
+            "N_void": 1.7055224442842408e+23,
+            "d_void": 1.381842497828995
+          }
+        },
+        {
+          "row_id": 44,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 2,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.111,
+          "dose_reached": 0.05223345074266832,
+          "observables": {
+            "N_100": 1.428330516474966e+22,
+            "d_100": 5.468384885601414,
+            "N_111": 6.405987118453073e+23,
+            "d_111": 1.3507204598375986,
+            "N_void": 7.222254211808499e+20,
+            "d_void": 0.729715159981089
+          }
+        },
+        {
+          "row_id": 20,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.013,
+          "dose_reached": 0.05223345074266832,
+          "observables": {
+            "N_100": 1.6548213463870685e+20,
+            "d_100": 12.829803321948107,
+            "N_111": 1.1614795826323997e+21,
+            "d_111": 5.061419752476146,
+            "N_void": 1.115965867049197e+23,
+            "d_void": 0.7110619578423597
+          }
+        },
+        {
+          "row_id": 56,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 3,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 0.542,
+          "dose_reached": 0.05223345074266832,
+          "observables": {
+            "N_100": 6.770140461815628e+21,
+            "d_100": 12.304231649979437,
+            "N_111": 6.327835924452094e+21,
+            "d_111": 5.246843306161447,
+            "N_void": 1.8872865838957674e+22,
+            "d_void": 0.9933999163073346
+          }
+        },
+        {
+          "row_id": 52,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.264,
+          "dose_reached": 0.05223345074266832,
+          "observables": {
+            "N_100": 7.861462320702639e+20,
+            "d_100": 11.226362547162596,
+            "N_111": 2.763198014621162e+20,
+            "d_111": 0.8008042137800468,
+            "N_void": 7.04645318251304e+23,
+            "d_void": 0.8539237191798899
+          }
+        },
+        {
+          "row_id": 0,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.023,
+          "dose_reached": 0.05223345074266832,
+          "observables": {
+            "N_100": 1.5045853782880692e+20,
+            "d_100": 12.822068462567973,
+            "N_111": 1.1605004398198118e+21,
+            "d_111": 5.060391369202787,
+            "N_void": 1.1165021831160004e+23,
+            "d_void": 0.711136452902614
+          }
+        },
+        {
+          "row_id": 4,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.028,
+          "dose_reached": 0.05223345074266832,
+          "observables": {
+            "N_100": 1.4523293475974686e+20,
+            "d_100": 12.816841816711761,
+            "N_111": 1.1290457930374206e+21,
+            "d_111": 5.0019553241088826,
+            "N_void": 1.1213018952336639e+23,
+            "d_void": 0.7147195804224216
+          }
+        },
+        {
+          "row_id": 68,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 2,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 0.8,
+          "dose_reached": 0.014251026703029962,
+          "observables": {
+            "N_100": 7.811483682550902e+20,
+            "d_100": 5.5488349928953715,
+            "N_111": 5.502438896189634e+21,
+            "d_111": 11.29859040442416,
+            "N_void": 7.283196726965013e+22,
+            "d_void": 1.4042786996480325
+          }
+        },
+        {
+          "row_id": 64,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.077,
+          "dose_reached": 0.014251026703029962,
+          "observables": {
+            "N_100": 6.992623632792953e+19,
+            "d_100": 1.4155741218124493,
+            "N_111": 5.782344612721915e+21,
+            "d_111": 10.142209564029836,
+            "N_void": 6.840216108329296e+22,
+            "d_void": 1.3090007872287432
+          }
+        },
+        {
+          "row_id": 12,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.023,
+          "dose_reached": 0.05223345074266832,
+          "observables": {
+            "N_100": 1.5045853782880692e+20,
+            "d_100": 12.822068462567973,
+            "N_111": 1.1605004398198118e+21,
+            "d_111": 5.060391369202787,
+            "N_void": 1.1165021831160004e+23,
+            "d_void": 0.711136452902614
+          }
+        },
+        {
+          "row_id": 16,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.023,
+          "dose_reached": 0.05223345074266832,
+          "observables": {
+            "N_100": 1.5045854253997405e+20,
+            "d_100": 12.822068466509688,
+            "N_111": 1.1605004385240625e+21,
+            "d_111": 5.060391370419393,
+            "N_void": 1.1165021839649436e+23,
+            "d_void": 0.7111364529356334
+          }
+        },
+        {
+          "row_id": 60,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.144,
+          "dose_reached": 0.014251026703029962,
+          "observables": {
+            "N_100": 4.027537931271252e+19,
+            "d_100": 1.8695480074606934,
+            "N_111": 4.823550884356438e+21,
+            "d_111": 11.620656577759414,
+            "N_void": 7.591145667026304e+22,
+            "d_void": 1.443480262234797
+          }
+        },
+        {
+          "row_id": 208,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 2.252,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 4.778794285536392e+24,
+            "d_100": 2.2974402299786507,
+            "N_111": 5.0523138393717015e+23,
+            "d_111": 4.737557701126355,
+            "N_void": 1.2408777656223202e+25,
+            "d_void": 1.0650353597208686
+          }
+        },
+        {
+          "row_id": 224,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.31,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 3.9197391473238035e+22,
+            "d_100": 10.709350676855667,
+            "N_111": 1.921572029159402e+23,
+            "d_111": 10.699329278114527,
+            "N_void": 3.103904692904542e+23,
+            "d_void": 1.840268967932127
+          }
+        },
+        {
+          "row_id": 220,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.286,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 4.511105322469769e+22,
+            "d_100": 10.742396584923219,
+            "N_111": 2.0213166551148346e+23,
+            "d_111": 10.053806607437375,
+            "N_void": 2.3218339796858513e+23,
+            "d_void": 1.8471438911836724
+          }
+        },
+        {
+          "row_id": 212,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.309,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 3.812277653629836e+22,
+            "d_100": 10.744500962707624,
+            "N_111": 1.9219966967017053e+23,
+            "d_111": 10.706729043768277,
+            "N_void": 3.102468889382423e+23,
+            "d_void": 1.840116514166785
+          }
+        },
+        {
+          "row_id": 172,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.295,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 3.2555466681975093e+21,
+            "d_100": 12.704210421740287,
+            "N_111": 9.214711604744328e+21,
+            "d_111": 1.575671227167192,
+            "N_void": 1.5490558938365555e+24,
+            "d_void": 1.7725500408132122
+          }
+        },
+        {
+          "row_id": 228,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.309,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 3.7853033761931444e+22,
+            "d_100": 10.646663179665337,
+            "N_111": 1.940313356911768e+23,
+            "d_111": 10.689776007840669,
+            "N_void": 3.0960868561537245e+23,
+            "d_void": 1.8399766004628928
+          }
+        },
+        {
+          "row_id": 168,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.129,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 6.222006609443994e+21,
+            "d_100": 12.437451693127187,
+            "N_111": 1.3698113926620353e+23,
+            "d_111": 10.490683654107736,
+            "N_void": 1.5358952642994887e+23,
+            "d_void": 1.8286874482720161
+          }
+        },
+        {
+          "row_id": 164,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.214,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 1.615005851667082e+22,
+            "d_100": 12.38532022547622,
+            "N_111": 1.9633069293448815e+23,
+            "d_111": 8.003991804544569,
+            "N_void": 1.909926224690971e+23,
+            "d_void": 1.8939849067106174
+          }
+        },
+        {
+          "row_id": 216,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.205,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 4.3494254742296785e+22,
+            "d_100": 12.350497200005869,
+            "N_111": 6.045625592668477e+21,
+            "d_111": 0.8999531739249454,
+            "N_void": 5.9650128396806975e+23,
+            "d_void": 1.7908157607833792
+          }
+        },
+        {
+          "row_id": 140,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.487,
+          "dose_reached": 0.05223345074266832,
+          "observables": {
+            "N_100": 5.527496971957321e+18,
+            "d_100": 12.867100493779713,
+            "N_111": 9.519322884680103e+19,
+            "d_111": 5.851203160614966,
+            "N_void": 5.725355334178747e+22,
+            "d_void": 0.8550893748053049
+          }
+        },
+        {
+          "row_id": 176,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.129,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 6.378825798133377e+21,
+            "d_100": 12.417901691990986,
+            "N_111": 1.3746805222240797e+23,
+            "d_111": 10.480526925098893,
+            "N_void": 1.5363421914599263e+23,
+            "d_void": 1.8290880161497312
+          }
+        },
+        {
+          "row_id": 144,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.824,
+          "dose_reached": 0.05223345074266832,
+          "observables": {
+            "N_100": 1.633950812046798e+18,
+            "d_100": 12.859895677528002,
+            "N_111": 3.3474640055575925e+19,
+            "d_111": 5.4865958627856,
+            "N_void": 1.836425789063079e+23,
+            "d_void": 0.7910899423828306
+          }
+        },
+        {
+          "row_id": 148,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.388,
+          "dose_reached": 0.027283333764867693,
+          "observables": {
+            "N_100": 6.782394193591742e+18,
+            "d_100": 12.82504505281606,
+            "N_111": 1.6377854369790935e+20,
+            "d_111": 6.236842762081222,
+            "N_void": 3.4704906345994965e+22,
+            "d_void": 0.8468232334685903
+          }
+        },
+        {
+          "row_id": 180,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.217,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 6.746252055334583e+22,
+            "d_100": 11.451985295042443,
+            "N_111": 1.391743155254801e+23,
+            "d_111": 8.803392269269867,
+            "N_void": 1.5292257928050814e+23,
+            "d_void": 1.832594094903374
+          }
+        },
+        {
+          "row_id": 184,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.461,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 3.963161015212844e+19,
+            "d_100": 12.940179976498378,
+            "N_111": 8.867881275787297e+20,
+            "d_111": 0.8238984466699062,
+            "N_void": 7.556561376163708e+23,
+            "d_void": 1.19770263691839
+          }
+        },
+        {
+          "row_id": 196,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.461,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 3.963161015212844e+19,
+            "d_100": 12.940179976498378,
+            "N_111": 8.867881275787297e+20,
+            "d_111": 0.8238984466699062,
+            "N_void": 7.556561376163708e+23,
+            "d_void": 1.19770263691839
+          }
+        },
+        {
+          "row_id": 152,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.488,
+          "dose_reached": 0.05223345074266832,
+          "observables": {
+            "N_100": 5.479922321173796e+18,
+            "d_100": 12.866595305672973,
+            "N_111": 9.48266668598962e+19,
+            "d_111": 5.853850394375874,
+            "N_void": 5.67861834867779e+22,
+            "d_void": 0.8553901133997955
+          }
+        },
+        {
+          "row_id": 204,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.461,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 3.946795399568339e+19,
+            "d_100": 12.940171871385482,
+            "N_111": 8.867895760228538e+20,
+            "d_111": 0.8238985060381545,
+            "N_void": 7.55655902607485e+23,
+            "d_void": 1.197701869771956
+          }
+        },
+        {
+          "row_id": 156,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.491,
+          "dose_reached": 0.05223345074266832,
+          "observables": {
+            "N_100": 5.26738273815469e+18,
+            "d_100": 12.856712420694192,
+            "N_111": 9.77915733880994e+19,
+            "d_111": 5.913040766606981,
+            "N_void": 5.60916960647178e+22,
+            "d_void": 0.8537378606452942
+          }
+        },
+        {
+          "row_id": 160,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.564,
+          "dose_reached": 0.027283333764867693,
+          "observables": {
+            "N_100": 3.2631391783058545e+18,
+            "d_100": 12.877837810093599,
+            "N_111": 9.467102821866367e+19,
+            "d_111": 5.852418236593748,
+            "N_void": 5.684787191401916e+22,
+            "d_void": 0.8555340910203119
+          }
+        },
+        {
+          "row_id": 200,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.461,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 3.963160778456036e+19,
+            "d_100": 12.940179976427764,
+            "N_111": 8.867881687741028e+20,
+            "d_111": 0.8238984518295535,
+            "N_void": 7.556561246224078e+23,
+            "d_void": 1.197702619924884
+          }
+        },
+        {
+          "row_id": 192,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.423,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 5.89518104211805e+19,
+            "d_100": 12.939496831631455,
+            "N_111": 1.3063796670088896e+21,
+            "d_111": 0.8329169810023699,
+            "N_void": 8.09342236011293e+23,
+            "d_void": 1.2837042794566331
+          }
+        },
+        {
+          "row_id": 240,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 2.456,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 9.329776550940149e+16,
+            "d_100": 12.111660717697108,
+            "N_111": 7.244590771406394e+18,
+            "d_111": 1.9152769229194868,
+            "N_void": 7.9048478359586e+23,
+            "d_void": 0.8708476176692778
+          }
+        },
+        {
+          "row_id": 188,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.442,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 4.263157301710957e+19,
+            "d_100": 12.940177250588818,
+            "N_111": 9.000005200457216e+20,
+            "d_111": 0.8252466101515632,
+            "N_void": 6.98365476520919e+23,
+            "d_void": 1.2341362537705203
+          }
+        },
+        {
+          "row_id": 256,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.553,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 2.438407880492713e+22,
+            "d_100": 11.384765235330057,
+            "N_111": 2.2767840797052137e+23,
+            "d_111": 10.45894203285439,
+            "N_void": 1.8547208202127625e+24,
+            "d_void": 1.8253834348919586
+          }
+        },
+        {
+          "row_id": 308,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.922,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 1.4127585031561843e+21,
+            "d_100": 11.007052565654995,
+            "N_111": 3.1514594869387576e+23,
+            "d_111": 8.46674670258333,
+            "N_void": 1.7897249898063408e+25,
+            "d_void": 0.7793173893084085
+          }
+        },
+        {
+          "row_id": 260,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.428,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 8.980999163226212e+21,
+            "d_100": 11.782425065971347,
+            "N_111": 7.496981829952905e+22,
+            "d_111": 11.854059339509869,
+            "N_void": 1.792032242106231e+24,
+            "d_void": 1.872781697165288
+          }
+        },
+        {
+          "row_id": 312,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.901,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 2.1061313742468117e+21,
+            "d_100": 11.303374113344741,
+            "N_111": 2.910671608219578e+23,
+            "d_111": 8.727674641692467,
+            "N_void": 1.701812016712465e+25,
+            "d_void": 0.7889094698737974
+          }
+        },
+        {
+          "row_id": 304,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.907,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 2.105717685000107e+21,
+            "d_100": 11.246580192756083,
+            "N_111": 2.9108680161736735e+23,
+            "d_111": 8.707683318468145,
+            "N_void": 1.7679090899288464e+25,
+            "d_void": 0.7777974488655847
+          }
+        },
+        {
+          "row_id": 316,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.907,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 2.1058222298163364e+21,
+            "d_100": 11.244546925353854,
+            "N_111": 2.9126997886331446e+23,
+            "d_111": 8.710420853986534,
+            "N_void": 1.7679623677719496e+25,
+            "d_void": 0.7777939684470386
+          }
+        },
+        {
+          "row_id": 320,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.907,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 2.0975711036645006e+21,
+            "d_100": 11.245988949082797,
+            "N_111": 2.910992889293851e+23,
+            "d_111": 8.70770709353288,
+            "N_void": 1.7678996926978559e+25,
+            "d_void": 0.7777963288339189
+          }
+        },
+        {
+          "row_id": 264,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.373,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 9.575864344599123e+21,
+            "d_100": 11.786604092780834,
+            "N_111": 7.450215442042478e+22,
+            "d_111": 11.428169555909589,
+            "N_void": 1.2563954641677593e+24,
+            "d_void": 1.9201458319386773
+          }
+        },
+        {
+          "row_id": 272,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.416,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 3.3009821814580414e+21,
+            "d_100": 12.310643603568355,
+            "N_111": 6.521132702543656e+22,
+            "d_111": 11.687905552275824,
+            "N_void": 1.795321693767674e+24,
+            "d_void": 1.8683086916571645
+          }
+        },
+        {
+          "row_id": 236,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 2.152,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 3.035218809321922e+17,
+            "d_100": 12.745934943838733,
+            "N_111": 2.191851100074108e+19,
+            "d_111": 1.7741715032798175,
+            "N_void": 3.4042612257020745e+23,
+            "d_void": 0.7438815433141905
+          }
+        },
+        {
+          "row_id": 268,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.521,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 2.806817586455309e+22,
+            "d_100": 11.33265385681725,
+            "N_111": 1.5970725908199006e+23,
+            "d_111": 11.935658203552858,
+            "N_void": 1.7907931000103245e+24,
+            "d_void": 1.8792699221141982
+          }
+        },
+        {
+          "row_id": 232,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 2.091,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 3.915873712957318e+17,
+            "d_100": 12.803314797131318,
+            "N_111": 2.606953408207805e+19,
+            "d_111": 1.7762659535965106,
+            "N_void": 2.9364275968754034e+23,
+            "d_void": 0.836965047085861
+          }
+        },
+        {
+          "row_id": 244,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 2.109,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 3.2839455050760774e+17,
+            "d_100": 12.768396055234602,
+            "N_111": 2.335637876079568e+19,
+            "d_111": 1.7849024618796314,
+            "N_void": 2.4630926274864993e+23,
+            "d_void": 0.8418423765610709
+          }
+        },
+        {
+          "row_id": 356,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.633,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 1.603284067943887e+22,
+            "d_100": 5.352255041929748,
+            "N_111": 3.1737952857650986e+24,
+            "d_111": 1.8315773893717646,
+            "N_void": 2.722549209486456e+23,
+            "d_void": 2.000900990775336
+          }
+        },
+        {
+          "row_id": 352,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.271,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 2.8171357764680107e+22,
+            "d_100": 7.777516596480411,
+            "N_111": 1.1423529716436776e+24,
+            "d_111": 1.6272154506167136,
+            "N_void": 1.6171990833575303e+22,
+            "d_void": 1.8300142501795877
+          }
+        },
+        {
+          "row_id": 348,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.284,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 5.666572505159134e+22,
+            "d_100": 7.053124438813732,
+            "N_111": 8.59133314637271e+23,
+            "d_111": 1.4584125507675052,
+            "N_void": 2.13680229625908e+22,
+            "d_void": 1.8266197137588074
+          }
+        },
+        {
+          "row_id": 360,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.271,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 2.817179827697876e+22,
+            "d_100": 7.777402298709682,
+            "N_111": 1.1427409325083936e+24,
+            "d_111": 1.627280455312579,
+            "N_void": 1.6170501155668888e+22,
+            "d_void": 1.8300909343509706
+          }
+        },
+        {
+          "row_id": 284,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.129,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 1.0385716928623805e+22,
+            "d_100": 8.456513713898367,
+            "N_111": 4.530171566397949e+23,
+            "d_111": 4.086189387767277,
+            "N_void": 3.445199529710399e+22,
+            "d_void": 1.8149152564781406
+          }
+        },
+        {
+          "row_id": 248,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 2.106,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 3.3548837531211315e+17,
+            "d_100": 12.793739987257299,
+            "N_111": 2.3327915427906986e+19,
+            "d_111": 1.774433499891436,
+            "N_void": 2.4648309518713107e+23,
+            "d_void": 0.8418995170570954
+          }
+        },
+        {
+          "row_id": 364,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.163,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 3.278342623917986e+23,
+            "d_100": 7.713265494143091,
+            "N_111": 3.948180839165683e+22,
+            "d_111": 0.9114211522750005,
+            "N_void": 5.147797156702002e+22,
+            "d_void": 1.8233326369797158
+          }
+        },
+        {
+          "row_id": 252,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 2.101,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 3.476785150976199e+17,
+            "d_100": 12.805371513742925,
+            "N_111": 2.3355788515455082e+19,
+            "d_111": 1.784900868519647,
+            "N_void": 2.4631418339174145e+23,
+            "d_void": 0.8418439764691552
+          }
+        },
+        {
+          "row_id": 344,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.418,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 1.341791865119222e+22,
+            "d_100": 12.192716673622416,
+            "N_111": 1.7749826330897036e+20,
+            "d_111": 0.8034427965903537,
+            "N_void": 1.9569441887455317e+24,
+            "d_void": 0.8894819064943628
+          }
+        },
+        {
+          "row_id": 324,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.389,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 9.677587924186372e+21,
+            "d_100": 9.795075891684283,
+            "N_111": 2.54516819784318e+20,
+            "d_111": 0.7967980396888314,
+            "N_void": 1.9043283364511983e+24,
+            "d_void": 0.8175129040784384
+          }
+        },
+        {
+          "row_id": 392,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.157,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 1.847065913573961e+22,
+            "d_100": 7.732324591350252,
+            "N_111": 3.6460046888873e+23,
+            "d_111": 4.9795879984068385,
+            "N_void": 5.668555181769697e+22,
+            "d_void": 1.807737901650895
+          }
+        },
+        {
+          "row_id": 340,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.379,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 9.176218104842097e+21,
+            "d_100": 10.471194638564869,
+            "N_111": 2.2971095049671515e+20,
+            "d_111": 0.796968176549622,
+            "N_void": 1.7389823743182206e+24,
+            "d_void": 0.8375638331899519
+          }
+        },
+        {
+          "row_id": 332,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.37,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 9.26866755992598e+21,
+            "d_100": 9.546853926537253,
+            "N_111": 2.4424218112282588e+20,
+            "d_111": 0.7968997213931122,
+            "N_void": 1.6895265169127732e+24,
+            "d_void": 0.825526573637397
+          }
+        },
+        {
+          "row_id": 336,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.365,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 7.792772434700813e+21,
+            "d_100": 9.857797769560976,
+            "N_111": 2.51710707717703e+20,
+            "d_111": 0.7969458195150352,
+            "N_void": 1.6675231562501685e+24,
+            "d_void": 0.819387813530301
+          }
+        },
+        {
+          "row_id": 328,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.29,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 1.0139798818981428e+22,
+            "d_100": 9.532468047636444,
+            "N_111": 2.724997753798101e+20,
+            "d_111": 0.7976068877419658,
+            "N_void": 1.0759185112363835e+24,
+            "d_void": 0.9578422378614216
+          }
+        },
+        {
+          "row_id": 300,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.25,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 1.1935000631417515e+20,
+            "d_100": 12.876460154214602,
+            "N_111": 4.7006902639214474e+20,
+            "d_111": 0.8321030407223389,
+            "N_void": 3.191901229359811e+23,
+            "d_void": 1.2941344728256081
+          }
+        },
+        {
+          "row_id": 400,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.089,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 6.936382335611582e+22,
+            "d_100": 11.83568201171471,
+            "N_111": 5.068153874967546e+22,
+            "d_111": 0.8350795188377527,
+            "N_void": 4.084363772636171e+19,
+            "d_void": 0.508298343917763
+          }
+        },
+        {
+          "row_id": 276,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.253,
+          "dose_reached": 0.014251026703029962,
+          "observables": {
+            "N_100": 1.0211417353483526e+19,
+            "d_100": 12.703020586703865,
+            "N_111": 5.890577044130053e+20,
+            "d_111": 4.187656878395112,
+            "N_void": 2.7574078061140616e+22,
+            "d_void": 0.9268536676470939
+          }
+        },
+        {
+          "row_id": 280,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.218,
+          "dose_reached": 0.014251026703029962,
+          "observables": {
+            "N_100": 1.1890830242510363e+19,
+            "d_100": 12.732067270481927,
+            "N_111": 7.357106966981703e+20,
+            "d_111": 4.847318295926455,
+            "N_void": 2.595136809018444e+22,
+            "d_void": 0.8888494241524021
+          }
+        },
+        {
+          "row_id": 440,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 2.124,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 1.0320796619274397e+23,
+            "d_100": 2.6383151534950806,
+            "N_111": 1.5136922897506948e+25,
+            "d_111": 1.0804438749877372,
+            "N_void": 1.7433845636603736e+24,
+            "d_void": 1.563823758280345
+          }
+        },
+        {
+          "row_id": 288,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.253,
+          "dose_reached": 0.014251026703029962,
+          "observables": {
+            "N_100": 1.0211417353483526e+19,
+            "d_100": 12.703020586703865,
+            "N_111": 5.890577044130053e+20,
+            "d_111": 4.187656878395112,
+            "N_void": 2.7574078061140616e+22,
+            "d_void": 0.9268536676470939
+          }
+        },
+        {
+          "row_id": 292,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.253,
+          "dose_reached": 0.014251026703029962,
+          "observables": {
+            "N_100": 1.0211417580673606e+19,
+            "d_100": 12.703020592605569,
+            "N_111": 5.890577060897957e+20,
+            "d_111": 4.187656936580358,
+            "N_void": 2.7574078057684916e+22,
+            "d_void": 0.9268536676201486
+          }
+        },
+        {
+          "row_id": 444,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 2.036,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 2.6428240241575368e+22,
+            "d_100": 3.350966952990657,
+            "N_111": 1.1253101077486645e+25,
+            "d_111": 1.3683606825231602,
+            "N_void": 1.8919769478718709e+24,
+            "d_void": 1.5990191731155896
+          }
+        },
+        {
+          "row_id": 456,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 2.098,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 2.2260842173008715e+25,
+            "d_100": 1.5821670795626555,
+            "N_111": 2.452875264255081e+22,
+            "d_111": 0.892811823344689,
+            "N_void": 2.8816987709910007e+24,
+            "d_void": 1.8566110243680756
+          }
+        },
+        {
+          "row_id": 448,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.806,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 3.536824476509382e+22,
+            "d_100": 4.402572534698911,
+            "N_111": 7.18544333650652e+24,
+            "d_111": 1.2924983799156744,
+            "N_void": 3.4913888030578284e+23,
+            "d_void": 2.0282723860438376
+          }
+        },
+        {
+          "row_id": 452,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 2.036,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 2.637907283009241e+22,
+            "d_100": 3.353079552540991,
+            "N_111": 1.1246162765741094e+25,
+            "d_111": 1.3687548014429212,
+            "N_void": 1.8921353286068223e+24,
+            "d_void": 1.5990183690182547
+          }
+        },
+        {
+          "row_id": 296,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.197,
+          "dose_reached": 0.014251026703029962,
+          "observables": {
+            "N_100": 1.4644620137674031e+19,
+            "d_100": 12.767395931972478,
+            "N_111": 5.906761282284394e+20,
+            "d_111": 4.19466809790053,
+            "N_void": 2.7525302721740332e+22,
+            "d_void": 0.9266234949241376
+          }
+        },
+        {
+          "row_id": 368,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 0.677,
+          "dose_reached": 0.014251026703029962,
+          "observables": {
+            "N_100": 5.345052816988814e+20,
+            "d_100": 12.749166941211564,
+            "N_111": 1.0173986168256106e+21,
+            "d_111": 6.363718699827901,
+            "N_void": 2.2011933084223504e+22,
+            "d_void": 0.7765661280498569
+          }
+        },
+        {
+          "row_id": 372,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 0.68,
+          "dose_reached": 0.014251026703029962,
+          "observables": {
+            "N_100": 5.244573245010454e+20,
+            "d_100": 12.743002113065971,
+            "N_111": 9.96272563287041e+20,
+            "d_111": 6.336603402070565,
+            "N_void": 2.2085462823387607e+22,
+            "d_void": 0.7819341807392325
+          }
+        },
+        {
+          "row_id": 468,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.399,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 1.161965340912283e+22,
+            "d_100": 2.7620847950508765,
+            "N_111": 3.874756007818591e+23,
+            "d_111": 2.626089899932809,
+            "N_void": 4.123881403893227e+23,
+            "d_void": 1.3316894622461082
+          }
+        },
+        {
+          "row_id": 376,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 0.666,
+          "dose_reached": 0.027283333764867693,
+          "observables": {
+            "N_100": 1.429812864882656e+21,
+            "d_100": 12.772056066898203,
+            "N_111": 1.628211470202444e+21,
+            "d_111": 6.286090944703974,
+            "N_void": 4.024262077039247e+22,
+            "d_void": 0.8694668790883967
+          }
+        },
+        {
+          "row_id": 380,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 0.677,
+          "dose_reached": 0.014251026703029962,
+          "observables": {
+            "N_100": 5.345052816988814e+20,
+            "d_100": 12.749166941211564,
+            "N_111": 1.0173986168256106e+21,
+            "d_111": 6.363718699827901,
+            "N_void": 2.2011933084223504e+22,
+            "d_void": 0.7765661280498569
+          }
+        },
+        {
+          "row_id": 384,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 0.677,
+          "dose_reached": 0.014251026703029962,
+          "observables": {
+            "N_100": 5.345052789552549e+20,
+            "d_100": 12.749166943910806,
+            "N_111": 1.0173985658461799e+21,
+            "d_111": 6.363718391121598,
+            "N_void": 2.20119330621815e+22,
+            "d_void": 0.7765661275594756
+          }
+        },
+        {
+          "row_id": 388,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 0.674,
+          "dose_reached": 0.014251026703029962,
+          "observables": {
+            "N_100": 5.463383370791407e+20,
+            "d_100": 12.750237192136904,
+            "N_111": 1.0190893002322965e+21,
+            "d_111": 6.364844375747075,
+            "N_void": 2.1975157431482267e+22,
+            "d_void": 0.7763079969612869
+          }
+        },
+        {
+          "row_id": 396,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.181,
+          "dose_reached": 0.027283333764867693,
+          "observables": {
+            "N_100": 4.370921770956729e+22,
+            "d_100": 5.189024893412985,
+            "N_111": 1.7881563481227683e+23,
+            "d_111": 1.0338097021672292,
+            "N_void": 3.925614310665506e+19,
+            "d_void": 0.5117626145444559
+          }
+        },
+        {
+          "row_id": 404,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.208,
+          "dose_reached": 0.014251026703029962,
+          "observables": {
+            "N_100": 1.2459848700455343e+22,
+            "d_100": 4.202371559291828,
+            "N_111": 2.6208406006319086e+23,
+            "d_111": 1.3986120110180682,
+            "N_void": 2.5895897067859116e+19,
+            "d_void": 0.5221526048633787
+          }
+        },
+        {
+          "row_id": 484,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 2,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.135,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 5.653457556692164e+23,
+            "d_100": 6.847491556606683,
+            "N_111": 1.1570022713367363e+22,
+            "d_111": 0.9877991839895948,
+            "N_void": 4.6890632414862955e+22,
+            "d_void": 1.7881115272310864
+          }
+        },
+        {
+          "row_id": 408,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.155,
+          "dose_reached": 0.027283333764867693,
+          "observables": {
+            "N_100": 2.506101600949878e+22,
+            "d_100": 5.953685678795215,
+            "N_111": 1.9351696647629618e+23,
+            "d_111": 1.220479285722164,
+            "N_void": 3.909214305122796e+19,
+            "d_void": 0.5121336932829175
+          }
+        },
+        {
+          "row_id": 412,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.152,
+          "dose_reached": 0.027283333764867693,
+          "observables": {
+            "N_100": 2.533825162638006e+22,
+            "d_100": 5.980036947555306,
+            "N_111": 1.877265834856003e+23,
+            "d_111": 1.2047007762620376,
+            "N_void": 3.9125700670219936e+19,
+            "d_void": 0.512063183878661
+          }
+        },
+        {
+          "row_id": 416,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 0.89,
+          "dose_reached": 0.0074438030132516955,
+          "observables": {
+            "N_100": 1.2150714157263657e+20,
+            "d_100": 0.9793276243213271,
+            "N_111": 4.451261190651177e+21,
+            "d_111": 9.475352481708061,
+            "N_void": 1.6851824994871388e+20,
+            "d_void": 0.5572301671236694
+          }
+        },
+        {
+          "row_id": 420,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 0.964,
+          "dose_reached": 0.014251026703029962,
+          "observables": {
+            "N_100": 2.1848295958936955e+21,
+            "d_100": 8.583025911845908,
+            "N_111": 1.84783229748547e+20,
+            "d_111": 0.8073701424284954,
+            "N_void": 1.1116308076830284e+23,
+            "d_void": 1.1888800035418465
+          }
+        },
+        {
+          "row_id": 424,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 2,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 0.544,
+          "dose_reached": 0.0038881551803080848,
+          "observables": {
+            "N_100": 2.3855461268517374e+21,
+            "d_100": 3.285726455576478,
+            "N_111": 4.336305427888741e+21,
+            "d_111": 4.166191169258829,
+            "N_void": 1.3855410762836099e+20,
+            "d_void": 0.6344140378049823
+          }
+        },
+        {
+          "row_id": 428,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.09,
+          "dose_reached": 0.0074438030132516955,
+          "observables": {
+            "N_100": 2.4837903494572417e+19,
+            "d_100": 1.0673385463222822,
+            "N_111": 4.146510487023293e+21,
+            "d_111": 8.669243126830171,
+            "N_void": 1.8472869405080483e+20,
+            "d_void": 0.7577953182863918
+          }
+        },
+        {
+          "row_id": 460,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.315,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 1.348959949052699e+20,
+            "d_100": 12.899286285797661,
+            "N_111": 6.997488778089721e+20,
+            "d_111": 0.8035444617701596,
+            "N_void": 5.849880879772286e+23,
+            "d_void": 1.151968497333693
+          }
+        },
+        {
+          "row_id": 476,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.315,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 1.3489601348545849e+20,
+            "d_100": 12.899286284629504,
+            "N_111": 6.997475516372116e+20,
+            "d_111": 0.8035443983465199,
+            "N_void": 5.849899171647398e+23,
+            "d_void": 1.1519677382830682
+          }
+        },
+        {
+          "row_id": 432,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 2,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 0.884,
+          "dose_reached": 0.0038881551803080848,
+          "observables": {
+            "N_100": 1.2761126278915567e+20,
+            "d_100": 0.9762807946747996,
+            "N_111": 4.728216741496805e+21,
+            "d_111": 6.244730017420181,
+            "N_void": 1.642176278396685e+20,
+            "d_void": 0.5611831919398875
+          }
+        },
+        {
+          "row_id": 472,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.315,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 1.348959949052699e+20,
+            "d_100": 12.899286285797661,
+            "N_111": 6.997488778089721e+20,
+            "d_111": 0.8035444617701596,
+            "N_void": 5.849880879772286e+23,
+            "d_void": 1.151968497333693
+          }
+        },
+        {
+          "row_id": 464,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.313,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 1.3620894951423279e+20,
+            "d_100": 12.899666044891392,
+            "N_111": 7.009501682646564e+20,
+            "d_111": 0.8035681682955642,
+            "N_void": 5.8062900098800745e+23,
+            "d_void": 1.155090865999246
+          }
+        },
+        {
+          "row_id": 480,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.379,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 6.7102559965033595e+19,
+            "d_100": 12.859334259688122,
+            "N_111": 6.998677400462817e+20,
+            "d_111": 0.8035488219549869,
+            "N_void": 5.850124850863693e+23,
+            "d_void": 1.1518618062392878
+          }
+        },
+        {
+          "row_id": 436,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 0.553,
+          "dose_reached": 0.0074438030132516955,
+          "observables": {
+            "N_100": 3.614569729515498e+21,
+            "d_100": 2.1496531848390643,
+            "N_111": 4.2045499423239763e+21,
+            "d_111": 9.094204931836863,
+            "N_void": 1.5643607119987468e+20,
+            "d_void": 0.5131114127875752
+          }
+        },
+        {
+          "row_id": 492,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 3,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 0.692,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 1.9119195803817914e+23,
+            "d_100": 12.74689158246207,
+            "N_111": 5.02877244967611e+21,
+            "d_111": 4.642100021885924,
+            "N_void": 2.3729221378223715e+21,
+            "d_void": 1.7210865091508933
+          }
+        },
+        {
+          "row_id": 500,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 3,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 0.691,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 1.902367104391197e+23,
+            "d_100": 12.7460808098916,
+            "N_111": 5.115524412747394e+21,
+            "d_111": 4.710120606311032,
+            "N_void": 2.3643501780058946e+21,
+            "d_void": 1.7209516527090956
+          }
+        },
+        {
+          "row_id": 504,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 3,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 0.691,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 1.900625901886396e+23,
+            "d_100": 12.746280824268508,
+            "N_111": 5.0886693895272e+21,
+            "d_111": 4.692384703278198,
+            "N_void": 2.367441475131796e+21,
+            "d_void": 1.721078706812895
+          }
+        },
+        {
+          "row_id": 496,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 3,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 0.682,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 1.8630507346859427e+23,
+            "d_100": 12.739453767437935,
+            "N_111": 4.5533126649590684e+21,
+            "d_111": 4.315043750041826,
+            "N_void": 2.0400195410029338e+21,
+            "d_void": 1.723266929211543
+          }
+        },
+        {
+          "row_id": 576,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.858,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 1.2543072526052521e+25,
+            "d_100": 1.9736488478344323,
+            "N_111": 3.3928188354710064e+22,
+            "d_111": 0.8434731535699547,
+            "N_void": 5.484636848236857e+23,
+            "d_void": 1.765802915104789
+          }
+        },
+        {
+          "row_id": 488,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 2,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 0.779,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 2.4452914388131613e+23,
+            "d_100": 12.719577920268833,
+            "N_111": 2.658177850134717e+21,
+            "d_111": 1.100642990427882,
+            "N_void": 2.671558961931037e+21,
+            "d_void": 1.7311750628135414
+          }
+        },
+        {
+          "row_id": 592,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 0.963,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 6.071762192323236e+23,
+            "d_100": 8.011751738961278,
+            "N_111": 3.5264407934766615e+21,
+            "d_111": 0.7792731828877689,
+            "N_void": 5.129825128533947e+21,
+            "d_void": 1.7163651559518096
+          }
+        },
+        {
+          "row_id": 580,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 0.957,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 5.8014079647492026e+23,
+            "d_100": 8.193839956903807,
+            "N_111": 3.686946748907544e+21,
+            "d_111": 0.7793398370886887,
+            "N_void": 5.130092318774136e+21,
+            "d_void": 1.716653890112963
+          }
+        },
+        {
+          "row_id": 596,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 0.963,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 6.067421541843785e+23,
+            "d_100": 8.017801639472617,
+            "N_111": 3.5371539375557354e+21,
+            "d_111": 0.7793704794778198,
+            "N_void": 5.129772249742761e+21,
+            "d_void": 1.716382027188563
+          }
+        },
+        {
+          "row_id": 588,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 3,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 0.946,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 6.260424974790709e+23,
+            "d_100": 6.221985508810271,
+            "N_111": 3.8114837299502687e+21,
+            "d_111": 0.7875375474502854,
+            "N_void": 2.2954331242975779e+21,
+            "d_void": 1.659460164199966
+          }
+        },
+        {
+          "row_id": 508,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.013,
+          "dose_reached": 0.027283333764867693,
+          "observables": {
+            "N_100": 2.9329611632410694e+19,
+            "d_100": 12.848424396589682,
+            "N_111": 2.3107246780346112e+20,
+            "d_111": 7.436312980602349,
+            "N_void": 1.8872425256378098e+21,
+            "d_void": 0.8758455915686763
+          }
+        },
+        {
+          "row_id": 512,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.485,
+          "dose_reached": 0.027283333764867693,
+          "observables": {
+            "N_100": 4.700641805695132e+18,
+            "d_100": 12.843116418701952,
+            "N_111": 5.056611494768753e+19,
+            "d_111": 6.2878302655336755,
+            "N_void": 1.9965195355683564e+22,
+            "d_void": 0.8786470840129303
+          }
+        },
+        {
+          "row_id": 516,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 0.997,
+          "dose_reached": 0.027283333764867693,
+          "observables": {
+            "N_100": 3.1841190977064145e+19,
+            "d_100": 12.852742071370933,
+            "N_111": 2.4346560558005115e+20,
+            "d_111": 7.459716788264,
+            "N_void": 1.3995727065623332e+21,
+            "d_void": 0.8488258756711565
+          }
+        },
+        {
+          "row_id": 520,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.015,
+          "dose_reached": 0.027283333764867693,
+          "observables": {
+            "N_100": 2.8981362358308426e+19,
+            "d_100": 12.84750554186748,
+            "N_111": 2.2969859312876605e+20,
+            "d_111": 7.437326880884728,
+            "N_void": 1.8478386412506846e+21,
+            "d_void": 0.874591726148076
+          }
+        },
+        {
+          "row_id": 524,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.021,
+          "dose_reached": 0.027283333764867693,
+          "observables": {
+            "N_100": 2.7602627183433482e+19,
+            "d_100": 12.829105950781111,
+            "N_111": 2.3881964321100235e+20,
+            "d_111": 7.479769524202119,
+            "N_void": 1.7544720832563422e+21,
+            "d_void": 0.8628203793427107
+          }
+        },
+        {
+          "row_id": 528,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.117,
+          "dose_reached": 0.014251026703029962,
+          "observables": {
+            "N_100": 1.5498526196935334e+19,
+            "d_100": 12.870658684514149,
+            "N_111": 2.264841158157537e+20,
+            "d_111": 7.427812328229575,
+            "N_void": 1.914753888038764e+21,
+            "d_void": 0.8816769740835914
+          }
+        },
+        {
+          "row_id": 532,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 2,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 0.778,
+          "dose_reached": 0.0074438030132516955,
+          "observables": {
+            "N_100": 1.0831431779562132e+22,
+            "d_100": 4.588761721380288,
+            "N_111": 9.687144622609604e+22,
+            "d_111": 1.1222820483751244,
+            "N_void": 9.312617579238413e+20,
+            "d_void": 1.9052879319199796
+          }
+        },
+        {
+          "row_id": 536,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 2,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 0.684,
+          "dose_reached": 0.0074438030132516955,
+          "observables": {
+            "N_100": 7.111001033594559e+21,
+            "d_100": 7.164221328065563,
+            "N_111": 5.4822884286304285e+22,
+            "d_111": 1.2261512119052311,
+            "N_void": 6.540846996607979e+20,
+            "d_void": 1.6285381616617856
+          }
+        },
+        {
+          "row_id": 584,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 0.963,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 6.056474029811553e+23,
+            "d_100": 8.034560984768529,
+            "N_111": 3.5401428556157634e+21,
+            "d_111": 0.7760321546033773,
+            "N_void": 5.130766205470027e+21,
+            "d_void": 1.7164446725679845
+          }
+        },
+        {
+          "row_id": 540,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 2,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 0.803,
+          "dose_reached": 0.014251026703029962,
+          "observables": {
+            "N_100": 7.807504149824613e+21,
+            "d_100": 10.898807487503253,
+            "N_111": 8.139468276039263e+22,
+            "d_111": 4.0760727690442655,
+            "N_void": 1.6296601743835848e+22,
+            "d_void": 1.7989190809425915
+          }
+        },
+        {
+          "row_id": 544,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 2,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 0.699,
+          "dose_reached": 0.0038881551803080848,
+          "observables": {
+            "N_100": 3.910054311555547e+21,
+            "d_100": 5.36487387195111,
+            "N_111": 7.390181809383317e+22,
+            "d_111": 1.4968858609437885,
+            "N_void": 2.079457297915077e+21,
+            "d_void": 2.0018808229835434
+          }
+        },
+        {
+          "row_id": 548,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 2,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 0.643,
+          "dose_reached": 0.0038881551803080848,
+          "observables": {
+            "N_100": 2.8519178793649487e+22,
+            "d_100": 3.4790648183125086,
+            "N_111": 2.0712971194513213e+22,
+            "d_111": 0.8748656754787016,
+            "N_void": 9.91419802995589e+20,
+            "d_void": 1.7716574195018728
+          }
+        },
+        {
+          "row_id": 552,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.04,
+          "dose_reached": 0.014251026703029962,
+          "observables": {
+            "N_100": 3.689475126259634e+19,
+            "d_100": 2.174370372180551,
+            "N_111": 1.5916154933918873e+22,
+            "d_111": 5.683203941338523,
+            "N_void": 1.1907664396795853e+22,
+            "d_void": 1.2643189728471118
+          }
+        },
+        {
+          "row_id": 556,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.113,
+          "dose_reached": 0.027283333764867693,
+          "observables": {
+            "N_100": 2.063461252462645e+19,
+            "d_100": 2.054714661437042,
+            "N_111": 1.710074885558826e+22,
+            "d_111": 6.6507873816023695,
+            "N_void": 7.820498204282153e+21,
+            "d_void": 1.2029233162748034
+          }
+        },
+        {
+          "row_id": 560,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.137,
+          "dose_reached": 0.027283333764867693,
+          "observables": {
+            "N_100": 2.202067493598407e+19,
+            "d_100": 1.9382006334442128,
+            "N_111": 2.399762948079878e+22,
+            "d_111": 5.43965028413361,
+            "N_void": 9.614108643416213e+21,
+            "d_void": 1.2317249503550431
+          }
+        },
+        {
+          "row_id": 564,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.04,
+          "dose_reached": 0.014251026703029962,
+          "observables": {
+            "N_100": 3.689475126259634e+19,
+            "d_100": 2.174370372180551,
+            "N_111": 1.5916154933918873e+22,
+            "d_111": 5.683203941338523,
+            "N_void": 1.1907664396795853e+22,
+            "d_void": 1.2643189728471118
+          }
+        },
+        {
+          "row_id": 568,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.079,
+          "dose_reached": 0.027283333764867693,
+          "observables": {
+            "N_100": 2.8005353110020596e+19,
+            "d_100": 2.167612398498768,
+            "N_111": 1.6216935678345449e+22,
+            "d_111": 6.82487258778067,
+            "N_void": 1.1207298759630581e+22,
+            "d_void": 1.2322186834211908
+          }
+        },
+        {
+          "row_id": 572,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "DOSE",
+            "STARV",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 1,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.08,
+          "dose_reached": 0.027283333764867693,
+          "observables": {
+            "N_100": 2.7903907495722525e+19,
+            "d_100": 2.1676158784249986,
+            "N_111": 1.6216951367831367e+22,
+            "d_111": 6.824876403681227,
+            "N_void": 1.1207473830691791e+22,
+            "d_void": 1.232222846473833
+          }
+        },
+        {
+          "row_id": 676,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.598,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 1.275272613789836e+21,
+            "d_100": 12.059658051308599,
+            "N_111": 1.2525383662773826e+23,
+            "d_111": 12.135154957222868,
+            "N_void": 3.608472502975145e+24,
+            "d_void": 1.3372723317637558
+          }
+        },
+        {
+          "row_id": 608,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 2.212,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 5.798909067079567e+17,
+            "d_100": 12.268076098383867,
+            "N_111": 2.1246369800133837e+18,
+            "d_111": 1.7740787773737845,
+            "N_void": 2.182664176112057e+23,
+            "d_void": 1.4121170674621457
+          }
+        },
+        {
+          "row_id": 672,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.568,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 1.641434951894152e+21,
+            "d_100": 12.309411291915538,
+            "N_111": 9.355187790004049e+22,
+            "d_111": 12.374041292664792,
+            "N_void": 3.5948872754786535e+24,
+            "d_void": 1.3269902166166656
+          }
+        },
+        {
+          "row_id": 680,
+          "label": null,
+          "valid": false,
+          "flags": [
+            "GRID",
+            "NOCONV",
+            "DOSE",
+            "INADM",
+            "UNVERIFIED"
+          ],
+          "n_in_range": 0,
+          "n_verified": 0,
+          "n_in_range_verified": 0,
+          "verified": [],
+          "worst_margin": null,
+          "log_distance": 1.562,
+          "dose_reached": 0.09999999999999999,
+          "observables": {
+            "N_100": 1.6650267168119542e+21,
+            "d_100": 12.295749435606181,
+            "N_111": 9.224416037206257e+22,
+            "d_111": 12.379654781110954,
+            "N_void": 3.480099084231222e+24,
+            "d_void": 1.3438544669511872
           }
         }
       ]
@@ -53101,6 +57230,102 @@
       }
     }
   },
+  "best_raw": {
+    "stage": "B3_coal",
+    "row_id": 9305,
+    "label": null,
+    "n_in_range": 4,
+    "n_verified": 0,
+    "n_in_range_verified": 0,
+    "verified": [],
+    "worst_margin": null,
+    "V_tested": null,
+    "log_distance": 0.236,
+    "flags": [
+      "TOPBINV",
+      "NOCONS",
+      "UNVERIFIED"
+    ],
+    "observables": {
+      "N_100": 2.180805391945372e+21,
+      "d_100": 6.66934153558617,
+      "N_111": 3.5951620610358745e+21,
+      "d_111": 4.535157260425524,
+      "N_void": 1.6153836565843492e+21,
+      "d_void": 5.609643547876421
+    },
+    "ratios": {
+      "N_100": 0.4388,
+      "d_100": 1.0757,
+      "N_111": 1.8628,
+      "d_111": 0.7315,
+      "N_void": 1.0769,
+      "d_void": 2.1576
+    },
+    "params": {
+      "eta": "0.24871922678490935",
+      "f_cl_i": "0.12401708029210567",
+      "f_cl_v": "0.55",
+      "E_m_i": "0.40180861951964941",
+      "E_m_v": "0.8",
+      "E_m_h": "0.073504445612117275",
+      "L_hat": "1016.1241310866882",
+      "gamma_s": "2.3",
+      "E_b_v2": "0.2129",
+      "lambda": "0.71570901078164628",
+      "B_111": "0.31368786867246468",
+      "E_b_i2": "0.60",
+      "E_b_hV_1": "2.2131532812533066",
+      "Z_i": "1.35",
+      "Z_i_loop": "1.1813004167750478",
+      "E_a0_conv": "2.1",
+      "dH2_conv": "0.43945545381703549",
+      "phi_max_junc": "0.10",
+      "dH2_abs_conv": "0.36",
+      "i_mobile": "5",
+      "loop_net_chi": "50.0",
+      "loop_net_w_c": "5.0",
+      "loop_net_K_rec": "1e-06",
+      "s_i": "1.0",
+      "Z_v": "1.0",
+      "Z_p_i": "1.45",
+      "Z_p_v": "0.93",
+      "Z_gb_i": "1.4",
+      "Z_gb_v": "0.93",
+      "rho_d": "500000000000000.0",
+      "d_g": "1e-06",
+      "rho_p": "1e+20",
+      "r_p": "2e-08",
+      "s_v": "2.5",
+      "LOOP_COAL": "1",
+      "loop_coal_pref": "20"
+    },
+    "inventory": {
+      "100": {
+        "model_N": 2.180805391945372e+21,
+        "model_mean_n": 848.7924018754567,
+        "model_content": 1.851051046652259e+24,
+        "exp_N": 4.97e+21,
+        "exp_mean_n_at_target_d": 733.5317998700087,
+        "exp_content": 3.645653045353943e+24,
+        "ratio": 0.5077419665624124
+      },
+      "111": {
+        "model_N": 3.5951620610358745e+21,
+        "model_mean_n": 339.7772942434252,
+        "model_content": 1.2215544374653854e+24,
+        "exp_N": 1.93e+21,
+        "exp_mean_n_at_target_d": 635.0282271633627,
+        "exp_content": 1.22560447842529e+24,
+        "ratio": 0.9966954747382221
+      },
+      "total": {
+        "model_content": 3.072605484117644e+24,
+        "exp_content": 4.871257523779233e+24,
+        "ratio": 0.6307622762948993
+      }
+    }
+  },
   "residuals": {
     "N_100": 2.0421,
     "d_100": 1.0162,
@@ -53132,11 +57357,11 @@
       "min_row_h": 0.02
     },
     "Nasr-Workstation": {
-      "n": 415,
+      "n": 569,
       "n_timed_out": 164,
       "median_row_h": 3.35,
       "max_row_h": 19.79,
-      "min_row_h": 0.15
+      "min_row_h": 0.06
     }
   },
   "policy": {

@@ -1,6 +1,6 @@
 # Calibration Guide - EUROFER97 digital twin
 
-*Derived by `learn.py`; content last changed 2026-09-05 04:25:35Z (re-running with no new results leaves this file untouched). Do not hand-edit: edits are overwritten. Durable notes belong in `calibration_ledger.json` under `notes`, which is preserved across regenerations.*
+*Derived by `learn.py`; content last changed 2026-09-05 18:03:44Z (re-running with no new results leaves this file untouched). Do not hand-edit: edits are overwritten. Durable notes belong in `calibration_ledger.json` under `notes`, which is preserved across regenerations.*
 
 ## Goal
 
@@ -10,7 +10,7 @@ Condition: **EUROFER97, 330 C, 15.0 dpa, neutron** - targets in `targets_330C_15
 
 ## Where the campaign stands
 
-Best valid row: **7700** from `W6a_V5k_machine0` - **2/6** observables in range, log-distance 0.65.
+Best **extent-verified** row: **7700** from `W6a_V5k_machine0` - **2/6** observables in range, log-distance 0.65. This leaderboard ranks on the verified count first, so a row whose in-band claims have not survived a change of grid extent cannot take the top slot no matter how many bands it sits in.
 
 | observable | model | target | range | ratio | in range |
 |---|---|---|---|---|---|
@@ -30,6 +30,21 @@ Computed from the row own n<->d relation, so no lattice constant is assumed.
 | <100> | 7.69e+24 | 3.65e+24 | 2.11 x |
 | <111> | 2.58e+23 | 1.23e+24 | 0.211 x |
 | **total** | 7.95e+24 | 4.87e+24 | **1.63 x** |
+
+### Best row ignoring verification
+
+Row **9305** from `B3_coal` scores **4/6** in range at log-distance 0.236 - better on the raw score than the verified leader above, but it is UNVERIFIED (no extent pair exists yet), so the ranking will not promote it.
+
+| observable | model | target | range | ratio | in range |
+|---|---|---|---|---|---|
+| N_100 | 2.18e+21 | 4.97e+21 | 4.67e+21 - 9e+21 | 0.439 x | **no** |
+| d_100 | 6.67 | 6.2 | 3.4 - 7 | 1.08 x | yes |
+| N_111 | 3.6e+21 | 1.93e+21 | 1.73e+21 - 1.5e+22 | 1.86 x | yes |
+| d_111 | 4.54 | 6.2 | 3.4 - 7 | 0.732 x | yes |
+| N_void | 1.62e+21 | 1.5e+21 | 3.6e+20 - 3.01e+21 | 1.08 x | yes |
+| d_void | 5.61 | 2.6 | 2.12 - 2.9 | 2.16 x | **no** |
+
+Treat this as a lead, not a result: the verification gate exists because an unverified row can be a grid artefact (d_cavity = 0.2825*(0.37V)^(1/3) once took the top of this leaderboard for twelve stages). To promote it, re-run it at a second V extent.
 
 ## Can any lever still close this?
 
@@ -182,6 +197,7 @@ Only stages that ran to 15.0 dpa are in scope; the rest are listed for provenanc
 | `T10_ea0_scan` | 2 | out | 24 | 2 | `E_a0_conv` | 1 |
 | `T11_row38_scan` | 2 | out | 12 | 0 | `E_a0_conv` | - |
 | `T13_nref` | 16.3 | out | 12 | 0 | `E_a0_conv`, `n_ref_conv` | - |
+| `T2_design_v2_machine0` | 15 | in | 154 | 0 | - | - |
 | `T3_rev6_machine0` | 15 | in | 480 | 0 | - | - |
 | `T3_rev6_machine1` | 15 | in | 55 | 0 | - | - |
 | `T3_rev6_machine2` | 15 | in | 165 | 0 | - | - |
@@ -229,7 +245,7 @@ Completed rows only. A row cut at the budget measures the timeout, not the cost,
 | MATRIX-PC2 | 117 | 8.26 h | 2.94 h | 18.87 h | 5 |
 | Mac.san.rr.com | 396 | 1.38 h | 0.04 h | 5.7 h | 1 |
 | MacBook-Pro.local | 686 | 1.02 h | 0.02 h | 9.64 h | 13 |
-| Nasr-Workstation | 415 | 3.35 h | 0.15 h | 19.79 h | 164 |
+| Nasr-Workstation | 569 | 3.35 h | 0.06 h | 19.79 h | 164 |
 
 `plan.py` sizes a stage from this table and the machine slot count, and refuses to propose a design whose estimated cost exceeds the machine row budget.
 

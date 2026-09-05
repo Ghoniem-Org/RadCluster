@@ -603,7 +603,7 @@ def ingest() -> dict:
     all_rows = [r for rows in rows_by_stage.values() for r in rows]
     ext = extent_pairs(all_rows)
 
-    stages, best = {}, None
+    stages, best, best_raw = {}, None, None
     for stem, rows in rows_by_stage.items():
         meta = stages_meta[stem]
 
@@ -683,6 +683,29 @@ def ingest() -> dict:
                             -c["log_distance"])
                 if best is None or rank(cand) > rank(best):
                     best = cand
+
+                # SECOND leaderboard, verification gate REMOVED.  The gate above
+                # is right for "what have we actually established", but it is
+                # silent about a row that dominates on the raw score and simply
+                # has not been extent-paired yet -- row 9305 sat at 4/6 and
+                # log-distance 0.236 while the reported best was 2/6 at 0.65,
+                # and nothing in the guide said so.  Same tie-breaks, minus the
+                # two verified terms.  Report both; never let this one alone
+                # drive a decision, because an unverified row can still be the
+                # grid artefact the gate was built to catch.
+                # NOTE the tie-break differs from rank() on purpose: NO
+                # worst_margin term.  _margin_or_none() measures only the
+                # observables that are both verified AND in band, so it is
+                # structurally None for precisely the unverified rows this
+                # leaderboard exists to surface -- including it sorts them to
+                # the bottom via the -9.9 sentinel and reproduces the very
+                # suppression being fixed (it ranked row 5812, 4/6 at 0.505,
+                # above row 9305, 4/6 at 0.236).  log_distance is the only
+                # tie-break available to every row, verified or not.
+                def rank_raw(c):
+                    return (c["n_in_range"], -c["log_distance"])
+                if best_raw is None or rank_raw(cand) > rank_raw(best_raw):
+                    best_raw = cand
 
         swept = ["+".join(g) for g in covarying_groups(design)] if design else []
         stages[stem] = {
@@ -820,6 +843,7 @@ def ingest() -> dict:
         "reachability": reach,
         "affordability": afford,
         "best": best,
+        "best_raw": best_raw,
         "residuals": best["ratios"] if best else {},
         "cost_model": cost_model(all_rows),
         # Preserve curated policy, but MERGE IN any category the defaults have
@@ -892,8 +916,11 @@ def render_guide(led: dict) -> str:
     if not b:
         A("No valid (full-dose, grid-clean, converged) row yet.")
     else:
-        A("Best valid row: **%s** from `%s` - **%d/6** observables in range, "
-          "log-distance %s."
+        A("Best **extent-verified** row: **%s** from `%s` - **%d/6** "
+          "observables in range, log-distance %s. This leaderboard ranks on "
+          "the verified count first, so a row whose in-band claims have not "
+          "survived a change of grid extent cannot take the top slot no "
+          "matter how many bands it sits in."
           % (b["label"] or b["row_id"], b["stage"], b["n_in_range"],
              b["log_distance"]))
         A("")
@@ -927,6 +954,36 @@ def render_guide(led: dict) -> str:
                  fmt(inv["total"]["exp_content"]),
                  fmt(inv["total"]["ratio"])))
             A("")
+
+    br = led.get("best_raw")
+    if br and b and (br["stage"], br["row_id"]) != (b["stage"], b["row_id"]):
+        A("### Best row ignoring verification")
+        A("")
+        A("Row **%s** from `%s` scores **%d/6** in range at log-distance %s - "
+          "better on the raw score than the verified leader above, but it is "
+          "%s, so the ranking will not promote it."
+          % (br["label"] or br["row_id"], br["stage"], br["n_in_range"],
+             br["log_distance"],
+             "UNVERIFIED (no extent pair exists yet)"
+             if br["n_verified"] == 0
+             else "verified on only %d observable(s)" % br["n_verified"]))
+        A("")
+        A("| observable | model | target | range | ratio | in range |")
+        A("|---|---|---|---|---|---|")
+        for k in OBS:
+            sk = SHORT[k]
+            v = br["observables"].get(sk)
+            t = T[k]
+            inr = (t["lo"] <= v <= t["hi"]) if v is not None else False
+            A("| %s | %s | %s | %s - %s | %s x | %s |"
+              % (sk, fmt(v), fmt(t["target"]), fmt(t["lo"]), fmt(t["hi"]),
+                 fmt(br["ratios"].get(sk)), "yes" if inr else "**no**"))
+        A("")
+        A("Treat this as a lead, not a result: the verification gate exists "
+          "because an unverified row can be a grid artefact (d_cavity = "
+          "0.2825*(0.37V)^(1/3) once took the top of this leaderboard for "
+          "twelve stages). To promote it, re-run it at a second V extent.")
+        A("")
 
     rch = led.get("reachability") or {}
     if rch:
@@ -1149,9 +1206,15 @@ def main(argv=None):
                  sum(s["n_rows"] for s in led["stages"].values()),
                  sum(s["n_valid"] for s in led["stages"].values())))
         if b:
-            print("best: %s (%s) %d/6 in range, log-distance %s"
+            print("best (verified): %s (%s) %d/6 in range, log-distance %s"
                   % (b["label"] or b["row_id"], b["stage"], b["n_in_range"],
                      b["log_distance"]))
+        br = led.get("best_raw")
+        if br and b and (br["stage"], br["row_id"]) != (b["stage"], b["row_id"]):
+            print("best (raw score, unpromoted): %s (%s) %d/6 in range, "
+                  "log-distance %s"
+                  % (br["label"] or br["row_id"], br["stage"],
+                     br["n_in_range"], br["log_distance"]))
         by = {}
         for k, v in led["levers"].items():
             by.setdefault(v["verdict"], []).append(k)

@@ -344,11 +344,16 @@ def main(argv=None):
     ap.add_argument("--release", help="drop a claim so another machine can take it")
     ap.add_argument("--branch", default="campaign-verification")
     ap.add_argument("--only", default=None,
-                    help="restrict to a table, e.g. --only T4")
+                    help="restrict to one or more tables, comma separated, "
+                         "e.g. --only T4 or --only T4,T1,T2,T3")
     ap.add_argument("--offline", action="store_true",
                     help="no fetch/push; claims stay local (smoke tests)")
     ap.add_argument("--no-plots", action="store_true",
                     help="skip the output directory entirely (diagnostics only)")
+    ap.add_argument("--omp-threads", type=int, default=0,
+                    help="override the manifest omp_threads to match this "
+                         "machine (0 = use the manifest value).  Never applied "
+                         "to T5, where thread count is the measured variable.")
     ap.add_argument("--max-runs", type=int, default=0,
                     help="stop after N runs (0 = no limit)")
     ap.add_argument("--smoke", action="store_true",
@@ -378,7 +383,20 @@ def main(argv=None):
         order = ["SMOKE"]
         a.run = "SMOKE"
     if a.only:
-        order = [r for r in order if entries[r]["table"] == a.only]
+        want = {t.strip() for t in a.only.split(",") if t.strip()}
+        unknown = want - {e["table"] for e in entries.values()}
+        if unknown:
+            ap.error(f"--only: no such table(s): {','.join(sorted(unknown))}")
+        order = [r for r in order if entries[r]["table"] in want]
+
+    # Thread count is hardware, not physics: it moves wall-clock and nothing
+    # else, so a 16-core manifest can be run on 8 cores without touching the
+    # numbers.  T5 is the one exception -- there the thread count IS the
+    # measured variable -- so the manifest value stands regardless of the flag.
+    if a.omp_threads:
+        for e in entries.values():
+            if e["table"] != "T5":
+                e["omp_threads"] = a.omp_threads
 
     if a.list:
         manifest_mod.__dict__["__name__"] = "__main__"

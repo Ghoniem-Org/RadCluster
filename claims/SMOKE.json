@@ -1,0 +1,11 @@
+{
+  "claimed_at": "2026-09-06T14:51:10-0700",
+  "code_sha": "7d53625",
+  "host": "MacBook-Pro.local",
+  "label": "pipeline smoke test",
+  "machine": "MacBook-Pro",
+  "pid": 20203,
+  "run_id": "SMOKE",
+  "status": "running",
+  "table": "--"
+}

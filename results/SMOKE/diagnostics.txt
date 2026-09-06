@@ -1,19 +1,19 @@
-# Diagnostics for 20260906_145117_SMOKE_full_system_bin_moment_CD_fission_I200V100_im5vm5
+# Diagnostics for 20260906_145255_SMOKE_full_system_bin_moment_CD_fission_I200V100_im5vm5
 
 ## Rate constants
-ReactionRates: K_SIA_grow[0]=1.832e+08  K_VAC_grow[0]=1.425e+06  G_VAC[0]=0.000e+00  K_iv=5.156e+08  K_3D_cav=1.832e+08  mean_n_i=44.73
+ReactionRates: K_SIA_grow[0]=1.832e+08  K_VAC_grow[0]=1.425e+06  G_VAC[0]=0.000e+00  K_iv=5.156e+08  K_3D_cav=1.832e+08  mean_n_i=55.60
   k2_SIA[0]=8.835e+02  k2_vac=5.044e+00  k2_He=3.057e+07
   D_SIA_eff: n=1: 1.218e-12  n=2: 1.218e-12  n=3: 1.218e-12  n=4: 6.645e-19
   C_i5: K_grow=6.689e+08  K_shrink=4.403e+06  K_loop=2.919e+02  k2=3.856e-04  G_emit=5.985e+01
 
 ## Conservation diagnostics (final time step)
-delta_FP = 4.425628e-02  (Frenkel pair)
-delta_He = 4.633983e-07  (He balance)
+delta_FP = 4.729074e-02  (Frenkel pair)
+delta_He = 4.717255e-08  (He balance)
 
 ## Key results
-Final dose:       1.0000e-03 dpa
+Final dose:       1.0000e-02 dpa
 Swelling (final): 0.000004 %
 C_He_tot (final): 8.475e+13 m^-3
-mean_n_i (final): 44.73
-mean_n_v (final): 19.07
+mean_n_i (final): 55.60
+mean_n_v (final): 17.80
 

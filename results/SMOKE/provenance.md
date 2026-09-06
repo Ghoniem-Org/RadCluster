@@ -1,4 +1,4 @@
-# RadCluster_2_1 run — 20260906_145117_SMOKE_full_system_bin_moment_CD_fission_I200V100_im5vm5
+# RadCluster_2_1 run — 20260906_145255_SMOKE_full_system_bin_moment_CD_fission_I200V100_im5vm5
 
 ## (1) Material Data
 
@@ -163,8 +163,8 @@ _All input tables from the Excel workbook with parameter overrides applied._
 - alpha_He: 1.7
 - b0_fission: 0.01
 - b0_fusion: 0.1
-- ci1_seg: 2.29781e-11
-- cv1_seg: 4.15363e-09
+- ci1_seg: 2.26227e-11
+- cv1_seg: 4.08502e-09
 - dH2_abs_conv: 0.36
 - dH2_conv: 0.439455
 - dH_rev_conv: 0.3
@@ -284,12 +284,12 @@ _All input tables from the Excel workbook with parameter overrides applied._
 - atol: 1e-20
 - log_time: True
 - loop_conversion: 1
-- n_points: 8
+- n_points: 10
 - rtol: 1e-05
 - solver_method.concentration_threshold: 1e-22
 - solver_method.linsol: gmres
 - solver_method.preconditioner: woodbury
-- t_span: [1e-06, 10000]
+- t_span: [1e-06, 100000]
 - timeout_s: 600
 
 ## (4) Run Statistics
@@ -303,22 +303,22 @@ _All input tables from the Excel workbook with parameter overrides applied._
 - omp_threads_used: 2
 - partial: False
 - platform: macOS-26.6.2-arm64-arm-64bit
-- process_rss_GB: 0.114
+- process_rss_GB: 0.109
 - processor: arm
 - python: 3.11.7
-- ram_available_GB: 83.72
+- ram_available_GB: 83.89
 - ram_total_GB: 128
 - run_status: completed
-- solver.ncfn: 4345
-- solver.netf: 218
-- solver.nfe: 53463
-- solver.nli: 63679
-- solver.nli_per_nni: 1.19
-- solver.nlsetup: 8837
-- solver.nni: 53460
-- solver.npe: 4447
-- solver.nps: 116201
-- solver.steps: 33184
-- timestamp: 20260906_145117
-- wall_clock_s: 6.13751
+- solver.ncfn: 4725
+- solver.netf: 261
+- solver.nfe: 56107
+- solver.nli: 68573
+- solver.nli_per_nni: 1.22
+- solver.nlsetup: 9592
+- solver.nni: 56104
+- solver.npe: 4836
+- solver.nps: 123636
+- solver.steps: 34807
+- timestamp: 20260906_145255
+- wall_clock_s: 6.60016
 

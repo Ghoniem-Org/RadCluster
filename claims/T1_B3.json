@@ -1,0 +1,11 @@
+{
+  "claimed_at": "2026-09-06T14:54:05-0700",
+  "code_sha": "7d53625",
+  "host": "MacBook-Pro.local",
+  "label": "B3",
+  "machine": "MacBook-Pro",
+  "pid": 20530,
+  "run_id": "T1_B3",
+  "status": "running",
+  "table": "T1"
+}

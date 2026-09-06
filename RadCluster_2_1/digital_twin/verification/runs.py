@@ -71,38 +71,61 @@ def manifest() -> list[dict]:
     runs: list[dict] = []
 
     # ── Table 4 — binning verification against the exact solution ───────────
-    # Runs FIRST: the discrete arm is the study's only genuinely uncertain cost
-    # (S5.2).  If it lands far from ~4-8 h the rest of the schedule is wrong
-    # too, and that is worth learning before 20 other runs are queued behind it.
-    # I = 8000 (SIA domain reduced -- that is where the cost is), V kept at
-    # production so the vacancy closure is tested at the production fraction.
-    T4 = {"I": 8000, "V": 20000, "dose": 2.0, "n_points": 37,
+    # I = V = 4000, MODEL-TO-MODEL.  Runs FIRST: the discrete arm is the only
+    # genuinely uncertain cost (plan S5.2).
+    #
+    # WHY 4000 AND NOT THE PLAN'S I=8000/V=20000.  The plan's revision note
+    # rejected a reduced domain because "V = 1000 sits below the mean cavity
+    # (1071 vacancies at 15.72 dpa), so d_void reads the ceiling, not the
+    # model".  That is a VALIDATION criterion and Table 4 is not validation:
+    # both arms solve the same equations on the same domain, so a truncation
+    # affects them identically and cancels out of the closure error being
+    # measured.  It limits what may be CLAIMED (nothing in Table 4 may be
+    # compared to experiment) rather than whether the measurement is sound.
+    # Tables 1-3 and 5, which ARE scored against experiment, stay at the
+    # production domain for exactly that reason.
+    #
+    # Measured, not assumed: the plan's own I=8000/V=20000 arm was launched
+    # 2026-09-06 and reached 2.2e-3 of 2 dpa in 14 minutes, with per-step cost
+    # growing ~3.3x per output step -- an extrapolated 12-30 days.  The cost is
+    # in V, not I: N_eq = 8000 SIA + 20000 VAC + 6, plus an appended 8000
+    # <100> block, and the vacancy block is 71% of the main system.  The plan's
+    # S6 fallback ("cut I to 4000") removes ~22% of the equations where ~100x
+    # was needed.  The existing G5b run (discrete, I=4000, V=4000) reached
+    # 6.06 dpa in 6.8 h SINGLE-THREADED, which brackets this table's doses.
+    T4 = {"I": 4000, "V": 4000, "dose": 2.0, "n_points": 37,
           "dose_read": DOSE_READ_T4}
-    runs.append(_r("T4_D", "T4", "D (exact)",
+    runs.append(_r("T4_D_4k", "T4", "D (exact)",
                    "Fully discrete: the exact solution of the same equations. "
                    "Cost probe -- run first (plan S5.2).",
                    equations="discrete", **T4))
-    for rid, lbl, g in (
-        ("T4_C1", "C1", {"i_discrete": 800, "I_bin": 6, "v_discrete": 1600, "V_bin": 6}),
-        ("T4_C2", "C2", {"i_discrete": 200, "I_bin": 10, "v_discrete": 400, "V_bin": 9}),
-        ("T4_C3", "C3", {"i_discrete": 50, "I_bin": 14, "v_discrete": 100, "V_bin": 13}),
-        ("T4_C4", "C4", {"i_discrete": 10, "I_bin": 18, "v_discrete": 5, "V_bin": 20}),
+    # The ladder holds r at the production value and varies only the resolution
+    # (plan S1.3).  I_bin/V_bin below are ln(domain/discrete)/ln(r) rounded, so
+    # r_i stays 1.44-1.47 and r_v 1.51-1.53 across every rung.
+    for rid, lbl, ratio, g in (
+        ("T4_C1_4k", "C1", 10,  {"i_discrete": 400, "I_bin": 6,  "v_discrete": 400, "V_bin": 6}),
+        ("T4_C2_4k", "C2", 40,  {"i_discrete": 100, "I_bin": 10, "v_discrete": 100, "V_bin": 9}),
+        ("T4_C3_4k", "C3", 160, {"i_discrete": 25,  "I_bin": 14, "v_discrete": 25,  "V_bin": 12}),
+        ("T4_C4_4k", "C4", 800, {"i_discrete": 5,   "I_bin": 18, "v_discrete": 5,   "V_bin": 16}),
     ):
-        note = ""
-        if rid == "T4_C4":
-            note = ("i_discrete/I = 1/800 and v_discrete/V = 1/4000 -- identical "
-                    "to production on BOTH axes (S1.3).  The transfer argument "
-                    "rests on this column.")
+        note = f"resolution 1/{ratio} on both axes"
+        if rid == "T4_C4_4k":
+            note = ("SIA axis is EXACTLY production: i_discrete/I = 5/4000 = "
+                    "1/800, and holding r_i returns I_bin = 18, the production "
+                    "value.  The vacancy axis is 1/800, FINER than production's "
+                    "5/20000 = 1/4000 -- matching it would need v_discrete = 1, "
+                    "below v_mobile = 5.  So this column if anything UNDERSTATES "
+                    "the production vacancy closure error; state that rather "
+                    "than claiming an exact two-axis analogue.")
         runs.append(_r(rid, "T4", lbl, note, **T4, **g))
-    # S2.4: score the closure orders against the EXACT answer, not against B4.
-    runs.append(_r("T4_C4_P1", "T4", "C4, P=1 constant",
+    # S2.4: closure ORDER scored against the exact answer, not against B4.
+    C4 = {"i_discrete": 5, "I_bin": 18, "v_discrete": 5, "V_bin": 16}
+    runs.append(_r("T4_C4_P1_4k", "T4", "C4, P=1 constant",
                    "Closure order scored against the exact column.",
-                   shape_function="constant", **T4, **{"i_discrete": 10, "I_bin": 18,
-                                                       "v_discrete": 5, "V_bin": 20}))
-    runs.append(_r("T4_C4_P3", "T4", "C4, P=3 lognormal",
+                   shape_function="constant", **T4, **C4))
+    runs.append(_r("T4_C4_P3_4k", "T4", "C4, P=3 lognormal",
                    "Closure order scored against the exact column.",
-                   shape_function="lognormal", **T4, **{"i_discrete": 10, "I_bin": 18,
-                                                        "v_discrete": 5, "V_bin": 20}))
+                   shape_function="lognormal", **T4, **C4))
 
     # ── Table 1 — closure convergence at the production domain ──────────────
     # Hold r at production, vary only i_discrete (S1.3).  B4 already exists as

@@ -24,9 +24,21 @@ archive/*/build/
 *.o
 *.a
 
-# Output (large result files — regenerate from notebooks)
-*/output/
+# Output (large result files — regenerate from notebooks).
+# NOTE the trailing /* rather than /: excluding the DIRECTORY makes git refuse
+# to descend, and no negation below could then re-include anything inside it.
+*/output/*
 archive/*/output/
+
+# EXEMPT: the designated reference run is tracked, because output/ is otherwise
+# gitignored and the reference figures + provenance would exist on one machine
+# only (that is exactly how the original make_figures.py was lost).  This pins a
+# timestamped directory name — UPDATE IT when the reference run is superseded.
+!RadCluster_2_1/output/20260906_063055_full_system_bin_moment_CD_fission_I80000V20000_im5vm5/
+# ...but not its 37 MB plot_data.pkl: a regenerable cache, and a pickle of live
+# InputData/RateEquations objects that will not load after a class refactor.  It
+# is 92% of the directory and the worst possible archival format.
+RadCluster_2_1/output/*/plots/plot_data.pkl
 
 # Temporary / OS
 .DS_Store

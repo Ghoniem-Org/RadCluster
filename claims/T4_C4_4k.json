@@ -1,0 +1,11 @@
+{
+  "claimed_at": "2026-09-06T16:12:06-0700",
+  "code_sha": "78ecebf",
+  "host": "Mac.san.rr.com",
+  "label": "C4",
+  "machine": "Mac",
+  "pid": 34810,
+  "run_id": "T4_C4_4k",
+  "status": "running",
+  "table": "T4"
+}

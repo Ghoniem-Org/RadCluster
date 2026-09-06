@@ -36,6 +36,7 @@ is silently aliased to 'discrete'.
 import time as _time
 import os
 import platform
+import re
 import signal as _signal
 import sys
 from pathlib import Path
@@ -1506,6 +1507,18 @@ class RadClusterSimulation:
         ts = datetime.now().strftime('%Y%m%d_%H%M%S')
         domain   = f"I{I}V{V}"
         mobility = f"im{im}vm{vm}"
+        # OPTIONAL CALLER TAG.  The label below is built from solver mode,
+        # physics option, domain and mobility -- none of which distinguish the
+        # rungs of a closure-refinement ladder, which differ only in
+        # i_discrete/I_bin/v_discrete/V_bin.  Without a tag the four Table-1
+        # rungs of the verification study produce four directory names that
+        # differ only by timestamp.  Set `sim.run_tag = 'T1_B3'` before the run.
+        tag = ''
+        raw_tag = getattr(self, 'run_tag', None)
+        if raw_tag:
+            # Anything that could create a path level or confuse the label
+            # parser is collapsed; the tag is a directory-name component.
+            tag = '_' + re.sub(r'[^A-Za-z0-9._+-]+', '-', str(raw_tag)).strip('-_')[:48]
         # Tag interrupted runs in the directory name for easy identification.
         partial_tag = ''
         try:
@@ -1513,7 +1526,10 @@ class RadClusterSimulation:
                 partial_tag = '_PARTIAL'
         except Exception:
             pass
-        label = f"{ts}_{sm}_{po}_{domain}_{mobility}{partial_tag}"
+        # Tag sits directly after the timestamp: name order still equals time
+        # order, and the rung is the first thing the eye reaches in a listing
+        # of two dozen otherwise-identical run directories.
+        label = f"{ts}{tag}_{sm}_{po}_{domain}_{mobility}{partial_tag}"
 
         out_dir  = BASE_DIR / 'output' / label
         plot_dir = out_dir / 'plots'
@@ -1685,4 +1701,8 @@ class RadClusterSimulation:
                   f"(numerical artifacts above are still safe)")
 
         print(f"Output written to: {out_dir}")
+        # Remembered so a caller that did not choose the name can still find
+        # the directory (the verification runner attaches provenance.md and
+        # summary.csv from here to the record it pushes to the campaign board).
+        self._last_output_dir = out_dir
         return out_dir

@@ -60,3 +60,12 @@ RadCluster_2_1/digital_twin/CAMPAIGN_STOP
 # Per-machine "already tallied" sentinels (zero-byte, written by ad-hoc
 # tally loops, referenced by nothing that is versioned). Local like *.pid.
 RadCluster_2_1/digital_twin/results/*.seen
+
+# Verification campaign (docs/Formulation/paper_revision_verification_plan.md).
+# .sync/ is a git WORKTREE for the campaign-verification branch: coordination
+# runs there so a pull can never move a file underneath a running solver in the
+# main checkout -- the dead-inode failure run_ensemble.py documents.  logs/ is
+# per-machine live progress, rewritten per solver step; the campaign board on
+# the branch is the shared record.
+RadCluster_2_1/digital_twin/verification/.sync/
+RadCluster_2_1/digital_twin/verification/logs/

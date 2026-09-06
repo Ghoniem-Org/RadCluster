@@ -184,7 +184,16 @@ STARVED_GATE = False
 # do not fill the new rungs.
 DOSE_CHECKPOINTS = (0.005, 0.01, 0.02, 0.05,
                     0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,
-                    2.0, 4.0, 8.0, 11.0, 15.0, 16.3, 20.0, 30.0, 32.0, 47.0)
+                    2.0, 4.0, 8.0, 11.0, 15.0, 15.72, 16.3, 20.0, 30.0, 32.0,
+                    47.0)
+# 15.72 is the verification study's scoring dose (paper_revision_verification
+# _plan.md S2.1).  It is not a round number by choice: on the reference run's
+# 37-point log grid over t_span (1e-6, 4e8) s it is output index 35, the last
+# point at or below 15.72 dpa, and every Table 1-3 column is required to share
+# that grid (S3.2) so the index means the same dose in each.  Reading the
+# nearest existing checkpoint instead would land on index 34 (6.18 dpa) for
+# 15.0 -- a different point, which is the whole failure mode Figure 8 suffered.
+# Purely additive: it appends a key to `at_dose` and changes no existing one.
 
 
 # ------------------------------------------------------------------- utilities

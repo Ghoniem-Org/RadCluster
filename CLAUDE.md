@@ -88,7 +88,19 @@ pip install -r requirements.txt
 
 # Register Jupyter kernel (optional)
 python -m ipykernel install --user --name radcluster --display-name "RadCluster"
+
+# Link Claude Code's project memory to the copy in this repo (once per machine)
+./scripts/link-memory.sh
 ```
+
+### Project memory
+
+Claude Code's memory for this project is committed at `.claude/memory/` and
+symlinked into `~/.claude/projects/<slug>/memory/`, because the harness path is
+keyed to the absolute checkout path and would otherwise exist on one machine
+only. Run `scripts/link-memory.sh` after cloning; without it a session on this
+machine starts with no project memory and writes new memories somewhere git
+never sees. `.claude/memory/MEMORY.md` is the index.
 
 ## Shared Resources
 

@@ -1,0 +1,7 @@
+- [Large plot fonts, set via rcParams](feedback_plot_fontsize.md) — never matplotlib defaults, never hardcoded; the flat 16pt rule is now the legend tier only
+- [The RadCluster_2_1 reference vector](project_reference_run.md) — VOID_NETWORK_LOSS chi=1165 + f_cl_v=0.65, workbook default since 2026-09-06, first 6/6 and first grid-converged cavity size; sits on three band edges
+- [Cavity sweeping is the only cavity-size lever](project_void_network_loss.md) — E_m_v cancels, bias factors flip the loops, and a conservation bound floors d_cavity at 4.70 nm; sweeping escapes all three
+- [Dose figures come from a script, not the notebook](project_dose_figures_script.md) — density_vs_dose.png / size_vs_dose.png are drawn by codes/make_dose_figures.py; the original script was lost in gitignored output/
+- [learn.py hides unverified rows](project_learn_py_verified_gate.md) — "best" gates on extent-verification and suppressed the actual best row; read best_raw too before reporting campaign status
+- [Replot from plot_data.pkl, never re-run](project_replot_from_plot_data.md) — the full results dict is pickled per run; results_y.npy lacks the <100> block
+- [Settled plot house style](project_plot_house_style.md) — no rendered titles, 22/20/16 type, lw=3, steelblue/darkviolet/tomato by population, all via _PLOT_CONFIG

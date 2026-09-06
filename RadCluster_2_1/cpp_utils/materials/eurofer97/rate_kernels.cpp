@@ -634,6 +634,14 @@ static int rhs_case2(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
         // Fixed sinks — only mobile vacancy clusters diffuse to sinks
         if (m + 1 <= P.v_mobile)
             dcv[m] -= P.k2_disl_v * cm;
+        // Cavity → network sweeping (VOID_NETWORK_LOSS): a climbing/gliding
+        // line intersects the cavity and absorbs it whole.  Diagonal
+        // first-order loss; the m vacancies it carries are charged to
+        // J_VAC_fixed below, so δ_FP is preserved.  Λ_m^void is zero for
+        // m ≤ v_mobile (those already pay k2_disl_v) and zero everywhere when
+        // the channel is off, making the OFF path byte-identical.
+        if (!P.Lambda_net_void.empty())
+            dcv[m] -= P.Lambda_net_void[m] * cm;
     }
 
     // Window boundary: suppress VAC coalescence reactions whose product
@@ -816,6 +824,13 @@ static int rhs_case2(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
         double vac_fixed = 0.0;
         for (int m = 0; m < std::min(P.v_mobile, P.V); ++m)
             vac_fixed += static_cast<double>(m + 1) * P.k2_disl_v * std::max(c_v[m], 0.0);
+        // Swept cavities deliver their FULL vacancy content m to the line.
+        // Without this the vacancies removed by Λ_m^void leave the ledger and
+        // δ_FP reports the channel as a conservation violation.
+        if (!P.Lambda_net_void.empty())
+            for (int m = 0; m < P.V; ++m)
+                vac_fixed += static_cast<double>(m + 1) * P.Lambda_net_void[m]
+                             * std::max(c_v[m], 0.0);
         dydt[P.cons_off + 2] = vac_fixed;
     }
 
@@ -1106,6 +1121,14 @@ static int rhs_case1(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
         // Fixed sinks — only mobile vacancy clusters diffuse to sinks
         if (m + 1 <= P.v_mobile)
             dcv[m] -= P.k2_disl_v * cm;
+        // Cavity → network sweeping (VOID_NETWORK_LOSS): a climbing/gliding
+        // line intersects the cavity and absorbs it whole.  Diagonal
+        // first-order loss; the m vacancies it carries are charged to
+        // J_VAC_fixed below, so δ_FP is preserved.  Λ_m^void is zero for
+        // m ≤ v_mobile (those already pay k2_disl_v) and zero everywhere when
+        // the channel is off, making the OFF path byte-identical.
+        if (!P.Lambda_net_void.empty())
+            dcv[m] -= P.Lambda_net_void[m] * cm;
     }
 
     // Window boundary: suppress VAC coalescence beyond window frontier.
@@ -1208,6 +1231,13 @@ static int rhs_case1(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
         double vac_fixed = 0.0;
         for (int m = 0; m < std::min(P.v_mobile, P.V); ++m)
             vac_fixed += static_cast<double>(m + 1) * P.k2_disl_v * std::max(c_v[m], 0.0);
+        // Swept cavities deliver their FULL vacancy content m to the line.
+        // Without this the vacancies removed by Λ_m^void leave the ledger and
+        // δ_FP reports the channel as a conservation violation.
+        if (!P.Lambda_net_void.empty())
+            for (int m = 0; m < P.V; ++m)
+                vac_fixed += static_cast<double>(m + 1) * P.Lambda_net_void[m]
+                             * std::max(c_v[m], 0.0);
         dydt[P.cons_off + 2] = vac_fixed;
     }
 
@@ -2144,6 +2174,14 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
         // Fixed sinks — only mobile vacancy clusters diffuse to sinks
         if (m + 1 <= P.v_mobile)
             dc_v[m] -= P.k2_disl_v * cm;
+        // Cavity → network sweeping (VOID_NETWORK_LOSS): a climbing/gliding
+        // line intersects the cavity and absorbs it whole.  Diagonal
+        // first-order loss; the m vacancies it carries are charged to
+        // J_VAC_fixed below, so δ_FP is preserved.  Λ_m^void is zero for
+        // m ≤ v_mobile (those already pay k2_disl_v) and zero everywhere when
+        // the channel is off, making the OFF path byte-identical.
+        if (!P.Lambda_net_void.empty())
+            dc_v[m] -= P.Lambda_net_void[m] * cm;
     }
 
     // Reflection boundary: suppress reactions whose product exceeds V
@@ -2555,6 +2593,13 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
         double vac_fixed = 0.0;
         for (int m = 0; m < std::min(P.v_mobile, P.V); ++m)
             vac_fixed += static_cast<double>(m + 1) * P.k2_disl_v * std::max(c_v[m], 0.0);
+        // Swept cavities deliver their FULL vacancy content m to the line.
+        // Without this the vacancies removed by Λ_m^void leave the ledger and
+        // δ_FP reports the channel as a conservation violation.
+        if (!P.Lambda_net_void.empty())
+            for (int m = 0; m < P.V; ++m)
+                vac_fixed += static_cast<double>(m + 1) * P.Lambda_net_void[m]
+                             * std::max(c_v[m], 0.0);
         dydt[P.cons_off + 2] = vac_fixed;
     }
 

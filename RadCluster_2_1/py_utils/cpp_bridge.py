@@ -434,6 +434,15 @@ def write_param_file(sim, solver_config, path, y0_override=None):
             for k, v in enumerate(lam100):
                 lines.append(f"lambda_net_100_{k}={v:.17e}")
 
+    # Cavity → network-dislocation sweeping (VOID_NETWORK_LOSS).  Emitted only
+    # when the channel is on: an all-zero array would otherwise add V lines to
+    # every param file for no effect.  Outside the loop_conversion block above
+    # because the cavity edge does not depend on the ⟨100⟩ split.
+    lam_void = getattr(rr, 'Lambda_net_void', None)
+    if lam_void is not None and float(np.max(lam_void)) > 0.0:
+        for k, v in enumerate(lam_void):
+            lines.append(f"lambda_net_void_{k}={v:.17e}")
+
     # ── Scalar physics ────────────────────────────────────────────────────────
     kBT = float(d['kBT'])
     nu_h = float(inp.energetics.get('nu_h', 3.0e12))

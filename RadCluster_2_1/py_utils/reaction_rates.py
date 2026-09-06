@@ -862,6 +862,73 @@ class ReactionRates:
             self.k2_100 = self.k2_100 + self.Lambda_net_100
             self.rho_net = rho_net
 
+        # ── Cavity → network-dislocation SWEEPING  (VOID_NETWORK_LOSS) ────────
+        # A climbing/gliding network dislocation that intersects a cavity
+        # absorbs it: the cavity's m vacancies are delivered to the line and the
+        # cavity is destroyed.  Same geometry as the loop channel above
+        #     Λ_m^void = |v_net| · ρ_net · w_c · P_ld(m)
+        # but applied to the VACANCY block, which makes it the only cavity sink
+        # in the model that does not act through c_v.  That matters: c_v sets the
+        # loop drive Z_i^loop ω_i c_i − ω_v c_v, which sits at −17% of its
+        # vacancy term, so every lever that moves c_v enough to shrink cavities
+        # flips the loops first (measured: Z_v 1.0→1.15 gives S_I ×65).  This
+        # edge removes cavity content while leaving c_v, and hence the loops,
+        # untouched.
+        #
+        # It is also the only channel that escapes the swelling-identity floor.
+        # With loops and the bias flux as the only routes, S = S_I + ΔJ^d pins
+        # the cavity content to the loop content and bounds d_cavity below by
+        # 4.70 nm.  Sweeping routes cavity vacancies straight to the line, so it
+        # enters ΔJ^d and S may fall below S_I.
+        #
+        # Λ ∝ d_cav ∝ m^(1/3) removes LARGE cavities preferentially, which
+        # truncates the upper tail — the size-dependent negative feedback the
+        # model otherwise lacks (growth is dm/dt ∝ m^(1/3)·drive with a drive
+        # that never decays, giving unbounded m ∝ t^1.5).
+        #
+        # Gated OFF by default: with the key absent Λ_m^void ≡ 0 and every
+        # downstream expression is unchanged, so the legacy path is
+        # bit-identical.
+        self.void_network_loss = int(_num(re.get('VOID_NETWORK_LOSS', 0), 0)) != 0
+        self.Lambda_net_void = np.zeros(V)
+        if self.void_network_loss:
+            v_chi = _num(re.get('void_net_chi', 1.0), 1.0)   # elastic range / d
+            # Onset: mobile vacancy clusters DIFFUSE to the network and are
+            # already counted in k2_disl_v.  Sweeping them too would double-count
+            # that loss, so the channel starts above v_mobile.
+            m_inc = int(_num(re.get('void_net_m_inc', v_mobile), v_mobile))
+            rho_n = self.rho_net
+            # Same Bullough–Newman climb velocity as the loop channel; recomputed
+            # here so the cavity edge does not require LOOP_NETWORK_LOSS to be on.
+            ci1_v = float(re.get('ci1_seg', 0.0))
+            cv1_v = float(re.get('cv1_seg', 0.0))
+            v_net_v = abs((a_m ** 2 / b_111)
+                          * (Z_i * omega_i * ci1_v - Z_v * omega_v * cv1_v))
+            self.L_ld_void = rho_n ** -0.5 if rho_n > 0.0 else np.inf  # diagnostic
+            # Spherical cavity diameter d_m = 2(3mΩ/4π)^(1/3)  — the same
+            # relation post_process/run_ensemble use for d_cavity_nm.
+            d_cav = 2.0 * (3.0 * ms * Omega / (4.0 * np.pi)) ** (1.0 / 3.0)
+            # Capture width: blank ⇒ the cavity's own diameter (bare geometric
+            # cross-section).  An explicit void_net_w_c overrides it.
+            w_c_v = _opt_pos_float(re.get('void_net_w_c', None))
+            w_arr = d_cav if w_c_v is None else np.full(V, w_c_v)
+            # NO geometric gate here, unlike the loop channel.  P_ld there asks
+            # whether a loop lies INSIDE the instantaneous elastic zone of a
+            # line, which is right for incorporation of a static loop.  A
+            # SWEEPING dislocation traverses the volume, so v·ρ·w is already the
+            # encounter rate and a gate would double-count it — with the loop
+            # gate applied, spacing L_ld = 44.7 nm against a 5.5 nm cavity gives
+            # P_ld = 0 and the channel vanishes at χ = 1, which is wrong.
+            # χ instead widens the CAPTURE WIDTH (elastic attraction draws
+            # cavities onto the passing line): w_c = χ·d_cav.
+            Lam_v = (v_net_v * rho_n) * (v_chi * w_arr)
+            # Zero sizes 1..m_inc INCLUSIVE: with m_inc = v_mobile those clusters
+            # diffuse to the network and are already charged to k2_disl_v, so
+            # sweeping them as well would count the same loss twice.
+            if m_inc >= 1:
+                Lam_v[:min(m_inc, V)] = 0.0
+            self.Lambda_net_void = Lam_v
+
         # Scalar physics
         self.B_rot  = B_rot
         self.L_hat  = L_hat

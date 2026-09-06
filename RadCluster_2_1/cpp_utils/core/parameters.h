@@ -192,6 +192,15 @@ struct Parameters {
     // preserved.  Zeros when LOOP_NETWORK_LOSS is off (byte-identical OFF path).
     // The ½⟨111⟩ side is already folded into k2_SIA on the Python side.
     std::vector<double> Lambda_net_100; // [I]
+    // Cavity → network-dislocation SWEEPING (VOID_NETWORK_LOSS).  Diagonal
+    // first-order sink Λ_m^void on the VACANCY block: a climbing/gliding line
+    // that intersects a cavity absorbs it whole, so the cavity's m vacancies
+    // are routed into the J_VAC_fixed ledger and δ_FP is preserved.  Λ ∝ d_cav
+    // ∝ m^(1/3), so large cavities are removed preferentially and the upper
+    // tail is truncated — the only size-dependent negative feedback on cavity
+    // growth in the model.  Zeros when VOID_NETWORK_LOSS is off, so the OFF
+    // path is byte-identical.
+    std::vector<double> Lambda_net_void; // [V]
 
     std::vector<double> y0;   // [N_eq]
 
@@ -616,6 +625,13 @@ inline Parameters build_parameters(const std::map<std::string, double>& p) {
             P.Lambda_net_100[k] = optional_param(p, "lambda_net_100_" + std::to_string(k), 0.0);
         }
     }
+
+    // Cavity sweeping is independent of loop_conversion, so it is read outside
+    // the ⟨100⟩ block.  Absent keys ⇒ all zeros ⇒ the channel is off and every
+    // downstream expression is unchanged.
+    P.Lambda_net_void.assign(P.V, 0.0);
+    for (int k = 0; k < P.V; ++k)
+        P.Lambda_net_void[k] = optional_param(p, "lambda_net_void_" + std::to_string(k), 0.0);
 
     // Initial conditions
     for (int k = 0; k < P.N_eq; ++k)

@@ -1,2 +1,0 @@
-solver,physics_option,T_K,G_dpa_s,t_end_s,dose_dpa,C_SIA_tot_m3,C_VAC_tot_m3,C_He_tot_m3,mean_n_i,mean_n_v,swelling,delta_FP,delta_He
-full_system/bin_moment_CD_fission,bin_moment_CD_fission,603.15,1e-07,20000000.000000004,2.0000000000000004,1.223446704570506e+24,2.899530027890754e+23,84746037381433.48,277.5782443255158,819.6081657013925,3.4214454329110894e-06,0.04979562979285006,1.7099546737068021e-10

@@ -45,6 +45,7 @@ import io
 import json
 import os
 import sys
+import threading
 import time
 import traceback
 from pathlib import Path
@@ -75,12 +76,43 @@ class ProgressLog:
     def __init__(self, machine: str, run_id: str, entry: dict):
         LOG_DIR.mkdir(parents=True, exist_ok=True)
         self.jsonl = LOG_DIR / f"{machine}.jsonl"
-        self.status = LOG_DIR / f"{machine}.status"
+        # PER-RUN status file, not per-machine.  A single <machine>.status is
+        # overwritten by whatever ran most recently -- a smoke test clobbered a
+        # live T4_D status the moment it was introduced, and two concurrent runs
+        # on one machine would fight over it continuously.  `tail -f *.status`
+        # and the --status view both glob, so nothing is lost by splitting.
+        self.status = LOG_DIR / f"{machine}.{run_id}.status"
         self.machine, self.run_id, self.entry = machine, run_id, entry
         self.t0 = time.time()
         self.G = None
         self.last = {}
         self.n_steps = 0
+        self._t_step = time.time()
+        self._stop = threading.Event()
+        self._beat = None
+
+    # HEARTBEAT.  render() otherwise fires only on a solver output step, and the
+    # steps are log-spaced: T4_D reached step 18 in 4 s and then spent a long
+    # time on step 19.  A status file frozen at "elapsed 0.1 min" is
+    # indistinguishable from a dead process at exactly the moment the user most
+    # wants to know the difference -- which defeats the point of a live log.
+    # A daemon thread re-renders on a timer, so `elapsed` and `updated` keep
+    # moving while `steps` stands still: working-but-slow now looks different
+    # from stopped.
+    def start_heartbeat(self, period_s=30.0):
+        def _loop():
+            while not self._stop.wait(period_s):
+                try:
+                    self.render(state="running")
+                except Exception:
+                    pass          # a status file must never kill a run
+        self._beat = threading.Thread(target=_loop, daemon=True)
+        self._beat.start()
+
+    def stop_heartbeat(self):
+        self._stop.set()
+        if self._beat is not None:
+            self._beat.join(timeout=2.0)
 
     def event(self, kind, **kw):
         rec = {"ts": time.strftime("%Y-%m-%dT%H:%M:%S"), "machine": self.machine,
@@ -101,6 +133,7 @@ class ProgressLog:
         self.n_steps += 1
         t = float(row.get("t", 0.0) or 0.0)
         dose = t * self.G if self.G else None
+        self._t_step = time.time()
         self.last = {"t_s": t, "dose": dose, "step": self.n_steps}
         self.render(state="running")
         # The event log gets every step; the rendered status is what a human
@@ -134,13 +167,15 @@ class ProgressLog:
             # indicator -- if it stops advancing, the solver is stuck.
             f"steps     : {self.n_steps} solver output steps"
             f"  (grid: {e.get('n_points')} points)",
+            f"step age  : {time.time() - self._t_step:.0f} s since the last step"
+            f"{'  <-- long step, still working' if time.time() - self._t_step > 300 else ''}",
             f"elapsed   : {el/60:.1f} min",
             f"updated   : {time.strftime('%Y-%m-%d %H:%M:%S')}",
         ]
         if extra:
             lines.append("")
             lines.append(extra)
-        tmp = self.status.with_suffix(".status.tmp")
+        tmp = self.status.with_suffix(".tmp")
         tmp.write_text("\n".join(lines) + "\n", encoding="utf-8")
         os.replace(tmp, self.status)     # atomic: a tailer never sees a partial
 
@@ -217,6 +252,7 @@ def execute(e: dict, log: ProgressLog, save_plots=True) -> dict:
         rec.update(re_mod.bin_layout(sim, cfg))
 
     log.render(state="starting")
+    log.start_heartbeat()
     log.event("start", **{k: e.get(k) for k in
                           ("table", "label", "equations", "I", "V", "dose",
                            "i_discrete", "I_bin", "v_discrete", "V_bin",
@@ -243,6 +279,7 @@ def execute(e: dict, log: ProgressLog, save_plots=True) -> dict:
                           progress_callback=log.tick)
     finally:
         sys.stdout, sys.stderr = saved
+        log.stop_heartbeat()
 
     if res is None:
         rec.update({"status": "failed", "error": "solver returned None"})

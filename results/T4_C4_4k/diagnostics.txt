@@ -1,0 +1,19 @@
+# Diagnostics for 20260906_161258_T4_C4_4k_full_system_bin_moment_CD_fission_I4000V4000_im5vm5
+
+## Rate constants
+ReactionRates: K_SIA_grow[0]=1.832e+08  K_VAC_grow[0]=1.425e+06  G_VAC[0]=0.000e+00  K_iv=5.156e+08  K_3D_cav=1.832e+08  mean_n_i=286.48
+  k2_SIA[0]=8.835e+02  k2_vac=5.044e+00  k2_He=3.057e+07
+  D_SIA_eff: n=1: 1.218e-12  n=2: 1.218e-12  n=3: 1.218e-12  n=4: 6.645e-19
+  C_i5: K_grow=6.689e+08  K_shrink=4.403e+06  K_loop=2.919e+02  k2=3.856e-04  G_emit=5.985e+01
+
+## Conservation diagnostics (final time step)
+delta_FP = 4.908910e-02  (Frenkel pair)
+delta_He = 2.506408e-08  (He balance)
+
+## Key results
+Final dose:       2.0000e+00 dpa
+Swelling (final): 0.000680 %
+C_He_tot (final): 9.786e+13 m^-3
+mean_n_i (final): 286.48
+mean_n_v (final): 843.74
+

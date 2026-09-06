@@ -17,6 +17,19 @@ Attribution comes from the `Paper` column of `InterstitialLoop.xlsx`, which uses
 leaves `NaN` on every row but the first of each block — the merge ranges (column J)
 are the authority.
 
+Since 2026-09-06 the figure script reconstructs those blocks itself (forward fill,
+fenced at each change of `Type of Irradiation`) and colours every experimental point
+by its source, naming each source in the legend; marker shape carries the defect
+population. The one row the fence cannot reach (row 40, caveat 1 below) is assigned to
+Chauhan 2021 by the inference recorded there, and the script prints that assumption on
+every run. The point-by-point table below is the reference this reconstruction must
+reproduce.
+
+`size_vs_dose.png` additionally drops measurements above **18 nm** — the 350 °C
+Klimenkov rows at 20.0, 35.0 and 48.0 nm. Its diameter axis is linear, and those three
+outliers alone set its scale. They remain in `density_vs_dose.png`, which is
+logarithmic and unaffected.
+
 ## References
 
 Every DOI below was resolved against Crossref; the five Elsevier entries additionally

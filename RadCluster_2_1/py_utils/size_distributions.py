@@ -93,6 +93,18 @@ VOID_CASES = [
 ]
 
 
+# Rendered titles are suppressed to match `py_utils/visualization.py`: these
+# figures are captioned by the notebook or document that embeds them.  Set
+# SHOW_TITLES = True to draw them again.
+SHOW_TITLES = False
+
+
+def _set_title(ax, text, **kw):
+    """Axes (or panel) title, drawn only when SHOW_TITLES is on."""
+    if SHOW_TITLES:
+        ax.set_title(text, **kw)
+
+
 def _slug(text):
     s = re.sub(r"[^A-Za-z0-9]+", "_", text).strip("_")
     return s.lower()
@@ -229,7 +241,7 @@ def plot_size_distributions(
             ax.legend(frameon=False)
         ax.set_xlabel("Loop diameter (nm)")
         ax.set_ylabel("Relative frequency (%)")
-        ax.set_title(case["title"], fontweight="bold")
+        _set_title(ax, case["title"], fontweight="bold")
         ax.set_xlim(*case["xlim"])
         _annotate_cite(ax, case["citation"], cite_fontsize)
         fig.tight_layout()
@@ -264,7 +276,7 @@ def plot_size_distributions(
                    alpha=0.85, edgecolor="white", linewidth=0.6)
         ax.set_xlabel("Cavity diameter (nm)")
         ax.set_ylabel("Relative frequency (%)")
-        ax.set_title(case["title"], fontweight="bold")
+        _set_title(ax, case["title"], fontweight="bold")
         ax.set_xlim(*case["xlim"])
         _annotate_cite(ax, case["citation"], cite_fontsize)
         fig.tight_layout()
@@ -315,7 +327,7 @@ def plot_size_distributions(
                 ax.legend(handles=legend_patches, frameon=False, ncol=2, loc="upper left")
                 ax.set_xlabel("Irradiation temperature (°C)")
                 ax.set_ylabel("Mean loop diameter (nm)")
-                ax.set_title("Mean Dislocation Loop Diameter vs Irradiation Temperature",
+                _set_title(ax, "Mean Dislocation Loop Diameter vs Irradiation Temperature",
                              fontweight="bold")
                 ax.set_xlim(50, 650); ax.set_ylim(0, 35)
                 ax.grid(True, ls=":", alpha=0.4)

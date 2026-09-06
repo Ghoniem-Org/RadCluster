@@ -34,6 +34,18 @@ warnings.filterwarnings("ignore")
 # Returns f₁₁₁ ∈ [0, 1] (or None if unparseable).  May depend on T and dose
 # when the source string encodes a transition (e.g. "½⟨111⟩→⟨100⟩").
 
+# Rendered titles are suppressed to match `py_utils/visualization.py`: these
+# figures are captioned by the notebook or document that embeds them.  Set
+# SHOW_TITLES = True to draw them again.
+SHOW_TITLES = False
+
+
+def _set_title(ax, text, **kw):
+    """Axes (or panel) title, drawn only when SHOW_TITLES is on."""
+    if SHOW_TITLES:
+        ax.set_title(text, **kw)
+
+
 def _has(s, *needles):
     return any(n in s for n in needles)
 
@@ -302,7 +314,7 @@ def plot_loop_111_fraction(
     if "T" in which:
         fig, ax = plt.subplots(figsize=figsize)
         _scatter(ax, df, "temperature_C", "Irradiation temperature (°C)")
-        ax.set_title(f"Fraction of ½⟨111⟩ loops vs Temperature  "
+        _set_title(ax, f"Fraction of ½⟨111⟩ loops vs Temperature  "
                      f"(|ρ| = {rho_T:.2f})", fontweight="bold")
         ax.legend(frameon=False, loc="center left", bbox_to_anchor=(1.01, 0.5),
                   fontsize=max(8, font_size - 4))
@@ -313,7 +325,7 @@ def plot_loop_111_fraction(
         fig, ax = plt.subplots(figsize=figsize)
         _scatter(ax, df, "dose_dpa", "Dose (dpa)")
         ax.set_xscale("log")
-        ax.set_title(f"Fraction of ½⟨111⟩ loops vs Dose  "
+        _set_title(ax, f"Fraction of ½⟨111⟩ loops vs Dose  "
                      f"(|ρ| = {rho_dose:.2f})", fontweight="bold")
         ax.legend(frameon=False, loc="center left", bbox_to_anchor=(1.01, 0.5),
                   fontsize=max(8, font_size - 4))

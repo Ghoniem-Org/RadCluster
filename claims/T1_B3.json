@@ -4,8 +4,11 @@
   "host": "MacBook-Pro.local",
   "label": "B3",
   "machine": "MacBook-Pro",
+  "note": "ONLINE ROUND-TRIP TEST",
   "pid": 20530,
+  "published_at": "2026-09-06T14:54:07-0700",
   "run_id": "T1_B3",
-  "status": "running",
-  "table": "T1"
+  "status": "done",
+  "table": "T1",
+  "wall_s": 1.0
 }

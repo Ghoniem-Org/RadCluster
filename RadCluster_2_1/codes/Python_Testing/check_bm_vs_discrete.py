@@ -1,13 +1,24 @@
 #!/usr/bin/env python3
 """
-check_bm_vs_discrete.py — the bin_moment path does not reproduce the discrete
-system even with the closure switched off.
+check_bm_vs_discrete.py — the discrete path silently ignores LOOP_COAL.
 
-CLAUDE.md S1 (bin_moment_CD modes): "When I_bin = 0 and i_discrete = I, all
-equations are discrete -> recovers full_CD."  It does not.  Configured that way
-the two paths build state vectors of the SAME length (N_eq = 406 at I = V = 200)
-and then integrate to different answers, with the whole disagreement in the
-1/2<111> block.
+CLAUDE.md S1 says that at I_bin = 0 and i_discrete = I the bin_moment system IS
+the discrete system.  It is not, and the reason is NOT a bin_moment defect:
+
+    P.loop_coal -- 1/2<111> loop-loop coarsening, rate_kernels.cpp:1944 -- is
+    implemented ONLY in rhs_bin_moment.  rhs_full_CD contains zero references
+    to it.  The workbook ships LOOP_COAL = 1, so the discrete path accepts the
+    flag, reports it in provenance, and does nothing with it.
+
+So the discrete arm is not the exact solution of the same equations: it is the
+same equations MINUS the loop-coarsening channel.  The bin_moment answer is the
+physically intended one.
+
+rate_kernels.cpp:1930 predicts exactly what the discrete arm then shows, and
+calls it "the missing edge": without coarsening "the 1/2<111> mean size pins AT
+the cutoff" and "the density runs 20-60x over the EUROFER97 data".  Measured
+here: discrete d_111 frozen at 1.759 / 1.763 / 1.760 nm across a 30x dose range,
+and N_111 3.5x the bin_moment value.
 
 Runs in ~20 s.  Exits non-zero when the two paths disagree, so it can serve as a
 regression test once the cause is fixed.
@@ -71,11 +82,12 @@ def main():
         worst = max(worst, abs(r - 1.0))
         print(f"{n:5d} {a:13.5e} {b:13.5e} {r:10.4f}")
 
-    print("\nThe disagreement is a spurious LARGE-SIZE TAIL in bin_moment: it")
-    print("under-populates n ~ 20-40 and over-populates n >= 80, reaching 3000x")
-    print(f"at n = {I - 1} where the discrete path correctly leaves the size at")
-    print("C_floor.  With I_bin = 0 there is no closure to blame, so the fault")
-    print("is in the bin_moment RHS/boundary handling, not the reconstruction.")
+    print("\nbin_moment carries loop-loop coarsening (P.loop_coal) and discrete")
+    print("does not, so bin_moment merges sessile loops into fewer, larger ones.")
+    print("That is the whole difference: fewer loops at large n in discrete, a")
+    print(f"populated tail in bin_moment, and at n = {I - 1} the discrete path never")
+    print("leaves C_floor.  The gap is a MISSING CHANNEL in rhs_full_CD, not a")
+    print("bin_moment defect -- LOOP_COAL = 1 is accepted there and ignored.")
 
     for k in ("mean_n_111", "N_loops_111", "mean_n_v"):
         a = float(np.asarray(rb[k])[-1])

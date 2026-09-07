@@ -72,9 +72,41 @@ def _git(args, cwd, check=True, timeout=180):
     return p
 
 
+MACHINE_ID_FILE = Path.home() / ".radcluster_machine_id"
+
+
 def machine_id() -> str:
-    """Stable, human-readable identity for this host."""
-    return os.environ.get("RADCLUSTER_MACHINE") or platform.node().split(".")[0]
+    """Stable, UNIQUE identity for this host.
+
+    It was platform.node().split(".")[0], which is neither.  This machine's
+    hostname changed from "MacBook-Pro" to "Mac.san.rr.com" mid-campaign (a
+    router handing out a domain), so it silently started claiming as "Mac" --
+    the id the OTHER machine already used.  Two hosts sharing an id is not
+    cosmetic: claim() trusts pid liveness to tell a live sibling worker from a
+    dead one, and a pid is only meaningful on the machine that issued it.  A
+    stale-looking claim could then be taken over while its real owner was still
+    computing, which is precisely the duplicate work the board exists to stop.
+
+    So the id is persisted on first use and never derived from a name that can
+    change underneath us.  RADCLUSTER_MACHINE still overrides, for naming a
+    machine deliberately.
+    """
+    env = os.environ.get("RADCLUSTER_MACHINE")
+    if env:
+        return env
+    try:
+        cached = MACHINE_ID_FILE.read_text(encoding="utf-8").strip()
+        if cached:
+            return cached
+    except OSError:
+        pass
+    import uuid
+    ident = f"{platform.node().split('.')[0]}-{uuid.uuid4().hex[:4]}"
+    try:
+        MACHINE_ID_FILE.write_text(ident + "\n", encoding="utf-8")
+    except OSError:
+        pass                 # unwritable home: fall back to per-process id
+    return ident
 
 
 class CampaignSync:

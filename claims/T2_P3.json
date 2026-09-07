@@ -1,0 +1,22 @@
+{
+  "N_eq": 228,
+  "bin_n_mom": 3,
+  "bin_shape": "lognormal",
+  "dose_reached": 0.0005428835233189813,
+  "dose_target": 40.0,
+  "label": "P=3 lognormal",
+  "machine": "Mac",
+  "note": "P=3 does not advance: 0.00054 of 40 dpa, 2.9 h on a single output step. GRID-INDEPENDENT -- all scored entries are missing, so ce13952 does not affect it and re-running would spend hours recording the same fact. Kept for the same reason the other machine kept T4_C4_P3_4k.",
+  "published_at": "2026-09-07T11:01:36-0700",
+  "reached_all_scoring_doses": false,
+  "run_id": "T2_P3",
+  "scored": {
+    "15.72": {
+      "dose_reached": 0.0005428835233189813,
+      "missing": true
+    }
+  },
+  "status": "did_not_reach",
+  "table": "T2",
+  "wall_s": 12600
+}

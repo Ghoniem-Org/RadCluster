@@ -228,6 +228,23 @@ def manifest() -> list[dict]:
     # (S2.3.2): a He block evaluated only at fission is flat across all six
     # observables and reads as evasion.  The flatness is the result, but only
     # with the fusion columns beside it.
+    # CONTROL COLUMN (added 2026-09-07).  The plan writes Table 3's first
+    # column as "fission QSS (= B4)" and S1.3 says B4 "already exists as the
+    # reference run and is not recomputed".  That makes the one QSS/dynamic
+    # contrast in the study uncontrolled: the reference was produced by a
+    # different code state on a different output grid, so subtracting it from
+    # T3_FISS_DYN measures the code and the grid as well as the helium closure.
+    #
+    # This row is the controlled twin.  It differs from T3_FISS_DYN in exactly
+    # one key -- he_kinetics -- and BASE already supplies cascade="fission" and
+    # he_kinetics="quasi_steady_state", so the difference is the closure and
+    # nothing else.  It is also, by construction, the production rung, so it
+    # doubles as the B4 column Tables 1 and 2 quote.
+    runs.append(_r("T3_FISS_QSS", "T3", "fission QSS (control)",
+                   "Controlled twin of T3_FISS_DYN: identical in every respect "
+                   "except he_kinetics.  Replaces the plan's uncomputed "
+                   "'= B4' column, which was not a controlled comparator.",
+                   **B4_GRID))
     runs.append(_r("T3_FISS_DYN", "T3", "fission dynamic",
                    he_kinetics="dynamic", **B4_GRID))
     runs.append(_r("T3_FUS_QSS", "T3", "fusion QSS",

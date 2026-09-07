@@ -1,0 +1,11 @@
+{
+  "claimed_at": "2026-09-06T17:53:21-0700",
+  "code_sha": "cec0071",
+  "host": "MacBook-Pro.local",
+  "label": "P=3 lognormal",
+  "machine": "MacBook-Pro",
+  "pid": 26815,
+  "run_id": "T2_P3",
+  "status": "running",
+  "table": "T2"
+}

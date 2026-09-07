@@ -71,6 +71,17 @@ TIMEOUT_NONLINEAR_CLOSURE = 1800
 B4_GRID = {"i_discrete": 100, "I_bin": 18, "v_discrete": 5, "V_bin": 20}
 
 
+# P = 3 (lognormal, 3 moments per bin) DOES NOT ADVANCE on this model.  Measured
+# 2026-09-06 on both domains: T4_C4_P3_4k reached 0.0022 of 2 dpa, T2_P3 reached
+# 0.00054 of 40 dpa with a single output step running 2.9 h.  Plan S6 anticipates
+# exactly this ("P = 3 may time out -- that is a result"), so the two rows stay
+# in the manifest as "did not reach" entries with the dose they achieved; they
+# are simply never CLAIMED again.  Re-enable by clearing this field once the
+# lognormal closure's stiffness is addressed.
+P3_EXCLUDED = ("P=3 lognormal does not advance; measured 2026-09-06 on both "
+               "domains. Recorded as 'did not reach' per plan S3.4.1.")
+
+
 def _r(run_id, table, label, notes="", **over):
     """One manifest entry: BASE, overridden, plus identity and provenance."""
     e = dict(BASE)
@@ -138,8 +149,11 @@ def manifest() -> list[dict]:
                    shape_function="constant", timeout_s=TIMEOUT_NONLINEAR_CLOSURE,
                    **T4, **C4))
     runs.append(_r("T4_C4_P3_4k", "T4", "C4, P=3 lognormal",
-                   "Closure order scored against the exact column.",
-                   shape_function="lognormal", timeout_s=TIMEOUT_NONLINEAR_CLOSURE,
+                   "Closure order scored against the exact column.  RAN and "
+                   "did not advance: 0.0022 of 2 dpa in 1866 s, all three "
+                   "scoring rungs MISSING.  Kept as a 'did not reach' row.",
+                   shape_function="lognormal", excluded=P3_EXCLUDED,
+                   timeout_s=TIMEOUT_NONLINEAR_CLOSURE,
                    **T4, **C4))
 
     # ── Table 1 — closure convergence at the production domain ──────────────
@@ -162,8 +176,12 @@ def manifest() -> list[dict]:
                    shape_function="constant", timeout_s=TIMEOUT_NONLINEAR_CLOSURE,
                    **B4_GRID))
     runs.append(_r("T2_P3", "T2", "P=3 lognormal",
-                   "May time out -- that is a result, not a failure (S6).",
-                   shape_function="lognormal", timeout_s=TIMEOUT_NONLINEAR_CLOSURE,
+                   "May time out -- that is a result, not a failure (S6).  It "
+                   "did: 0.00054 of 40 dpa in 174 min, 2.9 h on a single output "
+                   "step, stopped by hand rather than left to burn a core to "
+                   "the 24 h cap.",
+                   shape_function="lognormal", excluded=P3_EXCLUDED,
+                   timeout_s=TIMEOUT_NONLINEAR_CLOSURE,
                    **B4_GRID))
     runs.append(_r("T2_IBIN10", "T2", "I_bin 10",
                    **{**B4_GRID, "I_bin": 10}))
@@ -222,8 +240,11 @@ def _check_unique(runs):
 
 
 def runnable(runs=None) -> list[dict]:
-    """Manifest entries not blocked on an unimplemented code change."""
-    return [e for e in (runs or manifest()) if not e.get("blocked_on")]
+    """Entries a worker may CLAIM: not blocked on unimplemented code, and not
+    excluded by a measured failure.  Excluded entries stay in manifest() so the
+    board still displays their recorded outcome."""
+    return [e for e in (runs or manifest())
+            if not e.get("blocked_on") and not e.get("excluded")]
 
 
 if __name__ == "__main__":

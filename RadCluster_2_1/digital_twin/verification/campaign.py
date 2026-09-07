@@ -439,7 +439,8 @@ def main(argv=None):
     a = ap.parse_args(argv)
 
     entries = {e["run_id"]: e for e in manifest_mod.manifest()}
-    order = [e["run_id"] for e in manifest_mod.runnable()]
+    _tables = {t.strip() for t in (a.only or "").split(",") if t.strip()}
+    order = [e["run_id"] for e in manifest_mod.runnable(tables=_tables)]
 
     if a.smoke:
         # Deliberately NOT in the manifest: it is a pipeline test, and a study

@@ -239,12 +239,25 @@ def _check_unique(runs):
         seen[e["run_id"]] = e
 
 
-def runnable(runs=None) -> list[dict]:
+# TABLE 5 IS NOT CLAIMED BY DEFAULT.  Its columns measure WALL-CLOCK as the
+# dependent variable -- Woodbury vs Jacobi, 1 thread vs 12 -- so a T5 run that
+# shares a machine with other solves measures the contention, not the knob.
+# Plan S3.4.4: "performance-only knobs get a null test, not a curve"; a null
+# test taken under load is worthless.  It happened: the unrestricted loop
+# finished the exact arm, moved on to the next free run, and started
+# T5_WOODBURY alongside three other solvers.  Claim these only with an explicit
+# `--only T5` on an otherwise idle machine.
+TIMING_SENSITIVE_TABLES = {"T5"}
+
+
+def runnable(runs=None, tables=None) -> list[dict]:
     """Entries a worker may CLAIM: not blocked on unimplemented code, and not
     excluded by a measured failure.  Excluded entries stay in manifest() so the
     board still displays their recorded outcome."""
+    want = set(tables or ())
     return [e for e in (runs or manifest())
-            if not e.get("blocked_on") and not e.get("excluded")]
+            if not e.get("blocked_on") and not e.get("excluded")
+            and (e["table"] not in TIMING_SENSITIVE_TABLES or e["table"] in want)]
 
 
 if __name__ == "__main__":

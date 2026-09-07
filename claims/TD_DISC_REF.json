@@ -1,0 +1,11 @@
+{
+  "claimed_at": "2026-09-07T16:03:11-0700",
+  "code_sha": "958bb8b",
+  "host": "MacBook-Pro.local",
+  "label": "discrete, same grid",
+  "machine": "Mac-662a",
+  "pid": 83431,
+  "run_id": "TD_DISC_REF",
+  "status": "running",
+  "table": "TD"
+}

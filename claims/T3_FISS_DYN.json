@@ -1,0 +1,11 @@
+{
+  "claimed_at": "2026-09-06T23:42:50-0700",
+  "code_sha": "5a02745",
+  "host": "MacBook-Pro.local",
+  "label": "fission dynamic",
+  "machine": "MacBook-Pro",
+  "pid": 26764,
+  "run_id": "T3_FISS_DYN",
+  "status": "running",
+  "table": "T3"
+}

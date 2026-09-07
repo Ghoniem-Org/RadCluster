@@ -779,17 +779,42 @@ def observe(res, sim, cfg, d_min_nm):
     # bin_moment by BIN_MOMENT_BLOCKED, so there is nothing to screen with it.
     dose_t = t * G
     ladder = {}
+    # DOSE_SNAP / DOSE_OFF_GRID (added 2026-09-06).  Two distinct defects, both
+    # of which silently substituted one dose for another.
+    #
+    # 1. The final grid point overshoots its target by rounding: a 2 dpa run
+    #    ends at dose_dpa = 2.0000000000000004 (t_end = 2.0000000000000004e7 s
+    #    at G = 1e-7).  searchsorted(..., side="right") - 1 then steps PAST the
+    #    final point and returns the penultimate one.  On the 37-point log grid
+    #    of a Table 4 run that is 0.6433 dpa -- so the "2 dpa" column carried
+    #    0.643 dpa numbers.  A relative snap absorbs the rounding.
+    #
+    # 2. The grid is logarithmic in TIME, so a checkpoint that is not itself a
+    #    grid point takes the last point BELOW it, however far below that is.
+    #    Requesting 1 dpa on that same grid also returned 0.6433 dpa, making
+    #    the 1 and 2 dpa columns byte-identical.  That is the Figure 8 failure
+    #    mode -- comparing points at unequal dose -- reappearing inside the
+    #    study built to answer it.  The entry is still recorded, because the
+    #    numbers are real at the dose they were taken, but it is marked
+    #    off_grid so the reporting step refuses it as a metric for `dck`
+    #    (plan S3.4.1) instead of quietly mislabelling it.
+    DOSE_SNAP = 1e-6        # relative: absorbs end-point rounding only
+    DOSE_OFF_GRID = 0.02    # relative: how far below dck still counts as dck
     for dck in DOSE_CHECKPOINTS:
         if out["dose_reached"] < dck * (1.0 - 1e-9):
             continue                      # never got here; not an error
-        j = int(np.searchsorted(dose_t, dck, side="right")) - 1
+        j = int(np.searchsorted(dose_t, dck * (1.0 + DOSE_SNAP),
+                                side="right")) - 1
         if j < 0:
             continue
+        rel = (dck - float(dose_t[j])) / dck if dck > 0 else 0.0
         n111c = float(ser("mean_n_111")[j])
         n100c = float(ser("mean_n_100")[j])
         nvc = float(ser("mean_n_v")[j])
         ladder[f"{dck:g}"] = {
             "dose": float(dose_t[j]),
+            "dose_rel_err": float(rel),
+            "off_grid": bool(rel > DOSE_OFF_GRID),
             "N_loops_111": float(ser("N_loops_111")[j]),
             "N_loops_100": float(ser("N_loops_100")[j]),
             "d_111_nm": float(2*np.sqrt(max(n111c, 0)*Om/(np.pi*b111))*1e9),

@@ -54,6 +54,19 @@ BASE = {
     "dose_read": DOSE_READ_MAIN,
 }
 
+# TIMEOUT for the non-linear closures (P=1 constant, P=3 lognormal).  The plan
+# says of these "may be unstable / may time out -- that is a result, not a
+# failure" (S6), but the default 86400 s means collecting that result costs the
+# claiming machine a full day, during which it takes nothing else off the board.
+#
+# Measured 2026-09-06: T4_C4_P3_4k (lognormal, 3 moments/bin) ran 66 minutes and
+# reached 7.1e-4 of 2 dpa -- 0.04% -- while the SAME rung under the linear
+# closure finished in 54 s.  Thirty minutes is already 33x the linear cost, so a
+# run still under a percent at that point has demonstrated what the table needs
+# to record.  The cap turns a 24 h occupancy into a 30 min measurement of the
+# same fact; the record carries dose_reached and starved either way.
+TIMEOUT_NONLINEAR_CLOSURE = 1800
+
 # Production rung (= the reference run).  Its grid recurs in several tables.
 B4_GRID = {"i_discrete": 100, "I_bin": 18, "v_discrete": 5, "V_bin": 20}
 
@@ -122,10 +135,12 @@ def manifest() -> list[dict]:
     C4 = {"i_discrete": 5, "I_bin": 18, "v_discrete": 5, "V_bin": 16}
     runs.append(_r("T4_C4_P1_4k", "T4", "C4, P=1 constant",
                    "Closure order scored against the exact column.",
-                   shape_function="constant", **T4, **C4))
+                   shape_function="constant", timeout_s=TIMEOUT_NONLINEAR_CLOSURE,
+                   **T4, **C4))
     runs.append(_r("T4_C4_P3_4k", "T4", "C4, P=3 lognormal",
                    "Closure order scored against the exact column.",
-                   shape_function="lognormal", **T4, **C4))
+                   shape_function="lognormal", timeout_s=TIMEOUT_NONLINEAR_CLOSURE,
+                   **T4, **C4))
 
     # ── Table 1 — closure convergence at the production domain ──────────────
     # Hold r at production, vary only i_discrete (S1.3).  B4 already exists as
@@ -144,10 +159,12 @@ def manifest() -> list[dict]:
     # on the discrete/binned axis.
     runs.append(_r("T2_P1", "T2", "P=1 constant",
                    "May be unstable -- that is a result, not a failure (S6).",
-                   shape_function="constant", **B4_GRID))
+                   shape_function="constant", timeout_s=TIMEOUT_NONLINEAR_CLOSURE,
+                   **B4_GRID))
     runs.append(_r("T2_P3", "T2", "P=3 lognormal",
                    "May time out -- that is a result, not a failure (S6).",
-                   shape_function="lognormal", **B4_GRID))
+                   shape_function="lognormal", timeout_s=TIMEOUT_NONLINEAR_CLOSURE,
+                   **B4_GRID))
     runs.append(_r("T2_IBIN10", "T2", "I_bin 10",
                    **{**B4_GRID, "I_bin": 10}))
     runs.append(_r("T2_IBIN40", "T2", "I_bin 40",

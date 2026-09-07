@@ -367,8 +367,15 @@ def execute(e: dict, log: ProgressLog, save_plots=True) -> dict:
         got = lad.get(key)
         rec["scored"][key] = got if got else {"missing": True,
                                               "dose_reached": rec.get("dose_reached")}
+    # A checkpoint taken more than DOSE_OFF_GRID below the requested dose is
+    # marked off_grid by the observation operator.  It must fail this gate for
+    # the same reason a missing one does: plan S3.4.1 forbids reporting a dose
+    # the run did not actually reach as a metric, and "0.643 dpa reported in
+    # the 2 dpa column" is that failure with a number attached rather than a
+    # blank.
     rec["reached_all_scoring_doses"] = all(
-        not v.get("missing") for v in rec["scored"].values())
+        not v.get("missing") and not v.get("off_grid")
+        for v in rec["scored"].values())
 
     out_dir = getattr(sim, "_last_output_dir", None)
     if out_dir:

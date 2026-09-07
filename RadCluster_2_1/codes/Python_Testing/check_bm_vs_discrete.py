@@ -36,7 +36,11 @@ from RadCluster_2_1.py_utils.simulation import RadClusterSimulation   # noqa: E4
 import run_ensemble as re_mod                                          # noqa: E402
 
 I = V = 200
-TOL = 1e-6          # the two paths should agree to solver tolerance
+# The two paths do identical arithmetic in DIFFERENT ORDERS, so CVODE's adaptive
+# stepping cannot make them agree better than its own tolerance.  The runs use
+# rtol = 1e-5; 1e-4 leaves an order of magnitude of headroom while still failing
+# instantly on a missing channel (which showed as 0.43, not 1e-5).
+TOL = 1e-4
 
 
 def run(equations):
@@ -82,12 +86,11 @@ def main():
         worst = max(worst, abs(r - 1.0))
         print(f"{n:5d} {a:13.5e} {b:13.5e} {r:10.4f}")
 
-    print("\nbin_moment carries loop-loop coarsening (P.loop_coal) and discrete")
-    print("does not, so bin_moment merges sessile loops into fewer, larger ones.")
-    print("That is the whole difference: fewer loops at large n in discrete, a")
-    print(f"populated tail in bin_moment, and at n = {I - 1} the discrete path never")
-    print("leaves C_floor.  The gap is a MISSING CHANNEL in rhs_full_CD, not a")
-    print("bin_moment defect -- LOOP_COAL = 1 is accepted there and ignored.")
+    print("\nBoth paths must carry loop-loop coarsening (P.loop_coal) and pile a")
+    print("product past the grid edge AT the edge.  When rhs_case2 lacked the")
+    print("channel the per-size ratio ran 0.49 at n=40 and 906 at n=150; when it")
+    print("had the channel but dropped the overflow instead of piling it, the")
+    print("last size sat at 2.24x while everything below agreed to 0.04%.")
 
     for k in ("mean_n_111", "N_loops_111", "mean_n_v"):
         a = float(np.asarray(rb[k])[-1])

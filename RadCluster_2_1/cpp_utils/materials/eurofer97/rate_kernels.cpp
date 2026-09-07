@@ -756,6 +756,64 @@ static int rhs_case2(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
         }
     }
 
+    // ── ½⟨111⟩ LOOP–LOOP COARSENING (P.loop_coal) — discrete mirror ──────────
+    // The per-size counterpart of the class-pair sum in rhs_bin_moment (see the
+    // long note there).  It was implemented ONLY in the bin_moment path, while
+    // the workbook ships LOOP_COAL = 1, so rhs_case2 accepted the flag,
+    // recorded it in provenance and silently ignored it.  A fully discrete run
+    // was therefore NOT the same equations as its bin_moment counterpart, and
+    // the 17.6 h Table 4 "exact" arm measured that difference rather than a
+    // closure error: d_111 frozen at 1.76 nm over a 30x dose range and N_111
+    // 3.5x the binned value -- precisely the "mean size pins AT the cutoff /
+    // density runs 20-60x over the data" failure the channel exists to remove.
+    //
+    // On a discrete grid there is no reconstruction, so the O(bw^2) blow-up
+    // that forced the moment formulation upstairs does not arise: each sessile
+    // SIZE is its own monodisperse class.  Only sizes above i_mobile
+    // participate; mobile ones already coalesce through K_ii_coal.  Classes at
+    // or below C_floor are skipped, which is what keeps the pair sum tractable
+    // (the populated size range is a small fraction of I).
+    if (P.loop_coal) {
+        std::vector<int> idx;
+        idx.reserve(64);
+        for (int sn = P.i_mobile + 1; sn <= I; ++sn)
+            if (std::max(c_i[sn - 1], 0.0) > P.C_floor) idx.push_back(sn);
+        const int NC = static_cast<int>(idx.size());
+        for (int a = 0; a < NC; ++a) {
+            const int    na = idx[a];
+            const double ca = std::max(c_i[na - 1], 0.0);
+            const double Da = P.D_loop_coal[na - 1];
+            const double Zt = (!P.Z_i_loop_arr.empty()) ? P.Z_i_loop_arr[na - 1]
+                                                        : P.Z_i_loop;
+            for (int b = a; b < NC; ++b) {
+                const int    nb = idx[b];
+                const double cb = std::max(c_i[nb - 1], 0.0);
+                const double Db = P.D_loop_coal[nb - 1];
+                // Both partners glide: the encounter rate carries D_a + D_b,
+                // unlike K_ii_coal's projectile-only convention.
+                const double Dsum = Da + Db;
+                if (Dsum < 1e-300) continue;
+                const double sf = std::sqrt(static_cast<double>(na))
+                                + std::sqrt(static_cast<double>(nb));
+                const double K  = P.Z_ii * Zt * P.A_loop_inv_O23 * sf * Dsum;
+                // a == b: 1/2 K c^2, and each event consumes TWO of the class.
+                const double r = (a == b) ? 0.5 * K * ca * ca : K * ca * cb;
+                if (r < 1e-300) continue;
+                if (a == b) dci[na - 1] -= 2.0 * r;
+                else      { dci[na - 1] -= r; dci[nb - 1] -= r; }
+                // Product beyond the grid PILES AT THE EDGE, matching
+                // rhs_bin_moment's deposit() ("if (si > I) si = I").  Dropping
+                // the overflow instead leaves the two paths solving different
+                // equations at the top of the domain -- measured as a 2.24x
+                // ratio at the last size while everything below agreed to
+                // 0.04%.  Whether edge-piling or loss is the better convention
+                // is a separate question; they must agree on it.
+                const int prod = std::min(na + nb, I);
+                dci[prod - 1] += r;
+            }
+        }
+    }
+
     // ── Q_tot equation (total He in voids) ───────────────────────────────────
     double He_uptake = 0.0;
     for (int m = 0; m < V; ++m)
@@ -1156,6 +1214,67 @@ static int rhs_case1(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
                 const double rate = K_vv_coal(P, k, mp) * c_mp * std::max(c_v[k - 1], 0.0);
                 dcv[k - 1]  += rate;  // undo target loss
                 dcv[mp - 1] += rate;  // undo projectile depletion
+            }
+        }
+    }
+
+    // Same channel, fusion/Case-1 path.  rhs_case1 was missing it for the
+    // same reason rhs_case2 was; Table 3 scores two fusion columns, so a
+    // discrete fusion run would have carried the identical defect.
+    // ── ½⟨111⟩ LOOP–LOOP COARSENING (P.loop_coal) — discrete mirror ──────────
+    // The per-size counterpart of the class-pair sum in rhs_bin_moment (see the
+    // long note there).  It was implemented ONLY in the bin_moment path, while
+    // the workbook ships LOOP_COAL = 1, so rhs_case2 accepted the flag,
+    // recorded it in provenance and silently ignored it.  A fully discrete run
+    // was therefore NOT the same equations as its bin_moment counterpart, and
+    // the 17.6 h Table 4 "exact" arm measured that difference rather than a
+    // closure error: d_111 frozen at 1.76 nm over a 30x dose range and N_111
+    // 3.5x the binned value -- precisely the "mean size pins AT the cutoff /
+    // density runs 20-60x over the data" failure the channel exists to remove.
+    //
+    // On a discrete grid there is no reconstruction, so the O(bw^2) blow-up
+    // that forced the moment formulation upstairs does not arise: each sessile
+    // SIZE is its own monodisperse class.  Only sizes above i_mobile
+    // participate; mobile ones already coalesce through K_ii_coal.  Classes at
+    // or below C_floor are skipped, which is what keeps the pair sum tractable
+    // (the populated size range is a small fraction of I).
+    if (P.loop_coal) {
+        std::vector<int> idx;
+        idx.reserve(64);
+        for (int sn = P.i_mobile + 1; sn <= I; ++sn)
+            if (std::max(c_i[sn - 1], 0.0) > P.C_floor) idx.push_back(sn);
+        const int NC = static_cast<int>(idx.size());
+        for (int a = 0; a < NC; ++a) {
+            const int    na = idx[a];
+            const double ca = std::max(c_i[na - 1], 0.0);
+            const double Da = P.D_loop_coal[na - 1];
+            const double Zt = (!P.Z_i_loop_arr.empty()) ? P.Z_i_loop_arr[na - 1]
+                                                        : P.Z_i_loop;
+            for (int b = a; b < NC; ++b) {
+                const int    nb = idx[b];
+                const double cb = std::max(c_i[nb - 1], 0.0);
+                const double Db = P.D_loop_coal[nb - 1];
+                // Both partners glide: the encounter rate carries D_a + D_b,
+                // unlike K_ii_coal's projectile-only convention.
+                const double Dsum = Da + Db;
+                if (Dsum < 1e-300) continue;
+                const double sf = std::sqrt(static_cast<double>(na))
+                                + std::sqrt(static_cast<double>(nb));
+                const double K  = P.Z_ii * Zt * P.A_loop_inv_O23 * sf * Dsum;
+                // a == b: 1/2 K c^2, and each event consumes TWO of the class.
+                const double r = (a == b) ? 0.5 * K * ca * ca : K * ca * cb;
+                if (r < 1e-300) continue;
+                if (a == b) dci[na - 1] -= 2.0 * r;
+                else      { dci[na - 1] -= r; dci[nb - 1] -= r; }
+                // Product beyond the grid PILES AT THE EDGE, matching
+                // rhs_bin_moment's deposit() ("if (si > I) si = I").  Dropping
+                // the overflow instead leaves the two paths solving different
+                // equations at the top of the domain -- measured as a 2.24x
+                // ratio at the last size while everything below agreed to
+                // 0.04%.  Whether edge-piling or loss is the better convention
+                // is a separate question; they must agree on it.
+                const int prod = std::min(na + nb, I);
+                dci[prod - 1] += r;
             }
         }
     }

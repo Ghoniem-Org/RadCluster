@@ -1,0 +1,11 @@
+{
+  "claimed_at": "2026-09-07T00:03:00-0700",
+  "code_sha": "5a02745",
+  "host": "MacBook-Pro.local",
+  "label": "fusion QSS",
+  "machine": "MacBook-Pro",
+  "pid": 26764,
+  "run_id": "T3_FUS_QSS",
+  "status": "running",
+  "table": "T3"
+}

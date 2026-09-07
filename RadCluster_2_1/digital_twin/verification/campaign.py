@@ -269,10 +269,18 @@ def build_sim(e: dict):
 
 def solver_config(e: dict, sim) -> dict:
     G = float(sim.input_data.reactions["G"])
+    # The doses this row will be SCORED at must exist in the output, or the
+    # ladder falls back to the nearest point below and the table reports a dose
+    # the run was never evaluated at (plan S3.4.1).  Passing them as required
+    # times makes each one a segment boundary.  Every column of a table shares
+    # `dose_read`, so every column still gets an identical grid (plan S3.2).
+    reads = e.get("dose_read") or ()
+    reads = reads if isinstance(reads, (list, tuple)) else [reads]
     return {
         "t_span": (1e-6, float(e["dose"]) / G),
         "n_points": int(e["n_points"]),
         "log_time": True,
+        "required_times": tuple(float(r) / G for r in reads),
         "rtol": float(e["rtol"]), "atol": float(e["atol"]),
         "timeout_s": float(e.get("timeout_s", 86400)),
         "solver_method": {"linsol": "gmres",

@@ -1055,6 +1055,29 @@ class RadClusterSimulation:
         else:
             checkpoints = np.linspace(t_begin, t_end, n_segments + 1)
 
+        # REQUIRED TIMES (added 2026-09-06).  The output grid is logarithmic in
+        # TIME, so the doses a study reports are not generally on it.  Measured:
+        # a 40 dpa row with n_points=37 and points_per_segment=10 saves 28
+        # points, of which only four lie above 1 dpa -- 0.954, 3.315, 11.51, 40.
+        # A request to score at 15.72 dpa then silently took 11.51 dpa, 26.8%
+        # low, because the state at 15.72 was never written.  Nothing downstream
+        # could repair that: it is missing data, not a lookup error.
+        #
+        # Making each required time a SEGMENT BOUNDARY puts it in the output
+        # exactly, because every segment is integrated to its own endpoint.
+        # That is why this belongs here and not in a post-hoc resample: the
+        # solver has to stop there.  Everything else is unchanged -- the log
+        # spacing, points_per_segment, and the segment machinery all still
+        # apply, with a few extra boundaries in the range that matters.
+        req = solver_config.get('required_times') or ()
+        req = [float(x) for x in req
+               if t_begin < float(x) < t_end * (1 - 1e-12)]
+        if req:
+            checkpoints = np.unique(np.concatenate([checkpoints, req]))
+            # n_segments is now len-1, and max_iters below is derived from it;
+            # leaving the old value would cap the loop before the last segment.
+            n_segments = len(checkpoints) - 1
+
         # ROW-LEVEL DEADLINE, not a per-segment one.  timeout_s used to be handed
         # to EVERY segment unchanged, so a run could legally take
         # n_segments x timeout_s: measured 2026-08-06, rows of 16108-20503 s

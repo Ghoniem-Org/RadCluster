@@ -156,6 +156,39 @@ def manifest() -> list[dict]:
                    timeout_s=TIMEOUT_NONLINEAR_CLOSURE,
                    **T4, **C4))
 
+    # ── DIAGNOSTIC PAIR — is the gap the closure, or the two RHS paths? ─────
+    # Table 4 shows N_111 flat at ~3.6e21 across i_discrete 400 -> 5 (an 80x
+    # change) while the exact arm gives 1.26e22.  C1 integrates sizes 1-400
+    # individually and the exact distribution holds 89% of its loops in n =
+    # 21-100, entirely inside that discrete region -- so a CLOSURE error cannot
+    # explain it.  Either the binned large-size tail (77% of C4's content sits
+    # above n = 500, against 0.1% in the exact solution) starves the small
+    # loops through the coupled dynamics, or the two RHS implementations do not
+    # solve the same equations.
+    #
+    # CLAUDE.md S1: "When I_bin = 0 and i_discrete = I, all equations are
+    # discrete -> recovers full_CD".  So BM_FULL is the bin_moment CODE PATH
+    # carrying NO closure at all.  Run against DISC_REF on an identical grid:
+    #
+    #   BM_FULL == DISC_REF  -> the paths agree; the fault is the closure/tail
+    #   BM_FULL != DISC_REF  -> the paths differ; that is a solver defect and
+    #                           every bin_moment result in the study inherits it
+    #
+    # 0.2 dpa, not 2: the gap is already wide by ~1e-3 dpa (N_111 3.36e21 vs
+    # 2.30e21) and this costs ~1.5 h instead of ~17 h.  Both share t_span and
+    # n_points so no interpolation is needed to compare them.
+    DIAG = {"I": 4000, "V": 4000, "dose": 0.2, "n_points": 37,
+            "dose_read": (0.05, 0.1, 0.2), "table": "TD"}
+    runs.append(_r("TD_BM_FULL", "TD", "bin_moment, i_discrete = I",
+                   "The bin_moment code path with NO closure (I_bin = V_bin = 0).",
+                   equations="bin_moment", i_discrete=4000, I_bin=0,
+                   v_discrete=4000, V_bin=0,
+                   **{k: v for k, v in DIAG.items() if k != "table"}))
+    runs.append(_r("TD_DISC_REF", "TD", "discrete, same grid",
+                   "Matched-grid discrete reference for TD_BM_FULL.",
+                   equations="discrete",
+                   **{k: v for k, v in DIAG.items() if k != "table"}))
+
     # ── Table 1 — closure convergence at the production domain ──────────────
     # Hold r at production, vary only i_discrete (S1.3).  B4 already exists as
     # the reference run and is not recomputed.

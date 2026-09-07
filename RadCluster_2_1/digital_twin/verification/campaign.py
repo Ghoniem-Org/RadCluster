@@ -319,6 +319,15 @@ def execute(e: dict, log: ProgressLog, save_plots=True) -> dict:
     # cannot afford to discover after the fact.
     if e["equations"] == "bin_moment":
         rec.update(re_mod.bin_layout(sim, cfg))
+    else:
+        # bin_layout() returns {} in discrete mode, so N_eq was never recorded
+        # and every discrete row carried a blank in the size column -- which is
+        # how the exact arm's 8006 got reported as 28006, the value from the
+        # abandoned I=8000/V=20000 domain.  A results table with a hole in it
+        # invites exactly that.  Record it from the rate equations directly.
+        _re_obj = getattr(sim, "rate_equations", None)
+        rec["N_eq"] = int(getattr(_re_obj, "N_eq", -1)) if _re_obj else -1
+        rec["bin_shape"] = "discrete"
 
     log.render(state="starting")
     ckpt = MOD / "output" / f"CKPT_{e['run_id']}"

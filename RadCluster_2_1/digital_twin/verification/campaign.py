@@ -99,15 +99,76 @@ class ProgressLog:
     # A daemon thread re-renders on a timer, so `elapsed` and `updated` keep
     # moving while `steps` stands still: working-but-slow now looks different
     # from stopped.
-    def start_heartbeat(self, period_s=30.0):
+    def start_heartbeat(self, period_s=30.0, sim=None, ckpt_dir=None):
+        self.sim, self.ckpt_dir, self._ckpt_n = sim, ckpt_dir, 0
         def _loop():
             while not self._stop.wait(period_s):
                 try:
                     self.render(state="running")
                 except Exception:
                     pass          # a status file must never kill a run
+                try:
+                    self.checkpoint()
+                except Exception as exc:
+                    self.event("checkpoint_error", error=f"{type(exc).__name__}: {exc}"[:200])
         self._beat = threading.Thread(target=_loop, daemon=True)
         self._beat.start()
+
+    # CHECKPOINTING.  _save_output runs only when a run ENDS, so an 11 h run
+    # holds nothing on disk until it finishes and a hard kill loses all of it
+    # (measured: a 24 min discrete arm, killed, left no artifact at all).
+    #
+    # run_adaptive republishes `sim._accumulated_results` after every segment
+    # merge, and that rebind is atomic -- this thread sees either the previous
+    # dict or the new one, never a half-built one -- so a concurrent reader can
+    # snapshot it safely without any change to simulation.py.
+    #
+    # Granularity is the segment, not the output step: points_per_segment stays
+    # at its default because it also sets the operator-splitting cadence that
+    # refreshes rho_net for LOOP_NETWORK_LOSS.  Lowering it for finer
+    # checkpoints would change the physics and make the run incomparable with
+    # the rest of the table -- a checkpoint must never do that.
+    def checkpoint(self):
+        if self.sim is None or self.ckpt_dir is None:
+            return
+        acc = getattr(self.sim, "_accumulated_results", None)
+        if not acc or "t" not in acc:
+            return
+        n = len(acc["t"])
+        if n <= self._ckpt_n:
+            return                       # no new segment since last time
+        import numpy as np
+        d = Path(self.ckpt_dir)
+        d.mkdir(parents=True, exist_ok=True)
+        G = self.G or 0.0
+        for name, key in (("results_t.npy", "t"), ("results_y.npy", "y"),
+                          ("y_sia100_raw.npy", "y_sia100_raw")):
+            v = acc.get(key)
+            if v is None:
+                continue
+            # NOTE the file handle: np.save(path) APPENDS .npy when the name
+            # does not already end in it, so a "<name>.npy.tmp" target silently
+            # became "<name>.npy.tmp.npy" and the rename below raised
+            # FileNotFoundError -- every checkpoint of every run would have
+            # thrown.  Writing through an open handle bypasses the mangling.
+            tmp = d / (name + ".tmp")
+            with open(tmp, "wb") as fh:
+                np.save(fh, np.asarray(v))
+            os.replace(tmp, d / name)    # atomic: never a torn .npy
+        meta = {"run_id": self.run_id, "machine": self.machine,
+                "n_points": n, "steps_seen": self.n_steps,
+                "t_s": float(acc["t"][-1]), "dose": float(acc["t"][-1] * G),
+                "elapsed_s": round(time.time() - self.t0, 1),
+                "written_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
+                "note": "PARTIAL trajectory from a run still in progress; "
+                        "post-process with post_process.calculate_derived_"
+                        "quantities. Superseded by the run's output/ directory "
+                        "once it completes."}
+        tmp = d / "checkpoint.json.tmp"
+        tmp.write_text(json.dumps(meta, indent=2) + "\n", encoding="utf-8")
+        os.replace(tmp, d / "checkpoint.json")
+        self._ckpt_n = n
+        self.event("checkpoint", n_points=n, dose=meta["dose"])
 
     def stop_heartbeat(self):
         self._stop.set()
@@ -252,7 +313,8 @@ def execute(e: dict, log: ProgressLog, save_plots=True) -> dict:
         rec.update(re_mod.bin_layout(sim, cfg))
 
     log.render(state="starting")
-    log.start_heartbeat()
+    ckpt = MOD / "output" / f"CKPT_{e['run_id']}"
+    log.start_heartbeat(sim=sim, ckpt_dir=ckpt)
     log.event("start", **{k: e.get(k) for k in
                           ("table", "label", "equations", "I", "V", "dose",
                            "i_discrete", "I_bin", "v_discrete", "V_bin",

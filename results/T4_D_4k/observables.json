@@ -231,8 +231,6 @@
       "mean_n_v": 738.9060374479071
     }
   },
-  "claimed_at": "2026-09-06T15:59:00-0700",
-  "code_sha": "78ecebf",
   "conserving": false,
   "d_100_nm": 5.740884709430775,
   "d_100_vis_0p8": 5.701897060803541,
@@ -269,7 +267,6 @@
   "f_100_tem_1p5": 0.11486714089274631,
   "grid_converged": true,
   "grid_limited": false,
-  "host": "MacBook-Pro.local",
   "kfrac_cav_1_10": 0.9935034951879882,
   "kfrac_cav_2_4": 0.6852683435410847,
   "kfrac_cav_bub": 0.7175434849829735,
@@ -284,11 +281,9 @@
   "occ_111": 0.012799612921003078,
   "occ_v": 0.1825925868884497,
   "output_dir": "/Users/ghoni/Documents/GitHub/RadCluster/RadCluster_2_1/output/20260907_093333_T4_D_4k_full_system_full_CD_fission_I4000V4000_im5vm5",
-  "pid": 23559,
   "pile_100": 4.005739263380657e-05,
   "pile_111": 0.0,
   "pile_v": 0.016151457780254973,
-  "published_at": "2026-09-07T09:33:42-0700",
   "reached_all_scoring_doses": true,
   "run_id": "T4_D_4k",
   "scored": {

@@ -32,12 +32,15 @@ in the history of the paper.
 """
 from __future__ import annotations
 
+import errno
+import fcntl
 import json
 import os
 import platform
 import random
 import subprocess
 import time
+from contextlib import contextmanager
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -48,6 +51,16 @@ PUSH_RETRIES = 6
 
 class SyncError(RuntimeError):
     pass
+
+
+def _pid_alive(pid) -> bool:
+    """Is a process with this pid running?  Used to tell a live sibling worker
+    from a claim left behind by one that died."""
+    try:
+        os.kill(int(pid), 0)
+    except (OSError, TypeError, ValueError) as exc:
+        return getattr(exc, "errno", None) == errno.EPERM   # alive, not ours
+    return True
 
 
 def _git(args, cwd, check=True, timeout=180):
@@ -77,12 +90,41 @@ class CampaignSync:
         self.offline = offline
         self.machine = machine_id()
 
+    # WORKTREE MUTEX.  Several workers on ONE machine share this worktree, and
+    # concurrent `git add`/`commit`/`push` in a single worktree race on
+    # .git/index.lock -- one of them fails, and which one is luck.  Every
+    # sequence of git commands therefore runs under an flock on a sidecar file.
+    # Cross-machine exclusion is still the remote's job; this only serialises
+    # the local processes that share these files.
+    @contextmanager
+    def _lock(self, timeout_s=300):
+        self.dir.parent.mkdir(parents=True, exist_ok=True)
+        lf = self.dir.parent / ".sync.lock"
+        deadline = time.time() + timeout_s
+        fh = open(lf, "a+")
+        try:
+            while True:
+                try:
+                    fcntl.flock(fh.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    break
+                except OSError:
+                    if time.time() > deadline:
+                        raise SyncError(f"worktree lock busy for {timeout_s}s")
+                    time.sleep(0.2 + random.random() * 0.3)
+            yield
+        finally:
+            try:
+                fcntl.flock(fh.fileno(), fcntl.LOCK_UN)
+            finally:
+                fh.close()
+
     # ── setup ────────────────────────────────────────────────────────────────
     def ensure(self):
         """Create the worktree and branch if absent; make it current."""
-        if not (self.dir / ".git").exists():
-            self._create_worktree()
-        self.refresh()
+        with self._lock():
+            if not (self.dir / ".git").exists():
+                self._create_worktree()
+            self.refresh()
         (self.dir / "claims").mkdir(exist_ok=True)
         (self.dir / "results").mkdir(exist_ok=True)
 
@@ -169,13 +211,28 @@ class CampaignSync:
         another machine we lose it cleanly, and if it is still free we retry.
         """
         for attempt in range(PUSH_RETRIES):
+          with self._lock():
             self.refresh()
             existing = self.claims().get(run_id)
-            if existing and existing.get("machine") != self.machine:
-                return False
-            if existing and existing.get("status") in ("done", "running") \
-                    and existing.get("machine") == self.machine:
-                return True             # ours already (resume after a restart)
+            if existing:
+                st = existing.get("status")
+                owner, opid = existing.get("machine"), existing.get("pid")
+                if st == "done":
+                    return False              # already computed
+                if owner != self.machine:
+                    return False              # another machine owns it
+                # SAME MACHINE.  This used to return True on the reasoning that
+                # a claim by this machine must be ours resuming after a restart.
+                # With several workers on one box that is false, and it handed
+                # TWO of them the same run: both took T1_B1 and started
+                # identical multi-hour solves.  The owning PROCESS is what
+                # decides -- a live sibling keeps it, a dead one leaves a stale
+                # claim we may take over.
+                if opid and int(opid) == os.getpid():
+                    return True               # genuinely ours
+                if opid and _pid_alive(opid):
+                    return False              # a live worker on this box owns it
+                # else: stale claim from a process that died -> take it over
             rec = {
                 "run_id": run_id, "status": "running",
                 "machine": self.machine, "host": platform.node(),
@@ -189,8 +246,9 @@ class CampaignSync:
                          paths=[f"claims/{run_id}.json"])
             if self._push():
                 return True
-            # Lost the race (or a transient failure): back off and re-examine.
-            time.sleep(1.0 + random.random() * 2.0 * (attempt + 1))
+          # Lost the race (or a transient failure): back off and re-examine.
+          # Outside the lock, so a sibling can make progress meanwhile.
+          time.sleep(1.0 + random.random() * 2.0 * (attempt + 1))
         raise SyncError(f"could not settle a claim for {run_id} after "
                         f"{PUSH_RETRIES} attempts")
 
@@ -211,6 +269,10 @@ class CampaignSync:
     # ── publishing results ───────────────────────────────────────────────────
     def publish(self, run_id: str, summary: dict, artifacts: dict = None) -> bool:
         """Record a finished run and push it.  Called after EVERY run."""
+        with self._lock():
+            return self._publish_locked(run_id, summary, artifacts)
+
+    def _publish_locked(self, run_id, summary, artifacts):
         self.refresh()
         rec = self.claims().get(run_id, {"run_id": run_id})
         rec.update(summary)
@@ -239,6 +301,10 @@ class CampaignSync:
 
     def release(self, run_id: str) -> bool:
         """Drop a claim so another machine can take the run."""
+        with self._lock():
+            return self._release_locked(run_id)
+
+    def _release_locked(self, run_id):
         self.refresh()
         f = self.dir / "claims" / f"{run_id}.json"
         if not f.exists():

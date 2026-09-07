@@ -1,0 +1,11 @@
+{
+  "run_id": "T2_P3",
+  "machine": "MacBook-Pro",
+  "n_points": 19,
+  "steps_seen": 18,
+  "t_s": 5428.835233189814,
+  "dose": 0.0005428835233189813,
+  "elapsed_s": 61.6,
+  "written_at": "2026-09-06T17:54:24",
+  "note": "PARTIAL trajectory from a run still in progress; post-process with post_process.calculate_derived_quantities. Superseded by the run's output/ directory once it completes."
+}

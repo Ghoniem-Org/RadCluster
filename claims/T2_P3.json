@@ -1,11 +1,26 @@
 {
+  "N_eq": 228,
+  "bin_n_mom": 3,
+  "bin_shape": "lognormal",
   "claimed_at": "2026-09-06T17:53:21-0700",
   "code_sha": "cec0071",
+  "dose_reached": 0.0005428835233189813,
+  "dose_target": 40.0,
   "host": "MacBook-Pro.local",
   "label": "P=3 lognormal",
   "machine": "MacBook-Pro",
+  "note": "Stopped by hand after 2.9 h on a SINGLE output step (~3.5 h total) rather than left to burn a core to the 24 h cap. Plan S6 anticipates this: 'P=3 may time out -- that is a result'. Partial trajectory preserved in output/CKPT_T2_P3/. P=3 is now excluded from claiming.",
   "pid": 26815,
+  "published_at": "2026-09-06T21:06:18-0700",
+  "reached_all_scoring_doses": false,
   "run_id": "T2_P3",
-  "status": "running",
-  "table": "T2"
+  "scored": {
+    "15.72": {
+      "dose_reached": 0.0005428835233189813,
+      "missing": true
+    }
+  },
+  "status": "did_not_reach",
+  "table": "T2",
+  "wall_s": 12600
 }

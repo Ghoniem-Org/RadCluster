@@ -774,10 +774,51 @@ static int rhs_case2(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
     // or below C_floor are skipped, which is what keeps the pair sum tractable
     // (the populated size range is a small fraction of I).
     if (P.loop_coal) {
+        // PARTICIPATION THRESHOLD.  The pair sum is O(NC^2), and NC here counts
+        // SIZES, not bins: the moment version upstairs has ~20 classes, this has
+        // up to I.  Gating only on C_floor is not enough -- sizes initialised AT
+        // the floor drift a hair above it and join, trending toward NC = I and
+        // 8e6 pairs per RHS at I = 4000.  Measured: the rebuilt exact arm spent
+        // 2.6 h on the step at 0.014 dpa where the pre-fix arm covered 0.067 dpa
+        // in its first 170 min.
+        //
+        // The rate is proportional to c_a * c_b, so a class at a fraction eps of
+        // the peak contributes at most ~eps of the peak pair rate.  Dropping
+        // classes below 1e-8 of the peak is therefore a relative error bounded
+        // by ~1e-8 on this channel -- four orders below the solver's own
+        // rtol = 1e-5, and check_bm_vs_discrete.py re-measures the agreement
+        // against the moment path on every run.  The C_floor gate is retained as
+        // an absolute lower bound for the case where the peak itself is tiny.
+        // The gate that matters is ABSOLUTE, a small multiple of C_floor.  A
+        // purely relative one does not fire: measured on the killed I = 4000
+        // arm, peak = 1.131e-09, so 1e-8 x peak = 1.13e-17 sits BELOW C_floor
+        // and NC stayed at 3904 (7.6e6 pairs) -- which is why the first attempt
+        // bought no speedup at all.  3795 of those 3904 classes were dust
+        // hovering between 1.0 and 1.13 x C_floor, i.e. sizes that never left
+        // their initial value.
+        //
+        //   gate      NC    pairs      largest excluded / peak
+        //   1 x Cf   3904  7,622,560          8.8e-07
+        //   2 x Cf     96      4,656          1.7e-06
+        //  10 x Cf     83      3,486          7.7e-06
+        //
+        // 2 x C_floor takes essentially all the benefit at the smallest error.
+        // The rate is proportional to c_a * c_b, so a dropped class bounds its
+        // own contribution by (c_excluded / peak) ~ 1.7e-06 -- below the
+        // solver's rtol = 1e-5 -- and a dropped PAIR by the square of it.  The
+        // relative term is kept as a guard for a peak so large that C_floor-
+        // scale classes are irrelevant on their own.
+        constexpr double LOOP_COAL_ABS = 2.0;    // x C_floor
+        constexpr double LOOP_COAL_REL = 1e-6;   // x peak
+        double cmax = 0.0;
+        for (int sn = P.i_mobile + 1; sn <= I; ++sn)
+            cmax = std::max(cmax, std::max(c_i[sn - 1], 0.0));
+        const double c_min = std::max(LOOP_COAL_ABS * P.C_floor,
+                                      LOOP_COAL_REL * cmax);
         std::vector<int> idx;
         idx.reserve(64);
         for (int sn = P.i_mobile + 1; sn <= I; ++sn)
-            if (std::max(c_i[sn - 1], 0.0) > P.C_floor) idx.push_back(sn);
+            if (std::max(c_i[sn - 1], 0.0) > c_min) idx.push_back(sn);
         const int NC = static_cast<int>(idx.size());
         for (int a = 0; a < NC; ++a) {
             const int    na = idx[a];
@@ -1239,10 +1280,51 @@ static int rhs_case1(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
     // or below C_floor are skipped, which is what keeps the pair sum tractable
     // (the populated size range is a small fraction of I).
     if (P.loop_coal) {
+        // PARTICIPATION THRESHOLD.  The pair sum is O(NC^2), and NC here counts
+        // SIZES, not bins: the moment version upstairs has ~20 classes, this has
+        // up to I.  Gating only on C_floor is not enough -- sizes initialised AT
+        // the floor drift a hair above it and join, trending toward NC = I and
+        // 8e6 pairs per RHS at I = 4000.  Measured: the rebuilt exact arm spent
+        // 2.6 h on the step at 0.014 dpa where the pre-fix arm covered 0.067 dpa
+        // in its first 170 min.
+        //
+        // The rate is proportional to c_a * c_b, so a class at a fraction eps of
+        // the peak contributes at most ~eps of the peak pair rate.  Dropping
+        // classes below 1e-8 of the peak is therefore a relative error bounded
+        // by ~1e-8 on this channel -- four orders below the solver's own
+        // rtol = 1e-5, and check_bm_vs_discrete.py re-measures the agreement
+        // against the moment path on every run.  The C_floor gate is retained as
+        // an absolute lower bound for the case where the peak itself is tiny.
+        // The gate that matters is ABSOLUTE, a small multiple of C_floor.  A
+        // purely relative one does not fire: measured on the killed I = 4000
+        // arm, peak = 1.131e-09, so 1e-8 x peak = 1.13e-17 sits BELOW C_floor
+        // and NC stayed at 3904 (7.6e6 pairs) -- which is why the first attempt
+        // bought no speedup at all.  3795 of those 3904 classes were dust
+        // hovering between 1.0 and 1.13 x C_floor, i.e. sizes that never left
+        // their initial value.
+        //
+        //   gate      NC    pairs      largest excluded / peak
+        //   1 x Cf   3904  7,622,560          8.8e-07
+        //   2 x Cf     96      4,656          1.7e-06
+        //  10 x Cf     83      3,486          7.7e-06
+        //
+        // 2 x C_floor takes essentially all the benefit at the smallest error.
+        // The rate is proportional to c_a * c_b, so a dropped class bounds its
+        // own contribution by (c_excluded / peak) ~ 1.7e-06 -- below the
+        // solver's rtol = 1e-5 -- and a dropped PAIR by the square of it.  The
+        // relative term is kept as a guard for a peak so large that C_floor-
+        // scale classes are irrelevant on their own.
+        constexpr double LOOP_COAL_ABS = 2.0;    // x C_floor
+        constexpr double LOOP_COAL_REL = 1e-6;   // x peak
+        double cmax = 0.0;
+        for (int sn = P.i_mobile + 1; sn <= I; ++sn)
+            cmax = std::max(cmax, std::max(c_i[sn - 1], 0.0));
+        const double c_min = std::max(LOOP_COAL_ABS * P.C_floor,
+                                      LOOP_COAL_REL * cmax);
         std::vector<int> idx;
         idx.reserve(64);
         for (int sn = P.i_mobile + 1; sn <= I; ++sn)
-            if (std::max(c_i[sn - 1], 0.0) > P.C_floor) idx.push_back(sn);
+            if (std::max(c_i[sn - 1], 0.0) > c_min) idx.push_back(sn);
         const int NC = static_cast<int>(idx.size());
         for (int a = 0; a < NC; ++a) {
             const int    na = idx[a];

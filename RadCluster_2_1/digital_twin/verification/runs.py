@@ -204,6 +204,45 @@ def manifest() -> list[dict]:
                    equations="discrete",
                    **{k: v for k, v in DIAG.items() if k != "table"}))
 
+    # ── Table 4-NC — closure verification WITHOUT loop coarsening ───────────
+    # Salvages the 17.6 h discrete arm of 2026-09-07
+    # (output/20260907_093333_T4_D_4k_...), which ran before cfce995 and so had
+    # loop_coal silently absent.  Re-running the closure rungs with LOOP_COAL = 0
+    # puts both arms back on the same equations, and the comparison becomes a
+    # legitimate verification again -- at ~2 min a rung instead of days.
+    #
+    # WHY THIS IS SOUND.  Verification asks whether the closure reproduces the
+    # exact solution OF THE SAME EQUATIONS.  It does not require those equations
+    # to be physically right; that is validation, and plan S1.2 separates the
+    # two deliberately.  Bin partitioning, moment closure and intra-bin shape --
+    # the approximations the reviewer actually asked about -- are all exercised
+    # here.
+    #
+    # WHAT MUST BE STATED.  The no-coarsening variant is known-unphysical:
+    # rate_kernels.cpp:1930 says without the channel "the 1/2<111> mean size
+    # pins AT the cutoff" and "the density runs 20-60x over the EUROFER97 data",
+    # which is exactly what the 2026-09-07 arm shows (d_111 frozen at 1.76 nm,
+    # N_111 3.5x the closure's).  So S1.3's TRANSFER argument weakens: the
+    # closure error measured here is not demonstrably the production run's
+    # closure error, because production runs WITH coarsening and that changes
+    # the distribution the closure has to represent.  Say so in the paper rather
+    # than letting a reader assume otherwise.
+    NC = {"I": 4000, "V": 4000, "dose": 2.0, "n_points": 37,
+          "dose_read": (2.0,), "loop_coal": 0}
+    for rid, lbl, g in (
+        ("T4_C1_nc", "C1 (no coarsening)", {"i_discrete": 400, "I_bin": 6,  "v_discrete": 400, "V_bin": 6}),
+        ("T4_C2_nc", "C2 (no coarsening)", {"i_discrete": 100, "I_bin": 10, "v_discrete": 100, "V_bin": 9}),
+        ("T4_C3_nc", "C3 (no coarsening)", {"i_discrete": 25,  "I_bin": 14, "v_discrete": 25,  "V_bin": 12}),
+        ("T4_C4_nc", "C4 (no coarsening)", {"i_discrete": 5,   "I_bin": 18, "v_discrete": 5,   "V_bin": 16}),
+    ):
+        runs.append(_r(rid, "T4NC", lbl,
+                       "Scored against the 2026-09-07 discrete arm at 2.0 dpa.",
+                       **NC, **g))
+    runs.append(_r("T4_C4_P1_nc", "T4NC", "C4, P=1 (no coarsening)",
+                   "Closure ORDER against the same discrete arm.",
+                   shape_function="constant", **NC,
+                   **{"i_discrete": 5, "I_bin": 18, "v_discrete": 5, "V_bin": 16}))
+
     # ── Table 1 — closure convergence at the production domain ──────────────
     # Hold r at production, vary only i_discrete (S1.3).  B4 already exists as
     # the reference run and is not recomputed.

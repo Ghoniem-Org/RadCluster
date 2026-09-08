@@ -262,6 +262,9 @@ def build_sim(e: dict):
         "I_bin": e.get("I_bin", 0), "V_bin": e.get("V_bin", 0),
         "shape_function": e["shape_function"]})
     sim.input_data.reactions["LOOP_NETWORK_LOSS"] = int(e.get("lnl", 1))
+    # LOOP_COAL is per-run so a rung can be scored against a discrete arm that
+    # lacks the channel.  Default 1 keeps every existing entry unchanged.
+    sim.input_data.reactions["LOOP_COAL"] = int(e.get("loop_coal", 1))
     sim.input_data._calculate_derived()
     sim.rebuild_rates()
     return sim
@@ -368,6 +371,7 @@ def execute(e: dict, log: ProgressLog, save_plots=True) -> dict:
     # Six observables through the campaign's own operator, so a verification
     # table and a ledger row for the same configuration agree by construction.
     rec.update(re_mod.observe(res, sim, cfg, 1.0))
+    rec["loop_coal"] = int(e.get("loop_coal", 1))
     rec["status"] = "done"
     rec["wall_s"] = round(time.time() - t0, 1)
     rec["dose_target"] = float(e["dose"])

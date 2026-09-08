@@ -1,0 +1,11 @@
+{
+  "claimed_at": "2026-09-07T19:13:24-0700",
+  "code_sha": "cfce995",
+  "host": "MacBook-Pro.local",
+  "label": "fusion dynamic",
+  "machine": "Mac-662a",
+  "pid": 83493,
+  "run_id": "T3_FUS_DYN",
+  "status": "running",
+  "table": "T3"
+}

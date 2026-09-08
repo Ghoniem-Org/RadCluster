@@ -1,4 +1,4 @@
-# Diagnostics for 20260907_110157_T4_C4_P1_4k_full_system_bin_moment_CD_fission_I4000V4000_im5vm5
+# Diagnostics for 20260908_060704_T4_C4_P1_4k_full_system_bin_moment_CD_fission_I4000V4000_im5vm5
 
 ## Rate constants
 ReactionRates: K_SIA_grow[0]=1.832e+08  K_VAC_grow[0]=1.425e+06  G_VAC[0]=0.000e+00  K_iv=5.156e+08  K_3D_cav=1.832e+08  mean_n_i=755.22

@@ -311,14 +311,14 @@
   "kfrac_cav_tem": 0.9985538639829348,
   "kfrac_cav_void": 0.2546003746892674,
   "label": "C4, P=1 constant",
-  "machine": "Mac",
+  "machine": "Mac-662a",
   "mean_n_100": 2153.6788587608353,
   "mean_n_111": 745.302252813722,
   "mean_n_v": 1063.110927040086,
   "occ_100": 0.5384197146902088,
   "occ_111": 0.1863255632034305,
   "occ_v": 0.2657777317600215,
-  "output_dir": "/Users/ghoni/Documents/GitHub/RadCluster/RadCluster_2_1/output/20260907_110157_T4_C4_P1_4k_full_system_bin_moment_CD_fission_I4000V4000_im5vm5",
+  "output_dir": "/Users/ghoni/Documents/GitHub/RadCluster/RadCluster_2_1/output/20260908_060704_T4_C4_P1_4k_full_system_bin_moment_CD_fission_I4000V4000_im5vm5",
   "pile_100": 0.041914763525197254,
   "pile_111": 0.012896869512500051,
   "pile_v": 0.02031611756263442,
@@ -381,5 +381,5 @@
   "topbin_111": 0.05734911167571809,
   "topbin_v": 0.28501321447449257,
   "unmeasured_gates": null,
-  "wall_s": 9.4
+  "wall_s": 9.0
 }

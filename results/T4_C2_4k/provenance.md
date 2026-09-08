@@ -1,4 +1,4 @@
-# RadCluster_2_1 run — 20260907_110133_T4_C2_4k_full_system_bin_moment_CD_fission_I4000V4000_im5vm5
+# RadCluster_2_1 run — 20260908_060534_T4_C2_4k_full_system_bin_moment_CD_fission_I4000V4000_im5vm5
 
 ## (1) Material Data
 
@@ -297,18 +297,18 @@ _All input tables from the Excel workbook with parameter overrides applied._
 
 ### Runtime and machine
 
-- cpu_count: 8
-- hostname: Mac.san.rr.com
+- cpu_count: 16
+- hostname: MacBook-Pro.local
 - n_time_points: 10
-- omp_num_threads: 8
-- omp_threads_used: 8
+- omp_num_threads: 4
+- omp_threads_used: 4
 - partial: False
 - platform: macOS-26.6.2-arm64-arm-64bit
-- process_rss_GB: 0.444
+- process_rss_GB: 0.152
 - processor: arm
-- python: 3.9.6
-- ram_available_GB: 5.37
-- ram_total_GB: 24
+- python: 3.11.7
+- ram_available_GB: 86.85
+- ram_total_GB: 128
 - run_status: completed
 - solver.ncfn: 897
 - solver.netf: 36
@@ -320,6 +320,6 @@ _All input tables from the Excel workbook with parameter overrides applied._
 - solver.npe: 936
 - solver.nps: 51684
 - solver.steps: 9127
-- timestamp: 20260907_110133
-- wall_clock_s: 39.89
+- timestamp: 20260908_060534
+- wall_clock_s: 40.9098
 

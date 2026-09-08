@@ -1,11 +1,24 @@
 {
   "claimed_at": "2026-09-08T10:29:57-0700",
   "code_sha": "1d8d9b8",
+  "dose_reached": 0.014339999999999999,
+  "dose_target": 2.0,
   "host": "Mac.san.rr.com",
   "label": "D (exact)",
+  "loop_coal": 1,
   "machine": "Mac-662a",
+  "note": "Production-configuration exact arm ABANDONED at 0.01434 of 2 dpa after 4h20m, its 25th output step alone running 2.8 h. Third attempt: the 2xC_floor gate made it 1.5x faster to 0.0143 dpa (74 min vs 185) but the O(NC^2) coalescence cost reasserts as the size distribution spreads. Table 4 therefore ships as the NO-COARSENING variant (T4_C*_nc vs the 2026-09-07 discrete arm), where both arms solve identical equations. See runs.py T4NC for the transfer-argument limitation that must be stated in the paper.",
   "pid": 28540,
+  "published_at": "2026-09-08T14:37:42-0700",
+  "reached_all_scoring_doses": false,
   "run_id": "T4_D_4k",
-  "status": "running",
-  "table": "T4"
+  "scored": {
+    "2": {
+      "dose_reached": 0.014339999999999999,
+      "missing": true
+    }
+  },
+  "status": "did_not_reach",
+  "table": "T4",
+  "wall_s": 15600
 }

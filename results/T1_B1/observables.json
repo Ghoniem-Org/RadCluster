@@ -8,7 +8,6 @@
   "machine": "Mac-662a",
   "note": "Stopped by hand after 18h52m at 0.07906 of 40 dpa (0.2%). The most-resolved Table 1 rung, i_discrete=6400, N_eq~8030. Single output steps ran 4.5 h and the run emitted no tick, heartbeat or checkpoint for its last 21 h while the process stayed alive. Table 1 deviations should be quoted relative to B2 (N_eq=2048), the most-resolved rung that completes; B2->B3->B4 already spans a 10x range in N_eq.",
   "pid": 71375,
-  "published_at": "2026-09-08T05:55:45-0700",
   "reached_all_scoring_doses": false,
   "run_id": "T1_B1",
   "scored": {

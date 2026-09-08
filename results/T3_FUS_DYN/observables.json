@@ -8,7 +8,6 @@
   "machine": "Mac-662a",
   "note": "Stopped by hand after 13h54m at 0.0522 of 40 dpa (0.1305%), last tick step 24 at 2026-09-07T10:35. Table 3's fusion+dynamic-He corner. The fusion QSS column (T3_FUS_QSS) completed and carries the fission/fusion contrast the He block needs; this column is reported as did-not-reach.",
   "pid": 83493,
-  "published_at": "2026-09-08T05:58:07-0700",
   "reached_all_scoring_doses": false,
   "run_id": "T3_FUS_DYN",
   "scored": {

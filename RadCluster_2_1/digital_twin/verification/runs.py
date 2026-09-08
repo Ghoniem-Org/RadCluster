@@ -78,6 +78,13 @@ B4_GRID = {"i_discrete": 100, "I_bin": 18, "v_discrete": 5, "V_bin": 20}
 # in the manifest as "did not reach" entries with the dose they achieved; they
 # are simply never CLAIMED again.  Re-enable by clearing this field once the
 # lognormal closure's stiffness is addressed.
+# The TD pair was the decisive test for a path difference that is now FIXED
+# (cfce995).  check_bm_vs_discrete.py re-asks it on every run in 20 s, so the
+# pair would spend ~2 days confirming what a 20 s test already shows.  Domain
+# and dose coverage is bought instead by raising the test's own grid.
+TD_SUPERSEDED = ("superseded by cfce995 + check_bm_vs_discrete.py; the pair "
+                 "cost ~2 days to re-confirm a 20 s result")
+
 P3_EXCLUDED = ("P=3 lognormal does not advance; measured 2026-09-06 on both "
                "domains. Recorded as 'did not reach' per plan S3.4.1.")
 
@@ -180,12 +187,20 @@ def manifest() -> list[dict]:
     DIAG = {"I": 4000, "V": 4000, "dose": 0.2, "n_points": 37,
             "dose_read": (0.05, 0.1, 0.2), "table": "TD"}
     runs.append(_r("TD_BM_FULL", "TD", "bin_moment, i_discrete = I",
-                   "The bin_moment code path with NO closure (I_bin = V_bin = 0).",
+                   "The bin_moment code path with NO closure (I_bin = V_bin = 0). "
+                   "SUPERSEDED: it was queued to find the path difference, which "
+                   "cfce995 then found and fixed, and "
+                   "codes/Python_Testing/check_bm_vs_discrete.py now settles the "
+                   "same question in 20 s to 7e-8 rather than in ~2 days. Stopped "
+                   "at 0.063 of 0.2 dpa with steps at 148 min and lengthening.",
+                   excluded=TD_SUPERSEDED,
                    equations="bin_moment", i_discrete=4000, I_bin=0,
                    v_discrete=4000, V_bin=0,
                    **{k: v for k, v in DIAG.items() if k != "table"}))
     runs.append(_r("TD_DISC_REF", "TD", "discrete, same grid",
-                   "Matched-grid discrete reference for TD_BM_FULL.",
+                   "Matched-grid discrete reference for TD_BM_FULL. SUPERSEDED "
+                   "with its pair: half a comparison proves nothing.",
+                   excluded=TD_SUPERSEDED,
                    equations="discrete",
                    **{k: v for k, v in DIAG.items() if k != "table"}))
 

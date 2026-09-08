@@ -35,7 +35,13 @@ for p in (str(MOD.parent), str(MOD / "digital_twin")):
 from RadCluster_2_1.py_utils.simulation import RadClusterSimulation   # noqa: E402
 import run_ensemble as re_mod                                          # noqa: E402
 
-I = V = 200
+# Grid: the TD_BM_FULL / TD_DISC_REF pair would have checked this at I = V =
+# 4000 and 0.2 dpa, and was stopped after ~13 h at 31% with steps at 148 min and
+# lengthening -- roughly two more days to confirm what this file settles in
+# seconds.  Raising the grid here buys the same domain and dose coverage at a
+# cost that can run on every change.  --big goes further still.
+I = V = 1000
+DOSE = 1e-2                 # dpa; well past nucleation onset, unlike the old 1e-3
 # The two paths do identical arithmetic in DIFFERENT ORDERS, so CVODE's adaptive
 # stepping cannot make them agree better than its own tolerance.  The runs use
 # rtol = 1e-5; 1e-4 leaves an order of magnitude of headroom while still failing
@@ -60,7 +66,7 @@ def run(equations):
         sim.input_data._calculate_derived()
         sim.rebuild_rates()
         G = float(sim.input_data.reactions["G"])
-        cfg = {"t_span": (1e-6, 1e-3 / G), "n_points": 12, "log_time": True,
+        cfg = {"t_span": (1e-6, DOSE / G), "n_points": 16, "log_time": True,
                "rtol": 1e-5, "atol": 1e-20, "timeout_s": 900,
                "solver_method": {"linsol": "gmres", "preconditioner": "woodbury",
                                  "concentration_threshold": 1e-22},
@@ -71,6 +77,11 @@ def run(equations):
 
 
 def main():
+    global I, V, DOSE
+    if "--big" in sys.argv:                 # heavier soak: minutes, not seconds
+        I = V = 4000
+        DOSE = 2e-2
+
     rb, sb = run("bin_moment")
     rd, _ = run("discrete")
     yb, yd = np.asarray(rb["y"]), np.asarray(rd["y"])
@@ -80,7 +91,7 @@ def main():
     worst = 0.0
     print(f"\nper-size 1/2<111> at the final time:\n{'n':>5} {'bin_moment':>13}"
           f" {'discrete':>13} {'ratio':>10}")
-    for n in (2, 5, 10, 20, 40, 60, 80, 100, 150, I - 1):
+    for n in (2, 5, 10, 20, 40, 80, 150, 300, 600, I - 1):
         a, b = yb[n - 1, -1], yd[n - 1, -1]
         r = a / b if b else float("inf")
         worst = max(worst, abs(r - 1.0))

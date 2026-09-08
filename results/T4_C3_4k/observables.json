@@ -318,7 +318,7 @@
   "occ_100": 0.1861495746012944,
   "occ_111": 0.04554900894023773,
   "occ_v": 0.2231938920140691,
-  "output_dir": "/Users/ghoni/Documents/GitHub/RadCluster/RadCluster_2_1/output/20260907_110457_T4_C3_4k_full_system_bin_moment_CD_fission_I4000V4000_im5vm5",
+  "output_dir": "/Users/ghoni/Documents/GitHub/RadCluster/RadCluster_2_1/output/20260908_060650_T4_C3_4k_full_system_bin_moment_CD_fission_I4000V4000_im5vm5",
   "pile_100": 0.0,
   "pile_111": 4.4731537814815085e-05,
   "pile_v": 0.0072617762596458935,
@@ -381,5 +381,5 @@
   "topbin_111": 0.012428742748201622,
   "topbin_v": 0.348835001070154,
   "unmeasured_gates": null,
-  "wall_s": 87.9
+  "wall_s": 88.3
 }

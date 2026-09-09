@@ -1,0 +1,11 @@
+{
+  "claimed_at": "2026-09-09T09:25:30-0700",
+  "code_sha": "8f19ad5",
+  "host": "Mac.san.rr.com",
+  "label": "C3 to 40 dpa",
+  "machine": "Mac-662a",
+  "pid": 79359,
+  "run_id": "T4_C3_40",
+  "status": "running",
+  "table": "T4NC40"
+}

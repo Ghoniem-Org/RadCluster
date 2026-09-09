@@ -504,11 +504,39 @@ def manifest() -> list[dict]:
     # silent limit that would truncate the reference and leave every M2 rung
     # scored against a partial trajectory.  The number is a backstop, not a
     # budget.
+    # MEASURED AND ABANDONED, 2026-09-09.  This rung DIVERGES rather than runs
+    # slowly.  Its own event log, per output step:
+    #
+    #     step 24   3.4e-4 dpa      1.1 s
+    #     step 25   8.5e-4 dpa       45 s
+    #     step 26   2.1e-3 dpa      186 s
+    #     step 28        --        2643 s and climbing
+    #
+    # ~4x per step with 17 of 45 steps still to go, at 104% CPU -- one core,
+    # i.e. entirely inside the SERIAL region.  That region is loop_coal's
+    # O(NC^2) pair sum: the gate admits sessile sizes above 2 x C_floor, and at
+    # I = 10000 that population is ~10x the I = 1000 one, so the pair count is
+    # ~100x.  Identical in kind to the three abandoned attempts at the Table 4
+    # exact arm.
+    #
+    # The 12-thread setting is not implicated and was not wrong -- threading
+    # only ever touched the two parallel loops in rhs_case2, and by step 26 the
+    # run spends almost nothing there.  It is the documented caveat on the
+    # 1.53x (serial fraction rises with dose) turning out to be the whole story.
+    #
+    # M1_D1000 completes the same 20 dpa with the same physics in 5.2 min, so
+    # the exact arm is affordable -- the blow-up is in DOMAIN, not in the model.
+    # Re-enable only if the loop_coal participation gate is reworked; raising
+    # the domain alone will not help.
+    M1REF_DIVERGED = ("loop_coal O(NC^2) blow-up: ~4x per output step, 2643 s "
+                      "on step 28 of 45 at 0.005 of 20 dpa, single-core in the "
+                      "serial pair sum. Measured 2026-09-09.")
     runs.append(_r(f"M1_D{M_REF_DOMAIN}", "M1REF",
                    f"REFERENCE discrete I=V={M_REF_DOMAIN}",
                    "Exact arm for campaign M.  Run to completion, one core, "
                    "no time limit.  Every M2 rung is a closure error against "
-                   "THIS trajectory.",
+                   "THIS trajectory.  DID NOT COMPLETE -- see M1REF_DIVERGED.",
+                   excluded=M1REF_DIVERGED,
                    I=M_REF_DOMAIN, V=M_REF_DOMAIN,
                    omp_threads=12, **{**MONO, "timeout_s": 30 * 86400}))
 

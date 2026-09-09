@@ -89,6 +89,20 @@ P3_EXCLUDED = ("P=3 lognormal does not advance; measured 2026-09-06 on both "
                "domains. Recorded as 'did not reach' per plan S3.4.1.")
 
 
+# ── Campaign M configuration (see manifest(), "Campaign M") ─────────────────
+# The domain M2's binning ladder runs on: the largest M1 rung that completed
+# inside the 1 h budget.  None until M1 measures it, so that manifest() emits
+# no M2 row that has no exact arm to be scored against.
+M_BIN_DOMAIN = None
+
+# Bin counts for M2.  Chosen so the realised ratio r = (I/50)^(1/I_bin)
+# brackets the 1.5-2.0 range CLAUDE.md S7 recommends from both sides: at
+# I = 8000 these give r = 3.56, 2.30, 1.83, 1.51, 1.37, 1.24, 1.17.  A ladder
+# that only refines inside the recommended band cannot show what the
+# recommendation is worth.
+M2_BINS = (4, 6, 8, 12, 16, 24, 32)
+
+
 def _r(run_id, table, label, notes="", **over):
     """One manifest entry: BASE, overridden, plus identity and provenance."""
     e = dict(BASE)
@@ -367,6 +381,118 @@ def manifest() -> list[dict]:
                    "Null test: paired with T5_THREADS1.",
                    omp_threads=12, **B4_GRID))
 
+    # ── Campaign M — system size and binning, model-to-model (2026-09-09) ───
+    # A SEPARATE STUDY from Tables 1-5, not another column of them.  It is the
+    # study Table 4 could not be: a fully discrete EXACT arm carried to a real
+    # dose, at several domains, with the binned rungs scored against it.
+    #
+    # WHY NOT MONOMER-ONLY MOBILITY.  This campaign was first specified with
+    # i_mobile = v_mobile = 1 -- CLAUDE.md S5's MONO-DEFECT form, where every
+    # coalescence sum collapses to its n' = 1 term -- on the reasoning that a
+    # smaller RHS makes the discrete arm affordable.  It does the opposite.
+    # Measured 2026-09-09, I = V = 1000 discrete, 300 s budget, idle machine:
+    #
+    #     i_mobile=5  LOOP_COAL=1     14.68  dpa
+    #     i_mobile=1  LOOP_COAL=0      0.046 dpa
+    #     i_mobile=1  LOOP_COAL=1      0.001 dpa
+    #
+    # ~300x SLOWER, and LOOP_COAL costs a further 46x on top of that.  The RHS
+    # does shrink, but dropping the cutoff to 1 also switches off the
+    # fixed-sink and cavity loss channels for n = 2..5 (they apply only to
+    # n <= i_mobile), so those small immobile clusters pile up and their
+    # emission/re-absorption cycle becomes a fast stiff loop the integrator has
+    # to resolve.  LOOP_COAL compounds it: its pair sum runs over
+    # i_mobile+1 .. I, so at i_mobile = 1 it takes in exactly those densely
+    # populated small sizes and the O(NC^2) blow-up that cost the Table 4 exact
+    # arm three attempts reappears.  Neither rtol (1e-5 -> 1e-4 moved the rate
+    # under 5%) nor the preconditioner bandwidth (1.5x, below) recovers it.
+    #
+    # So the campaign runs at the PRODUCTION mobility instead, and buys its
+    # affordability from the dose horizon (20 dpa) rather than from the physics.
+    # That is the better trade: every rung is then a configuration the
+    # production runs actually use, and the 300x is not spent.
+    #
+    # WHAT IT BUYS.  Table 4 measured closure error at ONE domain (I = V = 4000)
+    # and ONE dose (2 dpa), because that was all the exact arm could reach.  The
+    # two ladders below separate the two effects that were confounded there:
+    #
+    #   M1  vary the DOMAIN (I = V) at fixed exactness -- pure truncation error
+    #   M2  vary the BINNING at fixed domain -- pure closure error
+    #
+    # so a deviation in M2 cannot be blamed on the domain and vice versa.
+    #
+    # WHAT IT DOES NOT BUY.  The domain is still truncated -- V = 1000 sits
+    # below the mean cavity size at production dose -- so d_cavity reads the
+    # ceiling at the coarse rungs, not the model.  That limits what may be
+    # CLAIMED (nothing here is a validation against experiment) rather than
+    # whether the measurement is sound: both arms of M2 see the identical
+    # truncation, so it cancels out of the closure error being measured.
+    MONO = {"equations": "discrete", "i_mobile": 5, "v_mobile": 5,
+            # 20 dpa, not 100.  The horizon is what makes a discrete arm
+            # affordable at all: the I = V = 1000 rung reached 14.68 dpa in
+            # 360 s, so 20 dpa is ~8 min there and the ladder has room to climb
+            # before the hour runs out.  100 dpa was 5x further up a curve whose
+            # per-step cost is still growing.
+            "dose": 20.0, "n_points": 45,
+            "dose_read": (2.0, 15.72, 20.0),
+            # THE 1 h BUDGET IS THE MEASUREMENT, not a guard.  The ladder is
+            # meant to be climbed until a rung will not finish in an hour, and
+            # the rung that does not is the answer -- so the cap has to be the
+            # stated hour exactly.  A timed-out rung still publishes, carrying
+            # dose_reached, and S3.4.1 keeps it out of the metric columns.
+            "timeout_s": 3600,
+            # LOOP_COAL stays at the workbook default (1) and prec_bw at its
+            # auto value: at i_mobile = 5 that auto value is
+            # max(2*5, 2*5) + 1 = 11, which is exactly the width measured as
+            # optimal when i_mobile = 1 forced it down to 3 (100 s -> 65 s to
+            # 0.05 dpa; 51 was slower again at 139 s).  The auto rule is
+            # mis-scaled at low mobility and correct here, so this campaign
+            # needs no override -- the finding is recorded in campaign.py's
+            # _solver_method() rather than worked around.
+            }
+
+    # M1 -- the domain ladder.  Doubling, so each rung is a clean factor of two
+    # in both the SIA and the vacancy block and N_eq tracks 2 I + 2.  Run in
+    # order and stop at the first rung that does not finish; the largest one
+    # that does is what M2 is then built on.
+    M1_LADDER = (1000, 2000, 4000, 8000, 16000, 32000)
+    for dom in M1_LADDER:
+        runs.append(_r(f"M1_D{dom}", "M1", f"discrete I=V={dom}",
+                       "Exact solution of the monomer-mobility model at this "
+                       "domain.  Truncation error only: the closure is absent.",
+                       I=dom, V=dom, **MONO))
+
+    # M2 -- the binning ladder, at the largest M1 rung that finished inside the
+    # hour.  i_discrete = v_discrete = 50 throughout (fixed by the study
+    # design), so the ONLY thing varying is how many bins cover 50 -> I and
+    # hence the bin ratio r = (I/50)^(1/I_bin).  Its exact counterpart is the
+    # M1 rung at the same domain: same equations, same grid, no closure.
+    #
+    # M_BIN_DOMAIN stays None until M1 has measured it.  An assumed value would
+    # put the whole ladder on a domain whose exact arm does not exist, and the
+    # comparison would silently have no reference -- the failure the T4 exact
+    # arm already cost this project three attempts.
+    if M_BIN_DOMAIN is not None:
+        dom = M_BIN_DOMAIN
+        for nb in M2_BINS:
+            r_i = (dom / 50.0) ** (1.0 / nb)
+            runs.append(_r(f"M2_B{nb}", "M2", f"I_bin=V_bin={nb}",
+                           f"i_discrete = v_discrete = 50, r = {r_i:.3f}.  "
+                           f"Scored against M1_D{dom}, the exact arm on the "
+                           f"same domain and grid.",
+                           I=dom, V=dom,
+                           equations="bin_moment", i_mobile=1, v_mobile=1,
+                           i_discrete=50, v_discrete=50,
+                           I_bin=nb, V_bin=nb,
+                           dose=MONO["dose"], n_points=MONO["n_points"],
+                           dose_read=MONO["dose_read"],
+                           timeout_s=MONO["timeout_s"],
+                           # Both keys MUST track M1: a closure error is only
+                           # measurable against an exact arm solving the same
+                           # equations, and loop_coal changes the equations.
+                           loop_coal=MONO["loop_coal"],
+                           prec_bw=MONO["prec_bw"]))
+
     _check_unique(runs)
     return runs
 
@@ -387,7 +513,15 @@ def _check_unique(runs):
 # finished the exact arm, moved on to the next free run, and started
 # T5_WOODBURY alongside three other solvers.  Claim these only with an explicit
 # `--only T5` on an otherwise idle machine.
-TIMING_SENSITIVE_TABLES = {"T5"}
+# M1 joins T5 for the same reason: its result IS a wall-clock budget.  "The
+# largest domain that finishes inside an hour" measured while three other
+# solvers hold the machine is a measurement of the contention -- which is not
+# hypothetical here, three abandoned T4NC rungs were found holding three cores
+# for two hours on 2026-09-09 and had to be killed before any of the timings
+# above meant anything.  Claim M1 only with an explicit --only M1 on an idle
+# machine.  M2 is deliberately NOT listed: its result is the six observables,
+# and those do not move with load.
+TIMING_SENSITIVE_TABLES = {"T5", "M1"}
 
 
 def runnable(runs=None, tables=None) -> list[dict]:

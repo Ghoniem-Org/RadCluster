@@ -185,7 +185,7 @@ STARVED_GATE = False
 DOSE_CHECKPOINTS = (0.005, 0.01, 0.02, 0.05,
                     0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,
                     2.0, 4.0, 8.0, 11.0, 15.0, 15.72, 16.3, 20.0, 30.0, 32.0,
-                    47.0)
+                    40.0, 47.0, 60.0, 80.0, 100.0)
 # 15.72 is the verification study's scoring dose (paper_revision_verification
 # _plan.md S2.1).  It is not a round number by choice: on the reference run's
 # 37-point log grid over t_span (1e-6, 4e8) s it is output index 35, the last
@@ -194,6 +194,13 @@ DOSE_CHECKPOINTS = (0.005, 0.01, 0.02, 0.05,
 # nearest existing checkpoint instead would land on index 34 (6.18 dpa) for
 # 15.0 -- a different point, which is the whole failure mode Figure 8 suffered.
 # Purely additive: it appends a key to `at_dose` and changes no existing one.
+#
+# 40, 60, 80 and 100 appended 2026-09-09 for the monomer-mobility campaign,
+# which runs to 100 dpa: without them the ladder topped out at 47 and a 100 dpa
+# run could only be scored at less than half its own horizon.  40.0 also closes
+# a gap the size-effect figures had been reading around -- the 40 dpa reruns
+# had no ladder rung at their own endpoint.  Additive in the same sense as
+# 15.72: it appends keys and moves none.
 
 
 # ------------------------------------------------------------------- utilities

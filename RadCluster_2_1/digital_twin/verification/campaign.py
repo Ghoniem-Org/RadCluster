@@ -286,11 +286,34 @@ def solver_config(e: dict, sim) -> dict:
         "required_times": tuple(float(r) / G for r in reads),
         "rtol": float(e["rtol"]), "atol": float(e["atol"]),
         "timeout_s": float(e.get("timeout_s", 86400)),
-        "solver_method": {"linsol": "gmres",
-                          "preconditioner": e.get("preconditioner", "woodbury"),
-                          "concentration_threshold": 1e-22},
+        "solver_method": _solver_method(e),
         "loop_conversion": 1,
     }
+
+
+def _solver_method(e: dict) -> dict:
+    """The linear-solver block, with an OPTIONAL preconditioner bandwidth.
+
+    cpp_bridge derives prec_bw as max(2*i_mobile, 2*v_mobile) + 1, which is the
+    right structural width when the mobile species set the Jacobian band.  At
+    i_mobile = v_mobile = 1 that gives 3, and measured 2026-09-09 on the
+    monomer-mobility campaign (I = V = 1000, discrete, to 0.05 dpa):
+
+        prec_bw   3 (auto)   100 s
+        prec_bw  11           65 s
+        prec_bw  51          139 s
+
+    -- so the auto value is too narrow there and 51 is past the point where the
+    band factorisation costs more than it saves.  Carried as a per-entry key
+    rather than a change to the default, because the default is correct for
+    every run in Tables 1-5 and this is a 1.5x effect, not a defect.
+    """
+    m = {"linsol": "gmres",
+         "preconditioner": e.get("preconditioner", "woodbury"),
+         "concentration_threshold": 1e-22}
+    if e.get("prec_bw"):
+        m["prec_bw"] = int(e["prec_bw"])
+    return m
 
 
 def execute(e: dict, log: ProgressLog, save_plots=True) -> dict:

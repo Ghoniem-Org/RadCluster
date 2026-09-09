@@ -471,11 +471,33 @@ def manifest() -> list[dict]:
     # THE REFERENCE ARM.  I = V = 10000, fully discrete, ONE core, no wall-clock
     # cap -- the exact solution every M2 rung is scored against.
     #
-    # Single-threaded ON PURPOSE, and not to save cores.  full_system mode is
-    # effectively serial in this code (measured: the cost probes ran at
-    # CPU time ~ elapsed at OMP_NUM_THREADS = 10), so pinning it to one core
-    # costs almost nothing and leaves the other fifteen free for the M2 set,
-    # which is where the parallelism actually pays.
+    # 12 THREADS, measured -- and NOT the 16 the machine has.  CLAUDE.md S9:
+    # the parallel regions are barrier-synchronised, so on Apple silicon a
+    # thread landing on an efficiency core stalls every join; the useful
+    # maximum is the performance-core count, which is 12 here.
+    #
+    # The discrete path does not scale like the binned one.  rhs_case2 carries
+    # two OpenMP regions (both gated on x_hi_i_win + x_hi_v_win > 500, which
+    # does fire at this domain) against rhs_bin_moment's twelve, and the rest
+    # -- including the serial loop_coal pair sum -- does not parallelise at
+    # all.  Measured 2026-09-09 at I = V = 10000 discrete, to 0.002 dpa:
+    #
+    #      1 thread    75 s
+    #     12 threads   49 s      1.53x
+    #
+    # Amdahl, not a defect.  It was first assumed to be ~1.0x from cost probes
+    # showing CPU time ~ elapsed; those probes were i_mobile = 1, where the
+    # stiff serial fraction dominates, and the assumption did not survive
+    # measurement at the configuration actually being run.
+    #
+    # CAVEAT ON THE 1.53x: it is measured on an EARLY-dose segment, and
+    # loop_coal's serial pair sum grows with the number of POPULATED sizes.
+    # The serial fraction therefore rises with dose, so 1.53x is an upper
+    # bound on what holds out at 20 dpa.
+    #
+    # Both thread counts reached 0.002 dpa at delta_FP = 0.045 -- i.e. the
+    # T5 thread null test holds here, which is worth noting since T5 itself
+    # has never been run.
     #
     # timeout_s is 30 days rather than absent: solver_config() falls back to
     # 86400 when the key is missing, and a 24 h cap is exactly the kind of
@@ -488,7 +510,7 @@ def manifest() -> list[dict]:
                    "no time limit.  Every M2 rung is a closure error against "
                    "THIS trajectory.",
                    I=M_REF_DOMAIN, V=M_REF_DOMAIN,
-                   omp_threads=1, **{**MONO, "timeout_s": 30 * 86400}))
+                   omp_threads=12, **{**MONO, "timeout_s": 30 * 86400}))
 
     # M2 -- the binning ladder, at the reference domain.  i_discrete = v_discrete = 50 throughout (fixed by the study
     # design), so the ONLY thing varying is how many bins cover 50 -> I and

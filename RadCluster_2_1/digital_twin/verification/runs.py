@@ -258,6 +258,27 @@ def manifest() -> list[dict]:
                    shape_function="constant", **NC,
                    **{"i_discrete": 5, "I_bin": 18, "v_discrete": 5, "V_bin": 16}))
 
+    # ── Table 4-NC extended to 40 dpa — for the size-effect figures ─────────
+    # C2-C4 rerun to the production horizon so their curves reach the dose where
+    # the EUROFER97 measurements actually sit (14.6-32 dpa for loops).  At 2 dpa
+    # the model curves and the experimental band share no x-range at all.
+    #
+    # These do NOT change Table 4: that table is scored at 2.0 dpa against run D,
+    # and D itself cannot be carried to 40 dpa (the discrete arm was abandoned
+    # three times).  So beyond 2 dpa these curves have NO exact reference --
+    # they show dose dependence and the approach to the measured band, not
+    # verified accuracy.  The figure caption has to say so.
+    NC40 = {"I": 4000, "V": 4000, "dose": 40.0, "n_points": 37,
+            "dose_read": (2.0, 15.72), "loop_coal": 0}
+    for rid, lbl, g in (
+        ("T4_C2_40", "C2 to 40 dpa", {"i_discrete": 100, "I_bin": 10, "v_discrete": 100, "V_bin": 9}),
+        ("T4_C3_40", "C3 to 40 dpa", {"i_discrete": 25,  "I_bin": 14, "v_discrete": 25,  "V_bin": 12}),
+        ("T4_C4_40", "C4 to 40 dpa", {"i_discrete": 5,   "I_bin": 18, "v_discrete": 5,   "V_bin": 16}),
+    ):
+        runs.append(_r(rid, "T4NC40", lbl,
+                       "Same grid as its 2 dpa twin, carried to the production "
+                       "horizon for the size-effect figures.", **NC40, **g))
+
     # ── Table 1 — closure convergence at the production domain ──────────────
     # Hold r at production, vary only i_discrete (S1.3).  B4 already exists as
     # the reference run and is not recomputed.

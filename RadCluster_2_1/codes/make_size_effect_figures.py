@@ -45,13 +45,23 @@ plt.rcParams.update({
 })
 
 # The ladder, in the order requested: exact first, then coarsest -> finest.
+#
+# The counts are the TOTAL integrated system -- main block plus the appended
+# <100> loop block, which cpp_bridge splits off after the solve so the solver
+# only ever reports the main one.  Labelling D with the total (12006) while the
+# C rungs carried their main block (830, ...) made the same run read as 8006 in
+# Table 4 and 12006 in the legend.  One quantity everywhere; Table 4 now prints
+# both columns.
 LADDER = [
-    ("D  (exact, 12006 eq)", "20260907_093333_T4_D_4k_*",   "#111111", "-"),
-    ("C4  1/800   (84 eq)",  "*_T4_C4_nc_*",                "#d62728", "-"),
-    ("C3  1/160  (108 eq)",  "*_T4_C3_nc_*",                "#ff7f0e", "-"),
-    ("C2  1/40   (244 eq)",  "*_T4_C2_nc_*",                "#2ca02c", "-"),
-    ("C1  1/10   (830 eq)",  "*_T4_C1_nc_*",                "#1f77b4", "-"),
-    ("C0  1/2   (3214 eq)",  "*_T4_C0_nc_*",                "#9467bd", "-"),
+    ("D  (exact, 12006 eq) - to 2 dpa", "20260907_093333_T4_D_4k_*",   "#111111", "-"),
+    # C2-C4 are the 40 dpa reruns: at 2 dpa no model curve reached the dose
+    # where the EUROFER97 data sit (14.6-32 dpa for loops), so the overlay had
+    # no shared x-range at all.  Same grids as their 2 dpa twins.
+    ("C4  1/800   (129 eq)", "*_T4_C4_40_*",                "#d62728", "-"),
+    ("C3  1/160   (161 eq)", "*_T4_C3_40_*",                "#ff7f0e", "-"),
+    ("C2  1/40    (364 eq)", "*_T4_C2_40_*",                "#2ca02c", "-"),
+    ("C1  1/10   (1242 eq) - to 2 dpa", "*_T4_C1_nc_*",                "#1f77b4", "-"),
+    ("C0  1/2    (4826 eq)", "*_T4_C0_nc_*",                "#9467bd", "-"),
 ]
 
 # observable key -> (axis label, log?, experiment source, experiment column)

@@ -70,6 +70,63 @@ def cell(rec):
     return v
 
 
+def ladder(B, md, tbl, prefix, bins, dom, refid):
+    """One binning ladder, with deviations only if its exact arm completed."""
+    ref_rec = B.get(refid) if refid else None
+    ref = cell(ref_rec)
+    md.append(f"## {tbl} — binning convergence at I = V = {dom}\n")
+    md.append("`i_discrete = v_discrete = 50` throughout; only the bin count "
+              "moves, so a deviation below is closure error and nothing else.\n")
+    if ref is None:
+        why = (f"`{refid}` did not complete" if refid else
+               "the discrete solve at this domain diverges")
+        md.append(f"> **No exact arm: {why}.**  The rungs are listed so their "
+                  "mutual spread can be read, but the deviation columns are "
+                  "WITHHELD.  Scoring a ladder against its own finest rung is "
+                  "how one converges confidently to the wrong answer.\n")
+
+    md.append("| rung | I_bin=V_bin | r | N_eq | "
+              + " | ".join(o[1] for o in OBS) + " |")
+    md.append("|" + "---|" * (4 + len(OBS)))
+    if ref is not None:
+        md.append(f"| **{refid} (exact)** | — | — | {ref_rec.get('N_eq', '—')} | "
+                  + " | ".join(f[2].format(ref[f[0]]) for f in OBS) + " |")
+    rows = []
+    for nb in bins:
+        rid = f"{prefix}{nb}"
+        rec = B.get(rid)
+        v = cell(rec)
+        if v is None:
+            r = rec or {}
+            got = r.get("dose_reached")
+            why = (f"reached {got:.4g} dpa" if isinstance(got, (int, float))
+                   else r.get("status", "not run"))
+            md.append(f"| {rid} | {nb} | — | — | _{why}_ | "
+                      + " | ".join(["—"] * (len(OBS) - 1)) + " |")
+            continue
+        md.append(f"| {rid} | {rec.get('bin_I_bin', nb)} "
+                  f"| {rec.get('bin_r', float('nan')):.3f} "
+                  f"| {rec.get('N_eq', '—')} | "
+                  + " | ".join(f[2].format(v[f[0]]) for f in OBS) + " |")
+        rows.append((nb, rec, v))
+    md.append("")
+
+    if ref is not None and rows:
+        md.append(f"### {tbl}: deviation from the exact arm (%)\n")
+        md.append("| rung | N_eq | r | "
+                  + " | ".join(o[1].split(" ")[0] for o in OBS) + " | max |")
+        md.append("|" + "---|" * (4 + len(OBS)))
+        for nb, rec, v in rows:
+            devs = [((v[k] - ref[k]) / ref[k] * 100.0) if ref[k] else float("nan")
+                    for k, _, _ in OBS]
+            worst = max(abs(d) for d in devs)
+            md.append(f"| {prefix}{nb} | {rec.get('N_eq', '—')} "
+                      f"| {rec.get('bin_r', float('nan')):.2f} | "
+                      + " | ".join(f"{d:+.1f}" for d in devs)
+                      + f" | **{worst:.1f}** |")
+        md.append("")
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--out")
@@ -106,61 +163,15 @@ def main(argv=None):
                   f"| {(w/60 if w else float('nan')):.1f} min ({st}) |")
     md.append("")
 
-    # ── M2: the convergence table ───────────────────────────────────────────
-    md.append(f"## M2 — binning convergence at I = V = "
-              f"{manifest_mod.M_BIN_DOMAIN}\n")
-    md.append("`i_discrete = v_discrete = 50` throughout; only the bin count "
-              "moves, so a deviation below is closure error and nothing else.\n")
-    if ref is None:
-        state = (ref_rec or {}).get("status", "not started")
-        got = (ref_rec or {}).get("dose_reached")
-        md.append(f"> **Reference `{ref_id}` is not available** (state: {state}"
-                  + (f", reached {got:.4g} dpa" if got else "") + ").  The "
-                  "rungs are listed so their mutual spread can be read, but "
-                  "the deviation columns are WITHELD: scoring a ladder against "
-                  "its own finest rung is how one converges confidently to the "
-                  "wrong answer.\n")
-
-    hdr = "| rung | I_bin=V_bin | r | N_eq | " + " | ".join(o[1] for o in OBS) + " |"
-    md.append(hdr)
-    md.append("|" + "---|" * (4 + len(OBS)))
-    if ref is not None:
-        md.append(f"| **{ref_id} (exact)** | — | — | {ref_rec.get('N_eq', '—')} | "
-                  + " | ".join(f[2].format(ref[f[0]]) for f in OBS) + " |")
-    rows = []
-    for nb in manifest_mod.M2_BINS:
-        rid = f"M2_B{nb}"
-        rec = B.get(rid)
-        v = cell(rec)
-        if v is None:
-            # One cell per column, or the row silently shifts every value one
-            # column left and a reader compares d_111 against N_100.
-            r = rec or {}
-            got = r.get("dose_reached")
-            why = (f"reached {got:.4g} dpa" if isinstance(got, (int, float))
-                   else r.get("status", "not run"))
-            md.append(f"| {rid} | {nb} | — | — | " + f"_{why}_ | "
-                      + " | ".join(["—"] * (len(OBS) - 1)) + " |")
-            continue
-        rr = rec.get("bin_r", float("nan"))
-        md.append(f"| {rid} | {rec.get('bin_I_bin', nb)} | {rr:.3f} "
-                  f"| {rec.get('N_eq', '—')} | "
-                  + " | ".join(f[2].format(v[f[0]]) for f in OBS) + " |")
-        rows.append((nb, rec, v))
-    md.append("")
-
-    if ref is not None and rows:
-        md.append("### Deviation from the exact arm (%)\n")
-        md.append("| rung | N_eq | " + " | ".join(o[1].split(" ")[0] for o in OBS) + " |")
-        md.append("|" + "---|" * (2 + len(OBS)))
-        for nb, rec, v in rows:
-            devs = []
-            for k, _, _ in OBS:
-                d = ((v[k] - ref[k]) / ref[k] * 100.0) if ref[k] else float("nan")
-                devs.append(f"{d:+.1f}")
-            md.append(f"| M2_B{nb} | {rec.get('N_eq', '—')} | "
-                      + " | ".join(devs) + " |")
-        md.append("")
+    # ── The binning ladders ─────────────────────────────────────────────────
+    # Two of them: M2 at I = 10000 (no exact arm -- the discrete solve there
+    # diverges) and M2R at I = 1000 (M1_D1000 completes, so it can be scored).
+    for tbl, prefix, bins, dom, refid in (
+            ("M2R", "M2R_B", manifest_mod.M2R_BINS, manifest_mod.M2R_DOMAIN,
+             manifest_mod.M_REF_RUN),
+            ("M2", "M2_B", manifest_mod.M2_BINS, manifest_mod.M_BIN_DOMAIN,
+             None)):
+        ladder(B, md, tbl, prefix, bins, dom, refid)
 
     md.append("## What must be stated\n")
     md.append(f"1. **The domain is truncated.** V = {manifest_mod.M_BIN_DOMAIN} "

@@ -105,6 +105,20 @@ M_BIN_DOMAIN = 10000
 # recommendation is worth.
 M2_BINS = (4, 6, 8, 12, 16, 24, 32)
 
+# The REFERENCED binning ladder, at the one domain whose exact arm completes.
+# Separate run_ids from M2 on purpose: the board already holds M2_B4 as an
+# I = 10000 result, and a run_id that silently changes meaning is worse than a
+# duplicated ladder.  M2 stays as recorded self-convergence at 10000; M2R is
+# the one that can be scored.
+#
+# The bin list runs coarser here.  i_discrete = 50 against I = 1000 is a ratio
+# of 20, not 200, so r = 20^(1/I_bin) reaches only 2.11 at I_bin = 4 -- the
+# whole coarse end of the M2 ladder would be missing.  I_bin = 2 and 3 restore
+# it (r = 4.47 and 2.71), which matters because at I = 10000 the only rungs
+# that MOVED were the ones with r above the recommended band.
+M2R_DOMAIN = 1000
+M2R_BINS = (2, 3, 4, 6, 8, 12, 16, 24, 32)
+
 # The reference domain first attempted: fully discrete, no wall-clock cap.
 # It DIVERGED (see M1REF_DIVERGED in manifest()), so it is not the reference.
 M_REF_DOMAIN = 10000
@@ -114,7 +128,17 @@ M_REF_DOMAIN = 10000
 # withholds its deviation columns and make_M_figures.py stamps
 # "self-convergence only" on every panel rather than drawing a line that would
 # be read as the exact answer.  Set it to the largest COMPLETED M1 rung.
-M_REF_RUN = None
+#
+# MEASURED 2026-09-09: that is I = V = 1000, and the cliff above it is brutal.
+#
+#     M1_D1000    20 / 20 dpa      in   5.2 min
+#     M1_D2000     0.0384 / 20 dpa in  61.1 min  (1 h cap, 0.2%)
+#     M1_D10000    0.005  / 20 dpa in  48 min    (diverging, ~4x per step)
+#
+# Doubling the domain takes the exact arm from five minutes to not finishing.
+# 4000 / 8000 / 16000 / 32000 were not run: once 2000 fails by that margin they
+# cannot succeed, and each would cost an hour to confirm it.
+M_REF_RUN = "M1_D1000"
 
 
 def _r(run_id, table, label, notes="", **over):
@@ -585,6 +609,29 @@ def manifest() -> list[dict]:
                            # mirrored here, or the closure error stops being a
                            # closure error.
                            ))
+
+    # M2R -- the binning ladder AT THE REFERENCE DOMAIN.  Identical in design
+    # to M2 (i_discrete = v_discrete = 50 fixed, only the bin count moving) but
+    # at I = V = 1000, where M1_D1000 supplies a completed exact arm.  M2 at
+    # 10000 can only ever be self-convergence; this one measures closure error.
+    #
+    # WHAT THE SMALLER DOMAIN COSTS.  V = 1000 caps a cavity at
+    # 2 (3*1000*Omega/4pi)^(1/3) ~ 2.8 nm, and M1_D1000 reports d_cav = 1.74 nm
+    # at 20 dpa -- 62% of the ceiling.  That is real truncation and it means
+    # NOTHING here may be compared to experiment.  It does not affect the
+    # measurement: both arms sit on the same truncated domain, so it cancels
+    # out of the difference being reported.  Verification, not validation.
+    for nb in M2R_BINS:
+        r_i = (M2R_DOMAIN / 50.0) ** (1.0 / nb)
+        runs.append(_r(f"M2R_B{nb}", "M2R", f"I_bin=V_bin={nb} @ ref domain",
+                       f"i_discrete = v_discrete = 50, r = {r_i:.3f}.  Scored "
+                       f"against {M_REF_RUN}, the exact arm on the same domain "
+                       f"and grid.",
+                       I=M2R_DOMAIN, V=M2R_DOMAIN,
+                       equations="bin_moment",
+                       i_discrete=50, v_discrete=50, I_bin=nb, V_bin=nb,
+                       dose=MONO["dose"], n_points=MONO["n_points"],
+                       dose_read=MONO["dose_read"], timeout_s=3600))
 
     _check_unique(runs)
     return runs

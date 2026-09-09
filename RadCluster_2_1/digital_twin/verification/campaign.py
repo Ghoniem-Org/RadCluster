@@ -594,10 +594,18 @@ def main(argv=None):
 def summary_line(rec: dict) -> str:
     if rec.get("status") != "done":
         return f"{rec.get('status', '?')}: {rec.get('error', '')}"[:200]
+    # NAME THE DOSE.  This used to take the first non-missing entry in dict
+    # order and print its d_100 unlabelled -- so the same run showed
+    # d100 = 5.89 in a worker log and 5.31 on the board, because the dicts were
+    # built in different orders and those are the 2 dpa and 20 dpa values of one
+    # trajectory.  Nothing was wrong with the data; the line simply did not say
+    # what it was showing.  Sort, take the HIGHEST dose reached, and label it.
     sc = (rec.get("scored") or {})
-    first = next((v for v in sc.values() if not v.get("missing")), {})
+    ok = sorted(((float(k), v) for k, v in sc.items() if not v.get("missing")),
+                key=lambda kv: kv[0])
+    at, first = (ok[-1] if ok else (float("nan"), {}))
     return (f"dose {rec.get('dose_reached', 0):.3g}/{rec.get('dose_target', 0):g} dpa  "
-            f"N_eq={rec.get('N_eq', '-')}  "
+            f"N_eq={rec.get('N_eq', '-')}  @{at:g}dpa "
             f"d100={first.get('d_100_nm', float('nan')):.3g} "
             f"d111={first.get('d_111_nm', float('nan')):.3g} "
             f"dcav={first.get('d_cavity_nm', float('nan')):.3g} nm  "

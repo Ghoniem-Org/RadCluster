@@ -88,8 +88,11 @@ def ref_record(B):
 
 def convergence(B):
     rows = []
-    for nb in manifest_mod.M2_BINS:
-        rec = B.get(f"M2_B{nb}")
+    # The REFERENCED ladder (M2R, I = V = 1000).  M2 at 10000 has no exact arm
+    # -- the discrete solve there diverges -- so plotting it here would put a
+    # convergence figure in front of a reader with nothing to converge TO.
+    for nb in manifest_mod.M2R_BINS:
+        rec = B.get(f"M2R_B{nb}")
         v = scored(rec)
         if v:
             rows.append((rec.get("N_eq", np.nan), nb, v))

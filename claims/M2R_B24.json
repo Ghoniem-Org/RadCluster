@@ -1,0 +1,11 @@
+{
+  "claimed_at": "2026-09-09T13:51:46-0700",
+  "code_sha": "9d169f3",
+  "host": "MacBook-Pro.local",
+  "label": "I_bin=V_bin=24 @ ref domain",
+  "machine": "Mac-662a",
+  "pid": 96862,
+  "run_id": "M2R_B24",
+  "status": "running",
+  "table": "M2R"
+}

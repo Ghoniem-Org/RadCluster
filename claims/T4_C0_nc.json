@@ -1,0 +1,11 @@
+{
+  "claimed_at": "2026-09-09T08:44:38-0700",
+  "code_sha": "4829815",
+  "host": "Mac.san.rr.com",
+  "label": "C0 (no coarsening)",
+  "machine": "Mac-662a",
+  "pid": 69653,
+  "run_id": "T4_C0_nc",
+  "status": "running",
+  "table": "T4NC"
+}

@@ -105,8 +105,16 @@ M_BIN_DOMAIN = 10000
 # recommendation is worth.
 M2_BINS = (4, 6, 8, 12, 16, 24, 32)
 
-# The reference domain: fully discrete, no wall-clock cap, one core.
+# The reference domain first attempted: fully discrete, no wall-clock cap.
+# It DIVERGED (see M1REF_DIVERGED in manifest()), so it is not the reference.
 M_REF_DOMAIN = 10000
+
+# The M1 rung actually serving as the exact arm, once the ladder says which
+# domain completes.  None means there is no reference yet -- make_M_report.py
+# withholds its deviation columns and make_M_figures.py stamps
+# "self-convergence only" on every panel rather than drawing a line that would
+# be read as the exact answer.  Set it to the largest COMPLETED M1 rung.
+M_REF_RUN = None
 
 
 def _r(run_id, table, label, notes="", **over):

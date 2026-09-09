@@ -69,3 +69,9 @@ RadCluster_2_1/digital_twin/results/*.seen
 # the branch is the shared record.
 RadCluster_2_1/digital_twin/verification/.sync/
 RadCluster_2_1/digital_twin/verification/logs/
+
+# LaTeX build artifacts (the .tex and the .pdf are tracked; the rest regenerate)
+docs/Formulation/*.aux
+docs/Formulation/*.log
+docs/Formulation/*.out
+docs/Formulation/*.toc

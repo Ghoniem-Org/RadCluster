@@ -230,6 +230,21 @@ def manifest() -> list[dict]:
     NC = {"I": 4000, "V": 4000, "dose": 2.0, "n_points": 37,
           "dose_read": (2.0,), "loop_coal": 0}
     for rid, lbl, g in (
+        # C0 is finer than C1 -- N_eq 3214 against 830 -- so the size-effect
+        # figures have a rung ABOVE the previous finest and the trend is not
+        # read off an endpoint.
+        ("T4_C0_nc", "C0 (no coarsening)", {"i_discrete": 1600, "I_bin": 2, "v_discrete": 1600, "V_bin": 2}),
+        # C0b is the insurance rung: still finer than C1 (N_eq 1614 vs 830) but
+        # ~4x cheaper than C0, because the bin_moment discrete-discrete
+        # coalescence block is O(i_discrete^2).  Whichever of C0/C0b lands is
+        # the "finer than C1" point in the size-effect figures.
+        ("T4_C0b_nc", "C0b (no coarsening)", {"i_discrete": 800, "I_bin": 4, "v_discrete": 800, "V_bin": 4}),
+        # C0c: the smallest step above C1 that still satisfies "more equations
+        # than C1" (1226 vs 830).  Cost in this variant grows far faster than
+        # O(i_discrete^2) -- C1 ran in 12 s, C0b was at 1.1% after 7 min --
+        # because with LOOP_COAL = 0 the frozen spectrum is stiffer the more of
+        # it is resolved discretely rather than smoothed into bins.
+        ("T4_C0c_nc", "C0c (no coarsening)", {"i_discrete": 600, "I_bin": 5, "v_discrete": 600, "V_bin": 5}),
         ("T4_C1_nc", "C1 (no coarsening)", {"i_discrete": 400, "I_bin": 6,  "v_discrete": 400, "V_bin": 6}),
         ("T4_C2_nc", "C2 (no coarsening)", {"i_discrete": 100, "I_bin": 10, "v_discrete": 100, "V_bin": 9}),
         ("T4_C3_nc", "C3 (no coarsening)", {"i_discrete": 25,  "I_bin": 14, "v_discrete": 25,  "V_bin": 12}),

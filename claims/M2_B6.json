@@ -1,0 +1,11 @@
+{
+  "claimed_at": "2026-09-09T11:48:51-0700",
+  "code_sha": "5e795a9",
+  "host": "Mac.san.rr.com",
+  "label": "I_bin=V_bin=6",
+  "machine": "Mac-662a",
+  "pid": 88587,
+  "run_id": "M2_B6",
+  "status": "running",
+  "table": "M2"
+}

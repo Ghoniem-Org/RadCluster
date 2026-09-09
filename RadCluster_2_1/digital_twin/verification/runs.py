@@ -90,10 +90,13 @@ P3_EXCLUDED = ("P=3 lognormal does not advance; measured 2026-09-06 on both "
 
 
 # ── Campaign M configuration (see manifest(), "Campaign M") ─────────────────
-# The domain M2's binning ladder runs on: the largest M1 rung that completed
-# inside the 1 h budget.  None until M1 measures it, so that manifest() emits
-# no M2 row that has no exact arm to be scored against.
-M_BIN_DOMAIN = None
+# The domain the study is anchored on.  This started out as "the largest M1
+# rung that finishes inside an hour", with M_BIN_DOMAIN left None until the
+# ladder measured it.  It is now set directly: the reference arm is run to
+# completion WITHOUT a wall-clock cap, so the question the ladder existed to
+# answer -- which domain is affordable -- no longer gates the study.  The
+# ladder rungs remain as the cost curve.
+M_BIN_DOMAIN = 10000
 
 # Bin counts for M2.  Chosen so the realised ratio r = (I/50)^(1/I_bin)
 # brackets the 1.5-2.0 range CLAUDE.md S7 recommends from both sides: at
@@ -101,6 +104,9 @@ M_BIN_DOMAIN = None
 # that only refines inside the recommended band cannot show what the
 # recommendation is worth.
 M2_BINS = (4, 6, 8, 12, 16, 24, 32)
+
+# The reference domain: fully discrete, no wall-clock cap, one core.
+M_REF_DOMAIN = 10000
 
 
 def _r(run_id, table, label, notes="", **over):
@@ -462,8 +468,29 @@ def manifest() -> list[dict]:
                        "domain.  Truncation error only: the closure is absent.",
                        I=dom, V=dom, **MONO))
 
-    # M2 -- the binning ladder, at the largest M1 rung that finished inside the
-    # hour.  i_discrete = v_discrete = 50 throughout (fixed by the study
+    # THE REFERENCE ARM.  I = V = 10000, fully discrete, ONE core, no wall-clock
+    # cap -- the exact solution every M2 rung is scored against.
+    #
+    # Single-threaded ON PURPOSE, and not to save cores.  full_system mode is
+    # effectively serial in this code (measured: the cost probes ran at
+    # CPU time ~ elapsed at OMP_NUM_THREADS = 10), so pinning it to one core
+    # costs almost nothing and leaves the other fifteen free for the M2 set,
+    # which is where the parallelism actually pays.
+    #
+    # timeout_s is 30 days rather than absent: solver_config() falls back to
+    # 86400 when the key is missing, and a 24 h cap is exactly the kind of
+    # silent limit that would truncate the reference and leave every M2 rung
+    # scored against a partial trajectory.  The number is a backstop, not a
+    # budget.
+    runs.append(_r(f"M1_D{M_REF_DOMAIN}", "M1REF",
+                   f"REFERENCE discrete I=V={M_REF_DOMAIN}",
+                   "Exact arm for campaign M.  Run to completion, one core, "
+                   "no time limit.  Every M2 rung is a closure error against "
+                   "THIS trajectory.",
+                   I=M_REF_DOMAIN, V=M_REF_DOMAIN,
+                   omp_threads=1, **{**MONO, "timeout_s": 30 * 86400}))
+
+    # M2 -- the binning ladder, at the reference domain.  i_discrete = v_discrete = 50 throughout (fixed by the study
     # design), so the ONLY thing varying is how many bins cover 50 -> I and
     # hence the bin ratio r = (I/50)^(1/I_bin).  Its exact counterpart is the
     # M1 rung at the same domain: same equations, same grid, no closure.
@@ -479,19 +506,27 @@ def manifest() -> list[dict]:
             runs.append(_r(f"M2_B{nb}", "M2", f"I_bin=V_bin={nb}",
                            f"i_discrete = v_discrete = 50, r = {r_i:.3f}.  "
                            f"Scored against M1_D{dom}, the exact arm on the "
-                           f"same domain and grid.",
+                           f"same domain and grid.  Runs alongside it on the "
+                           f"remaining cores; the reference is pinned to one.",
                            I=dom, V=dom,
                            equations="bin_moment", i_mobile=1, v_mobile=1,
                            i_discrete=50, v_discrete=50,
                            I_bin=nb, V_bin=nb,
                            dose=MONO["dose"], n_points=MONO["n_points"],
                            dose_read=MONO["dose_read"],
-                           timeout_s=MONO["timeout_s"],
-                           # Both keys MUST track M1: a closure error is only
-                           # measurable against an exact arm solving the same
-                           # equations, and loop_coal changes the equations.
-                           loop_coal=MONO["loop_coal"],
-                           prec_bw=MONO["prec_bw"]))
+                           # The reference arm has no cap; these do, because a
+                           # binned rung that needs more than an hour at
+                           # N_eq ~ 200 is not a convergence point, it is a
+                           # symptom (the P=3 lognormal rows are the precedent).
+                           timeout_s=3600,
+                           # loop_coal and prec_bw are deliberately NOT set
+                           # here: both arms take the workbook/auto default, so
+                           # they solve the same equations by construction
+                           # rather than by two keys being kept in step.  If
+                           # either is ever overridden on M1 it MUST be
+                           # mirrored here, or the closure error stops being a
+                           # closure error.
+                           ))
 
     _check_unique(runs)
     return runs

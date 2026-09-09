@@ -5,3 +5,6 @@ matplotlib
 openpyxl
 jupyter
 ipykernel
+
+# optional: diagnostics only (py_utils/core/to_networkx.py); the solver does not need it
+networkx

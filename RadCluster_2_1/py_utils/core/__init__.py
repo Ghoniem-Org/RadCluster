@@ -60,6 +60,15 @@ from .reductions import (
     HeReductionMode,
 )
 
+# Diagnostics only.  networkx is imported lazily INSIDE these functions, so
+# re-exporting them here adds no import-time dependency for the solver path.
+from .to_networkx import (
+    to_networkx,
+    structural_report,
+    write_graphml,
+    vertex,
+)
+
 __all__ = [
     "Polarity",
     "Population",
@@ -75,4 +84,8 @@ __all__ = [
     "GraphWalker",
     "BinMomentReduction",
     "HeReductionMode",
+    "to_networkx",
+    "structural_report",
+    "write_graphml",
+    "vertex",
 ]

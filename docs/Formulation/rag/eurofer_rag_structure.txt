@@ -1,0 +1,19 @@
+RAG 'EUROFER-97' materialized at n_max=30
+  vertices : 89
+  arcs     : 7078
+  edge families declared: 24
+  weakly connected: True
+  monomer roots: ['sia:bulk-111:1', 'vacancy:bulk:1']
+  unreachable from monomers: 0
+  vertices with no outgoing arc: 0
+  arcs by edge class:
+    coalescence        3306
+    annihilation       3258
+    growth             113
+    sink               87
+    shrinkage          84
+    dissociation       84
+    source             60
+    solute_trapping    30
+    recombination      29
+    inter_population   27

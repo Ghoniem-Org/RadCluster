@@ -1,0 +1,2334 @@
+<?xml version='1.0' encoding='utf-8'?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
+  <key id="d8" for="edge" attr.name="gas_species" attr.type="long" />
+  <key id="d7" for="edge" attr.name="hyperedge" attr.type="boolean" />
+  <key id="d6" for="edge" attr.name="kernel" attr.type="string" />
+  <key id="d5" for="edge" attr.name="label" attr.type="string" />
+  <key id="d4" for="edge" attr.name="edge_class" attr.type="string" />
+  <key id="d3" for="node" attr.name="size" attr.type="long" />
+  <key id="d2" for="node" attr.name="population" attr.type="string" />
+  <key id="d1" for="node" attr.name="polarity" attr.type="string" />
+  <key id="d0" for="graph" attr.name="name" attr.type="string" />
+  <graph edgedefault="directed">
+    <node id="sia:bulk-111:1">
+      <data key="d1">sia</data>
+      <data key="d2">bulk-111</data>
+      <data key="d3">1</data>
+    </node>
+    <node id="sia:bulk-111:2">
+      <data key="d1">sia</data>
+      <data key="d2">bulk-111</data>
+      <data key="d3">2</data>
+    </node>
+    <node id="sia:bulk-111:3">
+      <data key="d1">sia</data>
+      <data key="d2">bulk-111</data>
+      <data key="d3">3</data>
+    </node>
+    <node id="sia:bulk-111:4">
+      <data key="d1">sia</data>
+      <data key="d2">bulk-111</data>
+      <data key="d3">4</data>
+    </node>
+    <node id="sia:bulk-111:5">
+      <data key="d1">sia</data>
+      <data key="d2">bulk-111</data>
+      <data key="d3">5</data>
+    </node>
+    <node id="sia:bulk-111:6">
+      <data key="d1">sia</data>
+      <data key="d2">bulk-111</data>
+      <data key="d3">6</data>
+    </node>
+    <node id="sia:bulk-111:7">
+      <data key="d1">sia</data>
+      <data key="d2">bulk-111</data>
+      <data key="d3">7</data>
+    </node>
+    <node id="sia:bulk-111:8">
+      <data key="d1">sia</data>
+      <data key="d2">bulk-111</data>
+      <data key="d3">8</data>
+    </node>
+    <node id="sia:bulk-111:9">
+      <data key="d1">sia</data>
+      <data key="d2">bulk-111</data>
+      <data key="d3">9</data>
+    </node>
+    <node id="sia:bulk-111:10">
+      <data key="d1">sia</data>
+      <data key="d2">bulk-111</data>
+      <data key="d3">10</data>
+    </node>
+    <node id="sia:bulk-111:11">
+      <data key="d1">sia</data>
+      <data key="d2">bulk-111</data>
+      <data key="d3">11</data>
+    </node>
+    <node id="sia:bulk-111:12">
+      <data key="d1">sia</data>
+      <data key="d2">bulk-111</data>
+      <data key="d3">12</data>
+    </node>
+    <node id="sia:bulk-111:13">
+      <data key="d1">sia</data>
+      <data key="d2">bulk-111</data>
+      <data key="d3">13</data>
+    </node>
+    <node id="sia:bulk-111:14">
+      <data key="d1">sia</data>
+      <data key="d2">bulk-111</data>
+      <data key="d3">14</data>
+    </node>
+    <node id="sia:bulk-111:15">
+      <data key="d1">sia</data>
+      <data key="d2">bulk-111</data>
+      <data key="d3">15</data>
+    </node>
+    <node id="sia:bulk-111:16">
+      <data key="d1">sia</data>
+      <data key="d2">bulk-111</data>
+      <data key="d3">16</data>
+    </node>
+    <node id="sia:bulk-111:17">
+      <data key="d1">sia</data>
+      <data key="d2">bulk-111</data>
+      <data key="d3">17</data>
+    </node>
+    <node id="sia:bulk-111:18">
+      <data key="d1">sia</data>
+      <data key="d2">bulk-111</data>
+      <data key="d3">18</data>
+    </node>
+    <node id="sia:bulk-111:19">
+      <data key="d1">sia</data>
+      <data key="d2">bulk-111</data>
+      <data key="d3">19</data>
+    </node>
+    <node id="sia:bulk-111:20">
+      <data key="d1">sia</data>
+      <data key="d2">bulk-111</data>
+      <data key="d3">20</data>
+    </node>
+    <node id="sia:bulk-100:4">
+      <data key="d1">sia</data>
+      <data key="d2">bulk-100</data>
+      <data key="d3">4</data>
+    </node>
+    <node id="sia:bulk-100:5">
+      <data key="d1">sia</data>
+      <data key="d2">bulk-100</data>
+      <data key="d3">5</data>
+    </node>
+    <node id="sia:bulk-100:6">
+      <data key="d1">sia</data>
+      <data key="d2">bulk-100</data>
+      <data key="d3">6</data>
+    </node>
+    <node id="sia:bulk-100:7">
+      <data key="d1">sia</data>
+      <data key="d2">bulk-100</data>
+      <data key="d3">7</data>
+    </node>
+    <node id="sia:bulk-100:8">
+      <data key="d1">sia</data>
+      <data key="d2">bulk-100</data>
+      <data key="d3">8</data>
+    </node>
+    <node id="sia:bulk-100:9">
+      <data key="d1">sia</data>
+      <data key="d2">bulk-100</data>
+      <data key="d3">9</data>
+    </node>
+    <node id="sia:bulk-100:10">
+      <data key="d1">sia</data>
+      <data key="d2">bulk-100</data>
+      <data key="d3">10</data>
+    </node>
+    <node id="sia:bulk-100:11">
+      <data key="d1">sia</data>
+      <data key="d2">bulk-100</data>
+      <data key="d3">11</data>
+    </node>
+    <node id="sia:bulk-100:12">
+      <data key="d1">sia</data>
+      <data key="d2">bulk-100</data>
+      <data key="d3">12</data>
+    </node>
+    <node id="sia:bulk-100:13">
+      <data key="d1">sia</data>
+      <data key="d2">bulk-100</data>
+      <data key="d3">13</data>
+    </node>
+    <node id="sia:bulk-100:14">
+      <data key="d1">sia</data>
+      <data key="d2">bulk-100</data>
+      <data key="d3">14</data>
+    </node>
+    <node id="sia:bulk-100:15">
+      <data key="d1">sia</data>
+      <data key="d2">bulk-100</data>
+      <data key="d3">15</data>
+    </node>
+    <node id="sia:bulk-100:16">
+      <data key="d1">sia</data>
+      <data key="d2">bulk-100</data>
+      <data key="d3">16</data>
+    </node>
+    <node id="sia:bulk-100:17">
+      <data key="d1">sia</data>
+      <data key="d2">bulk-100</data>
+      <data key="d3">17</data>
+    </node>
+    <node id="sia:bulk-100:18">
+      <data key="d1">sia</data>
+      <data key="d2">bulk-100</data>
+      <data key="d3">18</data>
+    </node>
+    <node id="sia:bulk-100:19">
+      <data key="d1">sia</data>
+      <data key="d2">bulk-100</data>
+      <data key="d3">19</data>
+    </node>
+    <node id="sia:bulk-100:20">
+      <data key="d1">sia</data>
+      <data key="d2">bulk-100</data>
+      <data key="d3">20</data>
+    </node>
+    <node id="vacancy:bulk:1">
+      <data key="d1">vacancy</data>
+      <data key="d2">bulk</data>
+      <data key="d3">1</data>
+    </node>
+    <node id="vacancy:bulk:2">
+      <data key="d1">vacancy</data>
+      <data key="d2">bulk</data>
+      <data key="d3">2</data>
+    </node>
+    <node id="vacancy:bulk:3">
+      <data key="d1">vacancy</data>
+      <data key="d2">bulk</data>
+      <data key="d3">3</data>
+    </node>
+    <node id="vacancy:bulk:4">
+      <data key="d1">vacancy</data>
+      <data key="d2">bulk</data>
+      <data key="d3">4</data>
+    </node>
+    <node id="vacancy:bulk:5">
+      <data key="d1">vacancy</data>
+      <data key="d2">bulk</data>
+      <data key="d3">5</data>
+    </node>
+    <node id="vacancy:bulk:6">
+      <data key="d1">vacancy</data>
+      <data key="d2">bulk</data>
+      <data key="d3">6</data>
+    </node>
+    <node id="vacancy:bulk:7">
+      <data key="d1">vacancy</data>
+      <data key="d2">bulk</data>
+      <data key="d3">7</data>
+    </node>
+    <node id="vacancy:bulk:8">
+      <data key="d1">vacancy</data>
+      <data key="d2">bulk</data>
+      <data key="d3">8</data>
+    </node>
+    <node id="vacancy:bulk:9">
+      <data key="d1">vacancy</data>
+      <data key="d2">bulk</data>
+      <data key="d3">9</data>
+    </node>
+    <node id="vacancy:bulk:10">
+      <data key="d1">vacancy</data>
+      <data key="d2">bulk</data>
+      <data key="d3">10</data>
+    </node>
+    <node id="vacancy:bulk:11">
+      <data key="d1">vacancy</data>
+      <data key="d2">bulk</data>
+      <data key="d3">11</data>
+    </node>
+    <node id="vacancy:bulk:12">
+      <data key="d1">vacancy</data>
+      <data key="d2">bulk</data>
+      <data key="d3">12</data>
+    </node>
+    <node id="vacancy:bulk:13">
+      <data key="d1">vacancy</data>
+      <data key="d2">bulk</data>
+      <data key="d3">13</data>
+    </node>
+    <node id="vacancy:bulk:14">
+      <data key="d1">vacancy</data>
+      <data key="d2">bulk</data>
+      <data key="d3">14</data>
+    </node>
+    <node id="vacancy:bulk:15">
+      <data key="d1">vacancy</data>
+      <data key="d2">bulk</data>
+      <data key="d3">15</data>
+    </node>
+    <node id="vacancy:bulk:16">
+      <data key="d1">vacancy</data>
+      <data key="d2">bulk</data>
+      <data key="d3">16</data>
+    </node>
+    <node id="vacancy:bulk:17">
+      <data key="d1">vacancy</data>
+      <data key="d2">bulk</data>
+      <data key="d3">17</data>
+    </node>
+    <node id="vacancy:bulk:18">
+      <data key="d1">vacancy</data>
+      <data key="d2">bulk</data>
+      <data key="d3">18</data>
+    </node>
+    <node id="vacancy:bulk:19">
+      <data key="d1">vacancy</data>
+      <data key="d2">bulk</data>
+      <data key="d3">19</data>
+    </node>
+    <node id="vacancy:bulk:20">
+      <data key="d1">vacancy</data>
+      <data key="d2">bulk</data>
+      <data key="d3">20</data>
+    </node>
+    <node id="SOURCE">
+      <data key="d1">none</data>
+      <data key="d2">cascade</data>
+      <data key="d3">0</data>
+    </node>
+    <node id="SINK">
+      <data key="d1">none</data>
+      <data key="d2">unresolved</data>
+      <data key="d3">0</data>
+    </node>
+    <edge source="sia:bulk-111:1" target="sia:bulk-111:2" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P3_loop_growth</data>
+      <data key="d6">K_SIA_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:1" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_SIA_sink</data>
+      <data key="d6">D_SIA_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:2" target="sia:bulk-111:1" id="0">
+      <data key="d4">recombination</data>
+      <data key="d5">P1_recombination</data>
+      <data key="d6">K_iv</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:2" target="sia:bulk-111:1" id="1">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P3_loop_shrink</data>
+      <data key="d6">K_SIA_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:2" target="sia:bulk-111:1" id="2">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5i_SIA_emission</data>
+      <data key="d6">eps_SIA_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:2" target="sia:bulk-111:3" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P3_loop_growth</data>
+      <data key="d6">K_SIA_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:2" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_SIA_sink</data>
+      <data key="d6">D_SIA_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:3" target="sia:bulk-111:2" id="0">
+      <data key="d4">recombination</data>
+      <data key="d5">P1_recombination</data>
+      <data key="d6">K_iv</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:3" target="sia:bulk-111:2" id="1">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P3_loop_shrink</data>
+      <data key="d6">K_SIA_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:3" target="sia:bulk-111:2" id="2">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5i_SIA_emission</data>
+      <data key="d6">eps_SIA_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:3" target="sia:bulk-111:4" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P3_loop_growth</data>
+      <data key="d6">K_SIA_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:3" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_SIA_sink</data>
+      <data key="d6">D_SIA_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:4" target="sia:bulk-111:3" id="0">
+      <data key="d4">recombination</data>
+      <data key="d5">P1_recombination</data>
+      <data key="d6">K_iv</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:4" target="sia:bulk-111:3" id="1">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P3_loop_shrink</data>
+      <data key="d6">K_SIA_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:4" target="sia:bulk-111:3" id="2">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5i_SIA_emission</data>
+      <data key="d6">eps_SIA_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:4" target="sia:bulk-111:5" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P3_loop_growth</data>
+      <data key="d6">K_SIA_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:4" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_SIA_sink</data>
+      <data key="d6">D_SIA_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:4" target="sia:bulk-100:4" id="0">
+      <data key="d4">inter_population</data>
+      <data key="d5">loop_111to100_unary</data>
+      <data key="d6">Gamma_uni</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:5" target="sia:bulk-111:4" id="0">
+      <data key="d4">recombination</data>
+      <data key="d5">P1_recombination</data>
+      <data key="d6">K_iv</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:5" target="sia:bulk-111:4" id="1">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P3_loop_shrink</data>
+      <data key="d6">K_SIA_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:5" target="sia:bulk-111:4" id="2">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5i_SIA_emission</data>
+      <data key="d6">eps_SIA_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:5" target="sia:bulk-111:6" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P3_loop_growth</data>
+      <data key="d6">K_SIA_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:5" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_SIA_sink</data>
+      <data key="d6">D_SIA_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:5" target="sia:bulk-100:5" id="0">
+      <data key="d4">inter_population</data>
+      <data key="d5">loop_111to100_unary</data>
+      <data key="d6">Gamma_uni</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:6" target="sia:bulk-111:5" id="0">
+      <data key="d4">recombination</data>
+      <data key="d5">P1_recombination</data>
+      <data key="d6">K_iv</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:6" target="sia:bulk-111:5" id="1">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P3_loop_shrink</data>
+      <data key="d6">K_SIA_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:6" target="sia:bulk-111:5" id="2">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5i_SIA_emission</data>
+      <data key="d6">eps_SIA_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:6" target="sia:bulk-111:7" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P3_loop_growth</data>
+      <data key="d6">K_SIA_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:6" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_SIA_sink</data>
+      <data key="d6">D_SIA_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:6" target="sia:bulk-100:6" id="0">
+      <data key="d4">inter_population</data>
+      <data key="d5">loop_111to100_unary</data>
+      <data key="d6">Gamma_uni</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:7" target="sia:bulk-111:6" id="0">
+      <data key="d4">recombination</data>
+      <data key="d5">P1_recombination</data>
+      <data key="d6">K_iv</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:7" target="sia:bulk-111:6" id="1">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P3_loop_shrink</data>
+      <data key="d6">K_SIA_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:7" target="sia:bulk-111:6" id="2">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5i_SIA_emission</data>
+      <data key="d6">eps_SIA_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:7" target="sia:bulk-111:8" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P3_loop_growth</data>
+      <data key="d6">K_SIA_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:7" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_SIA_sink</data>
+      <data key="d6">D_SIA_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:7" target="sia:bulk-100:7" id="0">
+      <data key="d4">inter_population</data>
+      <data key="d5">loop_111to100_unary</data>
+      <data key="d6">Gamma_uni</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:8" target="sia:bulk-111:7" id="0">
+      <data key="d4">recombination</data>
+      <data key="d5">P1_recombination</data>
+      <data key="d6">K_iv</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:8" target="sia:bulk-111:7" id="1">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P3_loop_shrink</data>
+      <data key="d6">K_SIA_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:8" target="sia:bulk-111:7" id="2">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5i_SIA_emission</data>
+      <data key="d6">eps_SIA_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:8" target="sia:bulk-111:9" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P3_loop_growth</data>
+      <data key="d6">K_SIA_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:8" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_SIA_sink</data>
+      <data key="d6">D_SIA_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:8" target="sia:bulk-100:8" id="0">
+      <data key="d4">inter_population</data>
+      <data key="d5">loop_111to100_unary</data>
+      <data key="d6">Gamma_uni</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:9" target="sia:bulk-111:8" id="0">
+      <data key="d4">recombination</data>
+      <data key="d5">P1_recombination</data>
+      <data key="d6">K_iv</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:9" target="sia:bulk-111:8" id="1">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P3_loop_shrink</data>
+      <data key="d6">K_SIA_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:9" target="sia:bulk-111:8" id="2">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5i_SIA_emission</data>
+      <data key="d6">eps_SIA_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:9" target="sia:bulk-111:10" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P3_loop_growth</data>
+      <data key="d6">K_SIA_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:9" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_SIA_sink</data>
+      <data key="d6">D_SIA_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:9" target="sia:bulk-100:9" id="0">
+      <data key="d4">inter_population</data>
+      <data key="d5">loop_111to100_unary</data>
+      <data key="d6">Gamma_uni</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:10" target="sia:bulk-111:9" id="0">
+      <data key="d4">recombination</data>
+      <data key="d5">P1_recombination</data>
+      <data key="d6">K_iv</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:10" target="sia:bulk-111:9" id="1">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P3_loop_shrink</data>
+      <data key="d6">K_SIA_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:10" target="sia:bulk-111:9" id="2">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5i_SIA_emission</data>
+      <data key="d6">eps_SIA_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:10" target="sia:bulk-111:11" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P3_loop_growth</data>
+      <data key="d6">K_SIA_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:10" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_SIA_sink</data>
+      <data key="d6">D_SIA_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:10" target="sia:bulk-100:10" id="0">
+      <data key="d4">inter_population</data>
+      <data key="d5">loop_111to100_unary</data>
+      <data key="d6">Gamma_uni</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:11" target="sia:bulk-111:10" id="0">
+      <data key="d4">recombination</data>
+      <data key="d5">P1_recombination</data>
+      <data key="d6">K_iv</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:11" target="sia:bulk-111:10" id="1">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P3_loop_shrink</data>
+      <data key="d6">K_SIA_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:11" target="sia:bulk-111:10" id="2">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5i_SIA_emission</data>
+      <data key="d6">eps_SIA_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:11" target="sia:bulk-111:12" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P3_loop_growth</data>
+      <data key="d6">K_SIA_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:11" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_SIA_sink</data>
+      <data key="d6">D_SIA_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:11" target="sia:bulk-100:11" id="0">
+      <data key="d4">inter_population</data>
+      <data key="d5">loop_111to100_unary</data>
+      <data key="d6">Gamma_uni</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:12" target="sia:bulk-111:11" id="0">
+      <data key="d4">recombination</data>
+      <data key="d5">P1_recombination</data>
+      <data key="d6">K_iv</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:12" target="sia:bulk-111:11" id="1">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P3_loop_shrink</data>
+      <data key="d6">K_SIA_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:12" target="sia:bulk-111:11" id="2">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5i_SIA_emission</data>
+      <data key="d6">eps_SIA_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:12" target="sia:bulk-111:13" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P3_loop_growth</data>
+      <data key="d6">K_SIA_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:12" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_SIA_sink</data>
+      <data key="d6">D_SIA_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:12" target="sia:bulk-100:12" id="0">
+      <data key="d4">inter_population</data>
+      <data key="d5">loop_111to100_unary</data>
+      <data key="d6">Gamma_uni</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:13" target="sia:bulk-111:12" id="0">
+      <data key="d4">recombination</data>
+      <data key="d5">P1_recombination</data>
+      <data key="d6">K_iv</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:13" target="sia:bulk-111:12" id="1">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P3_loop_shrink</data>
+      <data key="d6">K_SIA_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:13" target="sia:bulk-111:12" id="2">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5i_SIA_emission</data>
+      <data key="d6">eps_SIA_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:13" target="sia:bulk-111:14" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P3_loop_growth</data>
+      <data key="d6">K_SIA_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:13" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_SIA_sink</data>
+      <data key="d6">D_SIA_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:13" target="sia:bulk-100:13" id="0">
+      <data key="d4">inter_population</data>
+      <data key="d5">loop_111to100_unary</data>
+      <data key="d6">Gamma_uni</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:14" target="sia:bulk-111:13" id="0">
+      <data key="d4">recombination</data>
+      <data key="d5">P1_recombination</data>
+      <data key="d6">K_iv</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:14" target="sia:bulk-111:13" id="1">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P3_loop_shrink</data>
+      <data key="d6">K_SIA_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:14" target="sia:bulk-111:13" id="2">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5i_SIA_emission</data>
+      <data key="d6">eps_SIA_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:14" target="sia:bulk-111:15" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P3_loop_growth</data>
+      <data key="d6">K_SIA_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:14" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_SIA_sink</data>
+      <data key="d6">D_SIA_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:14" target="sia:bulk-100:14" id="0">
+      <data key="d4">inter_population</data>
+      <data key="d5">loop_111to100_unary</data>
+      <data key="d6">Gamma_uni</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:15" target="sia:bulk-111:14" id="0">
+      <data key="d4">recombination</data>
+      <data key="d5">P1_recombination</data>
+      <data key="d6">K_iv</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:15" target="sia:bulk-111:14" id="1">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P3_loop_shrink</data>
+      <data key="d6">K_SIA_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:15" target="sia:bulk-111:14" id="2">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5i_SIA_emission</data>
+      <data key="d6">eps_SIA_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:15" target="sia:bulk-111:16" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P3_loop_growth</data>
+      <data key="d6">K_SIA_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:15" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_SIA_sink</data>
+      <data key="d6">D_SIA_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:15" target="sia:bulk-100:15" id="0">
+      <data key="d4">inter_population</data>
+      <data key="d5">loop_111to100_unary</data>
+      <data key="d6">Gamma_uni</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:16" target="sia:bulk-111:15" id="0">
+      <data key="d4">recombination</data>
+      <data key="d5">P1_recombination</data>
+      <data key="d6">K_iv</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:16" target="sia:bulk-111:15" id="1">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P3_loop_shrink</data>
+      <data key="d6">K_SIA_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:16" target="sia:bulk-111:15" id="2">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5i_SIA_emission</data>
+      <data key="d6">eps_SIA_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:16" target="sia:bulk-111:17" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P3_loop_growth</data>
+      <data key="d6">K_SIA_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:16" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_SIA_sink</data>
+      <data key="d6">D_SIA_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:16" target="sia:bulk-100:16" id="0">
+      <data key="d4">inter_population</data>
+      <data key="d5">loop_111to100_unary</data>
+      <data key="d6">Gamma_uni</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:17" target="sia:bulk-111:16" id="0">
+      <data key="d4">recombination</data>
+      <data key="d5">P1_recombination</data>
+      <data key="d6">K_iv</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:17" target="sia:bulk-111:16" id="1">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P3_loop_shrink</data>
+      <data key="d6">K_SIA_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:17" target="sia:bulk-111:16" id="2">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5i_SIA_emission</data>
+      <data key="d6">eps_SIA_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:17" target="sia:bulk-111:18" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P3_loop_growth</data>
+      <data key="d6">K_SIA_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:17" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_SIA_sink</data>
+      <data key="d6">D_SIA_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:17" target="sia:bulk-100:17" id="0">
+      <data key="d4">inter_population</data>
+      <data key="d5">loop_111to100_unary</data>
+      <data key="d6">Gamma_uni</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:18" target="sia:bulk-111:17" id="0">
+      <data key="d4">recombination</data>
+      <data key="d5">P1_recombination</data>
+      <data key="d6">K_iv</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:18" target="sia:bulk-111:17" id="1">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P3_loop_shrink</data>
+      <data key="d6">K_SIA_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:18" target="sia:bulk-111:17" id="2">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5i_SIA_emission</data>
+      <data key="d6">eps_SIA_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:18" target="sia:bulk-111:19" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P3_loop_growth</data>
+      <data key="d6">K_SIA_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:18" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_SIA_sink</data>
+      <data key="d6">D_SIA_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:18" target="sia:bulk-100:18" id="0">
+      <data key="d4">inter_population</data>
+      <data key="d5">loop_111to100_unary</data>
+      <data key="d6">Gamma_uni</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:19" target="sia:bulk-111:18" id="0">
+      <data key="d4">recombination</data>
+      <data key="d5">P1_recombination</data>
+      <data key="d6">K_iv</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:19" target="sia:bulk-111:18" id="1">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P3_loop_shrink</data>
+      <data key="d6">K_SIA_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:19" target="sia:bulk-111:18" id="2">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5i_SIA_emission</data>
+      <data key="d6">eps_SIA_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:19" target="sia:bulk-111:20" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P3_loop_growth</data>
+      <data key="d6">K_SIA_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:19" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_SIA_sink</data>
+      <data key="d6">D_SIA_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:19" target="sia:bulk-100:19" id="0">
+      <data key="d4">inter_population</data>
+      <data key="d5">loop_111to100_unary</data>
+      <data key="d6">Gamma_uni</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:20" target="sia:bulk-111:19" id="0">
+      <data key="d4">recombination</data>
+      <data key="d5">P1_recombination</data>
+      <data key="d6">K_iv</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:20" target="sia:bulk-111:19" id="1">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P3_loop_shrink</data>
+      <data key="d6">K_SIA_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:20" target="sia:bulk-111:19" id="2">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5i_SIA_emission</data>
+      <data key="d6">eps_SIA_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:20" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_SIA_sink</data>
+      <data key="d6">D_SIA_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-111:20" target="sia:bulk-100:20" id="0">
+      <data key="d4">inter_population</data>
+      <data key="d5">loop_111to100_unary</data>
+      <data key="d6">Gamma_uni</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:4" target="sia:bulk-100:5" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P3_100_growth</data>
+      <data key="d6">K_100_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:4" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_100_sink</data>
+      <data key="d6">D_100_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:5" target="sia:bulk-100:6" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P3_100_growth</data>
+      <data key="d6">K_100_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:5" target="sia:bulk-100:4" id="0">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P3_100_shrink</data>
+      <data key="d6">K_100_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:5" target="sia:bulk-100:4" id="1">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5_100_emission</data>
+      <data key="d6">eps_100_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:5" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_100_sink</data>
+      <data key="d6">D_100_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:6" target="sia:bulk-100:7" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P3_100_growth</data>
+      <data key="d6">K_100_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:6" target="sia:bulk-100:5" id="0">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P3_100_shrink</data>
+      <data key="d6">K_100_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:6" target="sia:bulk-100:5" id="1">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5_100_emission</data>
+      <data key="d6">eps_100_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:6" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_100_sink</data>
+      <data key="d6">D_100_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:7" target="sia:bulk-100:8" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P3_100_growth</data>
+      <data key="d6">K_100_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:7" target="sia:bulk-100:6" id="0">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P3_100_shrink</data>
+      <data key="d6">K_100_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:7" target="sia:bulk-100:6" id="1">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5_100_emission</data>
+      <data key="d6">eps_100_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:7" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_100_sink</data>
+      <data key="d6">D_100_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:8" target="sia:bulk-100:9" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P3_100_growth</data>
+      <data key="d6">K_100_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:8" target="sia:bulk-100:7" id="0">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P3_100_shrink</data>
+      <data key="d6">K_100_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:8" target="sia:bulk-100:7" id="1">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5_100_emission</data>
+      <data key="d6">eps_100_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:8" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_100_sink</data>
+      <data key="d6">D_100_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:9" target="sia:bulk-100:10" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P3_100_growth</data>
+      <data key="d6">K_100_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:9" target="sia:bulk-100:8" id="0">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P3_100_shrink</data>
+      <data key="d6">K_100_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:9" target="sia:bulk-100:8" id="1">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5_100_emission</data>
+      <data key="d6">eps_100_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:9" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_100_sink</data>
+      <data key="d6">D_100_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:10" target="sia:bulk-100:11" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P3_100_growth</data>
+      <data key="d6">K_100_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:10" target="sia:bulk-100:9" id="0">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P3_100_shrink</data>
+      <data key="d6">K_100_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:10" target="sia:bulk-100:9" id="1">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5_100_emission</data>
+      <data key="d6">eps_100_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:10" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_100_sink</data>
+      <data key="d6">D_100_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:11" target="sia:bulk-100:12" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P3_100_growth</data>
+      <data key="d6">K_100_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:11" target="sia:bulk-100:10" id="0">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P3_100_shrink</data>
+      <data key="d6">K_100_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:11" target="sia:bulk-100:10" id="1">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5_100_emission</data>
+      <data key="d6">eps_100_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:11" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_100_sink</data>
+      <data key="d6">D_100_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:12" target="sia:bulk-100:13" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P3_100_growth</data>
+      <data key="d6">K_100_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:12" target="sia:bulk-100:11" id="0">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P3_100_shrink</data>
+      <data key="d6">K_100_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:12" target="sia:bulk-100:11" id="1">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5_100_emission</data>
+      <data key="d6">eps_100_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:12" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_100_sink</data>
+      <data key="d6">D_100_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:13" target="sia:bulk-100:14" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P3_100_growth</data>
+      <data key="d6">K_100_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:13" target="sia:bulk-100:12" id="0">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P3_100_shrink</data>
+      <data key="d6">K_100_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:13" target="sia:bulk-100:12" id="1">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5_100_emission</data>
+      <data key="d6">eps_100_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:13" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_100_sink</data>
+      <data key="d6">D_100_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:14" target="sia:bulk-100:15" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P3_100_growth</data>
+      <data key="d6">K_100_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:14" target="sia:bulk-100:13" id="0">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P3_100_shrink</data>
+      <data key="d6">K_100_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:14" target="sia:bulk-100:13" id="1">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5_100_emission</data>
+      <data key="d6">eps_100_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:14" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_100_sink</data>
+      <data key="d6">D_100_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:15" target="sia:bulk-100:16" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P3_100_growth</data>
+      <data key="d6">K_100_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:15" target="sia:bulk-100:14" id="0">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P3_100_shrink</data>
+      <data key="d6">K_100_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:15" target="sia:bulk-100:14" id="1">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5_100_emission</data>
+      <data key="d6">eps_100_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:15" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_100_sink</data>
+      <data key="d6">D_100_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:16" target="sia:bulk-100:17" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P3_100_growth</data>
+      <data key="d6">K_100_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:16" target="sia:bulk-100:15" id="0">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P3_100_shrink</data>
+      <data key="d6">K_100_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:16" target="sia:bulk-100:15" id="1">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5_100_emission</data>
+      <data key="d6">eps_100_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:16" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_100_sink</data>
+      <data key="d6">D_100_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:17" target="sia:bulk-100:18" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P3_100_growth</data>
+      <data key="d6">K_100_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:17" target="sia:bulk-100:16" id="0">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P3_100_shrink</data>
+      <data key="d6">K_100_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:17" target="sia:bulk-100:16" id="1">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5_100_emission</data>
+      <data key="d6">eps_100_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:17" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_100_sink</data>
+      <data key="d6">D_100_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:18" target="sia:bulk-100:19" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P3_100_growth</data>
+      <data key="d6">K_100_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:18" target="sia:bulk-100:17" id="0">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P3_100_shrink</data>
+      <data key="d6">K_100_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:18" target="sia:bulk-100:17" id="1">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5_100_emission</data>
+      <data key="d6">eps_100_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:18" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_100_sink</data>
+      <data key="d6">D_100_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:19" target="sia:bulk-100:20" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P3_100_growth</data>
+      <data key="d6">K_100_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:19" target="sia:bulk-100:18" id="0">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P3_100_shrink</data>
+      <data key="d6">K_100_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:19" target="sia:bulk-100:18" id="1">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5_100_emission</data>
+      <data key="d6">eps_100_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:19" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_100_sink</data>
+      <data key="d6">D_100_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:20" target="sia:bulk-100:19" id="0">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P3_100_shrink</data>
+      <data key="d6">K_100_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:20" target="sia:bulk-100:19" id="1">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5_100_emission</data>
+      <data key="d6">eps_100_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="sia:bulk-100:20" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_100_sink</data>
+      <data key="d6">D_100_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:1" target="vacancy:bulk:2" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P2v_cavity_growth</data>
+      <data key="d6">K_VAC_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:1" target="vacancy:bulk:2" id="1">
+      <data key="d4">growth</data>
+      <data key="d5">P7_trap_mutation</data>
+      <data key="d6">Gamma_TM</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:1" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_VAC_sink</data>
+      <data key="d6">D_VAC_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:1" target="vacancy:bulk:1" id="0">
+      <data key="d4">solute_trapping</data>
+      <data key="d5">P8_radiation_resolution</data>
+      <data key="d6">Gamma_res</data>
+      <data key="d7">False</data>
+      <data key="d8">0</data>
+    </edge>
+    <edge source="vacancy:bulk:2" target="vacancy:bulk:3" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P2v_cavity_growth</data>
+      <data key="d6">K_VAC_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:2" target="vacancy:bulk:3" id="1">
+      <data key="d4">growth</data>
+      <data key="d5">P7_trap_mutation</data>
+      <data key="d6">Gamma_TM</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:2" target="vacancy:bulk:1" id="0">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P2i_cavity_shrink</data>
+      <data key="d6">K_VAC_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:2" target="vacancy:bulk:1" id="1">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5v_VAC_emission</data>
+      <data key="d6">eps_VAC_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:2" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_VAC_sink</data>
+      <data key="d6">D_VAC_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:2" target="vacancy:bulk:2" id="0">
+      <data key="d4">solute_trapping</data>
+      <data key="d5">P8_radiation_resolution</data>
+      <data key="d6">Gamma_res</data>
+      <data key="d7">False</data>
+      <data key="d8">0</data>
+    </edge>
+    <edge source="vacancy:bulk:3" target="vacancy:bulk:4" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P2v_cavity_growth</data>
+      <data key="d6">K_VAC_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:3" target="vacancy:bulk:4" id="1">
+      <data key="d4">growth</data>
+      <data key="d5">P7_trap_mutation</data>
+      <data key="d6">Gamma_TM</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:3" target="vacancy:bulk:2" id="0">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P2i_cavity_shrink</data>
+      <data key="d6">K_VAC_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:3" target="vacancy:bulk:2" id="1">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5v_VAC_emission</data>
+      <data key="d6">eps_VAC_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:3" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_VAC_sink</data>
+      <data key="d6">D_VAC_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:3" target="vacancy:bulk:3" id="0">
+      <data key="d4">solute_trapping</data>
+      <data key="d5">P8_radiation_resolution</data>
+      <data key="d6">Gamma_res</data>
+      <data key="d7">False</data>
+      <data key="d8">0</data>
+    </edge>
+    <edge source="vacancy:bulk:4" target="vacancy:bulk:5" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P2v_cavity_growth</data>
+      <data key="d6">K_VAC_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:4" target="vacancy:bulk:5" id="1">
+      <data key="d4">growth</data>
+      <data key="d5">P7_trap_mutation</data>
+      <data key="d6">Gamma_TM</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:4" target="vacancy:bulk:3" id="0">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P2i_cavity_shrink</data>
+      <data key="d6">K_VAC_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:4" target="vacancy:bulk:3" id="1">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5v_VAC_emission</data>
+      <data key="d6">eps_VAC_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:4" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_VAC_sink</data>
+      <data key="d6">D_VAC_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:4" target="vacancy:bulk:4" id="0">
+      <data key="d4">solute_trapping</data>
+      <data key="d5">P8_radiation_resolution</data>
+      <data key="d6">Gamma_res</data>
+      <data key="d7">False</data>
+      <data key="d8">0</data>
+    </edge>
+    <edge source="vacancy:bulk:5" target="vacancy:bulk:6" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P2v_cavity_growth</data>
+      <data key="d6">K_VAC_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:5" target="vacancy:bulk:6" id="1">
+      <data key="d4">growth</data>
+      <data key="d5">P7_trap_mutation</data>
+      <data key="d6">Gamma_TM</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:5" target="vacancy:bulk:4" id="0">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P2i_cavity_shrink</data>
+      <data key="d6">K_VAC_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:5" target="vacancy:bulk:4" id="1">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5v_VAC_emission</data>
+      <data key="d6">eps_VAC_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:5" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_VAC_sink</data>
+      <data key="d6">D_VAC_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:5" target="vacancy:bulk:5" id="0">
+      <data key="d4">solute_trapping</data>
+      <data key="d5">P8_radiation_resolution</data>
+      <data key="d6">Gamma_res</data>
+      <data key="d7">False</data>
+      <data key="d8">0</data>
+    </edge>
+    <edge source="vacancy:bulk:6" target="vacancy:bulk:7" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P2v_cavity_growth</data>
+      <data key="d6">K_VAC_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:6" target="vacancy:bulk:7" id="1">
+      <data key="d4">growth</data>
+      <data key="d5">P7_trap_mutation</data>
+      <data key="d6">Gamma_TM</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:6" target="vacancy:bulk:5" id="0">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P2i_cavity_shrink</data>
+      <data key="d6">K_VAC_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:6" target="vacancy:bulk:5" id="1">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5v_VAC_emission</data>
+      <data key="d6">eps_VAC_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:6" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_VAC_sink</data>
+      <data key="d6">D_VAC_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:6" target="vacancy:bulk:6" id="0">
+      <data key="d4">solute_trapping</data>
+      <data key="d5">P8_radiation_resolution</data>
+      <data key="d6">Gamma_res</data>
+      <data key="d7">False</data>
+      <data key="d8">0</data>
+    </edge>
+    <edge source="vacancy:bulk:7" target="vacancy:bulk:8" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P2v_cavity_growth</data>
+      <data key="d6">K_VAC_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:7" target="vacancy:bulk:8" id="1">
+      <data key="d4">growth</data>
+      <data key="d5">P7_trap_mutation</data>
+      <data key="d6">Gamma_TM</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:7" target="vacancy:bulk:6" id="0">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P2i_cavity_shrink</data>
+      <data key="d6">K_VAC_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:7" target="vacancy:bulk:6" id="1">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5v_VAC_emission</data>
+      <data key="d6">eps_VAC_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:7" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_VAC_sink</data>
+      <data key="d6">D_VAC_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:7" target="vacancy:bulk:7" id="0">
+      <data key="d4">solute_trapping</data>
+      <data key="d5">P8_radiation_resolution</data>
+      <data key="d6">Gamma_res</data>
+      <data key="d7">False</data>
+      <data key="d8">0</data>
+    </edge>
+    <edge source="vacancy:bulk:8" target="vacancy:bulk:9" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P2v_cavity_growth</data>
+      <data key="d6">K_VAC_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:8" target="vacancy:bulk:9" id="1">
+      <data key="d4">growth</data>
+      <data key="d5">P7_trap_mutation</data>
+      <data key="d6">Gamma_TM</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:8" target="vacancy:bulk:7" id="0">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P2i_cavity_shrink</data>
+      <data key="d6">K_VAC_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:8" target="vacancy:bulk:7" id="1">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5v_VAC_emission</data>
+      <data key="d6">eps_VAC_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:8" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_VAC_sink</data>
+      <data key="d6">D_VAC_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:8" target="vacancy:bulk:8" id="0">
+      <data key="d4">solute_trapping</data>
+      <data key="d5">P8_radiation_resolution</data>
+      <data key="d6">Gamma_res</data>
+      <data key="d7">False</data>
+      <data key="d8">0</data>
+    </edge>
+    <edge source="vacancy:bulk:9" target="vacancy:bulk:10" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P2v_cavity_growth</data>
+      <data key="d6">K_VAC_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:9" target="vacancy:bulk:10" id="1">
+      <data key="d4">growth</data>
+      <data key="d5">P7_trap_mutation</data>
+      <data key="d6">Gamma_TM</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:9" target="vacancy:bulk:8" id="0">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P2i_cavity_shrink</data>
+      <data key="d6">K_VAC_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:9" target="vacancy:bulk:8" id="1">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5v_VAC_emission</data>
+      <data key="d6">eps_VAC_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:9" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_VAC_sink</data>
+      <data key="d6">D_VAC_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:9" target="vacancy:bulk:9" id="0">
+      <data key="d4">solute_trapping</data>
+      <data key="d5">P8_radiation_resolution</data>
+      <data key="d6">Gamma_res</data>
+      <data key="d7">False</data>
+      <data key="d8">0</data>
+    </edge>
+    <edge source="vacancy:bulk:10" target="vacancy:bulk:11" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P2v_cavity_growth</data>
+      <data key="d6">K_VAC_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:10" target="vacancy:bulk:11" id="1">
+      <data key="d4">growth</data>
+      <data key="d5">P7_trap_mutation</data>
+      <data key="d6">Gamma_TM</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:10" target="vacancy:bulk:9" id="0">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P2i_cavity_shrink</data>
+      <data key="d6">K_VAC_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:10" target="vacancy:bulk:9" id="1">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5v_VAC_emission</data>
+      <data key="d6">eps_VAC_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:10" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_VAC_sink</data>
+      <data key="d6">D_VAC_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:10" target="vacancy:bulk:10" id="0">
+      <data key="d4">solute_trapping</data>
+      <data key="d5">P8_radiation_resolution</data>
+      <data key="d6">Gamma_res</data>
+      <data key="d7">False</data>
+      <data key="d8">0</data>
+    </edge>
+    <edge source="vacancy:bulk:11" target="vacancy:bulk:12" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P2v_cavity_growth</data>
+      <data key="d6">K_VAC_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:11" target="vacancy:bulk:12" id="1">
+      <data key="d4">growth</data>
+      <data key="d5">P7_trap_mutation</data>
+      <data key="d6">Gamma_TM</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:11" target="vacancy:bulk:10" id="0">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P2i_cavity_shrink</data>
+      <data key="d6">K_VAC_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:11" target="vacancy:bulk:10" id="1">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5v_VAC_emission</data>
+      <data key="d6">eps_VAC_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:11" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_VAC_sink</data>
+      <data key="d6">D_VAC_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:11" target="vacancy:bulk:11" id="0">
+      <data key="d4">solute_trapping</data>
+      <data key="d5">P8_radiation_resolution</data>
+      <data key="d6">Gamma_res</data>
+      <data key="d7">False</data>
+      <data key="d8">0</data>
+    </edge>
+    <edge source="vacancy:bulk:12" target="vacancy:bulk:13" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P2v_cavity_growth</data>
+      <data key="d6">K_VAC_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:12" target="vacancy:bulk:13" id="1">
+      <data key="d4">growth</data>
+      <data key="d5">P7_trap_mutation</data>
+      <data key="d6">Gamma_TM</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:12" target="vacancy:bulk:11" id="0">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P2i_cavity_shrink</data>
+      <data key="d6">K_VAC_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:12" target="vacancy:bulk:11" id="1">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5v_VAC_emission</data>
+      <data key="d6">eps_VAC_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:12" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_VAC_sink</data>
+      <data key="d6">D_VAC_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:12" target="vacancy:bulk:12" id="0">
+      <data key="d4">solute_trapping</data>
+      <data key="d5">P8_radiation_resolution</data>
+      <data key="d6">Gamma_res</data>
+      <data key="d7">False</data>
+      <data key="d8">0</data>
+    </edge>
+    <edge source="vacancy:bulk:13" target="vacancy:bulk:14" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P2v_cavity_growth</data>
+      <data key="d6">K_VAC_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:13" target="vacancy:bulk:14" id="1">
+      <data key="d4">growth</data>
+      <data key="d5">P7_trap_mutation</data>
+      <data key="d6">Gamma_TM</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:13" target="vacancy:bulk:12" id="0">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P2i_cavity_shrink</data>
+      <data key="d6">K_VAC_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:13" target="vacancy:bulk:12" id="1">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5v_VAC_emission</data>
+      <data key="d6">eps_VAC_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:13" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_VAC_sink</data>
+      <data key="d6">D_VAC_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:13" target="vacancy:bulk:13" id="0">
+      <data key="d4">solute_trapping</data>
+      <data key="d5">P8_radiation_resolution</data>
+      <data key="d6">Gamma_res</data>
+      <data key="d7">False</data>
+      <data key="d8">0</data>
+    </edge>
+    <edge source="vacancy:bulk:14" target="vacancy:bulk:15" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P2v_cavity_growth</data>
+      <data key="d6">K_VAC_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:14" target="vacancy:bulk:15" id="1">
+      <data key="d4">growth</data>
+      <data key="d5">P7_trap_mutation</data>
+      <data key="d6">Gamma_TM</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:14" target="vacancy:bulk:13" id="0">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P2i_cavity_shrink</data>
+      <data key="d6">K_VAC_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:14" target="vacancy:bulk:13" id="1">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5v_VAC_emission</data>
+      <data key="d6">eps_VAC_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:14" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_VAC_sink</data>
+      <data key="d6">D_VAC_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:14" target="vacancy:bulk:14" id="0">
+      <data key="d4">solute_trapping</data>
+      <data key="d5">P8_radiation_resolution</data>
+      <data key="d6">Gamma_res</data>
+      <data key="d7">False</data>
+      <data key="d8">0</data>
+    </edge>
+    <edge source="vacancy:bulk:15" target="vacancy:bulk:16" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P2v_cavity_growth</data>
+      <data key="d6">K_VAC_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:15" target="vacancy:bulk:16" id="1">
+      <data key="d4">growth</data>
+      <data key="d5">P7_trap_mutation</data>
+      <data key="d6">Gamma_TM</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:15" target="vacancy:bulk:14" id="0">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P2i_cavity_shrink</data>
+      <data key="d6">K_VAC_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:15" target="vacancy:bulk:14" id="1">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5v_VAC_emission</data>
+      <data key="d6">eps_VAC_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:15" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_VAC_sink</data>
+      <data key="d6">D_VAC_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:15" target="vacancy:bulk:15" id="0">
+      <data key="d4">solute_trapping</data>
+      <data key="d5">P8_radiation_resolution</data>
+      <data key="d6">Gamma_res</data>
+      <data key="d7">False</data>
+      <data key="d8">0</data>
+    </edge>
+    <edge source="vacancy:bulk:16" target="vacancy:bulk:17" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P2v_cavity_growth</data>
+      <data key="d6">K_VAC_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:16" target="vacancy:bulk:17" id="1">
+      <data key="d4">growth</data>
+      <data key="d5">P7_trap_mutation</data>
+      <data key="d6">Gamma_TM</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:16" target="vacancy:bulk:15" id="0">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P2i_cavity_shrink</data>
+      <data key="d6">K_VAC_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:16" target="vacancy:bulk:15" id="1">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5v_VAC_emission</data>
+      <data key="d6">eps_VAC_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:16" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_VAC_sink</data>
+      <data key="d6">D_VAC_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:16" target="vacancy:bulk:16" id="0">
+      <data key="d4">solute_trapping</data>
+      <data key="d5">P8_radiation_resolution</data>
+      <data key="d6">Gamma_res</data>
+      <data key="d7">False</data>
+      <data key="d8">0</data>
+    </edge>
+    <edge source="vacancy:bulk:17" target="vacancy:bulk:18" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P2v_cavity_growth</data>
+      <data key="d6">K_VAC_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:17" target="vacancy:bulk:18" id="1">
+      <data key="d4">growth</data>
+      <data key="d5">P7_trap_mutation</data>
+      <data key="d6">Gamma_TM</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:17" target="vacancy:bulk:16" id="0">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P2i_cavity_shrink</data>
+      <data key="d6">K_VAC_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:17" target="vacancy:bulk:16" id="1">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5v_VAC_emission</data>
+      <data key="d6">eps_VAC_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:17" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_VAC_sink</data>
+      <data key="d6">D_VAC_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:17" target="vacancy:bulk:17" id="0">
+      <data key="d4">solute_trapping</data>
+      <data key="d5">P8_radiation_resolution</data>
+      <data key="d6">Gamma_res</data>
+      <data key="d7">False</data>
+      <data key="d8">0</data>
+    </edge>
+    <edge source="vacancy:bulk:18" target="vacancy:bulk:19" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P2v_cavity_growth</data>
+      <data key="d6">K_VAC_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:18" target="vacancy:bulk:19" id="1">
+      <data key="d4">growth</data>
+      <data key="d5">P7_trap_mutation</data>
+      <data key="d6">Gamma_TM</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:18" target="vacancy:bulk:17" id="0">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P2i_cavity_shrink</data>
+      <data key="d6">K_VAC_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:18" target="vacancy:bulk:17" id="1">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5v_VAC_emission</data>
+      <data key="d6">eps_VAC_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:18" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_VAC_sink</data>
+      <data key="d6">D_VAC_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:18" target="vacancy:bulk:18" id="0">
+      <data key="d4">solute_trapping</data>
+      <data key="d5">P8_radiation_resolution</data>
+      <data key="d6">Gamma_res</data>
+      <data key="d7">False</data>
+      <data key="d8">0</data>
+    </edge>
+    <edge source="vacancy:bulk:19" target="vacancy:bulk:20" id="0">
+      <data key="d4">growth</data>
+      <data key="d5">P2v_cavity_growth</data>
+      <data key="d6">K_VAC_grow</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:19" target="vacancy:bulk:20" id="1">
+      <data key="d4">growth</data>
+      <data key="d5">P7_trap_mutation</data>
+      <data key="d6">Gamma_TM</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:19" target="vacancy:bulk:18" id="0">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P2i_cavity_shrink</data>
+      <data key="d6">K_VAC_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:19" target="vacancy:bulk:18" id="1">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5v_VAC_emission</data>
+      <data key="d6">eps_VAC_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:19" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_VAC_sink</data>
+      <data key="d6">D_VAC_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:19" target="vacancy:bulk:19" id="0">
+      <data key="d4">solute_trapping</data>
+      <data key="d5">P8_radiation_resolution</data>
+      <data key="d6">Gamma_res</data>
+      <data key="d7">False</data>
+      <data key="d8">0</data>
+    </edge>
+    <edge source="vacancy:bulk:20" target="vacancy:bulk:19" id="0">
+      <data key="d4">shrinkage</data>
+      <data key="d5">P2i_cavity_shrink</data>
+      <data key="d6">K_VAC_shrink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:20" target="vacancy:bulk:19" id="1">
+      <data key="d4">dissociation</data>
+      <data key="d5">P5v_VAC_emission</data>
+      <data key="d6">eps_VAC_emit</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:20" target="SINK" id="0">
+      <data key="d4">sink</data>
+      <data key="d5">P4_VAC_sink</data>
+      <data key="d6">D_VAC_sink</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="vacancy:bulk:20" target="vacancy:bulk:20" id="0">
+      <data key="d4">solute_trapping</data>
+      <data key="d5">P8_radiation_resolution</data>
+      <data key="d6">Gamma_res</data>
+      <data key="d7">False</data>
+      <data key="d8">0</data>
+    </edge>
+    <edge source="SOURCE" target="sia:bulk-111:1" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_SIA_source</data>
+      <data key="d6">G_SIA_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="sia:bulk-111:2" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_SIA_source</data>
+      <data key="d6">G_SIA_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="sia:bulk-111:3" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_SIA_source</data>
+      <data key="d6">G_SIA_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="sia:bulk-111:4" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_SIA_source</data>
+      <data key="d6">G_SIA_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="sia:bulk-111:5" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_SIA_source</data>
+      <data key="d6">G_SIA_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="sia:bulk-111:6" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_SIA_source</data>
+      <data key="d6">G_SIA_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="sia:bulk-111:7" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_SIA_source</data>
+      <data key="d6">G_SIA_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="sia:bulk-111:8" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_SIA_source</data>
+      <data key="d6">G_SIA_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="sia:bulk-111:9" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_SIA_source</data>
+      <data key="d6">G_SIA_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="sia:bulk-111:10" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_SIA_source</data>
+      <data key="d6">G_SIA_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="sia:bulk-111:11" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_SIA_source</data>
+      <data key="d6">G_SIA_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="sia:bulk-111:12" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_SIA_source</data>
+      <data key="d6">G_SIA_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="sia:bulk-111:13" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_SIA_source</data>
+      <data key="d6">G_SIA_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="sia:bulk-111:14" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_SIA_source</data>
+      <data key="d6">G_SIA_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="sia:bulk-111:15" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_SIA_source</data>
+      <data key="d6">G_SIA_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="sia:bulk-111:16" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_SIA_source</data>
+      <data key="d6">G_SIA_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="sia:bulk-111:17" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_SIA_source</data>
+      <data key="d6">G_SIA_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="sia:bulk-111:18" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_SIA_source</data>
+      <data key="d6">G_SIA_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="sia:bulk-111:19" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_SIA_source</data>
+      <data key="d6">G_SIA_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="sia:bulk-111:20" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_SIA_source</data>
+      <data key="d6">G_SIA_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="vacancy:bulk:1" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_VAC_source</data>
+      <data key="d6">G_VAC_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="vacancy:bulk:2" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_VAC_source</data>
+      <data key="d6">G_VAC_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="vacancy:bulk:3" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_VAC_source</data>
+      <data key="d6">G_VAC_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="vacancy:bulk:4" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_VAC_source</data>
+      <data key="d6">G_VAC_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="vacancy:bulk:5" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_VAC_source</data>
+      <data key="d6">G_VAC_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="vacancy:bulk:6" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_VAC_source</data>
+      <data key="d6">G_VAC_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="vacancy:bulk:7" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_VAC_source</data>
+      <data key="d6">G_VAC_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="vacancy:bulk:8" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_VAC_source</data>
+      <data key="d6">G_VAC_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="vacancy:bulk:9" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_VAC_source</data>
+      <data key="d6">G_VAC_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="vacancy:bulk:10" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_VAC_source</data>
+      <data key="d6">G_VAC_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="vacancy:bulk:11" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_VAC_source</data>
+      <data key="d6">G_VAC_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="vacancy:bulk:12" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_VAC_source</data>
+      <data key="d6">G_VAC_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="vacancy:bulk:13" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_VAC_source</data>
+      <data key="d6">G_VAC_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="vacancy:bulk:14" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_VAC_source</data>
+      <data key="d6">G_VAC_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="vacancy:bulk:15" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_VAC_source</data>
+      <data key="d6">G_VAC_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="vacancy:bulk:16" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_VAC_source</data>
+      <data key="d6">G_VAC_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="vacancy:bulk:17" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_VAC_source</data>
+      <data key="d6">G_VAC_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="vacancy:bulk:18" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_VAC_source</data>
+      <data key="d6">G_VAC_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="vacancy:bulk:19" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_VAC_source</data>
+      <data key="d6">G_VAC_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <edge source="SOURCE" target="vacancy:bulk:20" id="0">
+      <data key="d4">source</data>
+      <data key="d5">cascade_VAC_source</data>
+      <data key="d6">G_VAC_cascade</data>
+      <data key="d7">False</data>
+    </edge>
+    <data key="d0">EUROFER-97</data>
+  </graph>
+</graphml>

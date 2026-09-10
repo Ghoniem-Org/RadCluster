@@ -210,23 +210,26 @@ def _draw_example(ax, x0, y, tails, head, edge_class, label, n_max,
                 bbox=dict(facecolor="white", edgecolor="none", pad=2.0))
 
     # Leaders tie every example vertex that IS a ladder vertex back to it --
-    # the HEAD as much as the tails.  Leaving the head out (as this did
-    # originally) breaks the reading of the annihilation example, whose head
-    # <111>(2) is a rung of the ladder like its tails.
+    # the head as much as the tails, and on WHICHEVER lane it lives.  The
+    # annihilation example spans polarities, so restricting leaders to the
+    # <111> lane (as this did originally) left its vacancy tail floating:
+    # the one vertex whose lane the reader most needs pointed out, because
+    # it is the reason the reaction cannot be drawn inside a single lane.
+    # Its leader crosses the other lanes, which is honest -- the reaction
+    # crosses them too.
     #
-    # Two vertices legitimately get no leader: a vacancy tail, which would
-    # have to cross both other lanes to reach its own, and any head beyond
-    # the cut-off (the coalescence head n+m = 11), which has no rung to
-    # point at -- that absence is the truncation the caption describes.
+    # The only vertex that still gets none is a head beyond the cut-off (the
+    # coalescence head n+m = 11): there is no rung to point at, and that
+    # absence is the truncation the caption describes.
     leader_pts = list(zip(tail_xy, tails)) + [((hx, y), tuple(head))]
     for (cx, cy), (pop, n) in leader_pts:
-        if pop != "bulk-111" or n > n_max:
+        if pop not in _LANE_Y or n > n_max:
             continue
         # Strong black dash: this is a callout tying the example to the
         # ladder, and it has to survive crossing the source/sink fans.  The
         # dash period is deliberately longer than the sink arcs' (7,3) so
         # the two do not read as the same class.
-        ax.plot([cx, _X_SCALE * n], [cy - _EX_R, _LANE_Y["bulk-111"] + _R],
+        ax.plot([cx, _X_SCALE * n], [cy - _EX_R, _LANE_Y[pop] + _R],
                 ls=(0, (9, 4)), lw=2.2, color=_INK, alpha=0.95, zorder=2)
 
 

@@ -169,7 +169,8 @@ def find_hyperedge(rag, edge_class, tails, head):
         f"stale or the host declaration changed")
 
 
-def _draw_example(ax, x0, y, tails, head, edge_class, label, note=None):
+def _draw_example(ax, x0, y, tails, head, edge_class, label, n_max,
+                  note=None):
     """One hyperedge: two tails -> reaction vertex -> one head."""
     colour = _HYPER[edge_class]
     tail_xy = [(x0, y + 1.25), (x0, y - 1.25)]
@@ -208,15 +209,24 @@ def _draw_example(ax, x0, y, tails, head, edge_class, label, note=None):
                 color=_GREY_TEXT, fontsize=_PLOT_FONTSIZE, zorder=8,
                 bbox=dict(facecolor="white", edgecolor="none", pad=2.0))
 
-    # faint leaders tying the SIA tails back to the ladder vertex they name
-    for (tx, ty), (pop, n) in zip(tail_xy, tails):
-        if pop != "bulk-111":
+    # Leaders tie every example vertex that IS a ladder vertex back to it --
+    # the HEAD as much as the tails.  Leaving the head out (as this did
+    # originally) breaks the reading of the annihilation example, whose head
+    # <111>(2) is a rung of the ladder like its tails.
+    #
+    # Two vertices legitimately get no leader: a vacancy tail, which would
+    # have to cross both other lanes to reach its own, and any head beyond
+    # the cut-off (the coalescence head n+m = 11), which has no rung to
+    # point at -- that absence is the truncation the caption describes.
+    leader_pts = list(zip(tail_xy, tails)) + [((hx, y), tuple(head))]
+    for (cx, cy), (pop, n) in leader_pts:
+        if pop != "bulk-111" or n > n_max:
             continue
         # Strong black dash: this is a callout tying the example to the
         # ladder, and it has to survive crossing the source/sink fans.  The
         # dash period is deliberately longer than the sink arcs' (7,3) so
         # the two do not read as the same class.
-        ax.plot([tx, _X_SCALE * n], [ty - _EX_R, _LANE_Y["bulk-111"] + _R],
+        ax.plot([cx, _X_SCALE * n], [cy - _EX_R, _LANE_Y["bulk-111"] + _R],
                 ls=(0, (9, 4)), lw=2.2, color=_INK, alpha=0.95, zorder=2)
 
 
@@ -352,7 +362,7 @@ def build_figure(n_max: int, out: Path, examples: bool = True) -> None:
                                [("bulk", 2), ("bulk-111", 4)], ("bulk-111", 2))
         _draw_example(ax, x_lo + 2.0, ey,
                       [("bulk-111", 4), ("bulk", 2)], ("bulk-111", 2),
-                      "annihilation", lab_a,
+                      "annihilation", lab_a, n_max,
                       "the larger loop survives, shrunk by\nthe vacancy "
                       "content it absorbed")
         lab_c = find_hyperedge(rag, "coalescence",
@@ -360,7 +370,7 @@ def build_figure(n_max: int, out: Path, examples: bool = True) -> None:
                                ("bulk-111", 11))
         _draw_example(ax, x_lo + 15.6, ey,
                       [("bulk-111", 3), ("bulk-111", 8)], ("bulk-111", 11),
-                      "coalescence", lab_c,
+                      "coalescence", lab_c, n_max,
                       f"head $n{{+}}m=11$ lies beyond the cut-off\n"
                       f"$n_{{max}}={n_max}$: not an arc in the ladder")
     ax.set_xlabel("cluster size $n$")

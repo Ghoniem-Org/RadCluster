@@ -12,7 +12,8 @@
 \sisetup{detect-weight=true}
 \newcommand{\halfp}{$\tfrac{1}{2}\langle111\rangle$}
 \newcommand{\hkl}{$\langle100\rangle$}
-\newcommand{\dnr}{\textit{did not reach}}
+\newcommand{\dnr}{\textit{d.n.r.}}
+\newcommand{\nreal}{\textit{n/r}}
 
 \title{Verification and Approximation Study for\\
        \emph{Generalized Cluster Dynamics} --- Campaign Results}
@@ -460,10 +461,38 @@ $i_{\rm discrete}$ and is nearly flat in $I_{\rm bin}$.}
 \begin{table}[htbp]
 \centering
 \caption{$d_{\rm cav}$ deviation (\si{\percent}) over the same sweep, for
-contrast --- the same monotone fall along $i_{\rm discrete}$, at roughly a tenth
-the amplitude.}
+contrast --- converged almost everywhere, with one anomaly discussed below.}
 \input{tables/M2D_dcav}
 \end{table}
+
+\noindent
+\textbf{Reading the grid.} \dnr{} marks a cell that hit the one-hour cap short
+of \SI{20}{dpa} and is therefore refused as a metric (\S3.4.1); it is a cost
+result, not a method failure. \nreal{} marks a configuration the bin layout
+cannot realise: at $i_{\rm discrete} = 800$ only 200 sizes remain for the bins,
+so $I_{\rm bin} = 32$ returns 24 and the layout check \emph{raises} rather than
+running a different grid than the one requested. That guard exists because nine
+bit-identical ``refinement'' runs were once produced by a silently dropped bin
+configuration.
+
+Read \emph{down} column $I_{\rm bin} = 8$: $-6.3$, $-3.4$, $-2.0$, $-0.1$,
+$+0.7$. Read \emph{across} row $i_{\rm discrete} = 100$: $-3.4$, $-4.2$,
+$-5.1$ --- worse with every bin added. The bottom row, $i_{\rm discrete} = 800$,
+is converged to under \SI{1}{\percent} on $d_{111}$ at \emph{every} bin count.
+The axis that matters is not the one the M2R ladder swept.
+
+\subsection*{One anomalous cell}
+
+$i_{\rm discrete} = 200$, $I_{\rm bin} = 4$ gives $d_{\rm cav}$
+$+\SI{15.1}{\percent}$ where its row-neighbours sit at $-\SI{0.2}{\percent}$,
+with $N_{\rm cav}$ and $\overline{n}_v$ both $+\SI{52}{\percent}$. It ran in
+\SI{6}{\second} against \SIrange{39}{46}{\minute} for those neighbours, and it
+reproduces exactly on a standalone re-run. Coarse bins make the system
+non-stiff, which explains the speed; they do not explain the error, because the
+\emph{coarser} $I_{\rm bin} = 4$ cells at $i_{\rm discrete} = 25$ and 50 give
+$-2.7$ and $-\SI{2.4}{\percent}$. The cause is \textbf{not established}. It is
+recorded here rather than smoothed over, and it is the same non-monotonicity
+Table~4 showed when C3 came out worse than C2 --- with a sharper example.
 
 \subsection{Why $d_{111}$ does not converge in bin count}\label{sec:d111}
 

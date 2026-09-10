@@ -48,6 +48,22 @@ def cell(rec):
     return None if (not v or v.get("missing") or v.get("off_grid")) else v
 
 
+def why_blank(rec):
+    """WHY a cell is empty -- the three reasons are not the same thing.
+
+    A run that timed out short of the comparison dose is a cost result; a
+    configuration the bin layout cannot realise is a statement about the grid,
+    not about cost; and a cell never attempted is neither.  Printing one symbol
+    for all three would let a reader read the M2D grid's expensive corner as if
+    the method had failed there.
+    """
+    if rec is None:
+        return r"\dnr"
+    if rec.get("status") == "failed":
+        return r"\nreal"
+    return r"\dnr"
+
+
 def w(name, lines):
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / name).write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -124,7 +140,7 @@ def main():
             for nb in M.M2D_BINS:
                 v = cell(B.get(f"M2D_I{i_d}_B{nb}"))
                 if v is None or not ref or not ref[key]:
-                    row.append(r"\dnr")
+                    row.append(why_blank(B.get(f"M2D_I{i_d}_B{nb}")))
                 else:
                     row.append(f"{(v[key]-ref[key])/ref[key]*100:+.1f}")
             L.append(" & ".join(row) + r" \\")

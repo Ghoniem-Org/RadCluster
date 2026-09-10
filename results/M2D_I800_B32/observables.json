@@ -1,12 +1,7 @@
 {
-  "claimed_at": "2026-09-10T09:59:39-0700",
-  "code_sha": "31137a6",
   "error": "RuntimeError: bin config I_bin: asked 32, realised 24 -- too far off to be the floor() walk. Check i_discrete < I.",
-  "host": "Mac.san.rr.com",
   "label": "i_d=800 I_bin=32",
   "machine": "Mac-662a",
-  "pid": 40674,
-  "published_at": "2026-09-10T09:59:41-0700",
   "run_id": "M2D_I800_B32",
   "status": "failed",
   "table": "M2D",

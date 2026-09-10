@@ -62,7 +62,8 @@ from py_utils.core.to_networkx import to_networkx              # noqa: E402
 # ── house style (py_utils/visualization.py) ──────────────────────────────
 _LABEL_FONTSIZE = 22
 _TICK_FONTSIZE = 20
-_PLOT_FONTSIZE = 16
+_PLOT_FONTSIZE = 20
+_NODE_FONTSIZE = 26   # the size label inside a vertex
 _LW = 3.0
 _LW_THIN = 2.4
 _DPI = 150
@@ -109,9 +110,9 @@ _EDGE = {
 
 # Opened up on both axes: the previous 1.0/1.0 spacing left a 0.4-unit gap
 # between circles, far too short for a dash pattern to read.
-_X_SCALE = 2.45
-_LANE_Y = {"bulk-111": 5.2, "bulk-100": 2.6, "bulk": 0.0}
-_R = 0.30
+_X_SCALE = 3.00
+_LANE_Y = {"bulk-111": 6.2, "bulk-100": 3.1, "bulk": 0.0}
+_R = 0.44
 
 
 def _node_key(node: str):
@@ -127,7 +128,7 @@ def _node_key(node: str):
 # O(n_max^2) hyperedges), but one instance of each, drawn full size above the
 # ladder, states the two-tails/one-head convention that the count in the
 # header would otherwise leave abstract.
-_EX_R = 0.46
+_EX_R = 0.64
 _POP_SHORT = {
     "bulk-111": r"$\frac{1}{2}\langle 111\rangle$",
     "bulk-100": r"$\langle 100\rangle$",
@@ -172,7 +173,7 @@ def _draw_example(ax, x0, y, tails, head, edge_class, label, note=None):
     """One hyperedge: two tails -> reaction vertex -> one head."""
     colour = _HYPER[edge_class]
     tail_xy = [(x0, y + 1.25), (x0, y - 1.25)]
-    sq, hx = x0 + 2.8, x0 + 5.8
+    sq, hx = x0 + 3.5, x0 + 7.0
 
     def vertex(cx, cy, pop, n, side):
         ax.add_patch(Circle((cx, cy), _EX_R, facecolor=_POP[pop][0],
@@ -180,7 +181,7 @@ def _draw_example(ax, x0, y, tails, head, edge_class, label, note=None):
         ax.add_patch(Circle((cx, cy), _EX_R, facecolor="none",
                             edgecolor=_NODE_RING, lw=_LW_THIN, zorder=6))
         ax.text(cx, cy, str(n), ha="center", va="center", color=_INK,
-                fontweight="bold", fontsize=_PLOT_FONTSIZE, zorder=7)
+                fontweight="bold", fontsize=_NODE_FONTSIZE, zorder=7)
         dx = -(_EX_R + 0.3) if side == "left" else (_EX_R + 0.3)
         ax.text(cx + dx, cy, _POP_SHORT[pop], ha=side and
                 ("right" if side == "left" else "left"), va="center",
@@ -190,20 +191,20 @@ def _draw_example(ax, x0, y, tails, head, edge_class, label, note=None):
         vertex(tx, ty, pop, n, "left")
         ax.add_patch(FancyArrowPatch((tx, ty), (sq, y), arrowstyle="-|>",
                                      mutation_scale=17, lw=_LW_THIN,
-                                     color=colour, shrinkA=20, shrinkB=13,
+                                     color=colour, shrinkA=38, shrinkB=14,
                                      zorder=4))
     ax.add_patch(Rectangle((sq - 0.42, y - 0.42), 0.84, 0.84,
                            facecolor=colour, edgecolor="none", zorder=6))
     ax.add_patch(FancyArrowPatch((sq, y), (hx, y), arrowstyle="-|>",
                                  mutation_scale=20, lw=_LW, color=colour,
-                                 shrinkA=13, shrinkB=20, zorder=4))
+                                 shrinkA=14, shrinkB=38, zorder=4))
     vertex(hx, y, head[0], head[1], "right")
 
-    ax.text(x0 + 2.9, y + 2.25, f"{edge_class}  ·  {label}", ha="center",
+    ax.text(x0 + 3.5, y + 2.45, f"{edge_class}  ·  {label}", ha="center",
             va="bottom", color=_INK, fontsize=_PLOT_FONTSIZE, zorder=8,
             bbox=dict(facecolor="white", edgecolor="none", pad=2.0))
     if note:
-        ax.text(x0 + 2.9, y - 2.25, note, ha="center", va="top",
+        ax.text(x0 + 3.5, y - 2.45, note, ha="center", va="top",
                 color=_GREY_TEXT, fontsize=_PLOT_FONTSIZE, zorder=8,
                 bbox=dict(facecolor="white", edgecolor="none", pad=2.0))
 
@@ -237,7 +238,7 @@ def build_figure(n_max: int, out: Path, examples: bool = True) -> None:
     pos["SINK"] = (x_hi, _LANE_Y["bulk"] - 2.7)
 
     _w = 1.95 * n_max + 8.0
-    fig, ax = plt.subplots(figsize=(_w, _w / 1.34 if examples else 12.0))
+    fig, ax = plt.subplots(figsize=(_w, _w / 1.42 if examples else 12.0))
 
     # ── lane bands: population identity, large and low-saturation ────────
     for pop, y in _LANE_Y.items():
@@ -281,7 +282,7 @@ def build_figure(n_max: int, out: Path, examples: bool = True) -> None:
             # units below the lane, so an untangent loop drawn underneath
             # them either disappears or reads as a second vertex.
             x, y = pos[u]
-            cx, cy, r = x, y - _R - 0.21, 0.21
+            cx, cy, r = x, y - _R - 0.27, 0.27
             ax.add_patch(Circle((cx, cy), r, fill=False, ec="white",
                                 lw=lw + 3.0, zorder=6))
             ax.add_patch(Circle((cx, cy), r, fill=False, ec=colour,
@@ -300,7 +301,7 @@ def build_figure(n_max: int, out: Path, examples: bool = True) -> None:
         ax.add_patch(FancyArrowPatch(
             pos[u], pos[v], connectionstyle=f"arc3,rad={rad}",
             arrowstyle="-|>", mutation_scale=19,
-            shrinkA=15, shrinkB=15,
+            shrinkA=24, shrinkB=24,
             lw=lw, ls=ls, color=colour, alpha=alpha, zorder=zorder))
 
     # ── vertices ─────────────────────────────────────────────────────────
@@ -313,7 +314,7 @@ def build_figure(n_max: int, out: Path, examples: bool = True) -> None:
         ax.add_patch(Circle((x, y), _R, facecolor="white",
                             edgecolor=_NODE_RING, lw=_LW_THIN, zorder=5))
         ax.text(x, y, str(n), ha="center", va="center", color=_INK,
-                fontweight="bold", fontsize=_PLOT_FONTSIZE, zorder=6)
+                fontweight="bold", fontsize=_NODE_FONTSIZE, zorder=6)
 
     for pop, y in _LANE_Y.items():
         ax.text(x_lo - 0.9, y, _POP[pop][1], ha="right", va="center",
@@ -342,14 +343,14 @@ def build_figure(n_max: int, out: Path, examples: bool = True) -> None:
         Line2D([], [], color=_FAN_VAC, ls=_dash, lw=2.0, label="sink ← vacancy"),
     ]
     fig.legend(handles=handles, loc="lower center",
-               bbox_to_anchor=(0.5, 0.012), frameon=False,
+               bbox_to_anchor=(0.5, 0.008), frameon=False,
                title="edge class", ncol=4)
 
     if examples:
         ey = _LANE_Y["bulk-111"] + 5.6
         lab_a = find_hyperedge(rag, "annihilation",
                                [("bulk", 2), ("bulk-111", 4)], ("bulk-111", 2))
-        _draw_example(ax, x_lo + 1.6, ey,
+        _draw_example(ax, x_lo + 2.0, ey,
                       [("bulk-111", 4), ("bulk", 2)], ("bulk-111", 2),
                       "annihilation", lab_a,
                       "the larger loop survives, shrunk by\nthe vacancy "
@@ -357,24 +358,11 @@ def build_figure(n_max: int, out: Path, examples: bool = True) -> None:
         lab_c = find_hyperedge(rag, "coalescence",
                                [("bulk-111", 3), ("bulk-111", 8)],
                                ("bulk-111", 11))
-        _draw_example(ax, x_lo + 12.4, ey,
+        _draw_example(ax, x_lo + 15.6, ey,
                       [("bulk-111", 3), ("bulk-111", 8)], ("bulk-111", 11),
                       "coalescence", lab_c,
                       f"head $n{{+}}m=11$ lies beyond the cut-off\n"
                       f"$n_{{max}}={n_max}$: not an arc in the ladder")
-        ax.annotate(
-            "worked examples of the two binary classes the ladder omits: "
-            f"{n_binary} such arcs at $n_{{max}}={n_max}$ "
-            "(directed hyperedges, $O(n^2)$) — see the companion figure",
-            xy=(0.5, 1.004), xycoords="axes fraction", ha="center",
-            va="bottom", color=_GREY_TEXT, fontsize=_PLOT_FONTSIZE)
-    else:
-        ax.annotate(
-            f"binary classes omitted: {n_binary} coalescence + annihilation "
-            f"arcs at $n_{{max}}={n_max}$ (directed hyperedges, $O(n^2)$)",
-            xy=(0.5, 1.004), xycoords="axes fraction", ha="center",
-            va="bottom", color=_GREY_TEXT, fontsize=_PLOT_FONTSIZE)
-
     ax.set_xlabel("cluster size $n$")
     ax.set_xlim(x_lo - 1.4, x_hi + 1.4)
     top = _LANE_Y["bulk-111"] + (9.6 if examples else 4.3)
@@ -388,7 +376,7 @@ def build_figure(n_max: int, out: Path, examples: bool = True) -> None:
     ax.set_aspect("equal")
 
     # No title: suppressed suite-wide; the document captions the figure.
-    fig.tight_layout(rect=(0.0, 0.09 if examples else 0.17, 1.0, 1.0))
+    fig.tight_layout(rect=(0.0, 0.15 if examples else 0.23, 1.0, 1.0))
     out.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out, dpi=_DPI, bbox_inches="tight", facecolor="white")
     print(f"nodes {G.number_of_nodes()}  unary arcs {G.number_of_edges()}  "

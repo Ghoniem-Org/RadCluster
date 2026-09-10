@@ -53,7 +53,7 @@ from py_utils.core.to_networkx import to_networkx              # noqa: E402
 # ── house style (py_utils/visualization.py) ──────────────────────────────
 _LABEL_FONTSIZE = 22
 _TICK_FONTSIZE = 20
-_PLOT_FONTSIZE = 16
+_PLOT_FONTSIZE = 20
 _LW = 3.0
 _LW_THIN = 2.4
 _DPI = 150

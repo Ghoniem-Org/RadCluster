@@ -1,0 +1,11 @@
+{
+  "claimed_at": "2026-09-10T08:31:21-0700",
+  "code_sha": "927d200",
+  "host": "Mac.san.rr.com",
+  "label": "i_d=25 I_bin=32",
+  "machine": "Mac-662a",
+  "pid": 40674,
+  "run_id": "M2D_I25_B32",
+  "status": "running",
+  "table": "M2D"
+}

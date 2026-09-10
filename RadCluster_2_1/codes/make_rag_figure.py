@@ -211,8 +211,12 @@ def _draw_example(ax, x0, y, tails, head, edge_class, label, note=None):
     for (tx, ty), (pop, n) in zip(tail_xy, tails):
         if pop != "bulk-111":
             continue
+        # Strong black dash: this is a callout tying the example to the
+        # ladder, and it has to survive crossing the source/sink fans.  The
+        # dash period is deliberately longer than the sink arcs' (7,3) so
+        # the two do not read as the same class.
         ax.plot([tx, _X_SCALE * n], [ty - _EX_R, _LANE_Y["bulk-111"] + _R],
-                ls=":", lw=1.2, color=_SENTINEL, alpha=0.9, zorder=1)
+                ls=(0, (9, 4)), lw=2.2, color=_INK, alpha=0.95, zorder=2)
 
 
 def build_figure(n_max: int, out: Path, examples: bool = True) -> None:

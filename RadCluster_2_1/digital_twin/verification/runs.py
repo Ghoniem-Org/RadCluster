@@ -119,6 +119,18 @@ M2_BINS = (4, 6, 8, 12, 16, 24, 32)
 M2R_DOMAIN = 1000
 M2R_BINS = (2, 3, 4, 6, 8, 12, 16, 24, 32)
 
+# The 2-D sweep.  M2R varied I_bin at fixed i_discrete = 50 and found d_111
+# stuck at -5 to -7% however fine the bins got; the 2026-09-09 investigation
+# (docs/Formulation/d111_investigation.md) showed why -- that error converges in
+# i_discrete, not in I_bin, so the ladder was turning the one knob that does not
+# control it.  Table 4 had the opposite flaw: its rungs moved BOTH together, so
+# a deviation could not be attributed to either.
+#
+# Neither design can separate the two.  This one sweeps them independently, so
+# every cell has a neighbour differing in exactly one axis.
+M2D_IDISC = (25, 50, 100, 200, 400, 800)
+M2D_BINS = (4, 8, 16, 32)
+
 # The reference domain first attempted: fully discrete, no wall-clock cap.
 # It DIVERGED (see M1REF_DIVERGED in manifest()), so it is not the reference.
 M_REF_DOMAIN = 10000
@@ -632,6 +644,28 @@ def manifest() -> list[dict]:
                        i_discrete=50, v_discrete=50, I_bin=nb, V_bin=nb,
                        dose=MONO["dose"], n_points=MONO["n_points"],
                        dose_read=MONO["dose_read"], timeout_s=3600))
+
+    # M2D -- the two-dimensional sweep.  i_discrete x I_bin at the reference
+    # domain, every cell scored against M1_D1000.
+    #
+    # COST IS NOT MONOTONIC IN EITHER AXIS.  Measured at 0.05 dpa: pure discrete
+    # (i_d = 1000) ran in 13.8 s and i_d = 50 / I_bin = 16 in 4.2 s, but
+    # i_d = 400 / I_bin = 16 took 163.7 s and i_d = 800 / I_bin = 16 took
+    # 196.3 s -- an order of magnitude SLOWER than either pure form.  The
+    # bin_moment path carries an O(i_discrete^2) discrete-discrete coalescence
+    # block on top of the binned machinery, so the hybrid pays for both.  The
+    # expensive cells are therefore capped and may legitimately not finish;
+    # S3.4.1 records those as "did not reach" rather than as a metric.
+    for i_d in M2D_IDISC:
+        for nb in M2D_BINS:
+            runs.append(_r(f"M2D_I{i_d}_B{nb}", "M2D",
+                           f"i_d={i_d} I_bin={nb}",
+                           f"2-D sweep cell.  Scored against {M_REF_RUN}.",
+                           I=M2R_DOMAIN, V=M2R_DOMAIN, equations="bin_moment",
+                           i_discrete=i_d, v_discrete=i_d,
+                           I_bin=nb, V_bin=nb,
+                           dose=MONO["dose"], n_points=MONO["n_points"],
+                           dose_read=MONO["dose_read"], timeout_s=3600))
 
     _check_unique(runs)
     return runs

@@ -131,11 +131,62 @@ def convergence(B):
     return p
 
 
+def two_d(B):
+    """The 2-D sweep: deviation against i_discrete, one curve per I_bin.
+
+    This is the figure the M2R ladder could not draw.  M2R swept I_bin at fixed
+    i_discrete and found d_111 flat at -5 to -7%; the convergence axis for that
+    observable is i_discrete, so the ladder was moving along a contour of the
+    error surface rather than down it.  Plotted this way the curves collapse:
+    the spread BETWEEN I_bin values at one i_discrete is small, while the fall
+    ALONG i_discrete is the whole effect.
+    """
+    rid, ref = ref_record(B)
+    if ref is None:
+        print("  no exact arm; skipping the 2-D figure")
+        return None
+    fig, axes = plt.subplots(3, 2, figsize=(15, 15))
+    cmap = plt.get_cmap("viridis")
+    drawn = False
+    for ax, (key, ylabel, _logy) in zip(axes.ravel(), OBS):
+        for c, nb in enumerate(manifest_mod.M2D_BINS):
+            xs, ys = [], []
+            for i_d in manifest_mod.M2D_IDISC:
+                v = scored(B.get(f"M2D_I{i_d}_B{nb}"))
+                if v is None or not ref[key]:
+                    continue
+                xs.append(i_d)
+                ys.append((v[key] - ref[key]) / ref[key] * 100.0)
+            if xs:
+                drawn = True
+                ax.plot(xs, ys, "o-", ms=9,
+                        color=cmap(c / max(1, len(manifest_mod.M2D_BINS) - 1)),
+                        label=f"$I_{{\\rm bin}}$ = {nb}")
+        ax.axhline(0.0, color="tomato", ls="--", lw=3)
+        ax.set_xscale("log")
+        ax.set_xlabel(r"$i_{\rm discrete}$")
+        ax.set_ylabel(ylabel.replace("(m$^{-3}$)", "dev (%)")
+                            .replace("(nm)", "dev (%)"))
+        ax.grid(True, which="both", alpha=0.25)
+    if not drawn:
+        plt.close(fig)
+        print("  no completed 2-D cells yet")
+        return None
+    axes.ravel()[0].legend(loc="best", frameon=True, framealpha=0.92)
+    fig.tight_layout()
+    OUT.mkdir(parents=True, exist_ok=True)
+    p = OUT / "M_2d_sweep.pdf"
+    fig.savefig(p, bbox_inches="tight")
+    plt.close(fig)
+    return p
+
+
 def main():
     B = board()
-    p = convergence(B)
-    if p:
-        print(f"  wrote {p.relative_to(REPO)}")
+    for f in (convergence, two_d):
+        p = f(B)
+        if p:
+            print(f"  wrote {p.relative_to(REPO)}")
     return 0
 
 

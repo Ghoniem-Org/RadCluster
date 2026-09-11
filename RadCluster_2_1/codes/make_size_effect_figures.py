@@ -75,6 +75,67 @@ OBSERVABLES = [
 EXP_COLOR = {"loop111": "#1f77b4", "loop100": "#7d3c98", "cavity": "#e8663c"}
 EXP_MARK = {"loop111": "o", "loop100": "s", "cavity": "^"}
 
+# Lower bound of the ordinate, per observable.  On the log panels the solution
+# rises out of the C_floor initial condition through ten empty decades that
+# carry no information and compress every curve into the top of the frame;
+# these floors put the axis where the populations actually are.
+YMIN = {
+    "N_loops_111": 1e19,
+    "N_loops_100": 1e12,
+    "N_voids":     1e19,
+}
+
+# One EUROFER97 <100> measurement reports a mean loop diameter of 48 nm at
+# 17.4 dpa, 350 C, against 2.8-8.0 nm for the other nine rows of the same
+# population.  Carried into the diameter panel it sets the ordinate on its own
+# and compresses the model curves and the remaining data into the bottom tenth
+# of the frame, so it is excluded from the diameter comparison.  Its density is
+# unremarkable (3.7e21 m^-3, interior to the other rows) and is retained, so
+# the exclusion is by quantity rather than a discarded measurement.
+EXP_EXCLUDE = {
+    "d_100_nm": lambda df: df["Diameter [nm]"] < 40.0,
+}
+
+# --- provenance ---------------------------------------------------------
+# The "Paper" column of both workbooks is merged-cell style: the citation is
+# written once at the head of a block and left blank on the rows beneath it, so
+# it has to be forward-filled before a row can be attributed.
+#
+# Forward-filling the loop sheet puts one NEUTRON row (BOR-60, 15 dpa, <100>,
+# 6.2 nm) under Boulanger & Serruys, which is an ION-irradiation study and
+# therefore cannot be its source.  That row pairs with the 1/2<111> row directly
+# below it -- same 6.2 nm, same facility, same dose -- which carries the Chauhan
+# label, so the block boundary is off by one and the row belongs to Chauhan.
+# Corrected explicitly rather than silently: an ion paper cited as the source of
+# a neutron measurement would be a real error in the report.
+PAPER_TO_KEY = {
+    "Dethloff et al. - 2016":   "dethloff2016",
+    "Dethloff et al. - 2018":   "dethloff2018",
+    "Klimenkov et al. - 2011":  "klimenkov2011",
+    "Klimenkov et al. - 2020":  "klimenkov2020",
+    "Weiß et al. - 2012":       "weiss2012",
+    "Chauhan et al. - 2021":    "chauhan2021",
+    "Coppola et al. - 2019":    "coppola2019",
+    "Boulanger and Serruys - 2009": "chauhan2021",   # see note above
+}
+# Order in which keys are listed in a citation, so captions read consistently.
+KEY_ORDER = ["dethloff2016", "dethloff2018", "klimenkov2011", "klimenkov2020",
+             "weiss2012", "chauhan2021", "coppola2019"]
+SOURCES_TEX = OUT / "sources.tex"
+
+# Plotted dose range.  The solution is featureless below 1e-6 dpa (clusters are
+# still nucleating out of the C_floor initial condition); the upper edge keeps
+# the measured band in view.
+XLIM = (1e-6, 60.0)
+
+# Per-observable overrides.  The <100> diameter spends its first three decades
+# in the nucleation transient, which on a linear ordinate costs most of the
+# frame and says nothing about the closure; the panel starts where the
+# populations are established instead.
+XLIM_OVERRIDE = {
+    "d_100_nm": (1e-3, 60.0),
+}
+
 
 def euro(df):
     m = (df["Material"].astype(str).str.contains("urofer97", na=False)
@@ -83,9 +144,15 @@ def euro(df):
     return df[m].copy()
 
 
+def _read(name):
+    df = pd.read_excel(DB / name)
+    df["Paper"] = df["Paper"].ffill()
+    return euro(df)
+
+
 def experiment():
-    L = euro(pd.read_excel(DB / "InterstitialLoop.xlsx"))
-    V = euro(pd.read_excel(DB / "Void.xlsx"))
+    L = _read("InterstitialLoop.xlsx")
+    V = _read("Void.xlsx")
     lt = L["Loop Type"].astype(str)
     return {"loop111": L[lt.str.contains("111", na=False)],
             "loop100": L[lt.str.contains("100", na=False)],
@@ -131,6 +198,28 @@ def trajectories():
     return out
 
 
+def _linear_extent(key, traj, df, expcol):
+    """Range of the model curves and measurements *inside the plotted window*.
+
+    Restricted to the panel's own x-limits: the transient below the left edge
+    carries diameters well above anything on screen, and including it set the
+    ordinate from data the reader never sees.
+    """
+    lo_x, hi_x = XLIM_OVERRIDE.get(key, XLIM)
+    vals = []
+    for _, _, _, dose, r in traj:
+        y = np.asarray(r.get(key, []), float)
+        if y.size == dose.size:
+            y = y[(dose >= lo_x) & (dose <= hi_x) & np.isfinite(y)]
+            if y.size:
+                vals.append((y.min(), y.max()))
+    if len(df):
+        vals.append((float(df[expcol].min()), float(df[expcol].max())))
+    if not vals:
+        return None, None
+    return min(v[0] for v in vals), max(v[1] for v in vals)
+
+
 def one_figure(key, ylabel, logy, expkey, expcol, traj, EXP):
     fig, ax = plt.subplots(figsize=(11, 7.5))
     for label, colour, ls, dose, r in traj:
@@ -143,6 +232,9 @@ def one_figure(key, ylabel, logy, expkey, expcol, traj, EXP):
         ax.plot(dose[m], y[m], ls, color=colour, lw=lw, label=label, zorder=z)
 
     df = EXP[expkey].dropna(subset=["Dose [dpa]", expcol])
+    keep = EXP_EXCLUDE.get(key)
+    if keep is not None and len(df):
+        df = df[keep(df)]
     if len(df):
         c = EXP_COLOR[expkey]
         x0, x1 = df["Dose [dpa]"].min(), df["Dose [dpa]"].max()
@@ -158,13 +250,19 @@ def one_figure(key, ylabel, logy, expkey, expcol, traj, EXP):
                    label="EUROFER97 neutron, 300-350 $^\\circ$C")
 
     ax.set_xscale("log")
-    # The solution is featureless below ~1e-6 dpa (clusters still nucleating out
-    # of the C_floor initial condition) and plotting 15 decades squeezed every
-    # curve and the experimental band into the right-hand third.  Cut the left
-    # edge; the right edge keeps the measured band in view.
-    ax.set_xlim(1e-6, 60)
+    ax.set_xlim(*XLIM_OVERRIDE.get(key, XLIM))
     if logy:
         ax.set_yscale("log")
+        if key in YMIN:
+            ax.set_ylim(bottom=YMIN[key])
+    else:
+        # Linear panels: frame the model curves and the retained measurements
+        # together, with a 5 percent margin, rather than letting matplotlib
+        # pad around whatever the widest single series happens to be.
+        lo, hi = _linear_extent(key, traj, df, expcol)
+        if lo is not None:
+            pad = 0.05 * (hi - lo) if hi > lo else 0.05 * max(hi, 1.0)
+            ax.set_ylim(max(0.0, lo - pad), hi + pad)
     ax.set_xlabel("Dose (dpa)")
     ax.set_ylabel(ylabel)
     ax.grid(True, which="both", alpha=0.25)
@@ -177,15 +275,65 @@ def one_figure(key, ylabel, logy, expkey, expcol, traj, EXP):
     return p
 
 
+def _keys(df):
+    """Citation keys for the rows actually plotted, in KEY_ORDER."""
+    seen = set()
+    for paper in df["Paper"].dropna().astype(str):
+        head = " - ".join(paper.split(" - ")[:2])
+        key = PAPER_TO_KEY.get(head)
+        if key is None:
+            print(f"  UNMAPPED source: {head}")
+        else:
+            seen.add(key)
+    return [k for k in KEY_ORDER if k in seen]
+
+
+# LaTeX control sequences may contain letters only, so the digits in the
+# observable keys are spelled out.  Left as digits, \newcommand{\srcNLoops111}
+# defines \srcNLoops, drops "111" into the preamble, and then typesets the
+# \cite -- which is how this first went wrong.
+_DIGIT = {"0": "Zero", "1": "One", "2": "Two", "3": "Three", "4": "Four",
+          "5": "Five", "6": "Six", "7": "Seven", "8": "Eight", "9": "Nine"}
+
+
+def _macro_name(key):
+    camel = "".join(w.capitalize() for w in key.split("_"))
+    return "".join(_DIGIT.get(c, c) for c in camel)
+
+
+def write_sources(panel_keys):
+    """Emit \\srcNloops111 etc. so the captions cite what was actually drawn.
+
+    Hand-copied citations drift the moment a row is added to the database; this
+    keeps the caption and the plotted points derived from one source of truth.
+    """
+    lines = ["% Generated by codes/make_size_effect_figures.py -- do not edit.",
+             "% One macro per panel, listing the sources of the points drawn on it."]
+    for key, keys in panel_keys.items():
+        macro = "src" + _macro_name(key)
+        cites = ",".join(keys) if keys else ""
+        lines.append(f"\\newcommand{{\\{macro}}}{{\\cite{{{cites}}}}}")
+    SOURCES_TEX.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return SOURCES_TEX
+
+
 def main():
     EXP = experiment()
     traj = trajectories()
     print(f"{len(traj)} trajectories loaded")
     for label, _, _, dose, _ in traj:
         print(f"  {label:26s} {len(dose):3d} points, to {dose.max():.3g} dpa")
+    panel_keys = {}
     for key, ylabel, logy, ek, ec, in [(o[0], o[1], o[2], o[3], o[4]) for o in OBSERVABLES]:
         p = one_figure(key, ylabel, logy, ek, ec, traj, EXP)
-        print(f"  wrote {p.relative_to(REPO)}")
+        df = EXP[ek].dropna(subset=["Dose [dpa]", ec])
+        keep = EXP_EXCLUDE.get(key)
+        if keep is not None and len(df):
+            df = df[keep(df)]
+        panel_keys[key] = _keys(df)
+        print(f"  wrote {p.relative_to(REPO)}  sources: {', '.join(panel_keys[key])}")
+    sp = write_sources(panel_keys)
+    print(f"  wrote {sp.relative_to(REPO)}")
     return 0
 
 

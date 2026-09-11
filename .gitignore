@@ -75,3 +75,5 @@ docs/Formulation/*.aux
 docs/Formulation/*.log
 docs/Formulation/*.out
 docs/Formulation/*.toc
+docs/Formulation/*.fls
+docs/Formulation/*.fdb_latexmk

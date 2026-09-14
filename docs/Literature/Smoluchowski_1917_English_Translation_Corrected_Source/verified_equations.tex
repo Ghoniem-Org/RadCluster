@@ -1,0 +1,84 @@
+\section*{Verified mathematical transcription}
+\addcontentsline{toc}{section}{Verified mathematical transcription}
+\noindent The equations below have been transcribed directly from the printed facsimile. Equations (30)--(32), absent from the supplied scan because journal pages 158--159 are missing, have been recovered from Smoluchowski's manuscript. These displays supersede any equation-like OCR fragments in the page-by-page prose transcription.
+
+\begin{align}
+D&=\frac{H\Theta}{N}\frac{1}{6\pi\mu a},\tag{1}\\
+W(x)\,dx&=\frac{1}{2\sqrt{\pi Dt}}\exp\!\left(-\frac{x^2}{4Dt}\right)dx,\tag{2}\\
+\overline{x^2}&=2Dt,\tag{3}\\
+\frac{\partial(ru)}{\partial t}&=D\frac{\partial^2(ru)}{\partial r^2},\tag{4}\\
+u&=c\left[1-\frac{R}{r}+\frac{2R}{r\sqrt{\pi}}
+\int_0^{(r-R)/(2\sqrt{Dt})}e^{-z^2}\,dz\right],\tag{5}\\
+J\,dt&=4\pi DR^2\left.\frac{\partial u}{\partial r}\right|_{R}dt
+=4\pi DRc\left(1+\frac{R}{\sqrt{\pi Dt}}\right)dt,\tag{6}\\
+M&=\int_0^tJ\,dt=4\pi DRc\left(t+\frac{2R\sqrt t}{\sqrt{\pi D}}\right),\tag{7}\\
+W_t&=\frac{4\pi DR}{V}\left(t+\frac{2R\sqrt t}{\sqrt{\pi D}}\right),\tag{8}\\
+U_t&=\exp\!\left[-4\pi DRv_0\left(t+\frac{2R\sqrt t}{\sqrt{\pi D}}\right)\right],\tag{9}\\
+w&=4\pi DRv_0,\tag{10}\\
+v_1&=v_0e^{-4\pi DRv_0t},\tag{11}\\
+-\frac{dv_1}{v_1}&=4\pi DRv_0\,dt,\tag{12}\\
+\frac{1}{v_1^2}\frac{dv_1}{dt}&=-4\pi DR,\tag{13}\\
+v_1&=\frac{v_0}{1+4\pi DRv_0t}=\frac{v_0}{1+t/T},\tag{14}\\
+T&=\frac{1}{4\pi DRv_0},\tag{15}\\
+v_1&=\frac{v_0}{1+8\pi DRv_0t}=\frac{v_0}{1+2t/T}.\tag{16}
+\end{align}
+
+\begin{align}
+\frac{1}{4\pi}\frac{dv_1}{dt}
+ &=-D_{11}R_{11}v_1^2-D_{12}R_{12}v_1v_2-D_{13}R_{13}v_1v_3-\cdots,\tag{17.1}\\
+\frac{1}{4\pi}\frac{dv_2}{dt}
+ &=\tfrac12D_{11}R_{11}v_1^2-D_{12}R_{12}v_1v_2-D_{22}R_{22}v_2^2-D_{23}R_{23}v_2v_3-\cdots,\tag{17.2}\\
+\frac{1}{4\pi}\frac{dv_3}{dt}
+ &=D_{12}R_{12}v_1v_2-D_{13}R_{13}v_1v_3-D_{23}R_{23}v_2v_3-\cdots,\tag{17.3}\\
+\frac{1}{4\pi}\frac{dv_4}{dt}
+ &=\tfrac12D_{22}R_{22}v_2^2+D_{13}R_{13}v_1v_3-D_{14}R_{14}v_1v_4-\cdots.\tag{17.4}
+\end{align}
+\begin{align}
+R_{ik}&=\tfrac12(R_i+R_k),\notag\\
+D_{ik}R_{ik}&=\tfrac12(D_i+D_k)(R_i+R_k)
+=\frac{DR}{2}\frac{(R_i+R_k)^2}{R_iR_k},\tag{18}\\
+4\pi D_{ik}R_{ik}&=8\pi DR=2\alpha.\tag{19}
+\end{align}
+
+\begin{align}
+\frac{1}{2\alpha}\frac{dv_1}{dt}&=-v_1^2-v_1v_2-v_1v_3-v_1v_4-\cdots,\notag\\
+\frac{1}{2\alpha}\frac{dv_2}{dt}&=\tfrac12v_1^2-v_1v_2-v_2^2-v_2v_3-\cdots,\notag\\
+\frac{1}{2\alpha}\frac{dv_3}{dt}&=v_1v_2-v_1v_3-v_2v_3-v_3^2-\cdots,\tag{20}\\
+\frac{1}{2\alpha}\frac{dv_4}{dt}&=\tfrac12v_2^2+v_1v_3-v_1v_4-v_2v_4-\cdots,\notag\\
+v_1+v_2+v_3+v_4+\cdots&=\sum v,\tag{21}\\
+\frac{1}{2\alpha}\frac{dv_1}{dt}&=-v_1\sum v,\notag\\
+\frac{1}{2\alpha}\frac{dv_2}{dt}&=\tfrac12v_1^2-v_2\sum v,\notag\\
+\frac{1}{2\alpha}\frac{dv_3}{dt}&=v_1v_2-v_3\sum v,\notag\\
+\frac{1}{2\alpha}\frac{dv_k}{dt}
+ &=\tfrac12\left(v_1v_{k-1}+v_2v_{k-2}+\cdots+v_{k-1}v_1\right)-v_k\sum v.\tag{22}
+\end{align}
+
+\begin{align}
+\sum v&=\frac{v_0}{1+\alpha v_0t}=\frac{v_0}{1+4\pi DRv_0t}=\frac{v_0}{1+t/T},\tag{23}\\
+v_1&=\frac{v_0}{(1+\alpha v_0t)^2}=\frac{v_0}{(1+t/T)^2},\notag\\
+v_2&=v_0\frac{\alpha v_0t}{(1+\alpha v_0t)^3},\qquad
+v_3=v_0\frac{(\alpha v_0t)^2}{(1+\alpha v_0t)^4},\notag\\
+v_k&=v_0\frac{(\alpha v_0t)^{k-1}}{(1+\alpha v_0t)^{k+1}},\tag{24}\\
+\frac1T&=4\pi DRv_0=\frac1t\left(\sqrt{\frac{v_{10}}{v_1}}-1\right),\tag{25}\\
+\frac{R}{r}&=\frac{N}{H\Theta}\frac{3\mu}{2v_0}\frac1T,\tag{26}\\
+T&=\frac34\frac{N\mu}{H\Theta\varepsilon v_0},\tag{27}\\
+\beta&=\frac{1}{6\pi}\frac{\partial u}{\partial x}\frac{R^2}{D}
+=\frac{4r^3\mu}{H\Theta/N}\frac{\partial u}{\partial x},\tag{28}\\
+\lim y&=1-\left(1+\frac1x\right)e^{-1/x},\qquad x=\frac{t}{T}.\tag{29}
+\end{align}
+
+\begin{align}
+\frac{dx}{dt}&=kt(1+bx)(1-x)^2
+\quad\text{or}\quad
+\frac{dx}{dt}=k't(1+b'x)(1-x),\tag{30}\\
+\frac{dx}{dt}&=k_1(1+b_1x)(1-x),\tag{31.1}\\
+\frac{dx}{dt}&=k_2(1+b_2x)(1-x)^2,\tag{31.2}\\
+\frac{dx}{dt}&=k''(1-x)^2,\tag{31.3}\\
+\mu&=\mu_0\left(1+\frac52\varphi\right),\tag{32}\\
+\mu&=F\!\left[v_0\Phi(v_0t)\right],\tag{33}\\
+F&=\mu=\mu_0\left(1+0.198\varphi+0.069\varphi^2\right),\tag{34}\\
+\Phi&=0.131+0.869\left(\frac{\vartheta}{\vartheta+3.94}\right)^3,\tag{35}\\
+\Phi&=\omega+\sigma\left(\frac{t}{t+T}\right)^3.\tag{36}
+\end{align}
+
+\clearpage

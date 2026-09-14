@@ -1,0 +1,234 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=1.9cm]{geometry}
+\usepackage{amsmath,amssymb,booktabs,enumitem}
+\usepackage[expansion=false]{microtype}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xcolor}
+\linespread{0.98}
+\newcommand{\code}[1]{\texttt{\small #1}}
+\newcommand{\flag}[1]{\textcolor{red!70!black}{#1}}
+\begin{document}
+\begin{center}
+{\large\bfseries Novelty of the RadCluster cluster-dynamics method}\\[2pt]
+{\footnotesize Verified against \code{Ghoniem-Org/RadCluster}, \code{RadCluster\_2\_1};
+benchmarked against Kohnert \& Wirth, \emph{Modelling Simul.\ Mater.\ Sci.\ Eng.} \textbf{25} (2017) 015008 --- \today}
+\end{center}
+\vspace{2pt}
+
+\section{Production bias and simultaneous loop--cavity evolution}
+
+\paragraph{The source term.}
+Cascade production (\code{py\_utils/defect\_production.py}) is a power-law
+partition, for $x=i,v$,
+\[
+G^x_1=\eta\dot d\,(1-f^x_{\rm cl}),\qquad
+G^x_n=\eta\dot d\,A_x n^{-s_x}\ (n\ge2),\qquad
+\sum_n n\,G^x_n=\eta\dot d ,
+\]
+the monomer channel absorbing the exact remainder so that atom conservation holds
+even under grid truncation. \emph{Equal total SIA and vacancy inventories are
+created; they are assigned to different mobility classes.} That asymmetry is the
+production bias. For the fission spectrum:
+
+\begin{center}\footnotesize\setlength{\tabcolsep}{6pt}
+\begin{tabular}{lccc}
+\toprule
+Measure & SIA & vacancy & ratio \\
+\midrule
+clustered atom fraction & 0.580 & 0.150 & 3.87 (i/v) \\
+cluster-number fraction & 0.1086 & 0.0485 & \textbf{2.24} (i/v) \\
+monomer atom fraction & 0.420 & 0.850 & \textbf{2.02} (v/i) \\
+mean produced cluster size & 5.34 & 3.09 & --- \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The ``factor of two'' is correct for produced \emph{cluster number}, and
+equivalently for the inverse \emph{monomer} ratio. The clustered atom partition
+differs by 3.9. Quote whichever is load-bearing, but not ``2'' for the atom
+fraction.
+
+\paragraph{What the model does with it.}
+Cascade-born SIA clusters seed loops; the larger vacancy-monomer source feeds
+cavities. RadCluster evolves both ladders with SIA--SIA and V--V coalescence,
+residual-size reactions $I_n+V_m\rightarrow I_{n-m},\,V_{m-n}$ or $\varnothing$,
+cavity capture and emission, helium processes, and sink accounting. The
+size-resolved \emph{coupled} evolution of both families is the substantive
+advance over a two-monomer swelling model.
+
+The mixed-dimensional cavity kernel (\code{py\_utils/reaction\_rates.py}) is
+\[
+\mathcal{K}^{\rm cav}_{n,m}\;\propto\;
+\frac{m^{1/3}\,\omega^{\rm 1D}_n}{1+B_{\rm rot}\hat L^2 m^{-1/3}},
+\qquad B_{\rm rot}=\tfrac{4}{\pi}\bigl(\tfrac{8\pi}{3}\bigr)^{1/3}\!\approx2.627 .
+\]
+\flag{Do not quote the suppression factor without $m$.} The often-cited
+$1+B_{\rm rot}\hat L^2$ is the $m\!=\!1$ reference; larger cavities are
+progressively \emph{less} suppressed through $m^{-1/3}$. The defensible statement
+is that \emph{dimensionality changes the relative rates of cavity interception,
+coalescence and fixed-sink capture} --- not that 1D clusters cannot find
+cavities. Likewise, coalescence reduces mobile cluster number and transfers
+inventory into large or sessile loops, but it \emph{conserves} SIA mass; it is a
+redistribution between mobility classes, not a sink.
+
+\paragraph{The exact balance.}
+With balanced production and initial inventories, the code enforces
+(\code{py\_utils/post\_process.py}, $\delta_{\rm FP}<10^{-6}$)
+\begin{equation}
+S_V(t)-S_I(t)\;=\;J^{\rm sink}_I(t)-J^{\rm sink}_V(t),
+\label{eq:balance}
+\end{equation}
+up to numerical residuals and boundary losses. Internal coalescence and mutual
+annihilation cancel identically: both destroy or relocate equal numbers of the
+two species.
+
+\paragraph{\flag{Correction: equal capture efficiencies do not zero the right-hand side.}}
+An earlier draft of these notes proposed setting $Z_i=Z_v$ to force
+$\Delta J\!\to\!0$ and collapse \eqref{eq:balance} to $S_V=S_I$. \textbf{That is
+wrong.} Equal $Z$ removes \emph{preferential} elastic capture, but the sink
+fluxes remain unequal because the mobile concentrations and diffusivities of the
+two species differ --- and they differ \emph{precisely because of} the production
+partition. Equal $Z$ therefore does not force $S_V=S_I$; it removes one cause of
+the imbalance, not the imbalance.
+
+\paragraph{The decisive design.}
+Isolation requires a $2\times2$ matrix, not a single run:
+
+\begin{center}\footnotesize
+\begin{tabular}{l|cc}
+& $f^i_{\rm cl}=f^v_{\rm cl}$ & $f^i_{\rm cl}>f^v_{\rm cl}$ \\
+\midrule
+$Z_i=Z_v$    & reference        & \textbf{production bias only} \\
+$Z_i\neq Z_v$ & sink bias only   & combined (shipped EUROFER deck) \\
+\end{tabular}
+\end{center}
+
+\noindent Equalise the dislocation, grain-boundary and precipitate capture
+efficiencies together ($Z^d$, $Z^{gb}$, $Z^p$ --- the shipped deck has
+$Z_i/Z_v=1.35$, $Z^{gb}_{i,v}=1.40/0.93$, $Z^{p}_{i,v}=1.45/0.93$ at
+$\rho_d=5\times10^{14}\,\mathrm{m^{-2}}$) while holding sink densities,
+transport, binding, helium conditions and dose rate fixed. The claim is supported
+if, in the production-only cell, \emph{both} loop and cavity number densities and
+mean sizes grow relative to the unbiased-source reference. Report the source,
+coalescence, annihilation, cavity-capture and external-sink fluxes against
+\eqref{eq:balance} for each cell.
+
+\paragraph{What is, and is not, new.}
+Golubov--Singh--Trinkaus rate theory already \emph{permits} production-biased
+swelling; that is not the novelty. The novelty is the simultaneous
+\emph{size-resolved} CD evolution of both cluster families under mixed-dimensional
+transport and nonlocal (residual-size, coalescence) reactions, with the two bias
+mechanisms separated by controlled construction rather than by asymptotic argument.
+
+\section{Bin-moment reduction versus existing grouping techniques}
+
+RadCluster stores $\mu^{(p)}_k=\sum_{n\in\mathcal{B}_k}n^p c_n$ and implements
+\[
+\{\mu^{(p)}_k\}\ \xrightarrow{\ \textbf{R}\ }\ c^{\rm rec}_n
+\ \xrightarrow{\ \textbf{E}\ }\ \dot c^{\rm full}_n
+\ \xrightarrow{\ \textbf{P}\ }\ \dot\mu^{(p)}_k=\sum_{n\in\mathcal{B}_k}n^p\dot c^{\rm full}_n ,
+\]
+reconstructing, evaluating the \emph{per-size} master equation, and projecting --- at
+every RHS call (\code{core/reductions/bin\_moment.py}).
+
+\paragraph{Kiritani (1973).} One average concentration per group with
+group-averaged rate constants. Inconsistent: densities and their increments are
+assumed equal within a group, breaking $\mathrm{d}N/\mathrm{d}t$ and
+$\mathrm{d}S/\mathrm{d}t$.
+
+\paragraph{Golubov \emph{et al.} (2001).} Linear intra-group profile
+$f(x)=L^0_i+L^1_i(x-\langle x\rangle_i)$ with both moments evolved; number and
+content are conserved by construction. Not intrinsically nonconservative --- the
+limitations are that it was formulated for \emph{monomer} flux only, and that the
+intra-group mean flux $\langle J\rangle^*_i$ is undefined at $\Delta x_i=1$.
+
+\paragraph{Kohnert \& Wirth (2017) --- the real benchmark.} They remove Golubov's
+monomer restriction, generalising the moment scheme to arbitrary cluster--cluster
+reactions, and add four interpolation schemes (linear, secant, Lagrange, cubic
+spline). Both families work by \emph{projecting the rate constants onto basis
+functions} to build grouped coefficients $a^{\pm},b^{\pm}$ (their Eqs.~7, 19, 20
+and Appendix~A), which are ``independent of the actual concentration values so
+they need be computed only once, before time integration begins.''
+
+That precomputation is what buys their speedup, and it carries an explicit price,
+stated twice in their paper: ``\emph{Enforcing constant cluster properties across
+each group} allows the rate constants to be extracted from the summations'' (p.~4),
+and ``due to the assumption that rate constants are unchanging across a group,
+clusters whose properties differ radically from neighbors in phase space should
+not be grouped over\ldots we enforce a minimum size to the grouped region\ldots
+typically around clusters with 20 members'' (p.~9).
+
+\paragraph{The distinction.} R--E--P forms \emph{no grouped operator at all}, so
+the constant-property assumption is never made: step \textbf{E} evaluates
+$\mathcal{K}(n,n')$ at the true size. This matters for the physics of \S1
+specifically, because the fastest-varying kernel in the model is the one carrying
+the result: $\mathcal{K}^{\rm cav}_{n,m}$ depends on $n$ through
+$\omega^{\rm 1D}_n\propto n^{-s}$ and on $m$ through
+$m^{1/3}/(1+B_{\rm rot}\hat L^2m^{-1/3})$, both strongly non-linear across a
+logarithmic bin. A scheme that holds cluster properties constant over the group
+flattens exactly the quantity that sets the relative rates of cavity interception
+and sink capture. \textbf{Reaction fidelity, not work reduction, is the advantage.}
+
+A second practical consequence: because no reaction-specific grouped operator is
+derived, a new channel costs no new coefficient algebra. Kohnert \& Wirth report
+that setup ``becomes prohibitive, particularly when applying the moment scheme
+for problems with dense reaction networks,'' requiring computer-algebra-derived
+analytic forms per reaction class. RadCluster's loop$\rightarrow$network loss and
+the planned RIS/precipitation edges reuse the existing reduction and conservation
+machinery unchanged.
+
+\begin{center}\footnotesize\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}p{1.9cm}p{2.7cm}p{3.0cm}p{3.5cm}p{4.3cm}@{}}
+\toprule
+& \textbf{Kiritani (1973)} & \textbf{Golubov (2001)} & \textbf{Kohnert--Wirth (2017)} & \textbf{RadCluster (R--E--P)} \\
+\midrule
+State & uniform group density & $L^0,L^1$; linear profile & interpolation nodes \emph{or} $L^0,L^1$ & constant / linear / log-normal, $P=1,2,3$ \\
+Operator & grouped equation & derived group equations & \textbf{precomputed} grouped network & reconstruct grid, per-size RHS, project \\
+Kernels & group approximations & grouped coefficients & grouped; \textbf{constant across group} & \textbf{original size-dependent kernels} \\
+Reactions & monomer & monomer only & arbitrary cluster--cluster & arbitrary; same machinery \\
+New channel & --- & re-derive & new analytic coefficients & \textbf{none required} \\
+Conservation & may lose consistency & $N,S$ by construction & moments by construction; interp.\ leaks $O(\Delta x^2)$ & projected stoichiometry, audited \\
+Grouped range & --- & --- & $\gtrsim20$ members & no lower restriction \\
+Work & group-level & group-level & \textbf{group-level (cost $\downarrow$ with width)} & reduced state, full-grid sweep $I{+}V$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{\flag{Qualifications that must accompany the claim.}}
+Conservation is \emph{not} unconditional. Linear reconstruction clips negative
+values (\code{np.maximum} in \code{distribution\_from\_moments\_hat}); the discrete
+log-normal closure normalises $\mu^{(0)}$ exactly but recovers higher moments only
+approximately; the upper grid boundary can lose products; solver tolerances and
+floors enter the residual. The correct claim is that RadCluster is
+\emph{stoichiometrically conservative at the projected-reaction level and
+continuously audited} via $\delta_{\rm FP}$, $\delta_{\rm He}$. Kohnert \& Wirth
+report the analogous pathologies for their schemes --- SDF oscillation, negative
+concentrations, phase-space-boundary failure --- so this is a shared hazard, not a
+differentiator. Finally, the $O((r{-}1)^2)$, $O((r{-}1)^3)$, $O((r{-}1)^4)$
+truncation orders should be removed unless derived for the implemented
+\emph{discrete} closures, and R--E--P forgoes the asymptotic work reduction that is
+Kohnert \& Wirth's headline result.
+
+\section*{Contribution statement}
+
+\emph{\small
+RadCluster is a production-spectrum-resolved cluster-dynamics framework that
+couples asymmetric cascade partitioning, mixed 1D/3D SIA transport, SIA--SIA and
+vacancy--vacancy coalescence, residual-size SIA--vacancy reactions, cavity capture
+and emission, helium coupling, and explicit sink accounting, so that loop and
+cavity populations evolve as size-resolved distributions in a single coupled
+system rather than as separately nucleated averages. On the physics side,
+controlled calculations that independently equalise cascade clustering fractions
+and sink capture efficiencies isolate simultaneous loop and cavity growth caused
+by production bias rather than by preferential sink capture --- a separation that
+reduced-moment rate theory can argue but not demonstrate. On the numerical side,
+its reconstruct--evaluate--project bin-moment reduction retains the original
+size-dependent reaction kernels instead of projecting them onto grouped
+coefficients, so no constant-property assumption is imposed within a bin and no
+reaction-specific inter-group operator need be derived for new physics; the
+reduction conserves projected stoichiometric balances under continuous audit of
+reconstruction, boundary and solver error, trading the asymptotic work reduction
+of a strict grouped operator for reaction fidelity in exactly the size-dependent,
+mixed-dimensional kernels that govern the swelling result.}
+
+\end{document}

@@ -1,0 +1,257 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=1.85cm]{geometry}
+\usepackage{amsmath,amssymb,booktabs,array,microtype}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{mathtools}
+\setlist{nosep,leftmargin=*}
+\newcommand{\hkl}[1]{\langle #1\rangle}
+\newcommand{\half}{\tfrac12}
+\newcommand{\kb}{k_{\mathrm B}}
+\newcommand{\rc}{\textsf{RadCluster}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\dd}{\mathrm d}
+\newcommand{\D}{\mathcal D}
+\newcommand{\K}{\mathcal K}
+\definecolor{navy}{RGB}{25,55,90}
+\hypersetup{colorlinks=true,linkcolor=navy,urlcolor=navy,citecolor=navy}
+
+\title{\vspace{-1.4cm}\textbf{Two Channels for $\half\hkl{111}\!\rightarrow\!\hkl{100}$ Loop Conversion in \rc}\\[3pt]
+\large Theoretical basis, kinetic derivation, and interpretation}
+\author{Technical working note}
+\date{14 September 2026}
+
+\begin{document}
+\maketitle
+\vspace{-1.0em}
+
+\begin{abstract}
+\rc treats the observed $\half a\hkl{111}$ and $a\hkl{100}$ loop populations in ferritic/martensitic steels as two coupled cluster-dynamics populations.  Conversion is represented by two physically distinct channels: (A) a size-preserving, thermally activated unary conversion whose driving force is obtained from the anisotropic-elastic free energies of Dudarev, Bullough and Derlet; and (B) the collision-mediated Marian--Wirth--Perlado mechanism, comprising binary junction nucleation and subsequent growth of a sessile $\hkl{100}$ loop by capture of mobile $\half\hkl{111}$ loops.  The channels are complementary rather than redundant.  The Dudarev physics determines which character is thermodynamically preferred and produces the strong temperature selection; the Marian physics supplies a geometrically plausible pathway for creating and growing large $\hkl{100}$ loops.  This note derives the equations used in \rc, identifies the modeling closures that do not follow uniquely from the source papers, and states what an ablation study must demonstrate before claiming that both channels are quantitatively necessary.
+\end{abstract}
+
+\section{State variables and the physical question}
+
+Let $c_n^{111}$ and $c_n^{100}$ be number densities of SIA clusters containing $n$ interstitials and having, respectively, $\half a\hkl{111}$ and $a\hkl{100}$ Burgers vectors.  Cascade production primarily feeds the $111$ ladder.  The $111$ loops are glissile and migrate approximately one-dimensionally, with direction changes producing effective 1D/3D transport; the $100$ loops are treated as sessile.  The conversion problem is therefore not merely a choice of loop energy.  A cluster-dynamics model must specify
+\begin{equation}
+  \text{thermodynamic preference}\quad+\quad
+  \text{transition pathway}\quad+\quad
+  \text{encounter kinetics}.
+\end{equation}
+The Dudarev and Marian papers constrain different pieces of this statement.  Dudarev \emph{et al.} explain the temperature-dependent free-energy ordering of loop characters; they do not prescribe a unique population-level conversion rate.  Marian \emph{et al.} provide an atomistic collision pathway and activation landscape; they do not by themselves supply the full temperature-dependent loop free energy used to reproduce the ferritic-steel crossover.  Treating the two as additive CD channels is therefore defensible, provided their overlap is calibrated without double counting.
+
+\section{Channel A: Dudarev thermodynamics made into a unary kinetic law}
+
+\subsection{Loop energy and the origin of the temperature crossover}
+
+For a prismatic loop of character $X\in\{111,100\}$, the anisotropic-elastic line-energy representation may be written
+\begin{equation}
+ E_X(n,T)=P_X(n)\left[
+ \widehat F_X(T)\ln\!\left(\frac{4R_X(n)}{e\delta}\right)
+ +F_{\delta,X}(T)+F_{c,X}\right],                                      \label{eq:loopE}
+\end{equation}
+where $P_X$ is perimeter, $R_X$ an equivalent radius, $\delta$ a core cutoff, $\widehat F_X$ the anisotropic prelogarithmic factor, and $F_\delta+F_c$ the core-traction and nonlinear-core contributions.  The platelet area follows from conservation of inserted atomic volume,
+\begin{equation}
+ A_X(n)b_X=n\Omega,qquad R_X(n)=\sqrt{\frac{n\Omega}{\pi b_X}},          \label{eq:area}
+\end{equation}
+so $P_X\propto R_X\propto\sqrt n$ for a geometrically similar family of loops.
+
+The crucial result of Dudarev \emph{et al.} is that the pure-edge $001[100]$ prelogarithmic factor contains the soft shear modulus $c'=(c_{11}-c_{12})/2$:
+\begin{equation}
+ \widehat F_{001}([100])=
+ \frac{a^2}{4\pi}(c_{11}+c_{12})
+ \left[\frac{c_{44}(c_{11}-c_{12})}
+ {c_{11}(c_{11}+c_{12}+2c_{44})}\right]^{1/2}.                         \label{eq:prelog}
+\end{equation}
+Thus $\widehat F_{100}\rightarrow0$ as $c'\rightarrow0$ on approaching the bcc--fcc transition, while the corresponding $111$ factors remain finite.  If $c'(T)\propto(1-T/T_c)^{1/2}$, then Eq.~\eqref{eq:prelog} gives the characteristic quarter-power scaling
+\begin{equation}
+ \widehat F_{100}(T)\propto(1-T/T_c)^{1/4}.                             \label{eq:quarter}
+\end{equation}
+The thermodynamic force for conversion at fixed SIA content is
+\begin{equation}
+ \Delta F(n,T)=E_{111}(n,T)-E_{100}(n,T).                               \label{eq:dF}
+\end{equation}
+Positive $\Delta F$ means the $100$ loop is the lower-free-energy state.  Equations \eqref{eq:loopE}--\eqref{eq:dF}, rather than a phenomenological label ``Dudarev conversion,'' are the theoretical basis of Channel A.
+
+\subsection{From free-energy difference to a rate}
+
+Transition-state theory gives a forward rate
+\begin{equation}
+ k_{111\to100}=\nu_0\exp\!\left[-\frac{F^\ddagger-F_{111}}{\kb T}\right]. \label{eq:tst}
+\end{equation}
+For a reversible two-state model, microscopic consistency requires
+\begin{equation}
+ \frac{k_{111\to100}}{k_{100\to111}}
+ =\exp\!\left(\frac{\Delta F}{\kb T}\right).                           \label{eq:db}
+\end{equation}
+Neither Eq.~\eqref{eq:tst} nor the Dudarev free energies determine the saddle free energy $F^\ddagger$.  \rc therefore introduces a kinetic closure.  Its one-way unary rate has the form
+\begin{equation}
+ \Gamma_{\rm uni}(n,T)=\nu_0
+ \exp\!\left[-\frac{E_a^{\rm uni}(n)}{\kb T}\right]
+ \left[1-exp\!\left(-\frac{\Delta F(n,T)}{\kb T}\right)\right]_+ ,  \label{eq:unary}
+\end{equation}
+where $[x]_+=\max(0,x)$.  The second factor is a thermodynamic gate.  It vanishes at coexistence, is zero when $100$ is unfavorable, and approaches unity for a strongly downhill transformation.  It may be understood as the normalized net forward-minus-reverse tendency when rates obey Eq.~\eqref{eq:db}; it is not a unique consequence of Dudarev's theory.
+
+The implemented barrier is perimeter dependent,
+\begin{equation}
+ E_a^{\rm uni}(n)=E_a^0+\gamma_a\frac{P(n)}{b_{111}},                   \label{eq:barrier}
+\end{equation}
+motivated by a conversion that propagates through successive dislocation segments.  Since $P\sim\sqrt n$, Eq.~\eqref{eq:barrier} suppresses direct rotation of large loops.  At the same time, $\Delta F\sim P\sim\sqrt n$ strengthens the downhill gate.  Their competition creates a finite size window for unary conversion.  This size dependence is a \rc modeling hypothesis that must be calibrated; it should not be presented as a direct derivation from the Dudarev paper.
+
+In the CD equations, this channel is a size-preserving population transfer:
+\begin{align}
+ \left.\dot c_n^{111}\right|_{\rm uni}&=-\Gamma_{\rm uni}(n,T)c_n^{111},\\
+ \left.\dot c_n^{100}\right|_{\rm uni}&=+\Gamma_{\rm uni}(n,T)c_n^{111}. \label{eq:unimaster}
+\end{align}
+Consequently $\sum_n n(c_n^{111}+c_n^{100})$ is conserved exactly by Channel A.
+
+\section{Channel B: Marian collision, junction formation, and templated growth}
+
+\subsection{Encounter kernel}
+
+For two dilute mobile objects, the classical Smoluchowski result is the steady diffusive flux to an absorbing relative-coordinate surface:
+\begin{equation}
+ K_{nn'}^{3D}=4\pi(R_n+R_{n'})(D_n+D_{n'}).                              \label{eq:smol}
+\end{equation}
+When concentrations are stored per atomic volume and radii are nondimensionalized, this produces the code's conventional factor proportional to
+\begin{equation}
+ \K_{nn'}^{ii}=\frac{8\pi}{\Omega^{2/3}}
+ (\xi_n+\xi_{n'})(D_n^{\rm eff}+D_{n'}^{\rm eff}),
+ \qquad \xi_n=\left(\frac{3n}{8\pi}\right)^{1/3}.                     \label{eq:kernel}
+\end{equation}
+For $\half\hkl{111}$ loops, $D^{\rm eff}$ is not simply the 1D glide coefficient.  It is an isotropic-equivalent coefficient representing a glider that occasionally changes glide direction.  Thus Eq.~\eqref{eq:kernel} is a mean-field encounter closure for 1D/3D migration, not an exact first-passage solution for two crystallographic lines.  This distinction matters because the Marian channel scales directly with encounter frequency.
+
+\subsection{Junction nucleation}
+
+Marian \emph{et al.} identified an atomistic reaction between suitably oriented, comparably sized $\half\hkl{111}$ loops, schematically
+\begin{equation}
+ \half[111]+\half[1\bar1\bar1]\longrightarrow[100].                   \label{eq:vector}
+\end{equation}
+The SIA content of the product is $n+n'$.  \rc partitions every $111$--$111$ encounter into an ordinary $111$ coalescence branch and a $100$-forming branch:
+\begin{equation}
+ K_{nn'}^{\rm junc}=\phi_{nn'}K_{nn'}^{ii},\qquad
+ K_{nn'}^{111\,\rm coal}=(1-\phi_{nn'})K_{nn'}^{ii}.                  \label{eq:split}
+\end{equation}
+The branching fraction encodes the atomistic requirements that the reactants be large enough and similar in size:
+\begin{equation}
+ \phi_{nn'}=\phi_{\max}
+ \exp\!\left[-\frac{\ln^2(n/n')}{2\sigma_s^2}\right]
+ \Theta\!\left(\min(n,n')-n_{j,\min}\right)P_{\rm suc}^{j}(T).       \label{eq:phi}
+\end{equation}
+The log-Gaussian is symmetric under $n\leftrightarrow n'$, peaks for equal sizes, and depends on a size ratio rather than an arbitrary absolute difference.  It is a useful coarse-grained surrogate for orientation, impact parameter and size compatibility; it is not an atomistically calculated probability.
+
+The Marian energy landscape contains a metastable $\half\hkl{110}$ intermediate.  Once that intermediate exists, suppose completion to $100$ and reversal to $111$ are independent activated Poisson processes,
+\begin{equation}
+ k_2=\nu_2e^{-\Delta H_2/\kb T},\qquad
+ k_{\rm rev}=\nu_re^{-\Delta H_{\rm rev}/\kb T}.
+\end{equation}
+The probability that completion occurs first is the standard competing-hazards result
+\begin{equation}
+ P_{\rm suc}^{j}(T)=\frac{k_2}{k_2+k_{\rm rev}}
+ =\frac{A_je^{-\Delta H_2^j/\kb T}}
+ {A_je^{-\Delta H_2^j/\kb T}+e^{-\Delta H_{\rm rev}^j/\kb T}},         \label{eq:psuc}
+\end{equation}
+where $A_j=\nu_2/\nu_r$.  This derivation explains why the success factor multiplies the encounter branching fraction rather than the diffusivity: diffusion creates the junction opportunity; the activated competition determines whether that opportunity produces a persistent $100$ loop.
+
+The corresponding gain--loss terms are
+\begin{align}
+ \left.\dot c_n^{111}\right|_{\rm junc}
+ &=-c_n^{111}\sum_{n'}K_{nn'}^{\rm junc}c_{n'}^{111},                 \label{eq:jloss}\\
+ \left.\dot c_m^{100}\right|_{\rm junc}
+ &=\frac12\sum_{n+n'=m}K_{nn'}^{\rm junc}c_n^{111}c_{n'}^{111}.       \label{eq:jgain}
+\end{align}
+The factor $1/2$ prevents double counting unordered pairs.  Multiplying by size and summing shows that the $111$ loss is exactly the $100$ gain in SIA inventory.
+
+\subsection{Growth by capture of mobile $111$ loops}
+
+After nucleation, a sessile $100$ loop can grow by capturing a mobile $111$ loop:
+\begin{equation}
+ [100]_m+\half\hkl{111}_n\longrightarrow[100]_{m+n}.                   \label{eq:absrxn}
+\end{equation}
+Because $D_m^{100}\simeq0$, the mean-field cross-character rate is
+\begin{equation}
+ K_{mn}^{\rm abs}=P_{\rm suc}^{\rm abs}(T)B_{\rm abs}
+ \frac{8\pi}{\Omega^{2/3}}(\xi_m+\xi_n)D_n^{\rm eff}.                 \label{eq:absK}
+\end{equation}
+Here $B_{\rm abs}$ is a capture enhancement or calibration factor.  Current \rc design notes allow the absorption success gate to have its own barrier and prefactor, separate from junction nucleation.  That separation is physically sensible: a pre-existing $100$ loop templates the final character, whereas two $111$ loops must first create a viable $100$ nucleus.  The equations are
+\begin{align}
+ \left.\dot c_n^{111}\right|_{\rm abs}
+ &=-c_n^{111}\sum_mK_{mn}^{\rm abs}c_m^{100},                         \label{eq:aloss}\\
+ \left.\dot c_m^{100}\right|_{\rm abs}
+ &=\sum_nK_{m-n,n}^{\rm abs}c_{m-n}^{100}c_n^{111}
+  -c_m^{100}\sum_nK_{mn}^{\rm abs}c_n^{111}.                          \label{eq:again}
+\end{align}
+With appropriate boundary handling, Eqs.~\eqref{eq:aloss}--\eqref{eq:again} also conserve total SIA content.
+
+\section{Why both channels can be needed---and what is actually demonstrated}
+
+The mechanisms occupy different regions of kinetic phase space:
+\begin{center}
+\small
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.0cm}>{\raggedright\arraybackslash}p{5.7cm}>{\raggedright\arraybackslash}p{5.7cm}}
+\toprule
+ & Dudarev-based unary channel & Marian junction/absorption channel\\
+\midrule
+Primary basis & Temperature-dependent anisotropic loop free energy & Atomistic collision, intermediate junction, and reorientation pathway\\
+Reaction order & First order in $c_n^{111}$ & Second order for nucleation; bilinear for subsequent absorption\\
+Main selectivity & Strong thermodynamic temperature gate; barrier suppresses large-loop rotation & Requires encounters, compatible sizes/orientations, and successful completion; preferentially builds larger loops\\
+Natural role & Establishes the low-$T$/$111$ to high-$T$/$100$ crossover & Seeds $100$ loops and preserves/grows them toward observable sizes with dose\\
+Key uncertainty & Saddle barrier and its size scaling & Encounter dimensionality, branching probability, barriers, and capture enhancement\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The model behavior recorded in the repository is consistent with this division.  An early ungated Marian implementation converted loops too efficiently at all temperatures and masked the Dudarev trend.  Introducing the competing-hazard success probability restored an activated kinetic bottleneck.  Conversely, a unary barrier that is too low also causes excessive conversion; when the barrier grows with perimeter, the unary route becomes biased toward small loops and can yield a peak followed by decay in the $100$ fraction as the population coarsens beyond its conversion window.  Marian absorption then provides a route for dose-persistent growth of already nucleated $100$ loops.
+
+This supports the qualitative statement
+\begin{center}
+\fbox{\parbox{0.88\linewidth}{\centering
+Dudarev selects thermodynamic character with temperature; Marian realizes
+nucleation and large-loop growth kinetically.}}
+\end{center}
+It does \emph{not} yet prove that both are quantitatively necessary for one fixed parameter set.  In particular, the repository calibration notes indicate that a sufficiently large second-step barrier can make $P_{\rm suc}$ extremely small in the relevant temperature range, effectively switching off the Marian channel.  A claim of necessity requires converged, dose-matched calculations with identical non-conversion parameters:
+\begin{enumerate}
+ \item neither conversion channel;
+ \item unary Dudarev-based conversion only;
+ \item Marian junction plus absorption only;
+ \item both channels together.
+\end{enumerate}
+The decisive observables are not only the total $100$ fraction, but also $N_{111}$, $N_{100}$, their mean diameters and full size distributions versus both temperature and dose.  Channel A should chiefly recover temperature selection; Channel B should chiefly recover nucleation/growth kinetics and persistence.  If only the combined case reproduces both classes of observables with one parameter set, the assertion that both mechanisms are necessary becomes well supported.
+
+\section{Implementation correspondence and cautions}
+
+The present repository declares three separate reaction-graph edges:
+\begin{itemize}
+\item \code{loop\_111to100\_unary}, with kernel \code{Gamma\_uni};
+\item \code{SIA111\_junction}, with kernel \code{K\_111\_junction};
+\item \code{SIA100\_absorb}, with kernel \code{K\_100\_absorb}.
+\end{itemize}
+This separation is scientifically valuable because it permits a clean ablation and retains exact SIA stoichiometry.
+
+Three cautions should accompany publication of the model.  First, the unary kinetic equation is a \rc closure built on Dudarev thermodynamics, not an equation derived in the 2008 paper.  Second, the log-Gaussian junction yield and absorption enhancement are mesoscale closures for unresolved geometry.  Third, using an isotropic-equivalent diffusivity for 1D/3D loop motion can under- or over-estimate loop--loop and loop--sink encounters; its sensitivity must be separated from conversion-barrier sensitivity.  These qualifications strengthen the analysis by locating precisely what is theoretical input, what is atomistic evidence, and what must be calibrated.
+
+\begin{thebibliography}{9}
+\bibitem{Dudarev2008}
+S.~L. Dudarev, R. Bullough, and P.~M. Derlet,
+``Effect of the $\alpha$--$\gamma$ Phase Transition on the Stability of Dislocation Loops in bcc Iron,''
+\emph{Physical Review Letters} \textbf{100}, 135503 (2008).
+\href{https://doi.org/10.1103/PhysRevLett.100.135503}{doi:10.1103/PhysRevLett.100.135503}.
+
+\bibitem{Marian2002}
+J. Marian, B.~D. Wirth, and J.~M. Perlado,
+``Mechanism of Formation and Growth of $\hkl{100}$ Interstitial Loops in Ferritic Materials,''
+\emph{Physical Review Letters} \textbf{88}, 255507 (2002).
+\href{https://doi.org/10.1103/PhysRevLett.88.255507}{doi:10.1103/PhysRevLett.88.255507}.
+
+\bibitem{Gao2022}
+J. Gao, E. Gaganidze, and J. Aktaa,
+``Relative population of $\half\hkl{111}$ and $\hkl{100}$ interstitial loops in $\alpha$-Fe under irradiation: Effects of C15 cluster stability and loop one-dimensional movement,''
+\emph{Acta Materialia} \textbf{233}, 117983 (2022).
+\href{https://doi.org/10.1016/j.actamat.2022.117983}{doi:10.1016/j.actamat.2022.117983}.
+
+\bibitem{RadCluster}
+Ghoniem-Org, \emph{RadCluster} source and formulation notes,
+\href{https://github.com/Ghoniem-Org/RadCluster}{github.com/Ghoniem-Org/RadCluster}, accessed 14 September 2026.
+\end{thebibliography}
+
+\end{document}

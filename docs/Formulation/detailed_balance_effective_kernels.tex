@@ -1,0 +1,380 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,bm,microtype}
+\usepackage[colorlinks=true,allcolors=blue]{hyperref}
+\newcommand{\Kern}{\mathcal{K}}
+\newcommand{\beq}{\mathrm{eq}}
+\newcommand{\bint}{\mathrm{int}}
+\newcommand{\eff}{\mathrm{eff}}
+\title{Detailed Balance for Effective One-Dimensional Reaction Kernels}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+
+\section{Reviewer comment and proposed response}
+\subsection*{Reviewer comment}
+\begin{quote}
+A related question concerns the use of detailed-balance emission rates
+together with effective sink-strength reaction kernels. While Eq.~(70) is
+standard for conventional second-order absorption reactions, the manuscript
+also relies on reaction kernels derived from 1D-mobile defect/fixed-sink
+formulations. It is unclear whether the same detailed-balance arguments remain
+applicable in such third-order reactions. At the very least, the assumptions
+and limitations underlying this approximation should be discussed.
+\end{quote}
+
+\subsection*{Proposed response}
+\begin{quote}
+We thank the reviewer for raising this important point. We agree that the
+detailed-balance relation conventionally used for a binary absorption reaction
+cannot be transferred without qualification to an effective,
+concentration-dependent sink-strength kernel.
+
+The pure-1D absorption law is not interpreted here as an elementary three-body
+reaction. It results from averaging the first-passage motion of a 1D-mobile
+cluster over the entire fixed-sink population. Its apparent third-order
+dependence arises because one factor of sink concentration specifies the
+family responsible for capture, whereas the total macroscopic cross section
+determines the mean distance between intersections of the glide trajectory and
+all sinks \cite{Borodin1998,Barashev2001,Trinkaus2002}.
+
+Detailed balance applies rigorously to the underlying reversible elementary
+transition \(A+B\rightleftharpoons C\), rather than automatically to its
+coarse-grained multisink closure. At equilibrium,
+\[
+K^{\eff}_{AB}(\bm c^{\beq})c_A^{\beq}c_B^{\beq}
+=\alpha_C^{\eff}(\bm c^{\beq})c_C^{\beq}.
+\]
+Thus, if the concentration-dependent 1D absorption kernel is retained in the
+equilibrium relation, the thermodynamically conjugate effective emission
+coefficient must contain the same environmental dependence. Combining an
+instantaneous 1D sink-strength kernel with a concentration-independent
+emission rate obtained from the conventional binary formula is not an exact
+detailed-balance construction.
+
+In the present model, the detailed-balance emission expression is therefore
+regarded as a dilute-medium, local-equilibrium approximation. Emission is
+assumed to be governed by the binding free energy of the emitting cluster,
+whereas the multisink transport correction affects capture without changing
+the intrinsic detachment event. The revised manuscript states this assumption
+and its limitations. The approximation may lose thermodynamic consistency
+when sink populations change substantially, when 1D transport produces strong
+spatial correlations, or when the system approaches thermal equilibrium.
+\end{quote}
+
+If emission is demonstrably small in the simulated regime, one may add:
+\begin{quote}
+Because the calculations address a strongly driven irradiation regime in
+which production and absorption fluxes are much greater than the relevant
+thermally activated emission fluxes, this approximation does not control the
+predicted microstructure. Nevertheless, its thermodynamic status and range of
+validity are now stated explicitly.
+\end{quote}
+
+\section{Detailed balance for a general reaction}
+Consider
+\begin{equation}
+ \sum_i\nu_{ir}^{-}X_i\rightleftharpoons
+ \sum_i\nu_{ir}^{+}X_i,\qquad
+ \Delta\nu_{ir}=\nu_{ir}^{+}-\nu_{ir}^{-}.
+\end{equation}
+For ideal mass-action kinetics,
+\begin{equation}
+ J_r^{+}=k_r^{+}\prod_i a_i^{\nu_{ir}^{-}},\qquad
+ J_r^{-}=k_r^{-}\prod_i a_i^{\nu_{ir}^{+}},
+\end{equation}
+where \(a_i\) is a dimensionless activity. Microscopic reversibility requires
+\(J_r^{+,\beq}=J_r^{-,\beq}\) for every reversible channel. Consequently,
+\begin{equation}
+ \boxed{\frac{k_r^{+}}{k_r^{-}}
+ =\prod_i(a_i^{\beq})^{\Delta\nu_{ir}}\equiv K_r^{\beq}},
+ \qquad
+ \boxed{k_r^{-}=\frac{k_r^{+}}{K_r^{\beq}}}.
+ \label{eq:general-db}
+\end{equation}
+When dimensional concentrations replace activities, powers of the standard
+concentration must be retained because forward and reverse constants generally
+have different dimensions \cite{Hill1989,Qian2022}.
+
+\section{Conventional binary absorption and emission}
+For \(X_n+X_1\rightleftharpoons X_{n+1}\), write
+\[
+ J_n^{+}=\beta_nc_nc_1,\qquad
+ J_{n+1}^{-}=\alpha_{n+1}c_{n+1}.
+\]
+Detailed balance gives
+\begin{equation}
+ \boxed{\alpha_{n+1}
+ =\beta_n\frac{c_n^{\beq}c_1^{\beq}}{c_{n+1}^{\beq}}}.
+ \label{eq:binary-db}
+\end{equation}
+If
+\[
+ \frac{c_{n+1}^{\beq}}{c_n^{\beq}c_1^{\beq}}
+ =g_{n+1}\exp\left(\frac{\Delta G_{n+1}^{b}}{k_{\rm B}T}\right),
+\]
+then
+\begin{equation}
+ \boxed{\alpha_{n+1}
+ =\frac{\beta_n}{g_{n+1}}
+ \exp\left(-\frac{\Delta G_{n+1}^{b}}{k_{\rm B}T}\right)}.
+\end{equation}
+Here \(g_{n+1}\) contains standard-state and configurational-degeneracy
+factors. Replacing binding free energy by binding energy assumes that the
+relevant entropy is negligible or included in the prefactor.
+
+\section{Pure-1D absorption as an effective higher-order law}
+Let 1D-mobile species \(A\) be captured by fixed clusters of family \(B\).
+Define
+\begin{equation}
+ \Sigma_A=\sum_j\sigma_{Aj}N_j.
+\end{equation}
+The family-resolved sink strength and per-\(A\)-cluster frequency are
+\begin{equation}
+ k_{(1),A\to B}^{2}=6\sigma_{AB}N_B\Sigma_A,\qquad
+ \Kern^{(1)}_{A\to B}
+ =6D_A\sigma_{AB}N_B\sum_j\sigma_{Aj}N_j.
+\end{equation}
+The rate density is
+\begin{equation}
+ \boxed{J_{A+B}^{+}
+ =6D_A\sigma_{AB}N_AN_B\sum_j\sigma_{Aj}N_j}
+ =\sum_j6D_A\sigma_{AB}\sigma_{Aj}N_AN_BN_j.
+ \label{eq:1d-rate}
+\end{equation}
+This resembles \(A+B+X_j\to C+X_j\), but \(X_j\) is not normally a third
+defect in the local capture event. Its population determines the ensemble
+spacing between intersections of the 1D path and sinks. The third factor is
+environmental and geometrical, generated by coarse graining
+\cite{Borodin1998,Barashev2001,Adjanor2022}.
+
+For one sink family,
+\begin{equation}
+ \boxed{J_{A+B}^{+}=6D_A\sigma_{AB}^{2}N_AN_B^2}.
+\end{equation}
+With \(\sigma_{AB}=\pi R_{AB}^{2}\),
+\begin{equation}
+ J_{A+B}^{+}=6\pi^2D_AR_{AB}^{4}N_AN_B^2,
+\end{equation}
+displaying the effective third-order and \(R^4\) dependences.
+
+\section{Detailed balance for the effective 1D closure}
+For \(A+B\rightleftharpoons C\), write
+\begin{equation}
+ J^{+}=K_{AB}^{\eff}(\bm N)N_AN_B,\qquad
+ K_{AB}^{\eff}(\bm N)=6D_A\sigma_{AB}\Sigma_A,
+\end{equation}
+and \(J^{-}=\alpha_C^{\eff}(\bm N)N_C\). At equilibrium,
+\begin{equation}
+ \boxed{\alpha_C^{\eff}(\bm N^{\beq})
+ =K_{AB}^{\eff}(\bm N^{\beq})
+ \frac{N_A^{\beq}N_B^{\beq}}{N_C^{\beq}}}.
+ \label{eq:effective-db}
+\end{equation}
+Defining
+\[
+ K_{\rm th}=\frac{N_C^{\beq}}{N_A^{\beq}N_B^{\beq}},
+\]
+gives
+\begin{equation}
+ \boxed{\alpha_C^{\eff}(\bm N^{\beq})
+ =\frac{K_{AB}^{\eff}(\bm N^{\beq})}{K_{\rm th}}}.
+\end{equation}
+This guarantees zero net flux at that equilibrium; it does not define an
+intrinsic detachment frequency away from that state.
+
+\subsection{Instantaneously consistent coarse-grained closure}
+One can impose
+\[
+ \alpha_C^{\eff}(\bm N)=K_{AB}^{\eff}(\bm N)/K_{\rm th}
+\]
+at every instant. Then
+\begin{equation}
+ \boxed{J_{\rm net}=K_{AB}^{\eff}(\bm N)
+ \left(N_AN_B-\frac{N_C}{K_{\rm th}}\right)}.
+ \label{eq:instantaneous-net}
+\end{equation}
+This preserves the equilibrium manifold, but makes the effective emission
+frequency depend on the external sink population through \(\Sigma_A\). It is
+a consistent coarse-grained reverse flux, not the intrinsic frequency at
+which \(C\) emits \(A\).
+
+\section{Formulation for genuine higher-order reactions}
+For
+\[
+ \sum_i\alpha_iX_i\rightleftharpoons\sum_i\beta_iX_i,
+\]
+the generalized mass-action flux is
+\begin{equation}
+ J_{\rm net}
+ =k^+\prod_i a_i^{\alpha_i}
+ -k^-\prod_i a_i^{\beta_i},\qquad
+ \frac{k^+}{k^-}
+ =\prod_i(a_i^{\beq})^{\beta_i-\alpha_i}.
+\end{equation}
+Detailed balance therefore applies to any molecularity, provided the forward
+and reverse laws represent the same elementary channel and use consistent
+activities.
+
+For the formal catalytic reaction
+\[
+ A+B+S\rightleftharpoons C+S,
+\]
+\[
+ J^{+}=k^{+}a_Aa_Ba_S,\qquad J^{-}=k^{-}a_Ca_S.
+\]
+The catalyst cancels from the equilibrium constant,
+\begin{equation}
+ \boxed{\frac{k^{+}}{k^{-}}
+ =\frac{a_C^{\beq}}{a_A^{\beq}a_B^{\beq}}},
+\end{equation}
+but multiplies both nonequilibrium fluxes:
+\[
+ J_{\rm net}=a_S(k^{+}a_Aa_B-k^{-}a_C).
+\]
+Thus a formally reversible multisink closure is
+\begin{equation}
+ \boxed{J_{\rm net}
+ =6D_A\sigma_{AB}\Sigma_A
+ \left(N_AN_B-\frac{N_C}{K_{\rm th}}\right)}.
+\end{equation}
+This is a reversible coarse-grained equation, but its reverse term is not an
+intrinsic evaporation rate.
+
+\section{Recommended physical formulation}
+The cleanest treatment separates intrinsic detachment from transport and
+recapture:
+\begin{equation}
+ \boxed{\alpha_C^{\bint}
+ =\nu_C\exp\left(-\frac{\Delta G_C^\ddagger}{k_{\rm B}T}\right)}.
+ \label{eq:intrinsic}
+\end{equation}
+If
+\[
+ \Delta G_C^\ddagger\simeq\Delta G_A^m+\Delta G_C^b,
+\]
+then
+\begin{equation}
+ \boxed{\alpha_C^{\bint}\simeq\nu_C
+ \exp\left[-\frac{\Delta G_A^m+\Delta G_C^b}{k_{\rm B}T}\right]}.
+\end{equation}
+The intrinsic event should not depend on unrelated external sinks. After
+emission, the released defect undergoes 1D, 1DR, or 3D transport and possible
+recapture, described separately by the appropriate transport kernel.
+
+\section{Modeling alternatives and limitations}
+\begin{enumerate}
+ \item \textbf{Mechanistic formulation (recommended):} compute intrinsic
+ emission from the detachment barrier and use the 1D or 1DR kernel only for
+ subsequent capture and recapture.
+ \item \textbf{Reversible coarse-grained formulation:} multiply the reverse
+ flux by the same concentration-dependent transport factor as the forward
+ flux, as in Eq.~\eqref{eq:instantaneous-net}. This preserves equilibrium but
+ makes the reverse coefficient an effective environmental rate.
+ \item \textbf{Dilute nonequilibrium approximation:} retain conventional
+ binary detailed-balance emission while using the effective 1D absorption
+ kernel. This may be adequate when emission is demonstrably negligible, but
+ it is not an exact detailed-balance construction.
+\end{enumerate}
+The third approximation may fail when sink populations evolve strongly,
+spatial correlations invalidate the homogeneous closure, rotation or trapping
+changes migration dimensionality, emission and recapture occur on comparable
+time scales, or the system approaches thermal equilibrium.
+
+\section{Suggested manuscript insertion}
+\begin{quote}
+\textbf{Detailed balance for concentration-dependent kernels.}
+The detailed-balance relation conventionally used for
+\(X_n+X_1\rightleftharpoons X_{n+1}\) is exact when the forward and reverse
+terms represent the same pair of elementary transitions. The sink-strength
+expression for pure 1D migration has a different status:
+\[
+K^{\eff}_{n,1}(\bm N)=6D_1\sigma_{1n}\sum_j\sigma_{1j}N_j,\qquad
+J^+_{n,1}=K^{\eff}_{n,1}(\bm N)N_nN_1.
+\]
+Its apparent higher-order dependence is not an elementary three-defect
+collision. The additional factor describes how the sink population determines
+the mean distance between intersections of a 1D trajectory and absorbing
+sinks \cite{Borodin1998,Barashev2001,Trinkaus2002}.
+
+At equilibrium, a coarse-grained reverse coefficient must satisfy
+\[
+\alpha^{\eff}_{n+1}(\bm N^{\beq})
+=K^{\eff}_{n,1}(\bm N^{\beq})
+\frac{N_n^{\beq}N_1^{\beq}}{N_{n+1}^{\beq}}.
+\]
+Thus, applying the conventional binary detailed-balance expression with an
+instantaneous concentration-dependent 1D kernel is not an exact microscopic
+construction unless the reverse term contains the same environmental
+dependence. Here thermal emission is treated as an intrinsic unimolecular
+detachment process governed by cluster binding free energy, whereas the 1D
+sink-strength factor describes subsequent transport-controlled capture. Use
+of the binary expression with an effective 1D kernel is therefore a
+dilute-medium, local-equilibrium approximation. It may become inaccurate when
+sink populations evolve strongly, spatial correlations are important, or the
+system approaches thermal equilibrium.
+\end{quote}
+
+\section*{References}
+\begin{thebibliography}{99}
+\bibitem{Smoluchowski1917}
+M. von Smoluchowski, ``Versuch einer mathematischen Theorie der
+Koagulationskinetik kolloider L{\"o}sungen,''
+\emph{Z. Phys. Chem.} \textbf{92} (1917) 129--168.
+
+\bibitem{Waite1957}
+T. R. Waite, ``Theoretical treatment of the kinetics of diffusion-limited
+reactions,'' \emph{Phys. Rev.} \textbf{107} (1957) 463--470,
+\href{https://doi.org/10.1103/PhysRev.107.463}{doi:10.1103/PhysRev.107.463}.
+
+\bibitem{GoseleSeeger1976}
+U. G{\"o}sele and A. Seeger, ``Theory of bimolecular reaction rates limited
+by anisotropic diffusion,'' \emph{Philos. Mag.} \textbf{34} (1976) 177--193,
+\href{https://doi.org/10.1080/14786437608223764}
+{doi:10.1080/14786437608223764}.
+
+\bibitem{Borodin1998}
+V. A. Borodin, ``Rate theory for one-dimensional diffusion,''
+\emph{Physica A} \textbf{260} (1998) 467--478,
+\href{https://doi.org/10.1016/S0378-4371(98)00338-0}
+{doi:10.1016/S0378-4371(98)00338-0}.
+
+\bibitem{Barashev2001}
+A. V. Barashev, S. I. Golubov, and H. Trinkaus, ``Reaction kinetics of
+glissile interstitial clusters in a crystal containing voids and
+dislocations,'' \emph{Philos. Mag. A} \textbf{81} (2001) 2515--2532,
+\href{https://doi.org/10.1080/01418610108217159}
+{doi:10.1080/01418610108217159}.
+
+\bibitem{Trinkaus2002}
+H. Trinkaus, H. L. Heinisch, A. V. Barashev, S. I. Golubov, and B. N. Singh,
+``1D to 3D diffusion-reaction kinetics of defects in crystals,''
+\emph{Phys. Rev. B} \textbf{66} (2002) 060105(R),
+\href{https://doi.org/10.1103/PhysRevB.66.060105}
+{doi:10.1103/PhysRevB.66.060105}.
+
+\bibitem{HuangMarian2019}
+S. Huang and J. Marian, ``Rates of diffusion-controlled reactions for
+one-dimensionally moving species in 3D space,''
+\emph{Philos. Mag.} \textbf{99} (2019) 2562--2583,
+\href{https://doi.org/10.1080/14786435.2019.1632930}
+{doi:10.1080/14786435.2019.1632930}.
+
+\bibitem{Adjanor2022}
+G. Adjanor, ``Complete characterization of sink strengths for mutually
+1D-mobile defect clusters: Extension to diffusion-anisotropy analog cases,''
+\emph{J. Nucl. Mater.} \textbf{570} (2022) 153970,
+\href{https://doi.org/10.1016/j.jnucmat.2022.153970}
+{doi:10.1016/j.jnucmat.2022.153970}.
+
+\bibitem{Hill1989}
+T. L. Hill, \emph{Free Energy Transduction and Biochemical Cycle Kinetics},
+Springer-Verlag, New York, 1989.
+
+\bibitem{Qian2022}
+H. Qian, ``Statistical chemical thermodynamics and energetic behavior of
+molecular systems: From equilibrium to nonequilibrium,''
+\emph{J. Phys. Chem. B} \textbf{126} (2022).
+\end{thebibliography}
+\end{document}

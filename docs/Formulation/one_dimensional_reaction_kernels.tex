@@ -1,0 +1,352 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,bm,booktabs,array,microtype}
+\usepackage[colorlinks=true,allcolors=blue]{hyperref}
+\usepackage[nameinlink,noabbrev]{cleveref}
+\newcommand{\KK}{\mathcal{K}}
+\newcommand{\Rcal}{\mathcal{R}}
+\newcommand{\dd}{\mathrm{d}}
+\newcommand{\eff}{\mathrm{eff}}
+\title{Diffusion-Limited Reaction Frequencies for One-Dimensionally Migrating Defect Clusters}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+\begin{abstract}
+This note derives reaction frequencies for a one-dimensionally (1D) migrating
+defect cluster interacting with fixed sinks, extends the result to 1D motion
+with stochastic changes of glide direction (1DR--0), and develops the three
+geometrical cases for reactions between two purely 1D-mobile clusters. The
+notation is chosen for cluster-dynamics equations written in atomic fractions.
+Particular care is taken to distinguish a volumetric bimolecular coefficient,
+a sink strength, a loss frequency in hertz, and a total reaction-rate density.
+\end{abstract}
+
+\section{Definitions and normalization}
+For BCC iron,
+\begin{equation}
+ \Omega=\frac{a^3}{2},\qquad c_\alpha=\Omega N_\alpha,\qquad
+ D_\alpha=a^2\omega_\alpha .
+\end{equation}
+Here \(N_\alpha\) is a number density, \(c_\alpha\) is an atomic fraction, and
+\(\omega_\alpha\) has units s\(^{-1}\). Four related quantities must not be
+confused:
+\begin{align}
+ \dot N_A&=-K^{\rm vol}_{AB}N_AN_B,
+ &[K^{\rm vol}]&={\rm m^3\,s^{-1}},\\
+ \dot c_A&=-K^{\rm af}_{AB}c_Ac_B,
+ &K^{\rm af}_{AB}&=K^{\rm vol}_{AB}/\Omega\quad [{\rm s^{-1}}],\\
+ \dot N_A&=-D_A k_A^2N_A,
+ &[k_A^2]&={\rm m^{-2}},\\
+ \dot c_A&=-\KK_Ac_A,
+ &\KK_A&=D_Ak_A^2\quad [{\rm s^{-1}}].
+ \label{eq:definitions}
+\end{align}
+In this note, \emph{kernel in hertz} means the loss frequency \(\KK_A\).
+Such a frequency may depend on the instantaneous sink and reactant
+populations; it is not necessarily a concentration-independent binary
+constant.
+
+\section{Pure 1D migration to fixed sinks}
+\subsection{Transport analogy: microscopic and macroscopic cross sections}
+Consider a cluster of class \(n\) gliding along a fixed line. A fixed sink of
+family \(m\) captures it when the glide line passes through the sink's
+projected capture area. In analogy with neutron transport, define
+\begin{equation}
+ \sigma_{n,m}=\pi R_{n,m}^2                         \label{eq:sigma}
+\end{equation}
+as the microscopic capture cross section. The macroscopic cross sections are
+\begin{equation}
+ \Sigma_{n,m}=\sigma_{n,m}N_m,\qquad
+ \Sigma_n=\sum_j\Sigma_{n,j}=\sum_j\sigma_{n,j}N_j,
+ \label{eq:Sigma}
+\end{equation}
+and the geometrical mean free path along an uncorrelated line is
+\begin{equation}
+ \lambda_{g,n}=\Sigma_n^{-1}.                       \label{eq:mfp}
+\end{equation}
+Thus \(\sigma\) has units m\(^{2}\), \(\Sigma\) has units m\(^{-1}\), and
+\(\lambda_g\) has units m. The symbol \(\kappa\) in the accompanying reaction
+table is precisely \(\Sigma_n\).
+
+Unlike a ballistic neutron, a gliding cluster performs a 1D random walk and
+repeatedly retraces its path. Its absorption time therefore scales as a
+squared distance divided by \(D_n\), not as a distance divided by a speed.
+
+\subsection{First-passage derivation of the sink strength}
+Let \(p(z,t)\) be the probability density on a sink-free chord bounded by
+absorbing interceptions at \(z=0\) and \(z=L\):
+\begin{equation}
+ \frac{\partial p}{\partial t}=D_n\frac{\partial^2p}{\partial z^2},
+ \qquad p(0,t)=p(L,t)=0.                            \label{eq:1d-fp}
+\end{equation}
+The mean first-passage time \(T(z)\) follows from the backward equation
+\begin{equation}
+ D_nT''(z)=-1,\qquad T(0)=T(L)=0,
+\end{equation}
+and hence
+\begin{equation}
+ T(z)=\frac{z(L-z)}{2D_n}.                          \label{eq:mfpt-position}
+\end{equation}
+For a uniformly sampled starting point on a chord,
+\begin{equation}
+ \overline T(L)=\frac1L\int_0^LT(z)\,\dd z
+ =\frac{L^2}{12D_n}.                               \label{eq:mfpt-chord}
+\end{equation}
+These equations establish the fundamental scaling
+\(\KK\sim D_n/L^2\sim D_n\Sigma_n^2\).
+
+To resolve the numerical coefficient and the absorbing family, average over
+the marked Poisson sequence of line interceptions. An interception is labelled
+\(m\) with probability
+\begin{equation}
+ P(m)=\frac{\Sigma_{n,m}}{\Sigma_n}.
+\end{equation}
+The self-consistent chemical-rate average over the two bounding
+interceptions gives the 1D screening length
+\begin{equation}
+ \lambda_{s,n}^{-2}=6\Sigma_n^2.                   \label{eq:screening}
+\end{equation}
+The coefficient differs from the inverse of
+\(\overline T(\lambda_g)\) because the physical ensemble contains a
+distribution of chord lengths and is weighted by surviving walkers, rather
+than identical chords of length \(\lambda_g\). Resolving the terminal
+interception by its mark gives
+\begin{align}
+ k^2_{(1),n,m}
+ &=P(m)\lambda_{s,n}^{-2}
+ =6\Sigma_{n,m}\Sigma_n \notag\\
+ &=6\sigma_{n,m}N_m\sum_j\sigma_{n,j}N_j.
+ \label{eq:k1-family}
+\end{align}
+This is the Borodin--Barashev 1D sink strength
+\cite{Borodin1998,Barashev2001}. It follows from line interception, 1D
+first passage, and the marked-sink ensemble; it is not a Smoluchowski
+\(4\pi RD\) result.
+
+The loss frequency of mobile cluster \(n\) to family \(m\) is
+\begin{equation}
+ \boxed{\KK^{(1)}_{n\rightarrow m}
+ =D_nk^2_{(1),n,m}
+ =6D_n\sigma_{n,m}N_m\Sigma_n.}                   \label{eq:K1-Hz}
+\end{equation}
+In atomic-fraction variables,
+\begin{equation}
+ \boxed{\KK^{(1)}_{n\rightarrow m}
+ =\frac{6D_n\sigma_{n,m}}{\Omega^2}
+ c_m\sum_j\sigma_{n,j}c_j
+ =24\omega_n\frac{\sigma_{n,m}}{a^4}
+ c_m\sum_j\sigma_{n,j}c_j.}                       \label{eq:K1-af}
+\end{equation}
+The population equation is
+\begin{equation}
+ \left.\dot c_n\right|_m=-\KK^{(1)}_{n\rightarrow m}c_n.
+\end{equation}
+
+\subsection{Origin and consequences of the \(R^4\) law}
+For one monodisperse family, with \(\sigma=\pi R^2\),
+\begin{equation}
+ k^2_{(1)}=6\sigma^2N^2=6\pi^2R^4N^2,\qquad
+ \KK^{(1)}=6\pi^2D_nR^4N^2.                       \label{eq:R4}
+\end{equation}
+The two factors of \(R^2\) have different roles. One cross section selects
+the family responsible for terminal capture; the second fixes the spacing
+between all line interceptions and hence the distance explored by 1D
+diffusion. This produces a loss frequency quadratic in sink density and
+proportional to \(R^4\).
+
+For a spherical cavity containing \(m\) vacancies,
+\begin{equation}
+ R_m=a\left(\frac{3m}{8\pi}\right)^{1/3},
+\end{equation}
+so
+\begin{equation}
+ k^2_{(1),m}\propto m^{4/3}N_m^2.
+\end{equation}
+The result assumes dilute, statistically independent sinks and a fixed glide
+direction. Correlated positions, overlap of projected cross sections, finite
+reaction probabilities, and orientation-dependent nonspherical sinks require
+modification.
+
+\section{1D migration with rotations: the 1DR--0 kernel}
+Suppose cluster \(n\) makes 1D flights and changes glide direction after a
+characteristic flight length \(\ell_n\). Its trajectory is 1D below
+\(\ell_n\) but becomes isotropic at sufficiently large scales. Let
+\(k^2_{(1),n,m}\) be given by \cref{eq:k1-family}, and let
+\(k^2_{(3),n,m}\) be the conventional 3D sink strength for the same sinks.
+The Trinkaus--Heinisch master curve is
+\begin{align}
+ k^2_{(1R),n,m}&=y_{n,m}k^2_{(1),n,m},             \label{eq:k1r}\\
+ y_{n,m}&=\frac12\left(1+\sqrt{1+4x_{n,m}^2}\right),\label{eq:y}\\
+ x_{n,m}&=\left[
+ \frac{\ell_n^2k^2_{(1),n,m}}{12}
+ +\frac{k^4_{(1),n,m}}{k^4_{(3),n,m}}
+ \right]^{-1/2}.                                  \label{eq:x}
+\end{align}
+This \(x\) is the reciprocal of another common convention; equations
+\eqref{eq:y} and \eqref{eq:x} must be copied together
+\cite{TrinkausHeinisch2002,Barashev2001}. The hertz-valued kernel is
+\begin{equation}
+ \boxed{\KK^{(1R)}_{n\rightarrow m}
+ =D_ny_{n,m}k^2_{(1),n,m}.}                        \label{eq:K1R}
+\end{equation}
+
+\subsection{Pure-1D limit}
+If \(\ell_n\sqrt{k^2_{(1)}}\gg1\), absorption normally precedes rotation.
+Then \(x\to0\), \(y=1+x^2+O(x^4)\), and
+\begin{equation}
+ \boxed{\KK^{(1R)}\longrightarrow D_nk^2_{(1)}}.
+\end{equation}
+
+\subsection{Frequent-rotation, 3D limit}
+If the flight length is short compared with the absorption length, the first
+term in \cref{eq:x} vanishes and
+\begin{equation}
+ x\longrightarrow\frac{k^2_{(3)}}{k^2_{(1)}}.
+\end{equation}
+In the usual dilute-sink regime \(k^2_{(3)}\gg k^2_{(1)}\), hence \(x\gg1\),
+\(y=x+1/2+O(x^{-1})\), and
+\begin{equation}
+ \boxed{\KK^{(1R)}\longrightarrow D_nk^2_{(3)}}.   \label{eq:3d-limit}
+\end{equation}
+Thus one frequency recovers both limiting sink strengths. The definition of
+\(\ell_n\) (mean, projected, or RMS flight length) and the convention used for
+the long-time diffusivity must match the cited master curve.
+
+\section{Reactions between two purely 1D-mobile clusters}
+Let clusters \(A\) and \(B\) have glide axes \(\bm e_A,\bm e_B\), diffusivities
+\(D_A,D_B\), and mutual capture distance \(R=R_A+R_B\). There are three
+geometrically distinct cases.
+
+\subsection{Variant I: collinear or coincident glide lines}
+When both species sample the same line family, the other mobile population
+also sets the interception spacing. Applying the marked-interception result
+symmetrically gives the collinear rate density proposed by Adjanor
+\cite{Adjanor2022}:
+\begin{equation}
+ \Rcal_{\parallel}
+ =6\pi^2R^4\left(N_A^2N_BD_B+N_B^2N_AD_A\right).  \label{eq:Rparallel}
+\end{equation}
+Dividing by \(N_A\) gives the loss frequency of an \(A\) cluster:
+\begin{equation}
+ \boxed{\KK_{A|B}^{\parallel}
+ =6\pi^2R^4\left(D_BN_AN_B+D_AN_B^2\right).}       \label{eq:Kparallel}
+\end{equation}
+Equivalently,
+\begin{equation}
+ \boxed{\KK_{A|B}^{\parallel}
+ =\frac{6\pi^2R^4}{\Omega^2}
+ \left(D_Bc_Ac_B+D_Ac_B^2\right).}                \label{eq:Kparallel-af}
+\end{equation}
+The kinetics is cubic in populations, so this is an effective many-particle
+frequency, not a concentration-independent binary constant. Strictly parallel
+but distinct lines do not react under perfect 1D motion unless their
+separation is smaller than \(R\); lattice-plane occupancy must then be
+included.
+
+\subsection{Variant II: nonparallel intersecting glide lines}
+Let \(s_A,s_B\) be displacements along two nonparallel lines that intersect.
+Near the intersection,
+\begin{equation}
+ r^2=s_A^2+s_B^2-2s_As_B\cos\theta,
+\end{equation}
+and the pair probability obeys
+\begin{equation}
+ \frac{\partial p}{\partial t}
+ =D_A\frac{\partial^2p}{\partial s_A^2}
+ +D_B\frac{\partial^2p}{\partial s_B^2},
+ \qquad p=0\quad(r=R).                             \label{eq:2d-map}
+\end{equation}
+There are two independent diffusive coordinates, so the encounter maps to a
+two-dimensional first-passage problem. For equal diffusivities, the standard
+midpoint mapping gives the long-time result
+\begin{align}
+ \Rcal_{\times}&\simeq K^{\rm vol}_{\times}(t)N_AN_B,\\
+ K^{\rm vol}_{\times}(t)&=2\pi DR\,\alpha(t),       \label{eq:Kcross-vol}\\
+ \alpha(t)&\simeq\frac{4}{\ln\!\left(4Dt/\pi R^2\right)}.
+ \label{eq:alpha}
+\end{align}
+The slowly varying logarithm is characteristic of 2D diffusion
+\cite{GoseleHuntley1975,Adjanor2022}. The hertz-valued loss kernel is
+\begin{equation}
+ \boxed{\KK_{A|B}^{\times}(t)
+ =2\pi DR\,\alpha(t)N_B
+ =\frac{2\pi DR}{\Omega}\alpha(t)c_B.}             \label{eq:Kcross-Hz}
+\end{equation}
+This contribution is approximately quadratic in concentration. For
+\(D_A\ne D_B\) or nonorthogonal axes, \cref{eq:2d-map} transforms to diffusion
+toward an ellipse. The diffusion-tensor transformation or a validated
+anisotropic correlation must be used; replacing \(D\) by \(D_A+D_B\) is not
+generally valid \cite{GoseleSeeger1976,Adjanor2022,HuangMarian2019}.
+
+\subsection{Variant III: nonparallel skew, non-coplanar glide lines}
+Let \(h\) be the minimum separation of the two infinite glide lines. At their
+closest points, contact requires \(h^2+q^2\le R^2\), where \(q\) is distance
+in the two-dimensional pair-coordinate plane. Therefore
+\begin{equation}
+ R_{\eff}(h)=
+ \begin{cases}
+ \sqrt{R^2-h^2},&h<R,\\
+ 0,&h\ge R.
+ \end{cases}                                      \label{eq:Reff}
+\end{equation}
+The intersecting-line derivation applies with \(R\to R_{\eff}\):
+\begin{equation}
+ \boxed{\KK_{A|B}^{\rm skew}(t,h)
+ =2\pi D R_{\eff}(h)\,
+ \alpha[t;R_{\eff}(h)]N_B.}                        \label{eq:Kskew}
+\end{equation}
+For a lattice population, average over admissible plane separations and glide
+variants. Since \(\alpha\) also depends on radius, the consistent average is
+\begin{equation}
+ \overline{R_{\eff}\alpha}
+ =\sum_hP(h)R_{\eff}(h)\alpha[t;R_{\eff}(h)],
+\end{equation}
+not necessarily \(\bar R_{\eff}\alpha(t;\bar R_{\eff})\).
+
+\subsection{Orientation-averaged 1D--1D kernel}
+If \(v\) unoriented glide-axis variants are equally populated, the fraction of
+non-collinear pairs is
+\begin{equation}
+ f_v=\frac{v-1}{v}.
+\end{equation}
+For the four unoriented \(\langle111\rangle\) axes in BCC iron, \(f_v=3/4\).
+Separating intersecting and skew nonparallel pairs by conditional probability
+\(p_\times\) gives
+\begin{equation}
+ \boxed{\KK_{A|B}^{1D-1D}
+ =(1-f_v)\KK_{A|B}^{\parallel}
+ +f_v\left[p_\times\KK_{A|B}^{\times}
+ +(1-p_\times)\langle\KK_{A|B}^{\rm skew}\rangle\right].}
+ \label{eq:total-1d1d}
+\end{equation}
+This displays what is hidden when only the \(6\pi^2R^4\) term is quoted. In a
+dilute system the approximately quadratic non-collinear contribution commonly
+exceeds the cubic collinear contribution. Spatial correlations, rotations,
+finite cell size, and unequal occupation of glide variants change the weights.
+
+\section{Implementation summary}
+For each mobile class \(n\) and fixed family \(m\):
+\begin{enumerate}
+ \item Compute \(\sigma_{n,m}\) and
+ \(\Sigma_n=\sum_j\sigma_{n,j}N_j\).
+ \item Form \(k^2_{(1),n,m}=6\sigma_{n,m}N_m\Sigma_n\).
+ \item If rotations occur, compute \(x,y\), and
+ \(\KK^{(1R)}_{n\to m}=D_nyk^2_{(1),n,m}\).
+ \item For two purely 1D-mobile classes, identify the collinear, intersecting,
+ or skew geometry and use the corresponding frequency.
+ \item Apply orientation and lattice-plane weights before summing frequencies.
+ \item For an \(A+A\) reaction, use the conventional factor \(1/2\) in the
+ number of events; two \(A\) objects are removed by each event.
+\end{enumerate}
+
+\paragraph{Scope.}
+The formulas assume diffusion-controlled, perfectly absorbing encounters in a
+homogeneous dilute medium. They exclude reaction barriers, elastic drift,
+correlated cascade positions, emission, and rotation changes caused by
+trapping or stress. Such effects should modify the capture probability,
+geometry, or migration model explicitly rather than being hidden in \(R\).
+
+\bibliographystyle{unsrt}
+\bibliography{one_dimensional_reaction_kernels}
+\end{document}

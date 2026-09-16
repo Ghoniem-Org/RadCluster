@@ -38,7 +38,7 @@ Usage::
 
     cd RadCluster_2_1
     python codes/make_rag_figure.py --n-max 12 \
-        --out ../docs/Formulation/rag/eurofer_rag_figure.png
+        --out ../docs/Formulation/reaction_admissibility_graph/figures/eurofer_rag_figure.png
 """
 from __future__ import annotations
 
@@ -403,6 +403,6 @@ if __name__ == "__main__":
     ap.add_argument("--no-examples", action="store_true",
                     help="omit the two worked hyperedge examples")
     ap.add_argument("--out", type=Path,
-                    default=Path("../docs/Formulation/rag/eurofer_rag_figure.png"))
+                    default=Path("../docs/Formulation/reaction_admissibility_graph/figures/eurofer_rag_figure.png"))
     a = ap.parse_args()
     build_figure(a.n_max, a.out, examples=not a.no_examples)

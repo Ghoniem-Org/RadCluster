@@ -26,7 +26,7 @@ Usage::
 
     cd RadCluster_2_1
     python codes/make_rag_hyperedge_figure.py --n-max 8 \
-        --out ../docs/Formulation/rag/eurofer_rag_hyperedges.png
+        --out ../docs/Formulation/reaction_admissibility_graph/figures/eurofer_rag_hyperedges.png
 """
 from __future__ import annotations
 
@@ -279,6 +279,6 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--n-max", type=int, default=8)
     ap.add_argument("--out", type=Path,
-                    default=Path("../docs/Formulation/rag/eurofer_rag_hyperedges.png"))
+                    default=Path("../docs/Formulation/reaction_admissibility_graph/figures/eurofer_rag_hyperedges.png"))
     a = ap.parse_args()
     build_figure(a.n_max, a.out)

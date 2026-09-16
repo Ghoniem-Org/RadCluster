@@ -1,6 +1,6 @@
 """
 check_loop_network_loss.py — end-to-end test for the loop → network-dislocation
-loss channel (docs/Formulation/loop_network_loss.tex).
+loss channel (docs/Formulation/dislocation_loops/loop_network_loss.tex).
 
 Verifies, against the C++ production solver:
 

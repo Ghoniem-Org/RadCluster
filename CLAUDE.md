@@ -16,7 +16,7 @@ RadCluster/
 │   └── Zr_RadCluster_1_0/  # Archived 2026-06-13 — zirconium cluster-dynamics variant
 ├── docs/               # Shared documentation, literature, databases
 │   ├── Database/           # Experimental microstructure databases (xlsx)
-│   ├── Formulation/        # Rate-equation derivations and code notes (PDF)
+│   ├── Formulation/        # Derivations, paper sections, studies — by topic (see Formulation/README.md)
 │   └── Literature/         # Peer-reviewed papers (PDF)
 └── requirements.txt
 ```
@@ -25,7 +25,7 @@ RadCluster/
 
 | Module | Status | Description |
 |---|---|---|
-| `RadCluster_2_1/` | **Active (dev)** | Clone of `RadCluster_2_0` adding two capabilities: **(a)** a dislocation-evolution / loop→network loss edge that saturates loop density, and **(b)** Radiation-Induced Segregation (RIS) + solute precipitation. Plans: [`docs/Formulation/loop_network_loss.tex`](docs/Formulation/loop_network_loss.tex) and [`docs/Formulation/radcluster_2_1_RIS_plan.tex`](docs/Formulation/radcluster_2_1_RIS_plan.tex). See `RadCluster_2_1/CLAUDE.md` §0. |
+| `RadCluster_2_1/` | **Active (dev)** | Clone of `RadCluster_2_0` adding two capabilities: **(a)** a dislocation-evolution / loop→network loss edge that saturates loop density, and **(b)** Radiation-Induced Segregation (RIS) + solute precipitation. Plans: [`docs/Formulation/dislocation_loops/loop_network_loss.tex`](docs/Formulation/dislocation_loops/loop_network_loss.tex) and [`docs/Formulation/segregation_and_precipitation/radcluster_2_1_RIS_plan.tex`](docs/Formulation/segregation_and_precipitation/radcluster_2_1_RIS_plan.tex). See `RadCluster_2_1/CLAUDE.md` §0. |
 | `RadCluster_2_0/` | **Active (baseline)** | Generalized graph-based cluster dynamics (Ghoniem 2026). Two-layer RAG architecture (abstract core + EUROFER-97 host declaration). Stable reference for the 2_1 work. Notebooks: `RadCluster_2_0.ipynb` (simulation driver) and `EuroferExperiments.ipynb`. |
 | `archive/RadCluster_1_0/` | Archived 2026-06-13 | Superseded by `RadCluster_2_0/`. Earlier (non-graph) generalized cluster dynamics. |
 | `archive/Monomer_CD/` | Archived 2026-06-13 | Monomer-mobility cluster dynamics scaling reference (Ghoniem & Cho 1979, no He). |

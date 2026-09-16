@@ -15,7 +15,7 @@ figure: Table 4 is a VERIFICATION at low dose, and nothing in it may be read as
 agreement with experiment.  The band is drawn where the data actually are so a
 reader cannot mistake the unconstrained region for a validated one.
 
-Output: docs/Formulation/figs/size_effect_<observable>.pdf
+Output: docs/Formulation/verification_campaign/figs/size_effect_<observable>.pdf
 """
 from __future__ import annotations
 
@@ -35,7 +35,7 @@ MOD = Path(__file__).resolve().parent.parent
 REPO = MOD.parent
 sys.path.insert(0, str(REPO))
 DB = REPO / "docs" / "Database"
-OUT = REPO / "docs" / "Formulation" / "figs"
+OUT = REPO / "docs" / "Formulation" / "verification_campaign" / "figs"
 
 LABEL_PT, TICK_PT, LEGEND_PT = 22, 20, 15
 plt.rcParams.update({

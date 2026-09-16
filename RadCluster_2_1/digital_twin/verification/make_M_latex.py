@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """make_M_latex.py — LaTeX table bodies for campaign M.
 
-Writes docs/Formulation/tables/M*.tex, which campaign_results.tex \\input{}s.
+Writes docs/Formulation/verification_campaign/tables/M*.tex, which campaign_results.tex \\input{}s.
 Generated rather than transcribed: this report has already had one table carry
 a fabricated N_eq (28006 for a run whose value was 8006) because a number was
 filled in from memory when the tool left a blank.
@@ -26,7 +26,7 @@ for p in (str(REPO), str(DT), str(HERE)):
 import runs as M                                   # noqa: E402
 
 SYNC = HERE / ".sync" / "claims"
-OUT = REPO / "docs" / "Formulation" / "tables"
+OUT = REPO / "docs" / "Formulation" / "verification_campaign" / "tables"
 DOSE = "20"
 
 
@@ -67,7 +67,7 @@ def why_blank(rec):
 def w(name, lines):
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / name).write_text("\n".join(lines) + "\n", encoding="utf-8")
-    print(f"  wrote docs/Formulation/tables/{name}")
+    print(f"  wrote docs/Formulation/verification_campaign/tables/{name}")
 
 
 def main():

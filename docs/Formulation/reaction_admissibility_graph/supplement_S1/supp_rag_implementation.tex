@@ -1,0 +1,307 @@
+% =====================================================================
+%  Supplementary Material S1 -- The Reaction Admissibility Graph:
+%  lineage, graph software, three-layer architecture, solver coupling
+%
+%  Drop-in replacement for the current S1.  Requires in the preamble:
+%    \usepackage{amsmath,amssymb,booktabs,tabularx,xcolor,tikz}
+%    \usetikzlibrary{arrows.meta,positioning,fit,backgrounds,calc,
+%                    decorations.pathreplacing,patterns}
+%  Bibliography keys are in S1_references.bib (merge into the main .bib).
+%  Code paths refer to RadCluster_2_1 (https://github.com/Ghoniem-Org/RadCluster).
+% =====================================================================
+
+\section{The Reaction Admissibility Graph: Lineage, Implementation, and Solver Coupling}
+\label{sup:S1}
+\begingroup
+\setlength{\emergencystretch}{3em}% long code identifiers: avoid overfull lines
+
+This section relates the reaction admissibility graph (RAG) of Sec.~2 to
+chemical reaction network theory, describes its software representation
+and the three-layer architecture of RadCluster, and explains how the graph
+constrains the choice of integrator. A cluster vertex is
+$\sigma=(\chi,n,p,\mathbf{c})$ (polarity, size, population, composition),
+the graph is $\mathcal{G}=(\mathcal{V},\mathcal{E},\nu,k)$, and the master
+equation is
+\begin{equation}
+  \frac{dc_a}{dt} \;=\; G_a \;+\; \sum_{r\in\mathcal{E}} S_{ar}\,J_r(\mathbf{c})
+  \;-\; \mathcal{D}_a\,c_a ,
+  \label{eq:S1_walker}
+\end{equation}
+with $S_{ar}$ the stoichiometric coefficient of vertex $a$ in edge $r$,
+$J_r$ the flux built from kernel $k_r$, $G_a$ the cascade source and
+$\mathcal{D}_a$ the loss to unresolved fixed sinks.
+
+% ---------------------------------------------------------------------
+\paragraph{Relation to chemical reaction network theory.}
+Under mass-action kinetics a chemical reaction network (CRN) evolves as
+$\dot{\mathbf{x}}=\mathsf{S}\,\mathbf{J}(\mathbf{x})$ with a constant
+stoichiometric matrix $\mathsf{S}$
+\cite{HornJackson1972,Feinberg1987,Feinberg2019,ErdiToth1989}.
+Equation~\eqref{eq:S1_walker} has this form: vertices are species, edges
+are reactions, binary edges (coalescence, annihilation) are directed
+hyperedges with two tails \cite{Klamt2009,Koch2010}, and source and sink
+edges are the inflow and outflow reactions of an open CRN. The signed
+defect content $q(\sigma)=\chi n$ is a linear invariant (a left null
+vector of $\mathsf{S}$) of every intra-host edge. Cluster dynamics also
+descends from the Smoluchowski population balance
+\cite{Smoluchowski1917}, itself an infinite CRN. The RAG is therefore a
+\emph{descendant} of CRN theory in formalism, a \emph{sibling} of
+rule-based network generators in method, and an \emph{extension} of both
+in physics (Table~\ref{tab:S1_crn}).
+
+The sibling relation guides the implementation. BioNetGen and Kappa
+\cite{Faeder2009,DanosLaneve2004} generate reactions from rules over
+structured species, and RMG \cite{Gao2016} organizes combustion mechanisms
+into reaction families with rate rules. Likewise, an \texttt{Edge} is a
+family over the size axis, its \texttt{EdgeClass} is the template, and the
+kernel library $k$ supplies the rate rules. The RAG adds a typed state
+space in which admissibility is checked structurally: (i)~polarity splits
+$\mathcal{V}$ into two layers, annihilation being the only binary
+cross-layer class and inter-population transfer being confined to one
+layer (\texttt{Edge.\_\_post\_init\_\_}); (ii)~each of the ten edge
+classes has a fixed stoichiometric contract (\texttt{EDGE\_CLASS\_SPEC}),
+so conservation of $q$ is a property of the graph rather than of each
+host's equations; (iii)~populations encode mobility and environment, so
+one size can occupy distinct vertices (e.g., glissile
+$\tfrac12\langle111\rangle$ and sessile $\langle100\rangle$ loops).
+
+These extensions also mark where CRN theory stops applying. The
+deficiency and complex-balancing theorems
+\cite{HornJackson1972,Feinberg1987} assume finite networks with constant
+rate coefficients, whereas RAG kernels are size-dependent,
+diffusion-limited and tied to emission through binding energies;
+$\mathcal{D}_a c_a$ is a mean-field closure; and the system is open and
+driven far from equilibrium. The bin-moment and helium reductions coarsen
+the graph while keeping the exact edge set, a graph-level analog of
+lumping \cite{WeiKuo1969}. Finally, the cluster-dynamics ``master
+equation'' is the deterministic rate equation~\eqref{eq:S1_walker}, not
+the chemical master equation; the latter corresponds to stochastic
+cluster dynamics \cite{Gillespie1976,MarianBulatov2011}, which could walk
+the same edge set.
+
+\begin{table}[t]
+\centering
+\caption{CRN concepts and their realization in the RAG and RadCluster.}
+\label{tab:S1_crn}
+\small
+\begin{tabularx}{\textwidth}{@{}p{0.23\textwidth}p{0.30\textwidth}X@{}}
+\toprule
+CRN concept & RAG realization & Code (RadCluster\_2\_1/\texttt{py\_utils/core}) \\
+\midrule
+Species & Vertex $\sigma=(\chi,n,p,\mathbf{c})$ & \texttt{ClusterIdentifier}, \texttt{Population}, \texttt{Polarity} \\
+Reaction & Edge $r$ with tuple $\nu_r$ & \texttt{Edge} (one \emph{family} over $n$) \\
+Reaction template / rule & Edge class (10 classes) & \texttt{EdgeClass}, \texttt{EDGE\_CLASS\_SPEC} \\
+Rate constant / rate rule & Kernel $k_r(n,n')$ & \texttt{register\_kernel} \\
+Stoichiometric matrix $\mathsf{S}$ & $S_{ar}$, implied by the class contract & \texttt{GraphWalker} \\
+Conservation law & $q=\chi n$ (and He inventory) & structural; checked by $\delta_{\rm FP}$, $\delta_{\rm He}$ \\
+Inflow / outflow & \textsc{source} / \textsc{sink} classes & cascade spectrum; $\mathcal{D}_a$ \\
+Species--reaction graph & Explicit hypergraph view & \texttt{to\_networkx} (diagnostics) \\
+Model reduction (lumping) & Bin-moment and He reductions & \texttt{reductions/} \\
+\emph{No CRN analog} & Polarity layers; population transfer; admissibility checks & \texttt{Edge.\_\_post\_init\_\_}, \texttt{rag.validate} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ---------------------------------------------------------------------
+\paragraph{Graph representation and use of network software.}
+In production the RAG is implicit. \texttt{ReactionAdmissibilityGraph}
+holds a population registry, a list of \texttt{Edge} families and a kernel
+library, and rejects an edge whose endpoints are unregistered or whose
+polarity rules fail. No vertex object is created: the walker applies each
+family's kernel vectorized over size, so one edge stands for $O(N)$ unary
+or $O(N^2)$ binary reactions. The 24 EUROFER-97 families
+(Table~\ref{tab:S1_layer2}) would expand to $10^7$--$10^9$ arcs at
+$I=V=10^3$--$10^4$, so the solver uses arrays, not a graph library.
+
+For diagnostics, \texttt{to\_networkx} materializes the graph with
+NetworkX \cite{Hagberg2008} as a \texttt{MultiDiGraph} truncated at
+$n_{\max}$, with one node per admissible vertex and sentinel
+\texttt{SOURCE} and \texttt{SINK} nodes. Unary families become
+$n\to n\pm1$ or $(p,n)\to(p',n)$ arcs, and solute trapping a self-loop.
+Because NetworkX has no hyperedge type, each binary edge is stored as its
+two tail$\to$head arcs sharing a \texttt{hyper\_id}, which preserves the
+hypergraph exactly. This representation serves three purposes.
+(a)~\texttt{structural\_report} checks weak connectivity, reachability
+from the monomer roots (an unreachable vertex is a population with no
+production channel) and vertices without outgoing arcs. For EUROFER-97
+at $n_{\max}=30$ it reports 89 vertices and 7078 arcs, full connectivity
+and no unreachable or dead vertices; coalescence and annihilation account
+for 93\% of the arcs, which is why production keeps the graph implicit.
+(b)~\texttt{write\_graphml} exports to Gephi, yEd or Cytoscape.
+(c)~The main-text RAG figures are drawn from this graph, not from a
+hand-written edge list, so they cannot drift from the model. NetworkX is
+imported lazily and is not required by the solver.
+
+% ---------------------------------------------------------------------
+\paragraph{Three-layer architecture.}
+RadCluster separates what a cluster-dynamics model \emph{is}, what a
+material \emph{admits}, and how the equations are \emph{integrated}
+(Fig.~\ref{fig:S1_arch}). Following the open--closed principle
+\cite{Meyer1988}, Layers~1 and~3 are closed to modification and a new
+material enters only by extension in Layer~2. Both closed layers are
+host-independent and verified once, so every material inherits their
+conservation structure, reductions, error control and preconditioners;
+editing either for one material would silently change all others.
+
+\emph{Layer~1, the abstract core} (\texttt{py\_utils/core}), defines the
+state-space vocabulary (\texttt{Polarity}, \texttt{Population},
+\texttt{ClusterIdentifier}), the ten edge classes and their contracts, the
+RAG container, the \texttt{StateLayout} map from vertices to the ODE
+vector, the reference \texttt{GraphWalker} that assembles
+Eq.~\eqref{eq:S1_walker} by dispatching on edge class, and the bin-moment
+and helium reductions. It names no material.
+
+\emph{Layer~2, the host declaration} (\texttt{materials/<host>} and its
+compiled mirror in \texttt{cpp\_utils}), is the only code written for a
+new material. It returns the pair (RAG, \texttt{StateLayout}) and installs
+a compiled right-hand side for Layer~3. Its selections, with the EUROFER-97
+choices in Table~\ref{tab:S1_layer2}, are:
+\begin{enumerate}
+\item \textbf{Populations}, each with $n_{\min}$, a mobility cut-off and a
+  monomer pool per polarity layer. A separate population is warranted when
+  clusters of equal size differ in mobility, binding energy or sink
+  coupling (bcc $\tfrac12\langle111\rangle$ vs.\ $\langle100\rangle$ loops;
+  hcp $\langle a\rangle$ vs.\ $\langle c\rangle$; fcc Frank loops vs.\
+  stacking-fault tetrahedra).
+\item \textbf{Composition axis}: the resolved non-host species (He for
+  steels; He and H for plasma-facing W). An empty list removes solute
+  trapping.
+\item \textbf{Edge families}: each process mapped to a class, with partner
+  and product populations. The core rejects inadmissible choices; excluded
+  channels are simply not declared, and optional ones are switched by input
+  flags (e.g., \texttt{LOOP\_NETWORK\_LOSS}).
+\item \textbf{Kernel library $k$}: size-resolved rates from diffusivities,
+  capture radii, bias factors, binding energies, sink strengths and the
+  cascade spectrum, computed by the physics modules from the input
+  workbook. $(\mathcal{V},\mathcal{E})$ is host-specific and $k$ is
+  calibration-specific, so recalibration changes data, not topology.
+\item \textbf{State representation}: discrete or bin-moment size axes and
+  the helium reduction (Case~1 for fusion, Case~2 for fission), which fix
+  the \texttt{StateLayout} and $N_{\rm eq}$.
+\item \textbf{Compiled right-hand side} (\texttt{rate\_kernels.cpp}),
+  verified against the Python \texttt{GraphWalker} in the order: walker,
+  conservation gate ($\delta_{\rm FP},\delta_{\rm He}<10^{-6}$), C++
+  mirror, calibration.
+\end{enumerate}
+
+\emph{Layer~3, the numerical engine} (\texttt{cpp\_utils/core},
+\texttt{cpp\_bridge.py}), contains the CVODE variable-order BDF driver
+\cite{Hindmarsh2005,Gardner2022}, which enforces non-negativity by a
+post-step floor rather than solver constraints (these would create a
+Jacobian kink); dense, banded, SPGMR \cite{SaadSchultz1986} (Jacobi or
+Woodbury preconditioned) and KLU \cite{DavisKLU2010} linear solvers, the
+last with a colored finite-difference Jacobian \cite{CPR1974}; the OpenMP
+active window; and the Python bridge that launches the solver and parses
+its output. It reaches the physics only through the function pointer
+\texttt{UserData.rhs\_fn}.
+
+\begin{figure}[p]
+\centering
+\input{S1_architecture_tikz}
+\caption{Three-layer architecture of RadCluster. Layers~1 and~3 are
+host-independent and closed to modification (padlocks); a material enters
+only through Layer~2, which passes Layer~3 a \texttt{StateLayout} and a
+compiled right-hand side verified against the Layer~1 walker. NetworkX
+diagnostics lie outside the solver path; dashed cards are further hosts.}
+\label{fig:S1_arch}
+\end{figure}
+
+\begin{table}[t]
+\centering
+\caption{Layer-2 selections for EUROFER-97 in RadCluster\_2\_1
+(\texttt{materials/eurofer97/declaration.py}).}
+\label{tab:S1_layer2}
+\small
+\begin{tabularx}{\textwidth}{@{}p{0.20\textwidth}X@{}}
+\toprule
+Selection & EUROFER-97 instantiation \\
+\midrule
+SIA populations & \texttt{bulk-111} ($n_{\min}=1$, mobile to $i_{\rm mobile}$, SIA monomer pool, all cascade SIA production);
+                  \texttt{bulk-100} (sessile, $n_{\min}=n_{\rm loop}$, default 4) \\
+Vacancy populations & \texttt{bulk} ($n_{\min}=1$, mobile to $v_{\rm mobile}$, vacancy monomer pool) \\
+Composition axis & He only \\
+Edge families (24) & P1 recombination; P2 cavity growth/shrinkage; P3 loop growth/shrinkage (both SIA populations);
+  P4 fixed sinks (3); P5 thermal emission (3); SIA--SIA and V--V coalescence; V--I annihilation with
+  $\tfrac12\langle111\rangle$ and $\langle100\rangle$; $\tfrac12\langle111\rangle\to\langle100\rangle$
+  conversion by unary transfer (Dudarev), junction coalescence and absorption growth (Marian);
+  cascade sources (2); P7 trap mutation; P8 radiation re-solution \\
+Excluded channels & 1D/1D reactions between mutually mobile clusters \\
+Kernel inputs & $\Omega=a^3/2$; $D_n$ with solute trapping; $\xi(n)=(3n/8\pi)^{1/3}$; bias factors; $E_b(n)$; $\rho_d$, $d_g$, precipitates; cascade spectra \\
+State representation & discrete ($N_{\rm eq}\approx 2I+V$) or bin-moment (linear, $P=2$); He Case~2 (fission) or Case~1 (fusion); five conservation integrals \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ---------------------------------------------------------------------
+\paragraph{Relationship between the solver method and the RAG.}
+The RAG is a model and the integrator a method: the graph fixes the vector
+field of Eq.~\eqref{eq:S1_walker} and the structure of its Jacobian
+$\mathsf{J}_{ab}=\partial f_a/\partial c_b$, but not how the equations are
+advanced. The same edge set can be walked by the Python reference, by
+compiled kernels under CVODE, by the bin-moment
+reconstruct--walk--project wrapper or by a stochastic algorithm. The
+graph does, however, determine which method is efficient.
+
+\emph{(i) Jacobian sparsity is RAG adjacency.} Because $J_r$ depends only
+on the tail vertices of $r$, $\mathsf{J}_{ab}\neq0$ only if some edge has
+$b$ in its tail and $a$ in its tail or head (Fig.~\ref{fig:S1_jac}).
+Unary ladder edges couple $n$ to $n\pm1$. Each monomer lies in the tail of
+$O(N)$ reactions, giving a dense column. Binary edges with a mobile
+partner $m\le i_{\rm mobile}$ couple $n$ to $n+m$, widening the band and
+making all mobile columns dense, while sessile--sessile pairs have zero
+kernel. Hence
+\begin{equation}
+  \mathsf{J} \;\approx\; \mathsf{T} + \mathsf{U}\mathsf{V}^{\mathsf T},\qquad
+  b_w=\max(2i_{\rm mobile},2v_{\rm mobile})+1,\qquad
+  r=\operatorname{rank}\mathsf{U}=i_{\rm mobile}+v_{\rm mobile},
+  \label{eq:S1_woodbury}
+\end{equation}
+with $\mathsf T$ banded (half-width $b_w$) and $\mathsf{V}$ selecting the
+mobile columns. These are the defaults of the Woodbury preconditioner
+(\texttt{prec\_bw}, \texttt{prec\_rank}): the band is probed with $2b_w+1$
+colored evaluations and factored with LAPACK, the $r$ mobile columns are
+probed individually, and $(\mathsf I-\gamma\mathsf J)\mathbf x=\mathbf b$
+is solved by the Sherman--Morrison--Woodbury identity \cite{Hager1989}
+with an $r\times r$ Schur complement. Long-range entries in the mobile
+rows are dropped, an approximation GMRES tolerates. The KLU path uses the
+same pattern explicitly, and its color count sets the evaluations per
+Jacobian.
+
+\emph{(ii) Stiffness is the spread of edge rates.} Monomer recombination
+and small-cluster migration are many orders of magnitude faster than
+absorption by large sessile clusters, hence implicit BDF integration. For
+discrete systems ($N_{\rm eq}\sim10^4$), preconditioned GMRES outperforms
+sparse direct factorization, whose colored Jacobian rebuilds dominate the
+cost; for bin-moment systems ($N_{\rm eq}\sim10^2$), per-size
+reconstruction dominates and the preconditioner matters less.
+
+\emph{(iii) Reachability governs the active window.} Vertices beyond the
+growth front are reachable only through growth or coalescence edges
+leaving it. The active window integrates this reachable subgraph and
+extends it by a fixed pad when the front concentration exceeds a
+threshold, a solution-driven breadth-first expansion from the monomer
+roots.
+
+\emph{(iv) Separating topology from kernels preserves solver structure.}
+Slowly evolving kernels can be handled by operator splitting: the network
+dislocation density of the loop-to-network loss channel is frozen within a
+segment and the kernels rebuilt between segments (\texttt{rebuild\_rates})
+with the edge set unchanged, so the sparsity pattern, coloring and
+preconditioner carry over. Bin moments replace vertex ranges by
+super-vertices yet evaluate exact per-size fluxes, inheriting
+conservation; because they alter the coupling pattern, the colored-KLU
+path is restricted to discrete modes. Since conservation of $q$ is built
+into the class contracts, $\delta_{\rm FP}$ and $\delta_{\rm He}$ measure
+integration error alone.
+
+\begin{figure}[t]
+\centering
+\input{S1_jacobian_tikz}
+\caption{RAG connectivity and the Jacobian pattern of the SIA and vacancy
+ladders. Ladder edges give the tridiagonal core, binary edges with mobile
+partners widen it to the band $\mathsf T$, and mobile hub vertices give
+the dense columns $\mathsf U\mathsf V^{\mathsf T}$ and dense rows. The
+Woodbury preconditioner retains $\mathsf T$ and the mobile columns.}
+\label{fig:S1_jac}
+\end{figure}
+\endgroup

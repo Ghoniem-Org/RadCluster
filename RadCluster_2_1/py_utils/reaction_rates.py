@@ -791,7 +791,7 @@ class ReactionRates:
         # carry it with no new edge/term, and the SIA-content ledger
         # J_SIA_fixed (which already sums k2_SIA) stays exactly conservative.
         #   Λ_n^net = ν_net · P_ℓd(n),   ν_net = v_net · ρ_net · w_c
-        # See docs/Formulation/loop_network_loss.tex Eqs. (loop_diameter_from_n,
+        # See docs/Formulation/dislocation_loops/loop_network_loss.tex Eqs. (loop_diameter_from_n,
         # loop_network_spacing, elastic_interaction_zone, P_loop_dislocation,
         # Lambda_network, vnet).
         ns_f      = np.arange(1.0, I + 1.0)

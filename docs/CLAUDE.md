@@ -7,7 +7,7 @@ Shared reference materials for the EuroferMicrostructure project.
 ```
 Docs/
 ├── Database/       # Experimental radiation microstructure databases
-├── Formulation/    # Rate-equation derivations and code documentation (PDF)
+├── Formulation/    # Derivations, paper sections, studies — organized by topic
 │                   # (canonical — supersedes legacy docs/Rate Equations/)
 └── Literature/     # Peer-reviewed papers cited across modules
 ```
@@ -25,16 +25,18 @@ Excel databases of experimental TEM/APT measurements in ferritic-martensitic ste
 
 ## Formulation/
 
-Key reference PDFs for rate-equation models:
+Organized by topic; see [`Formulation/README.md`](Formulation/README.md) for the full index.
 
-| File | Contents |
+| Folder | Topic |
 |---|---|
-| `Rate_Equations.pdf` | General rate-equation theory |
-| `Rate_Equations_Code.pdf` | Code implementation notes |
-| `Rate_equation_Eurofer.pdf` | EUROFER97-specific formulation |
-| `Ghoniem1985--*.pdf` | Ghoniem 1985 helium clustering paper |
-| `Ghoniem-Thesis.pdf` | Ghoniem thesis: cluster dynamics framework |
-| `Gao-Ghoniem.pdf` | Gao-Ghoniem sink strength expressions |
+| `cluster_dynamics_framework/` | Generalized graph-based CD framework, paper drafts, novelty analyses |
+| `reaction_admissibility_graph/` | RAG figures/exports and Supplementary S1 (architecture, solver coupling) |
+| `reaction_kernels/` | 1D reaction kernels, detailed balance |
+| `state_space_reduction_and_solvers/` | Bin moments, GPU integrator plan |
+| `dislocation_loops/` | Loop conversion, loop->network loss |
+| `segregation_and_precipitation/` | RIS and precipitation plan |
+| `steel_applications_and_calibration/` | F/M-steel application, digital twin, calibration roadmap |
+| `verification_campaign/` | Verification study: plan, results, figures, tables |
 
 ## Literature/
 

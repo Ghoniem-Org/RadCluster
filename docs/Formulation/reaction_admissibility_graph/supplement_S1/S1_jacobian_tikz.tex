@@ -1,0 +1,98 @@
+% Fig. S1 (RAG -> Jacobian structure).  Needs tikz libraries:
+%   arrows.meta, positioning, calc, decorations.pathreplacing, patterns
+\definecolor{Jband}{RGB}{52,86,139}
+\definecolor{Jdense}{RGB}{196,98,16}
+\definecolor{Jaux}{RGB}{40,120,90}
+\resizebox{0.92\textwidth}{!}{%
+\begin{tikzpicture}[font=\sffamily\footnotesize, >={Stealth[length=2mm]}]
+
+% ---------------- left: a size ladder of the RAG ------------------------
+\begin{scope}[shift={(0,0)}]
+  \node[font=\sffamily\bfseries\small, anchor=west] at (-0.3,3.55) {(a) RAG, one size ladder};
+  % mobile vertices (hubs)
+  \foreach \n/\x in {1/0,2/0.9,3/1.8}{
+    \node[circle, draw=Jdense, fill=Jdense!25, line width=0.8pt,
+          minimum size=6.5mm, inner sep=0pt] (m\n) at (\x,2.3) {\n};
+  }
+  % sessile vertices
+  \foreach \n/\x in {4/2.7,5/3.6,6/4.5,7/5.4}{
+    \node[circle, draw=Jband, fill=Jband!12, line width=0.8pt,
+          minimum size=6.5mm, inner sep=0pt] (s\n) at (\x,0.6) {\n};
+  }
+  \node at (6.25,0.6) {$\cdots$};
+  \node[circle, draw=Jband, fill=Jband!12, line width=0.8pt,
+        minimum size=6.5mm, inner sep=0pt] (sN) at (7.0,0.6) {$N$};
+  % unary ladder edges n -> n+1 among sessile
+  \foreach \a/\b in {s4/s5,s5/s6,s6/s7}{
+    \draw[->, Jband, line width=0.7pt] (\a) to[bend left=35] (\b);
+    \draw[->, Jband!60, line width=0.5pt] (\b) to[bend left=35] (\a);
+  }
+  % hub arcs: monomer (1) participates in every ladder edge
+  \foreach \t in {s4,s5,s6,s7,sN}{
+    \draw[Jdense, line width=0.45pt, densely dashed] (m1) -- (\t);
+  }
+  % binary hyperedge: m2 + s4 -> s6
+  \coordinate (hx) at (3.55,1.55);
+  \draw[Jdense!80!black, line width=0.8pt] (m2) -- (hx);
+  \draw[Jdense!80!black, line width=0.8pt] (s4) -- (hx);
+  \draw[->, Jdense!80!black, line width=0.8pt] (hx) -- (s6);
+  \fill[Jdense!80!black] (hx) circle (1.3pt);
+  \node[font=\sffamily\scriptsize, Jdense!80!black, anchor=west] at (3.7,1.75)
+       {$I_2+I_4\to I_6$};
+  \draw[decorate, decoration={brace, amplitude=4pt}, line width=0.6pt]
+       (-0.35,2.75) -- (2.15,2.75)
+       node[midway, above=3pt, font=\sffamily\scriptsize]{mobile ($n\le i_{\rm mobile}$): hubs};
+  \node[font=\sffamily\scriptsize, Jband, anchor=north] at (4.6,0.05)
+       {sessile: ladder edges; sessile--sessile kernels $=0$};
+\end{scope}
+
+% ---------------- right: Jacobian pattern -------------------------------
+\begin{scope}[shift={(9.2,-0.9)}]
+  \def\L{4.6}     % matrix side
+  \def\Is{2.6}    % SIA block size
+  \def\r{0.28}    % mobile strip width (SIA)
+  \def\rv{0.16}   % mobile strip width (VAC)
+  \def\bw{0.30}   % half band
+  \def\ax{0.22}   % aux rows
+  \node[font=\sffamily\bfseries\small, anchor=west] at (-0.3,\L+0.85) {(b) Jacobian $\mathsf J_{ab}=\partial f_a/\partial c_b$};
+  % band T along diagonal of each block (drawn top-left to bottom-right)
+  \fill[Jband!30] (0,\L) -- (\bw,\L) -- (\Is,\L-\Is+\bw) -- (\Is,\L-\Is)
+        -- (\Is-\bw,\L-\Is) -- (0,\L-\bw) -- cycle;
+  \fill[Jband!30] (\Is,\L-\Is) -- (\Is+\bw,\L-\Is) -- (\L,\ax+\bw) -- (\L,\ax)
+        -- (\L-\bw,\ax) -- (\Is,\L-\Is-\bw) -- cycle;
+  % dense mobile columns (U V^T)
+  \fill[Jdense!55] (0,\ax) rectangle (\r,\L);
+  \fill[Jdense!55] (\Is,\ax) rectangle (\Is+\rv,\L);
+  % dense mobile rows (omitted by Woodbury outside the band)
+  \fill[pattern=north east lines, pattern color=Jdense] (0,\L-\r) rectangle (\L,\L);
+  \fill[pattern=north east lines, pattern color=Jdense] (0,\L-\Is-\rv) rectangle (\L,\L-\Is);
+  % aux (He, conservation) rows
+  \fill[Jaux!45] (0,0) rectangle (\L,\ax);
+  % frame and block separators
+  \draw[line width=0.8pt] (0,0) rectangle (\L,\L);
+  \draw[black!50, densely dotted] (\Is,0) -- (\Is,\L);
+  \draw[black!50, densely dotted] (0,\L-\Is) -- (\L,\L-\Is);
+  \node[font=\sffamily\scriptsize, anchor=south] at (\Is/2,\L) {SIA};
+  \node[font=\sffamily\scriptsize, anchor=south] at ({(\Is+\L)/2},\L) {VAC};
+  \node[font=\sffamily\scriptsize, anchor=east] at (0,\ax/2) {He, cons.};
+  % band width annotation
+  \draw[<->, line width=0.5pt] (1.3,\L-1.3) -- ++(\bw*0.71,\bw*0.71)
+        node[right, font=\sffamily\scriptsize, fill=white, inner sep=1pt] {$b_w$};
+  % legend
+  \begin{scope}[shift={(-9.0,-0.35)}, font=\sffamily\footnotesize]
+    \fill[Jband!30] (0,0) rectangle (0.35,0.25);
+    \node[anchor=west] at (0.45,0.12) {band $\mathsf T$: ladder + mobile-partner reach};
+    \fill[Jdense!55] (0,-0.5) rectangle (0.35,-0.25);
+    \node[anchor=west] at (0.45,-0.38) {dense columns $\mathsf U\mathsf V^{\mathsf T}$, rank $r$};
+    \fill[pattern=north east lines, pattern color=Jdense] (0,-1.0) rectangle (0.35,-0.75);
+    \node[anchor=west] at (0.45,-0.88) {dense mobile rows (not in preconditioner)};
+    \fill[Jaux!45] (0,-1.5) rectangle (0.35,-1.25);
+    \node[anchor=west] at (0.45,-1.38) {aggregate He / conservation rows};
+  \end{scope}
+  \node[anchor=north, align=center, font=\sffamily\footnotesize] at (\L/2,-0.15)
+      {$b_w=\max(2i_{\rm mobile},2v_{\rm mobile})+1$,\quad
+       $r=i_{\rm mobile}+v_{\rm mobile}$};
+\end{scope}
+
+\draw[->, line width=1.1pt, black!60] (7.6,1.4) -- node[above, font=\sffamily\scriptsize]{$b\in\mathrm{tail}(r)$} (8.8,1.4);
+\end{tikzpicture}}

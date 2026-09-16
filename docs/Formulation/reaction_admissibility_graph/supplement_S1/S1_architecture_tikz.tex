@@ -1,0 +1,127 @@
+% Fig. S1 (architecture of RadCluster along its three layers).
+% Needs: \usetikzlibrary{arrows.meta,positioning,calc}
+\definecolor{Lone}{RGB}{52,86,139}     % Layer 1 accent
+\definecolor{Ltwo}{RGB}{196,98,16}     % Layer 2 accent
+\definecolor{Lthree}{RGB}{40,120,90}   % Layer 3 accent
+\definecolor{Ldiag}{RGB}{105,105,105}
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+  font=\sffamily\scriptsize,
+  >={Stealth[length=2.2mm]},
+  % b={color}{width}: a component box of given color and width (cm)
+  b/.style 2 args={draw=#1, fill=#1!8, rounded corners=2pt, line width=0.6pt,
+      align=center, inner sep=2pt, text width=#2 cm - 4pt,
+      minimum width=#2 cm, minimum height=15mm},
+  frame/.style={draw=#1, fill=#1!3, line width=1.1pt, rounded corners=5pt},
+  lbl/.style={font=\sffamily\bfseries\normalsize, anchor=west, text=#1},
+  det/.style={font=\sffamily\scriptsize, anchor=east, text=#1},
+  note/.style={font=\sffamily\scriptsize\itshape, text=black!70},
+  flow/.style={->, line width=1pt},
+  pics/lock/.style={code={
+      \draw[line width=1pt, #1] (-0.10,0.06) -- (-0.10,0.16)
+            arc[start angle=180, end angle=0, radius=0.10] -- (0.10,0.06);
+      \fill[#1] (-0.16,-0.17) rectangle (0.16,0.07);
+      \fill[white] (0,-0.05) circle (0.035);
+  }},
+]
+\def\W{15.9}   % total width
+
+% ======================= LAYER 1: abstract core ==========================
+\draw[frame=Lone] (-0.1,0.0) rectangle (\W+0.1,2.55);
+\pic at (0.25,2.2) {lock=Lone};
+\node[lbl=Lone] at (0.5,2.2) {Layer 1 --- Abstract core};
+\node[det=Lone] at (\W,2.2)
+  {\texttt{py\_utils/core}\quad host-independent $\cdot$ immutable};
+
+\foreach \i/\name/\txt in {
+  0/L1a/{\textbf{Cluster identifier}\\ $\sigma=(\chi,n,p,\mathbf c)$\\ {\tiny\texttt{Polarity}, \texttt{Population}}},
+  1/L1b/{\textbf{10 edge classes}\\ stoichiometric contracts\\ {\tiny\texttt{EDGE\_CLASS\_SPEC}}},
+  2/L1c/{\textbf{RAG container}\\ $\mathcal G=(\mathcal V,\mathcal E,\nu,k)$\\ admissibility checks},
+  3/L1d/{\textbf{GraphWalker}\\ reference RHS,\\ Eq.~(\ref{eq:S1_walker})},
+  4/L1e/{\textbf{StateLayout}\\ vertex $\leftrightarrow$ ODE index\\ (blocks)},
+  5/L1f/{\textbf{Reductions}\\ bin moments, $P{=}2$\\ He Case 1/2}}
+{
+  \node[b={Lone}{2.15}, anchor=west] (\name) at ({\i*2.28},1.0) {\txt};
+}
+\node[b={Ldiag}{2.1}, fill=white, dashed, anchor=east] (L1g) at (\W,1.0)
+  {\textbf{Diagnostics}\\ {\tiny\texttt{to\_networkx}}\\ NetworkX, optional,\\ off solver path};
+
+% ======================= LAYER 2: host declaration =======================
+\draw[frame=Ltwo, line width=1.5pt] (-0.1,-1.6) rectangle (\W+0.1,-7.0);
+\node[lbl=Ltwo] at (0.1,-1.92) {Layer 2 --- Host declaration};
+\node[det=Ltwo] at (\W,-1.92)
+  {written per material};
+
+% selection card
+\node[draw=Ltwo, fill=Ltwo!10, rounded corners=2pt, line width=0.8pt,
+      anchor=north west, align=left, text width=4.75cm, inner sep=4pt]
+  (L2sel) at (0,-2.3)
+  {\textbf{\normalsize\texttt{materials/eurofer97}}\\[3pt]
+   \textbf{1}\; populations: {\tiny\texttt{bulk-111}, \texttt{bulk-100}, \texttt{bulk}}\\[1pt]
+   \textbf{2}\; composition axis: He\\[1pt]
+   \textbf{3}\; 24 edge families (P1--P8, loops)\\[1pt]
+   \textbf{4}\; kernel library $k$ (calibrated)\\[1pt]
+   \textbf{5}\; discrete/bin-moment; He Case 1/2\\[1pt]
+   \textbf{6}\; compiled RHS mirror, verification};
+
+\node[b={Ltwo}{2.6}, anchor=north west] (L2decl) at (5.25,-2.35)
+  {\textbf{declaration}\\ {\tiny\texttt{build\_eurofer\_rag()}}\\ $\to(\mathcal G_{\rm Eur}$, {\tiny\texttt{StateLayout}}$)$};
+\node[b={Ltwo}{2.45}, anchor=north west] (L2phys) at (8.55,-2.35)
+  {\textbf{Physics modules}\\ {\tiny\texttt{reaction\_rates}\\ \texttt{binding\_energies}\\ \texttt{defect\_production}}};
+\node[b={gray}{1.75}, fill=black!4, anchor=north west] (inp) at (11.3,-2.35)
+  {\textbf{Input}\\ workbook,\\ calibration};
+\node[b={Ltwo}{2.6}, anchor=north west] (L2cpp) at (5.25,-4.75)
+  {\textbf{compiled RHS}\\ {\tiny\texttt{rate\_kernels.cpp}}\\ $\to$ {\tiny\texttt{rhs\_fn}}};
+
+% other hosts: extension points
+\foreach \j/\name/\txt in {
+  0/H1/{{\tiny\texttt{materials/zr}}\\ hcp: $\langle a\rangle$, $\langle c\rangle$ families},
+  1/H2/{{\tiny\texttt{materials/w}}\\ composition He, H},
+  2/H3/{{\tiny\texttt{materials/<fcc>}}\\ Frank loops, SFTs}}
+{
+  \node[b={Ltwo}{2.6}, fill=white, dashed, minimum height=12mm, anchor=north east]
+    (\name) at (\W,{-2.35-\j*1.45}) {\txt};
+}
+\node[note, anchor=north east] at (\W,-6.55) {further hosts reuse Layers 1 and 3};
+
+\draw[flow, Ltwo] (inp) -- (L2phys);
+\draw[flow, Ltwo] (L2phys) -- (L2decl);
+\draw[flow, Ltwo] (L2sel.east |- L2decl) -- (L2decl.west);
+\draw[flow, Ltwo, densely dashed] (L2decl) -- node[left, note]{mirror} (L2cpp);
+
+% ======================= LAYER 3: numerical engine =======================
+\draw[frame=Lthree] (-0.1,-8.2) rectangle (\W+0.1,-10.75);
+\pic at (0.25,-8.55) {lock=Lthree};
+\node[lbl=Lthree] at (0.5,-8.55) {Layer 3 --- Numerical engine};
+\node[det=Lthree] at (\W,-8.55)
+  {\texttt{cpp\_utils/core}, \texttt{cpp\_bridge.py}\quad host-independent $\cdot$ immutable};
+
+\foreach \i/\name/\txt in {
+  0/L3a/{\textbf{Python bridge}\\ parameter file,\\ launch, parse output},
+  1/L3b/{\textbf{CVODE (BDF)}\\ tolerances, $C_{\rm floor}$,\\ segments},
+  2/L3c/{\textbf{Linear solvers}\\ dense $\cdot$ band\\ SPGMR $\cdot$ KLU},
+  3/L3d/{\textbf{Preconditioners}\\ Jacobi; Woodbury\\ $\mathsf T+\mathsf U\mathsf V^{\mathsf T}$},
+  4/L3e/{\textbf{Sparse Jacobian}\\ CPR coloring,\\ FD fill},
+  5/L3f/{\textbf{Active window}\\ sliding fronts,\\ OpenMP RHS}}
+{
+  \node[b={Lthree}{2.5}, anchor=west] (\name) at ({\i*2.68},-9.7) {\txt};
+}
+
+% outputs
+\node[b={gray}{9.0}, fill=black!4, minimum height=8mm] (out) at (\W/2,-11.65)
+  {trajectories $c_a(t)$ $\cdot$ swelling, loop and void statistics $\cdot$
+   $\delta_{\rm FP}$, $\delta_{\rm He}$ $\cdot$ \texttt{provenance.md}};
+\draw[flow, Lthree] (\W/2,-10.75) -- (out.north);
+
+% ======================= inter-layer flows ===============================
+\draw[flow, Lone, line width=1.3pt] (L1c.south) -- (L1c.south |- L2decl.north)
+  node[pos=0.55, left, note, align=right]{instantiate:\\ types, contracts};
+\draw[flow, Ltwo, line width=1.5pt] (L2cpp.south) -- (L2cpp.south |- 0,-8.2)
+  node[pos=0.62, right, note, align=left]
+  {\texttt{rhs\_fn}, \texttt{StateLayout},\\ parameters $(i_{\rm mobile}, v_{\rm mobile})$};
+\draw[<->, line width=0.9pt, densely dashed, Lone]
+  (L1d.south) -- ++(0,-0.95) -| (8.2,-5.5) -- (L2cpp.east |- 0,-5.5)
+;
+\node[note, anchor=north west, align=left] at (8.35,-4.3)
+  {verify: walker $=$ compiled RHS\\ (conservation gate)};
+\end{tikzpicture}}

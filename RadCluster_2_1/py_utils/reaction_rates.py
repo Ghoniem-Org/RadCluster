@@ -655,7 +655,7 @@ class ReactionRates:
         # EUROFER declaration layer (build_eurofer_rag).
         le = LoopEnergetics(a=a_m * 1.0e10, Omega=Omega * 1.0e30,
                             T_star_C=float(re.get('T_star_conv_C', 450.0)),
-                            n_ref=float(re.get('n_ref_conv', 50.0)))
+                            n_ref=float(re.get('n_ref_conv', 30.0)))
         self.loop_energetics = le
 
         # (1) Unary (Dudarev) conversion rate Γ_uni(n) at the operating T:

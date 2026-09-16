@@ -555,8 +555,8 @@
   },
   {
    "key": "n_ref_conv",
-   "value": 50,
-   "why": "dF calibration anchor size; redundant with T*"
+   "value": 30,
+   "why": "dF calibration anchor size. 30 = the workbook calibration since row 8700 (18ba4d6, 2026-09-02) and the value the reference run uses; was 50 until 2026-09-16. Forced for every design WITHOUT an n_ref_conv column -- which is how row 9305 was scored at 50. Note it lies outside the sampled prior [50, 5000]."
   },
   {
    "key": "absorb_boost_100",

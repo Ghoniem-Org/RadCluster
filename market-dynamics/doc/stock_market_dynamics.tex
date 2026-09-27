@@ -1,0 +1,569 @@
+% Stock-Market Dynamics: A Graph-Based Cluster-Dynamics Model of S&P 500 Regimes
+% Style adapted from the NuMat 2026 presentation
+% "Graph-Based Cluster Dynamics of Irradiated Materials" (N.M. Ghoniem).
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=2.4cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage[font=small,labelfont=bf]{caption}
+\setlength{\abovecaptionskip}{4pt}
+\setlength{\belowcaptionskip}{4pt}
+\setlength{\textfloatsep}{8pt}
+\setlength{\floatsep}{6pt}
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.9}
+\renewcommand{\textfraction}{0.05}
+\setcounter{totalnumber}{5}
+\setcounter{topnumber}{5}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes,calc}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{sectsty}
+\usepackage{fancyhdr}
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+
+\definecolor{nmblue}{RGB}{0,51,153}
+\definecolor{nmgray}{RGB}{90,90,90}
+
+\usepackage[colorlinks=true,linkcolor=nmblue,citecolor=nmblue,urlcolor=nmblue]{hyperref}
+
+\allsectionsfont{\color{nmblue}\sffamily\bfseries}
+\subsectionfont{\color{nmblue!80!black}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[L]{\footnotesize\textcolor{nmgray}{N.M. Ghoniem}}
+\fancyfoot[C]{\footnotesize\textcolor{nmgray}{Stock-Market Dynamics: S\&P 500 Regime Clusters, 2000--2021}}
+\fancyfoot[R]{\footnotesize\textcolor{nmgray}{\thepage}}
+\renewcommand{\headrulewidth}{0pt}
+
+\setlength{\parskip}{0.45em}
+\setlength{\parindent}{0pt}
+
+\begin{document}
+
+% ---------------- Title block (presentation title-page style) ----------------
+\begin{center}
+\vspace*{0.5cm}
+{\LARGE\bfseries\color{nmblue} Stock-Market Dynamics:\\[0.3em]
+A Graph-Based Cluster-Dynamics Model\\[0.3em] of S\&P 500 Market Regimes, 2000--2021}
+\vspace{0.4cm}
+
+{\large Nasr M. Ghoniem}
+
+{\normalsize Department of Mechanical \& Aerospace Engineering\\
+University of California, Los Angeles}
+\vspace{0.3cm}
+
+{\normalsize\textcolor{nmgray}{Technical documentation, September 2026}}
+\vspace{0.4cm}
+
+{\small\textcolor{nmgray}{Adapted from the graph-based cluster-dynamics framework
+(RadCluster): the market-regime bin is a \emph{cluster}, the stocks are the
+migrating particles, and the ``reactions'' are regime drift, herding flows,
+and index entry/exit.}}
+\end{center}
+\vspace{0.6cm}
+
+\tableofcontents
+\newpage
+
+% ---------------- 1. Introduction ----------------
+\section{Introduction}
+This document describes a stock-market prototype built by reusing the
+graph-based modeling approach of RadCluster: the market is partitioned into
+discrete regime classes (vertices), and every capital-migration process is an
+admissible transition (edge) carrying a rate kernel.  The state is integrated
+as a system of ordinary differential equations over 2000--2021, and validated
+against two hindcast episodes: the 2020--21 COVID concentration and the
+2008--09 financial-crisis drawdown.
+
+In the language of the cluster-dynamics framework, the market-regime bin is
+a \emph{cluster}: each stock belongs to a cluster $R_{mv}$ labeled by its
+momentum bin $m=0,\dots,4$ and volatility bin $v=0,1,2$, the direct analog of
+the cluster size in the materials formulation.  The stocks are the migrating
+particles; $\mathbf{c}(t)\in\mathbb{R}^{15}$ is the distribution of index
+stocks across the 15 regime clusters.  The bins use \emph{absolute}
+thresholds, not cross-sectional ranks: momentum is the trailing 12-minus-1
+month return on adjusted close in the bands
+$<0\%$, $0$--$15\%$, $15$--$30\%$, $30$--$60\%$, $>60\%$;
+volatility is the trailing-60-trading-day annualized standard deviation of
+daily log returns in the terciles $<20\%$, $20$--$32\%$, $>32\%$.
+Absolute bins are essential: quintile ranks would freeze every marginal at
+$20\%$ by construction and the distribution could never concentrate, which
+is the phenomenon under study.
+
+Three edge classes act on the graph:
+\begin{itemize}
+  \item \textbf{Drift} --- the measured month-to-month Markov transition
+    matrix $\mathbf{T}$: momentum builds or decays and volatility shifts, so
+    stocks wander between adjacent regime bins.  A single stationary
+    $\mathbf{T}$ is estimated on 2000--2019, and a regime-dependent pair
+    $(\mathbf{T}_{\mathrm{calm}},\mathbf{T}_{\mathrm{stress}})$ split by the
+    VIX level is carried as the extension.
+  \item \textbf{Herding} --- the bilinear winner-chasing flux at rate $h$,
+    the market analog of the assortativity/mating term: capital flows toward
+    recent winners, the candidate mechanism for concentration episodes.
+    $h=0$ is the drift-only null.
+  \item \textbf{Source/sink} --- index additions (IPOs, promotions) and
+    removals (delistings, acquisitions), measured but tiny.
+\end{itemize}
+The forecasting objective is the \emph{future regime distribution}: what
+fraction of the market sits in each bin next month, and in particular its
+\emph{concentration} --- whether capital crowds into winner bins or disperses.
+Individual stock prices are not predicted.
+
+Two hindcast cases are carried: \textbf{Case~1}, the 2020--21 COVID episode
+(a recovery-driven concentration: $55\%$ of stocks above $60\%$ twelve-month
+return in March~2021, measured off the crash bottom); and \textbf{Case~2},
+the 2008--09 financial crisis (a drawdown: $95\%$ of stocks in the loser bin
+in late 2008).  Both are run out-of-sample from pre-episode calibration.
+
+% ---------------- 1b. Related work ----------------
+\section{Related work}
+The momentum leg of the model rests on the cross-sectional momentum
+literature: Jegadeesh and Titman~\cite{jegadeesh1993} documented that buying
+recent winners and selling recent losers earns abnormal returns over 3--12
+month horizons, the empirical basis for treating trailing return as a regime
+coordinate.  Fama and French~\cite{fama1993} systematized common risk factors
+in equity returns; volatility as the second regime axis follows the same
+risk-factor logic.
+
+The herding term belongs to the econophysics tradition of imitation-driven
+market models.  Cont and Bouchaud~\cite{cont2000} showed that random
+percolation-like herding generates the heavy-tailed return distributions seen
+in real markets from purely imitative agents.  Lux and
+Marchesi~\cite{lux1999} built a stochastic multi-agent model in which
+chartist--fundamentalist switching produces scaling and volatility
+clustering; the herding flux here is the mean-field, cluster-level
+counterpart of their switching dynamics.  At the behavioral level, Barberis,
+Shleifer and Vishny~\cite{barberis1998} modeled investor sentiment as
+conservatism plus representativeness, giving under- and over-reaction ---
+the psychological microfoundation for winner-chasing flows.
+
+Regime dependence of the drift follows Hamilton~\cite{hamilton1989}, whose
+Markov-switching model of nonstationary economic time series is the direct
+antecedent of the VIX-split transition pair
+$(\mathbf{T}_{\mathrm{calm}},\mathbf{T}_{\mathrm{stress}})$ used here.
+
+What is new here is the combination: a forward-time cluster-dynamics ODE
+framework ported from irradiated-materials modeling, with the market regime
+as the cluster, stocks as the migrating particles, a bilinear herding
+``reaction'' as the tested concentration mechanism, and two out-of-sample
+hindcast episodes (2020--21, 2008--09) on measured S\&P~500 data.
+
+% ---------------- 2. Model formulation ----------------
+\section{Model formulation}
+\subsection{State, clusters and regimes}
+The state is $\mathbf{c}(t)\in\mathbb{R}^{15}$ with
+$c_{k}(t)$ the fraction of S\&P~500 constituents in regime bin
+$k=3m+v$, $m=0,\dots,4$ the momentum bin, $v=0,1,2$ the volatility bin.
+Momentum for stock $i$ at month-end $t$ is the 12-minus-1 month total return
+on adjusted close (measured); volatility is the annualized standard
+deviation of daily log returns over the trailing 60 trading days (measured).
+Bins are absolute (Sec.~1), recomputed from the measured features each
+month; the panel runs 2000-12 through 2022-01 (253 months, 106{,}885
+stock-months; the constituent count grows 343$\to$486 over the window).
+
+\subsection{Master equation in matrix form}
+The dynamics take the compact form
+\begin{equation}
+  \frac{d\mathbf{c}}{dt} \;=\; \mathbf{P}(t) + \mathbf{S}\,\mathbf{J}(\mathbf{c})
+  \;-\; \mathbf{D}(t)\,\mathbf{c},
+  \label{eq:master}
+\end{equation}
+with the pieces identified as follows.
+\begin{itemize}
+  \item \textbf{Source vector:} $\mathbf{P}(t)\in\mathbb{R}^{15}$ ---
+    index additions $s(t)$ enter uniformly across bins (measured mean
+    $8\times10^{-4}$/month); removals are proportional at rate $d(t)$
+    (measured $\approx 0$).  Net effect on the distribution is negligible;
+    the state is renormalized each step.
+  \item \textbf{Stoichiometry and flux:} the drift is the linear part
+    $\mathbf{T}^{\!\top}\mathbf{c}$ with $\mathbf{T}$ the measured monthly
+    Markov transition matrix (discrete-time form, Sec.~3).  The herding flux
+    is the bilinear term
+    \begin{equation}
+      H_k(\mathbf{c}) \;=\; c_k\,\frac{q_k-\bar q(\mathbf{c})}{4},
+      \qquad
+      \bar q(\mathbf{c})=\sum_j c_j q_j,
+      \label{eq:herding}
+    \end{equation}
+    where $q_k\in\{0,\dots,4\}$ is the momentum bin of cluster $k$.
+    $H$ is zero-sum by construction ($\sum_k H_k=0$): it moves mass from
+    below-average-momentum bins to above-average-momentum bins at rate $h$,
+    the ``rich get richer'' ratchet.  It is the market counterpart of the
+    assortative-mating flux: bilinear in the state, sign-indefinite,
+    vanishing when $h=0$.
+  \item \textbf{Regime-dependent drift:} in the extended model the drift
+    operator switches with the volatility regime,
+    $\mathbf{T}(t)=\mathbf{T}_{\mathrm{stress}}$ when the monthly mean VIX
+    exceeds 20 and $\mathbf{T}_{\mathrm{calm}}$ otherwise, both measured on
+    pre-episode data (31{,}225 stress transitions for the 2000--2019
+    calibration, including 37 dot-com and 27 financial-crisis months).
+\end{itemize}
+In discrete monthly time the integrated form is
+\begin{equation}
+  \mathbf{c}(t{+}1) \;=\; \mathbf{T}(t)^{\!\top}\mathbf{c}(t)
+  + h\,\mathbf{H}(\mathbf{c}(t)) + \mathbf{s} - d\,\mathbf{c}(t),
+  \label{eq:discrete}
+\end{equation}
+renormalized to sum 1 each step.
+
+\subsection{Why these vertices and edges}
+Momentum and volatility are the two measured features along which equity
+crowding episodes visibly separate: in every historical concentration event
+the winner cohort is simultaneously high-momentum and elevated-volatility,
+while the loser cohort pools in the low-momentum bins.  Absolute bins keep
+the cluster semantics of the materials framework (a cluster \emph{size} is a
+fixed state, not a rank).  Drift is measured rather than modeled because the
+month-to-month migration statistics are directly observable; herding is the
+single free mechanism parameter $h$ because winner-chasing is the hypothesis
+under test, and isolating it as one bilinear term keeps the null ($h=0$)
+sharp.
+
+% ---------------- 3. Market-dynamics graph ----------------
+\section{Market-dynamics graph}
+\label{sec:rag}
+The reaction graph below is drawn from the model specification: every vertex
+is a real state variable $c_k$, every edge a real term of the right-hand
+side of Eq.~\eqref{eq:discrete}.  Vertices are the 15 regime clusters
+$R_{mv}$ on the momentum ($m$) $\times$ volatility ($v$) lattice; blue edges
+are the dominant measured drift transitions ($T_{ij}>0.08$); the red arrow is
+the herding ratchet, which carries mass rightward toward the winner column
+at rate $h$; index entry/exit attach as source/sink.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[x=2.6cm,y=2.2cm,
+  rv/.style={circle,draw,minimum size=1.05cm,inner sep=1pt,font=\small\bfseries},
+  src/.style={rectangle,draw,minimum size=0.85cm,font=\small},
+  sink/.style={diamond,draw,minimum size=0.85cm,font=\small}]
+  % vertices: momentum 0..4 (x), volatility 0..2 (y)
+  \foreach \m in {0,...,4} {
+    \foreach \v in {0,...,2} {
+      \pgfmathtruncatemacro{\b}{\m*3+\v}
+      \pgfmathsetmacro{\shade}{25+15*\m}
+      \node[rv,fill=red!\shade!white] (R\b) at (\m,\v) {\b};
+      \node[font=\tiny,gray] at (\m,\v-0.34) {$M_{\m}V_{\v}$};
+    }
+  }
+  % source / sink
+  \node[src,fill=green!20] (SRC) at (-1,1) {IPO};
+  \node[sink,fill=gray!20] (SNK) at (5,1) {delist};
+  \draw[-{Stealth},green!60!black] (SRC) -- (R3);
+  \draw[-{Stealth},gray] (R9) -- (SNK);
+  % dominant drift edges (measured T_ij > 0.08, schematic adjacency)
+  \foreach \a/\b in {0/3,1/4,2/5,3/6,4/7,5/8,6/9,7/10,8/11,9/12,10/13,11/14,
+                     0/1,3/4,6/7,9/10,12/13,1/2,4/5,7/8,10/11,13/14} {
+    \draw[-{Stealth},nmblue!60,line width=0.7pt] (R\a) -- (R\b);
+  }
+  % herding ratchet annotation (above the lattice, clear of nodes)
+  \draw[-{Stealth},red!80!black,line width=2.2pt] (0.4,2.85) -- (3.6,2.85);
+  \node[font=\small,red!80!black] at (2.0,3.12) {herding $h$: flow follows winners};
+  % axes
+  \node[font=\small] at (2,-0.75) {momentum bin $m\;\rightarrow$};
+  \node[font=\small,rotate=90] at (-1.35,1) {volatility bin $v$};
+\end{tikzpicture}
+\caption{Reaction-admissibility graph of the market-regime model, drawn from
+the specification.  Vertices: the 15 regime clusters $R_{mv}$ (bin index and
+$M_mV_v$ label).  Edges: measured drift transitions (blue), index
+entry/exit (green/gray), and the herding ratchet toward the winner column
+(red).  Node shading deepens with momentum bin.}
+\label{fig:rag}
+\end{figure}
+
+% ---------------- 4. Reaction kernel table ----------------
+\section{Reaction kernel table}
+Every admissible transition (edge class) of the graph, with its stoichiometry
+and rate kernel --- the direct analog of the RadCluster reaction table.
+
+\begin{center}
+\small
+\begin{tabular}{@{}clll@{}}
+\toprule
+\# & Process class & Transition & Kernel / flux \\
+\midrule
+1 & Index entry (source) & $\varnothing \to R_{mv}$ (uniform)
+    & $s/15$ per bin, $s=8\times10^{-4}$/mo~~[measured] \\
+2 & Drift (Markov) & $R_i \to R_j$
+    & $T_{ij}\,c_i$, $\mathbf{T}$ measured 2000--2019 \\
+3 & Regime drift & $R_i \to R_j$ under $\mathbf{T}_{\mathrm{calm}}$ /
+    $\mathbf{T}_{\mathrm{stress}}$
+    & VIX-split pair, both measured pre-episode \\
+4 & Herding (nonlinear) & mass $R_i \rightsquigarrow R_j$, $q_j>q_i$
+    & $h\,H_k(\mathbf{c})$ of Eq.~\eqref{eq:herding}, zero-sum \\
+5 & Index exit (sink) & $R_{mv} \to \varnothing$
+    & $d\,c_{mv}$, $d\approx 0$~~[measured] \\
+\bottomrule
+\end{tabular}
+\end{center}
+The herding kernel is bilinear in $\mathbf{c}$ (through $c_k$ directly and
+through $\bar q(\mathbf{c})$), sign-indefinite, and the only term carrying
+the free mechanism parameter $h$.  Drift is linear and fully measured; the
+regime pair $(\mathbf{T}_{\mathrm{calm}},\mathbf{T}_{\mathrm{stress}})$ keeps
+the same form with VIX-conditioned operators.
+
+% ---------------- 5. Parameters and assumptions ----------------
+\section{Input parameters and assumptions}
+{\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{@{}llp{3.6cm}p{2.9cm}p{1.9cm}@{}}
+\toprule
+Parameter & Symbol & Value / series & Source & Quality \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+Prices & $p_i(t)$ & daily adj.\ close, 486 tickers, 2000--2021 &
+  Yahoo Finance~\cite{yahoo-finance} & measured \\
+Constituents & --- & 503 current S\&P~500 members &
+  s-and-p-500-companies~\cite{sp500-list} & measured \\
+Momentum & $r_i(t)$ & 12-minus-1 month return on adj.\ close &
+  computed from Yahoo prices~\cite{yahoo-finance} & measured \\
+Volatility & $\sigma_i(t)$ & trailing-60d ann.\ stdev of log returns &
+  computed from Yahoo prices~\cite{yahoo-finance} & measured \\
+VIX & $V(t)$ & daily close, monthly mean; stress $>20$ &
+  CBOE \^{}VIX via Yahoo~\cite{yahoo-finance} & measured \\
+Drift & $\mathbf{T}$ & $15\times15$ monthly transitions, 2000--2019 &
+  counted from the regime panel & measured \\
+Regime drift & $\mathbf{T}_{\mathrm{calm}},\mathbf{T}_{\mathrm{stress}}$ &
+  63{,}592 calm / 31{,}225 stress transitions (2000--2019) &
+  VIX-split counts from the regime panel & measured \\
+Herding rate & $h$ & $0$ (null); swept $0$--$3$; best $0$ calm, $0.2$ stress &
+  grid calibration on pre-episode data & calibrated \\
+Index entry & $s$ & $8\times10^{-4}$/month, uniform &
+  panel appearance rate & measured \\
+Index exit & $d$ & $\approx 0$ &
+  panel disappearance rate & measured \\
+Bin edges & --- & mom:\ $<0,0$--$15,15$--$30,30$--$60,>60\%$; vol:\
+  $<20,20$--$32,>32\%$ &
+  set from empirical quantiles & assumed \\
+VIX threshold & $V^*$ & $20$ &
+  separates historical stress months & assumed \\
+Initial state & $\mathbf{c}(t_0)$ & observed distribution at episode start &
+  regime panel & measured \\
+Survivorship & --- & panel 343$\to$486 stocks; delisted losers missing early &
+  current-constituent backfill & assumed (bias noted) \\
+\end{longtable}
+}
+Validation: two out-of-sample hindcasts (Sec.~6).  The 2016--2019 calm
+calibration selects $h=0$ with RMSE $0.0451$ on bin shares, i.e.\ drift alone
+explains the tranquil distribution.  Survivorship bias: backfilling current
+constituents understates early loser-bin mass (delisted stocks are
+disproportionately losers), so historical drawdown concentrations are lower
+bounds.
+
+% ---------------- 6. Results ----------------
+\section{Results}
+\label{sec:results}
+\paragraph{Scenario structure.} \textbf{Case~1 (2020--21 COVID episode):}
+hindcast January~2020$\to$December~2021 from the observed January~2020
+distribution, drift calibrated 2000--2019 --- the featured case.  The episode
+is a recovery-driven concentration: the March~2021 twelve-month winner share
+($>60\%$ bin) reaches $55\%$ measured off the crash bottom.
+\textbf{Case~2 (2008--09 financial crisis):} hindcast January~2008$\to$
+December~2009 from the observed January~2008 distribution, drift calibrated
+2000--2007.  The episode is a drawdown: $95\%$ of stocks sit in the loser
+bin ($<0\%$) in late 2008.
+
+\paragraph{Calm-period calibration.} On 2016--2019 the herding sweep selects
+$h=0$ decisively (RMSE $0.0451$ at $h=0$, rising monotonically to $0.1444$ at
+$h=3$): in tranquil markets the measured drift explains the regime
+distribution and winner-chasing adds nothing.
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{figs/calibration.png}
+\caption{Herding calibration on 2016--2019: RMSE of predicted vs.\ observed
+bin shares vs.\ $h$.  The null $h=0$ wins; herding degrades the calm-period
+fit monotonically.}
+\label{fig:calibration}
+\end{figure}
+
+\subsection{Case~1: the 2020--21 concentration}
+With the long-history calibration (2000--2019), the regime-switching model
+with $h=0.2$ attains RMSE $0.0821$, about $8\%$ better than stationary drift
+($0.0888$):
+\begin{center}
+\small
+\begin{tabular}{@{}lc@{}}
+\toprule
+Model & RMSE (bin shares) \\
+\midrule
+Stationary $\mathbf{T}$, $h=0$ & 0.0888 \\
+Stationary $\mathbf{T}$, $h=0.2$ & 0.0865 \\
+Regime $(\mathbf{T}_{\mathrm{calm}},\mathbf{T}_{\mathrm{stress}})$, $h=0$ & 0.0872 \\
+Regime $+~h=0.2$ & \textbf{0.0821} \\
+\bottomrule
+\end{tabular}
+\end{center}
+The regime operator bends toward the concentration while stationary drift
+stays flat (Fig.~\ref{fig:hindcast2020}).  Mechanism first: the earlier
+short-history failure (Sec.~1, REPORT.md) was data starvation --- with only
+5 stress months $\mathbf{T}_{\mathrm{stress}}$ had a $0\%$ stationary
+winner share and actively pushed mass away from winners.  With 31{,}225
+stress transitions its stationary top-bin share is $5.6\%$: the operator
+finally knows winner dynamics exist.
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{figs/hindcast_2020_longT.png}
+\caption{Case~1 hindcast: fraction of stocks in the top momentum bin
+($>60\%$ twelve-month return), actual vs.\ stationary drift vs.\
+regime-switching drift with herding.  Neither model captures the full
+March~2021 spike ($55\%$), but the regime model rises toward the
+concentration while stationary drift stays flat.}
+\label{fig:hindcast2020}
+\end{figure}
+
+\subsection{Case~2: the 2008--09 drawdown}
+Calibrated 2000--2007 (11{,}538 stress transitions), the regime model wins
+outright at $h=0$ (RMSE $0.1110$ vs.\ $0.1293$ stationary, $\sim$14\%
+improvement) --- and herding \emph{hurts} ($0.1431$):
+\begin{center}
+\small
+\begin{tabular}{@{}lc@{}}
+\toprule
+Model & RMSE (bin shares) \\
+\midrule
+Stationary $\mathbf{T}$, $h=0$ & 0.1293 \\
+Stationary $\mathbf{T}$, $h=0.2$ & 0.1431 \\
+Regime $(\mathbf{T}_{\mathrm{calm}},\mathbf{T}_{\mathrm{stress}})$, $h=0$ & \textbf{0.1110} \\
+Regime $+~h=0.2$ & 0.1269 \\
+\bottomrule
+\end{tabular}
+\end{center}
+The herding flux pushes mass toward winners while crash dynamics drain into
+losers, so $h>0$ is actively wrong in a drawdown.  The mechanism conclusion:
+$h$ is not a universal constant --- its useful sign depends on episode type
+(recovery vs.\ crash).  Regime $\mathbf{T}$ at $h=0$ is the most robust
+single model: it wins Case~2 outright and is second in Case~1.
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{figs/hindcast_2008.png}
+\caption{Case~2 hindcast: fraction of stocks in the bottom momentum bin
+(losers, $<0\%$), actual vs.\ stationary drift vs.\ regime-switching drift
+with herding.  The drawdown drives $95\%$ of stocks into the loser bin by
+late 2008; the regime model tracks the early phase better.  (Survivorship:
+delisted losers are missing, so the observed concentration is a lower
+bound.)}
+\label{fig:hindcast2008}
+\end{figure}
+
+\paragraph{Distribution snapshots.} Figure~\ref{fig:distsnap} shows observed
+vs.\ predicted regime distributions at three dates: the COVID shock
+(June~2020, mass piled in the loser column), the vaccine-recovery
+(December~2021), and the featured concentration shape.
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{figs/dist_2020-06.png}
+\vspace{0.6em}
+\includegraphics[width=\textwidth]{figs/dist_2021-12.png}
+\caption{Regime-distribution snapshots: observed vs.\ model ($h$ best) vs.\
+drift-only null, June~2020 (top) and December~2021 (bottom).  Bin labels
+$M_mV_v$: momentum bin $m$, volatility bin $v$.}
+\label{fig:distsnap}
+\end{figure}
+
+\paragraph{Amplitude gap.} Neither case's full spike is captured
+($55\%$ top-bin in March~2021; $95\%$ bottom-bin in late 2008).  The monthly
+Markov drift mean-reverts too fast toward its stationary distribution; the
+additive herding flux of Eq.~\eqref{eq:herding} can only redistribute mass
+the drift already moves.  This is the honest boundary of the prototype and
+the first item of Sec.~7.
+
+% ---------------- 7. Suggestions ----------------
+\section{Suggestions for more accurate models and data}
+\begin{enumerate}
+\item \textbf{Multiplicative herding on rates.} Let $h$ modulate the
+  transition rates themselves,
+  $T_{ij}(h)\propto T_{ij}\exp(h\,q_j)$, rather than adding an independent
+  flux.  An amplifier acting on existing flows can generate sharper
+  concentrations than the additive perturbation of Eq.~\eqref{eq:herding}.
+\item \textbf{Episode-signed herding.} Case~1 vs.\ Case~2 show the useful
+  sign of $h$ flips between recovery and crash.  Condition $h$ on the VIX
+  \emph{change} (rising vs.\ falling), not just its level, or fit
+  $h_{\mathrm{crash}}<0<h_{\mathrm{recovery}}$.
+\item \textbf{Memory in the drift.} A first-order Markov operator forgets
+  too fast.  Second-order transitions or a slow-moving latent factor would
+  let concentrations persist at observed amplitudes.
+\item \textbf{Capitalization weighting.} The state is currently equal-weight
+  (stock counts).  The 2020--21 narrative is cap-weighted (mega-cap tech);
+  historical shares-outstanding would let $\mathbf{c}(t)$ track capital
+  rather than headcount.
+\item \textbf{Historical membership.} Replace the backfilled current
+  constituents with true historical S\&P~500 membership (CRSP) to remove the
+  survivorship bias, which currently understates drawdown concentrations.
+\item \textbf{Finer volatility resolution and intraday features.} Three
+  volatility bins are coarse; turnover/liquidity as a third feature axis is
+  the natural next vertex dimension.
+\item \textbf{Out-of-sample rolling forecasts.} Replace the two-episode
+  hindcast with rolling 12-month-ahead forecasts over the full window,
+  reporting probabilistic skill (CRPS on bin shares) rather than RMSE alone.
+\end{enumerate}
+
+% ---------------- 8. References ----------------
+\section{References}
+\vspace{-1.4em}
+\renewcommand{\refname}{}
+{\small
+\begin{thebibliography}{9}
+
+\bibitem{jegadeesh1993}
+Jegadeesh, N.\ and Titman, S.\ ``Returns to buying winners and selling
+losers: implications for stock market efficiency.'' \textit{Journal of
+Finance} 48(1), 65--91, 1993.  Cross-sectional momentum: the empirical basis
+for the momentum regime coordinate.
+
+\bibitem{fama1993}
+Fama, E.~F.\ and French, K.~R.\ ``Common risk factors in the returns on
+stocks and bonds.'' \textit{Journal of Financial Economics} 33, 3--56, 1993.
+Risk-factor logic behind the volatility regime axis.
+
+\bibitem{cont2000}
+Cont, R.\ and Bouchaud, J.-P.\ ``Herd behavior and aggregate fluctuations in
+financial markets.'' \textit{Macroeconomic Dynamics} 4(2), 170--196, 2000.
+Imitation-driven herding as the generator of heavy-tailed aggregate
+fluctuations.
+
+\bibitem{lux1999}
+Lux, T.\ and Marchesi, M.\ ``Scaling and criticality in a stochastic
+multi-agent model of a financial market.'' \textit{Nature} 397, 498--500,
+1999.  Chartist--fundamentalist switching; the herding flux here is its
+mean-field cluster-level counterpart.
+
+\bibitem{barberis1998}
+Barberis, N., Shleifer, A.\ and Vishny, R.\ ``A model of investor
+sentiment.'' \textit{Journal of Financial Economics} 49, 307--343, 1998.
+Conservatism plus representativeness: behavioral microfoundation for
+winner-chasing flows.
+
+\bibitem{hamilton1989}
+Hamilton, J.~D.\ ``A new approach to the economic analysis of nonstationary
+time series and the business cycle.'' \textit{Econometrica} 57(2), 357--384,
+1989.  Markov regime switching: the antecedent of the VIX-split drift pair.
+
+\bibitem{yahoo-finance}
+Yahoo Finance.  Daily OHLCV and adjusted close, S\&P~500 constituents,
+2000--2021; CBOE VIX daily close (\texttt{\^{}VIX}), 2000--2021: measured
+price, momentum, volatility, and regime-label inputs.
+
+\bibitem{sp500-list}
+\texttt{datasets/s-and-p-500-companies}, constituents.csv (503 current
+members, retrieved September~2026): measured constituent list.  Backfilled,
+hence the survivorship bias noted in Sec.~5.
+
+\bibitem{market-code}
+Ghoniem, N.~M.\ \texttt{radcluster/market-dynamics} (branch
+\texttt{Stock-Market-Dynamics}): fetch, regime-building, model, and
+hindcast code; \texttt{data/regimes.csv} (106{,}885 stock-months); this
+project.
+
+\end{thebibliography}
+}
+
+\end{document}

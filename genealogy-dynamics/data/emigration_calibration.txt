@@ -1,0 +1,9 @@
+# Emigration rate calibration (data/calibrate_emigration.py)
+# Grid search on 1980-2024 total population vs World Bank SP.POP.TOTL.
+# SSE = sum of squared errors over all 45 annual totals.
+# Calibrated 2026-09-25
+eps_calibrated=0.00075
+sse_at_calibrated=48.640
+endpoint_error_M=-1.985
+coarse_grid_argmin_sse=0.0008
+coarse_grid_argmin_endpoint=0.0006

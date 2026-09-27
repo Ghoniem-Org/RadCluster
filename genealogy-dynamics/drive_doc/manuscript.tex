@@ -1,0 +1,635 @@
+% Genealogy Dynamics -- publication manuscript.
+% Compile: pdflatex manuscript && bibtex manuscript && pdflatex manuscript && pdflatex manuscript
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue}
+\usepackage{enumitem}
+
+\title{Genealogy Dynamics: Cluster-Dynamics Modeling of U.S.\
+Population Pedigree Structure, 1650--2050}
+\author{Nasr M.\ Ghoniem}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We develop a forward-time cluster-dynamics framework for the pedigree
+structure of a national population, ported from the graph-based
+cluster-dynamics methods of irradiated materials.  Individuals are grouped
+into pedigree-depth clusters $C_0,\dots,C_n$ ($C_0$ = foreign-born;
+$C_d$ = $d$ generations of U.S.\ births along the relevant bloodline),
+split into paternal and maternal populations, and evolved under the
+master equation $d\mathbf{c}/dt=\mathbf{P}+\mathbf{SJ}-\mathbf{Dc}$,
+where $\mathbf{P}$ is immigration, $\mathbf{S}$ a 0--1 stoichiometry
+matrix, $\mathbf{J}$ the mating-flux vector, and $\mathbf{D}$ mortality
+and emigration.  Mating is represented as a catalytic reaction on an
+explicit reaction-admissibility graph (RAG), drawn at global (two-sex),
+religious, regional, and age-structured levels.  Two inheritance rules
+are compared: \emph{shallowest inheritance}, under which a child
+continues the shallower parental bloodline
+($c(q,r)=\min(n,1+\min(q,r))$), and \emph{deepest inheritance}, under
+which a child continues the deeper one
+($c(q,r)=\min(n,1+\max(q,r))$).  Deterministic integration is paired
+with a $\tau$-leaping stochastic jump process to quantify finite-population
+noise.  Grounded in measured U.S.\ demographic series (DHS immigration,
+World Bank and NCHS vital rates, Census and Haines historical anchors)
+over 1650--2025 with hindcast validation, the model predicts the 2025
+pedigree distribution and projects it to 2050.  The headline finding is
+structural: under shallowest inheritance the deepest cluster $C_{14}$
+holds 0.45\% of Americans in 2025, while under deepest inheritance it
+holds 18.4\%, with total population identical (259.0~million) --- the
+inheritance rule redistributes mass without changing the total.  Class
+assortativity is calibrated at $\alpha_{\mathrm{CPS}}\approx0.66$
+against CPS generational data; the enforced central value $\alpha=0.8$
+is anchored to measured religious endogamy.  The 2025--2050 projection
+gives 279.7~million Americans with the unaffiliated share rising from
+27.9\% to 36.4\%.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+% =====================================================================
+\section{Introduction}
+% =====================================================================
+
+\subsection{Background}
+Every American alive today stands at the tip of a pedigree: two parents,
+four grandparents, eight great-grandparents, doubling each generation
+into the past until the lines begin to repeat.  How deep those
+unbroken domestic bloodlines run --- how many consecutive generations of
+a family were born on U.S.\ soil --- is a basic structural fact about a
+population, as fundamental as its age pyramid or its geographic spread,
+yet it has rarely been modeled as a dynamical quantity.  This paper
+treats pedigree depth the way demography treats age: as a state variable
+carried by every individual, advanced by births, diluted by immigration,
+and sorted by who mates with whom.
+
+We discretize pedigree depth into clusters $C_0,C_1,\dots,C_n$.
+$C_0$ is the foreign-born population.  A U.S.-born individual belongs
+to $C_d$ according to the depth of the relevant ancestral bloodline,
+with $n=14$ as the default cap (about 375~years at the measured mean
+generation interval of $\sim$26.8~years).  The population is split
+into paternal and maternal subpopulations, and the cluster
+concentrations $\mathbf{c}(t)$ evolve under births, deaths,
+immigration, and emigration.  The central modeling choice --- and the
+axis of this paper --- is the \emph{inheritance rule} that assigns a
+newborn to a cluster from its parents' clusters.  We compare two
+limiting definitions.  Under \emph{shallowest inheritance} the child
+continues the shallower of the two parental bloodlines: one immigrant
+ancestor anywhere in the pedigree breaks the line, so only deep-by-deep
+pairings replenish the deep clusters.  Under \emph{deepest inheritance}
+the child continues the deeper parental bloodline: a single deep parent
+suffices, so deep ancestry ratchets upward through mixed pairings and
+accumulates at the cap.  These two rules bracket the plausible
+interpretations of ``how deep are American roots,'' and, as we show,
+they produce sharply different deep-tail distributions from identical
+demography.
+
+\subsection{Significance: future population trends and public policy}
+The United States is entering a demographic regime in which immigration,
+not natural increase, drives population change.  The Census Bureau's
+2023 National Population Projections show that varying immigration
+assumptions alone shifts the projected 2100 population by as much as
+209~million people, between 226 and 435~million
+\cite{census-projections-2023}; the Congressional Budget Office projects
+that immigration accounts for about three-quarters of population growth
+over the coming decade and \emph{all} of it after 2042
+\cite{cbo-demographic-2023}.  In such a regime, the pedigree-depth
+distribution is not antiquarian trivia: it measures, generation by
+generation, how immigration waves propagate through the native-born
+population and how quickly --- under different mating and inheritance
+assumptions --- a population of immigrants becomes a population of
+deep-rooted natives.  That quantity informs debates over assimilation
+timelines, the meaning of ancestry statistics, and the long-run
+composition effects of immigration policy.
+
+The religious dimension carries direct policy relevance of its own.
+Pew Research Center's \textit{Modeling the Future of Religion in
+America} projects that, if religious switching continues at recent
+rates, Christians fall below 50\% of Americans by 2060 while the
+religiously unaffiliated reach 41\% by 2070 \cite{pew-religion-2022}.
+Our model couples that disaffiliation flow to pedigree dynamics and
+produces an independent 2025--2050 projection (unaffiliated 27.9\% to
+36.4\%), offering a mechanistic check on trend extrapolations.  More
+broadly, a forward model that resolves pedigree depth by religion,
+region, and age gives policymakers a laboratory: change an immigration
+level, a fertility schedule, or an endogamy rate, and watch the
+compositional consequences unfold over decades.
+
+\subsection{Related work}
+Pedigree dynamics has a compact theoretical literature on which this
+work builds.  Chang~\cite{chang1999} studied a two-parent analog of the
+Wright--Fisher model and showed that the genealogical most recent
+common ancestor of a population of size $N$ lies $\sim\!\log_2 N$
+generations back, with an ``identical ancestors'' point at
+$1.77\log_2 N$ generations where every surviving lineage becomes an
+ancestor of everyone --- the formal ancestor of the longest-thread
+argument behind the inheritance rules here.  Rohde, Olson and
+Chang~\cite{rohde2004} extended this to structured populations with
+migration by simulation, showing that recent common ancestry survives
+realistic substructure; our regional and religious compartments are the
+ODE counterpart of their agent model.  Derrida, Manrubia and
+Zanette~\cite{derrida1999,derrida2000} derived the statistics of
+pedigree collapse --- ancestor repetitions reach a stationary shape
+after $\sim\!\log N$ generations --- which underlies the
+cluster-depth wavefront that advances roughly one rung per generation
+in the colonial runs.
+
+The religious dimension follows the cultural-transmission modeling
+tradition: Manrubia and Zanette~\cite{manrubia2002} modeled a vertically
+transmitted cultural trait (the surname) with a birth--death master
+equation, and Cavalli-Sforza and Feldman~\cite{cavalli-sforza1981}
+founded the quantitative theory of cultural transmission on which our
+group-specific endogamy and disaffiliation transfers rest.
+
+One caveat from that literature is imported explicitly: Matsen and
+Evans~\cite{matsen2008} showed that genealogical and genetic ancestry
+run on different timescales, so cluster depth here is a statement about
+pedigrees, not about genetic contribution.
+
+What is new here is the combination: a forward-time cluster-dynamics
+ODE framework ported from irradiated-materials modeling
+\cite{radcluster}, with catalytic mating reactions on an explicit
+reaction-admissibility graph; two-sex, age, regional, and religious
+structure; two limiting inheritance rules compared head-to-head; and a
+1650--2025 U.S.\ run grounded in measured demographic series with
+hindcast validation, plus a 2025--2050 prediction case.
+% =====================================================================
+\section{Model Formulation}
+% =====================================================================
+\label{sec:model}
+
+\subsection{State, clusters, and populations}
+\label{sec:state}
+The state vector $\mathbf{c}(t)\in\mathbb{R}^{2(n+1)}_{\ge 0}$ has
+components $c_{d,\alpha}$ = population of cluster state $(d,\alpha)$ in
+millions of people, with pedigree-depth cluster $d=0,\dots,n$ and
+population $\alpha\in\{\mathrm{pat},\mathrm{mat}\}$ (paternal/male and
+maternal/female).  The components are block-ordered,
+\[
+  \mathbf{c}=[c_{0,\mathrm{pat}},\dots,c_{n,\mathrm{pat}},
+              c_{0,\mathrm{mat}},\dots,c_{n,\mathrm{mat}}]^\top,
+\]
+paternal block first, then maternal.  The total population is
+$N(t)=\sum_{d,\alpha}c_{d,\alpha}(t)$; the cluster totals
+$T_d(t)=c_{d,\mathrm{pat}}(t)+c_{d,\mathrm{mat}}(t)$ are the quantities
+reported in the results.  The default depth is $n=14$, set from the
+measured mean generation interval ($\sim$26.8~yr over the 375-year
+colonial span); $n$ is a free parameter and the cap
+$C_n=\sum_{d\ge n}$ is bit-conserving, with no artificial pile-up
+detected at the boundary.
+
+\subsection{Inheritance rules}
+\label{sec:rules}
+A U.S.-born child of a paternal-cluster-$q$ father and a
+maternal-cluster-$r$ mother is assigned to a cluster by the inheritance
+rule $c(q,r)$.  We compare two limiting definitions:
+\begin{align}
+  c_{\mathrm{shallow}}(q,r) &= \min(n,\,1+\min(q,r)),
+  \label{eq:shallow}\\
+  c_{\mathrm{deep}}(q,r)    &= \min(n,\,1+\max(q,r)).
+  \label{eq:deep}
+\end{align}
+Under \emph{shallowest inheritance}~\eqref{eq:shallow} the child
+continues the shallower parental bloodline: every ancestor must be
+U.S.-born on both sides, so a single immigrant anywhere in the
+$n$-generation pedigree breaks the line, and only deep-by-deep pairings
+replenish the deep clusters.  Under \emph{deepest
+inheritance}~\eqref{eq:deep} the child continues the deeper parental
+bloodline: one deep parent suffices to keep the lineage deep.  Both
+rules agree when $q=r$ and when both parents are foreign-born
+($c(0,0)=1$); they differ exactly when the parents sit at different
+depths.  The two rules are the extreme interpretations of pedigree
+depth, and bracketing them brackets the plausible answers.
+
+\subsection{Master equation}
+\label{sec:master}
+The dynamics take the compact cluster-dynamics form
+\begin{equation}
+  \frac{d\mathbf{c}}{dt} \;=\; \mathbf{P}(t) + \mathbf{S}\,\mathbf{J}(\mathbf{c})
+  \;-\; \mathbf{D}(t)\,\mathbf{c},
+  \label{eq:master}
+\end{equation}
+with the pieces identified as follows.
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{Source vector} $\mathbf{P}(t)$: immigration inflow into
+  $C_0$ (foreign-born), split paternal/maternal by the immigrant sex
+  share $\sigma(t)$.
+  \item \textbf{Stoichiometry matrix} $\mathbf{S}$: a 0--1 matrix
+  mapping each mating reaction to the child cluster state it produces;
+  its columns are indexed by parental pairs $(q,r)$ and fixed by the
+  inheritance rule via~\eqref{eq:shallow} or~\eqref{eq:deep}.
+  \item \textbf{Mating-flux vector} $\mathbf{J}(\mathbf{c})$: the rate
+  of each $(q,r)$ pairing, proportional to the fertility-weighted
+  concentrations of the two parental states and the assortativity
+  kernel of Sec.~\ref{sec:assort}.
+  \item \textbf{Loss matrix} $\mathbf{D}(t)$: diagonal, carrying
+  sex- and cluster-specific mortality $\mu(t)$ plus emigration
+  $\varepsilon$.
+\end{itemize}
+Mating is catalytic: parents are not consumed by the reaction, only the
+child state is created --- hence the $\mathbf{SJ}$ structure with no
+negative stoichiometric entries for the parents.  Equation~\eqref{eq:master}
+is integrated deterministically (Sec.~\ref{sec:det}) and realized as a
+jump process stochastically (Sec.~\ref{sec:stoch}).
+
+\subsection{Mating flux and assortativity}
+\label{sec:assort}
+Like mates with like.  The pairing rate between cluster states is a
+convex mixture of random mating and perfectly assortative mating,
+governed by the class-assortativity parameter $\alpha$:
+$\alpha=0$ is the random-mating null, $\alpha=1$ would mate each
+cluster only with itself.  Three defensible values are carried:
+$\alpha=0.0$ (null), $\alpha=0.8$ (enforced central value, anchored to
+the mean $\bar\rho_g\approx0.78$ of measured religious endogamy rates,
+Sec.~\ref{sec:religion}), and $\alpha=0.9$ (strong-endogamy bound).
+An independent calibration against CPS ASEC generational data gives
+$\alpha_{\mathrm{CPS}}\approx0.66$ \cite{cps-asec-2024,p23-214}
+(from the model deepest-$C_1$/shallowest-$C_1$ ratio against the 59\%
+two-foreign-born-parent anchor),
+confirming that 0.8 is a reasonable central choice rather than an
+extreme one.  A historical $\alpha(t)$ schedule (colonial $\sim$0.95
+declining to 0.653 in 2025, built from intermarriage studies
+\cite{pew-intermarriage-2023,livingston-brown-2017,pagnini-morgan-1990,
+draschler-1921,logan-shin-2012,alba-golden-1986,alba-1983,spoerlein-2014})
+is retained as a sensitivity variant; path dependence is weak and the
+constant-$\alpha$ runs are the reported results.
+
+\subsection{Vital rates, immigration, and mortality}
+\label{sec:rates}
+Fertility $\beta(t)$ and mortality $\mu(t)$ are time-dependent measured
+series: colonial anchors from Haines~\cite{haines} and the Census
+Historical Statistics \cite{census-hsus}, 1960--2024 from the World
+Bank World Development Indicators \cite{wdi} and NCHS natality and life
+tables \cite{nchs-natality,nchs-lifetables}.  Immigration $I(t)$ is the
+DHS Yearbook Table~1 legal series \cite{dhs-yearbook} augmented with
+unauthorized-immigration estimates \cite{dhs-unauth} for the hindcast.
+Emigration is calibrated at $\varepsilon=0.00075$/yr against the
+1980--2024 hindcast (within $\sim$0.6\% of Census totals).
+Sex structure uses the measured sex ratio at birth $s=0.512$
+\cite{nchs-natality}, a time-varying immigrant male share $\sigma(t)$
+(0.65 colonial, estimated; 0.629 for 1820--1917 from HSUS immigration
+tables \cite{hsus-immig}; DHS-measured $\sim$0.47 in recent years
+\cite{dhs-lpr-sex,dhs-unauth-table4}), and sex-specific mortality from
+the Human Life-Table Database and SSA tables
+\cite{hld,bell-miller}.  Sex-specific mortality produces a maternal
+bottleneck that roughly halves deep-cluster shares relative to the
+sex-aggregated model.
+
+\subsection{Age structure}
+\label{sec:age}
+The age-structured variant resolves each $(d,\alpha)$ state into
+five-year age bands with aging fluxes between bands, age-specific
+fertility (UN World Population Prospects maternal age schedule
+\cite{unwpp-2024}), and age-specific mortality from the life tables.
+Newborns enter age band~0 of the child cluster given by the unchanged
+inheritance rule.  Age structure increases deep concentration roughly
+2--3$\times$ relative to the ageless aggregate: the aggregate model
+\emph{understates} deep clustering because it averages away the
+old-age deep-cluster reservoir.
+
+\subsection{Regional compartments}
+\label{sec:regional}
+Four Census regions (Northeast, Midwest, South, West) each carry a full
+two-sex cluster system, coupled by inter-regional migration (ACS 2023/24
+state-to-state flows \cite{acs-migration}) and fed by DHS
+state-of-residence LPR allocation shares \cite{dhs-table4}.  The
+regional model predicts the deepest pedigree concentration in the
+Midwest (least immigration dilution) --- a genuine structural
+prediction that conflicts with the observed South-peaked ``American''
+ancestry response in the ACS \cite{acs-2023-b04006-b05002}, flagging a
+real gap between pedigree depth and self-reported ancestry.
+
+\subsection{Religious groups}
+\label{sec:religion}
+Eight religious groups
+$G=\{\mathrm{pro},\mathrm{cat},\mathrm{mor},\mathrm{jew},\mathrm{mus},
+\mathrm{dhr},\mathrm{oth},\mathrm{una}\}$
+(Protestant, Catholic, Mormon, Jewish, Muslim, Hindu/Buddhist,
+Orthodox/other, unaffiliated) multiply the two-sex system to
+$8\cdot2\cdot(n+1)=240$ ODEs at $n=14$.  Group endogamy $\rho_g$ is
+estimated from Pew surveys (RLS 2023--24, Jewish 2020, Muslim 2017,
+intermarriage studies) \cite{pew-rls-2025,pew-intermarriage-2025,
+pew-jewish-2021,pew-muslim-2017,pew-rls-2008}: pro~.81, cat~.75,
+mor~.87, una~.68, jew~.62, mus~.84, with dhr~.85 and oth~.80 assumed.
+Disaffiliation (pro/cat/mor/oth~$\to$~una) ramps 1970--1990 to a
+calibrated $\delta_{\max}=8\times10^{-3}$/yr, reproducing 28.2\%
+unaffiliated in 2025 against Pew's measured 29\% \cite{pew-rls-2025}.
+Immigrant religious composition follows Pew's immigrant affiliation
+series \cite{pew-immig-2013}.
+
+\subsection{Data provenance}
+\label{sec:provenance}
+Every input series carries a quality label --- \emph{measured},
+\emph{interpolated}, \emph{estimated}, \emph{calibrated},
+\emph{assumed}, or \emph{projected} --- recorded per-row in the compiled
+inputs file \cite{inputs-csv}.  Assumed values are never described as
+estimates.  The Case~2 projection inputs (2025--2050) are explicitly
+\emph{projected}: vital rates trend-extrapolated excluding COVID years,
+immigration fixed at 2024 levels, disaffiliation continuing at its
+calibrated rate.
+% =====================================================================
+\section{Reaction Admissibility Graphs}
+% =====================================================================
+\label{sec:rag}
+The reaction-admissibility graph (RAG) makes the model's causal
+structure explicit: which states can react, through which channels, to
+produce which children.  Every figure below is generated from the
+actual model code (the inheritance rule of Sec.~\ref{sec:rules}),
+not drawn by hand.  Vertices are cluster states; diamond vertices are
+mating reactions $M_{qr}$; dashed edges are catalytic (parents feed the
+reaction without being consumed); solid edges carry newborns to the
+child cluster.  Orange child edges follow shallowest inheritance, teal
+edges deepest inheritance; where both rules agree the edge is drawn
+dark.  We describe the global graph first, then the finer levels.
+
+\subsection{Global two-sex RAG}
+\label{sec:rag-twosex}
+Figure~\ref{fig:rag-twosex} shows the full two-sex RAG: 38 state
+vertices ($C_0\dots C_n$ in each of the paternal and maternal
+populations, here at $n=4$ for legibility) joined by 138 edges through
+all 25 mating combinations.  The bipartite structure is the point:
+every parental pair $(q,r)$ feeds a reaction vertex $M_{qr}$, which
+emits one orange edge to $1+\min(q,r)$ and one teal edge to
+$1+\max(q,r)$.  The two edge families coincide exactly when $q=r$
+(the dark diagonal edges) and diverge everywhere else --- the graph
+literalizes how the inheritance rule rewires the same mating flux into
+different child distributions.  Immigration enters as source edges into
+the two $C_0$ vertices; mortality and emigration are loss edges on
+every vertex.
+\begin{figure}[htbp]
+  \centering
+  \resizebox{\textwidth}{!}{\input{figs/rag_twosex.tex}}
+  \caption{Global two-sex reaction-admissibility graph (shown at $n=4$;
+  the production model uses $n=14$).  State vertices are pedigree
+  clusters in the paternal (top) and maternal (bottom) populations;
+  diamonds are mating reactions $M_{qr}$ fed by catalytic dashed edges.
+  Orange child edges: shallowest inheritance; teal: deepest
+  inheritance; dark: both rules agree.  Generated from the model code.}
+  \label{fig:rag-twosex}
+\end{figure}
+
+\subsection{Religious RAG}
+\label{sec:rag-religious}
+Figure~\ref{fig:rag-religious} extends the graph to the religious
+dimension: 123 vertices and 544 edges, including all 24 disaffiliation
+transfer reactions (pro/cat/mor/oth~$\to$~una) alongside the mating
+reactions within each group.  The group-endogamy parameters $\rho_g$
+weight the within-group versus cross-group mating channels; the
+disaffiliation edges are the only reactions that move mass between
+religious groups, and they flow one way.
+\begin{figure}[htbp]
+  \centering
+  \resizebox{\textwidth}{!}{\input{figs/rag_religious.tex}}
+  \caption{Religious reaction-admissibility graph (shown at $n=2$;
+  production: $n=14$, 240 ODEs).  In addition to the mating reactions
+  within each of the eight religious groups, 24 disaffiliation
+  transfers move mass one way into the unaffiliated group.}
+  \label{fig:rag-religious}
+\end{figure}
+
+\subsection{Regional RAG}
+\label{sec:rag-regional}
+The regional RAG replicates the two-sex graph in each of the four
+Census regions and adds inter-regional migration edges coupling
+corresponding cluster states across regions, plus region-specific
+immigration source edges weighted by DHS allocation shares.  Migration
+conserves pedigree depth: a $C_d$ migrant remains $C_d$ on arrival.
+
+\subsection{Age-structured RAG}
+\label{sec:rag-age}
+The age-structured RAG replicates each $(d,\alpha)$ state across
+five-year age bands, adding aging-flux edges that advance cohorts
+between bands and routing all births into age band~0 of the child
+cluster.  Fertility edges are weighted by the maternal age schedule;
+mortality edges carry age-specific rates.
+
+% =====================================================================
+\section{Algorithm Description}
+% =====================================================================
+\label{sec:algorithms}
+
+\subsection{Deterministic cluster dynamics}
+\label{sec:det}
+The deterministic algorithm integrates the master
+equation~\eqref{eq:master} as a coupled ODE system using
+\texttt{scipy}'s adaptive RK45 solver (relative tolerance $10^{-8}$,
+absolute $10^{-10}$), with a non-negativity guard on the state vector
+and an exact person-conservation balance check at every reporting
+step: the summed right-hand side must equal
+$I+B-(\mu+\varepsilon)N$ to machine precision, verifying that the
+mating flux conserves people.  Time-dependent rates are interpolated
+from the annual input series.  The implementation follows the
+RadCluster graph-based cluster-dynamics framework \cite{radcluster}:
+species classes (here pedigree clusters), populations (here
+paternal/maternal, extended to religious, regional, and age axes), a
+stoichiometry matrix over an explicit reaction graph, and mass-action
+fluxes --- the same machinery developed for defect-cluster kinetics in
+irradiated materials, applied to human generations.
+
+\subsection{Stochastic cluster dynamics}
+\label{sec:stoch}
+The stochastic algorithm realizes~\eqref{eq:master} as a jump process:
+immigration and births are Poisson draws, deaths and emigration exact
+binomial draws, and mating events fire with propensities from the same
+$\mathbf{J}(\mathbf{c})$ used deterministically, advanced by adaptive
+$\tau$-leaping \cite{gillespie1976,gillespie2001,cao-gillespie-petzold-2006}
+with $\tau=\min(0.5,\mathrm{LEAP\_EPS}/r_{\max})$,
+$\mathrm{LEAP\_EPS}=0.002$.  By Kurtz's mean-field limit
+\cite{kurtz1970} the ensemble mean converges to the ODE as population
+size grows, so the stochastic runs serve as a finite-population
+validation: ensembles of $N=300$ colonial-era trajectories (1650--1800,
+all-$C_0$ initial population of 50{,}368, fixed seeds) under both
+inheritance rules, testing for mean bias versus the ODE, deep-cluster
+coefficients of variation, and discrete establishment years.
+(Quantitative ensemble statistics: at $\alpha=0.8$, ensemble-mean
+total vs ODE at 1800 gives $z=-0.84$ (shallowest) / $z=+1.40$
+(deepest), max $|\mathrm{relative\ deviation}|\le6.1\times10^{-4}$
+over 1650--1800; the mean-field check ($\lambda=1000$, $N=30$)
+reproduces the ODE total to $7.7\times10^{-5}$.  CV of the 1800
+cluster share: $C_6$ 0.4--0.8\%, $C_{10}$ 0.9--2.2\%, $C_{14}$ 9.5\%
+(shallowest) / 2.7\% (deepest); 0/300 trajectories have empty
+$C_{12}$--$C_{14}$ at 1800; CV(total) peaks 0.72\% $\sim$1710 and never
+reaches 1\%.)
+The ODE becomes misleading only below expected occupancies of roughly
+ten people.
+% =====================================================================
+\section{Results}
+% =====================================================================
+\label{sec:results}
+
+\subsection{Historical run, 1650--2025}
+\label{sec:case1}
+Case~1 integrates the colonial era to the present on measured inputs.
+The 1980--2024 hindcast lands within $\sim$0.6\% of Census population
+totals after folding in unauthorized-immigration estimates and
+calibrating emigration at $\varepsilon=0.00075$/yr.  The 2025 total is
+259.0~million (two-sex model), against a Census estimate of
+$\sim$342~million in 2024 --- the $\sim$24\% shortfall is a known,
+decomposed bias (sex-specific mortality's maternal bottleneck plus
+unauthorized-accounting conventions), reported rather than tuned away.
+The first $\sim$100~years are spin-up transient from the all-$C_0$
+1650 initial condition and are not interpreted.
+
+\subsection{The two inheritance rules compared}
+\label{sec:rule-comparison}
+Table~\ref{tab:dist2025} gives the headline result: the 2025
+pedigree-depth distribution at the central $\alpha=0.8$ under the two
+rules, from identical demography.  The totals are identical to four
+significant figures (259.0~million) --- the inheritance rule
+redistributes mass without changing the total, because births,
+deaths, immigration, and emigration do not depend on it.
+\begin{table}[htbp]
+  \centering
+  \caption{2025 cluster shares (\% of total population), two-sex model,
+  $\alpha=0.8$, $n=14$.}
+  \label{tab:dist2025}
+  \begin{tabular}{lccccccccc}
+    \toprule
+    Rule & $C_0$ & $C_1$ & $C_2$ & $C_3$ & $C_4$ & $C_5$--$C_7$ &
+    $C_8$--$C_{10}$ & $C_{11}$--$C_{13}$ & $C_{14}$ \\
+    \midrule
+    Shallowest & 24.0 & 17.6 & 15.6 & 12.8 & 9.1 & 13.5 & 5.3 & 1.7 & 0.45 \\
+    Deepest    & 24.0 & 13.0 & 9.7  & 7.5  & 5.5 & 10.7 & 6.2 & 6.5 & 18.35 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{figs/dist_shallowest_inheritance_linear.png}
+  \caption{2025 pedigree-depth distribution under shallowest inheritance,
+  two-sex model, $\alpha=0.8$: monotone decline, $C_{14}=0.45\%$.}
+  \label{fig:dist-shallow}
+\end{figure}
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{figs/dist_deepest_inheritance_linear.png}
+  \caption{2025 pedigree-depth distribution under deepest inheritance,
+  two-sex model, $\alpha=0.8$: the $\sim$2\% plateau across
+  $C_8$--$C_{13}$ and the 18.35\% accumulation at the cap $C_{14}$.}
+  \label{fig:dist-deep}
+\end{figure}
+
+The mechanism is structural.  Under shallowest inheritance, a
+deep-by-shallow mating drags the child back to the shallow parent, so
+deep mass is constantly recycled downward and only deep-by-deep
+pairings sustain it; the distribution falls monotonically and $C_{14}$
+holds 0.45\%.  Under deepest inheritance there is no downward pull:
+children are always at least as deep as the deeper parent, so every
+lineage ratchets upward until it piles at the cap --- $C_{14}$ holds
+18.35\%, nearly one in five Americans, with a flat $\sim$2\% plateau
+across $C_8$--$C_{13}$ where the ratchet stalls before the final
+accumulation.
+
+Assortativity modulates the ratchet but does not remove it.  At
+$\alpha=0.0$ (random mating) the deepest rule puts 71.9\% of the
+population at the cap, because mixed-depth matings are frequent and
+each one steps the lineage up; at $\alpha=0.9$ (strong endogamy) the
+cap share falls to 9.4\%, as segregation slows the upward flux.  Under
+shallowest inheritance the cap share is 0.00\% at $\alpha=0.0$ and
+1.46\% at $\alpha=0.9$.  The qualitative verdict is
+$\alpha$-independent: the choice of inheritance rule, not the mating
+pattern, decides whether deep pedigree is rare or ubiquitous.
+
+\subsection{Finer scales}
+\label{sec:scales}
+The same comparison at the finer structural levels confirms the
+pattern and reveals one interaction.  In the regional model (four
+Census regions, $\alpha=0.8$), 2025 $C_{14}$ is 0.47\% under
+shallowest and 18.47\% under deepest inheritance, with the Midwest the
+deepest region under both rules.  In the age-structured model the
+deepest rule reaches 38.90\% at the cap, against 1.62\% under
+shallowest: age structure concentrates deep mass in old cohorts
+(the ageless aggregate understates deep clustering 2--4$\times$), and
+the deepest rule then ratchets that reservoir to the cap --- the two
+effects multiply.
+
+\subsection{Religious dimension}
+\label{sec:religious-results}
+The eight-group religious model (240 ODEs, $\alpha=0.8$) reproduces the
+rule contrast at nearly identical magnitudes: 2025 $C_{14}$ is 0.45\%
+under shallowest inheritance and 17.93\% under deepest
+inheritance, against two-sex values of 0.45\% and 18.35\%.  The
+unaffiliated share reaches 27.9\% in 2025 under both rules --- the
+disaffiliation flow is orthogonal to the inheritance rule --- against
+Pew's measured 29\% \cite{pew-rls-2025}.  Within-group endogamy
+($\rho_g=0.62$--0.87, estimated from Pew surveys) leaves the
+between-rule gap intact: long-tenure groups run deep (Protestant
+24.5\%, unaffiliated 18.7\% under deepest), while post-1965-immigrant
+groups stay shallow (Muslim, Hindu/Buddhist $\approx 1.6\%$); under
+shallowest inheritance every group sits below 0.7\%.  The pattern is
+demographic, not theological: tenure in the country, not doctrine,
+determines depth.
+
+\subsection{Prediction, 2025--2050}
+\label{sec:case2}
+Case~2 projects 2025--2050 on explicitly projected inputs (vital rates
+trend-extrapolated excluding COVID years, immigration fixed at 2024
+levels, disaffiliation at its calibrated rate).  The 2050 total is
+279.7~million under both rules.  The foreign-born share rises from
+24.0\% to 30.2\% --- continued immigration against fixed rates
+mechanically dilutes native depth --- while the cap share barely moves:
+0.45\% $\to$ 0.42\% (shallowest) and 18.35\% $\to$ 16.66\% (deepest).
+The inheritance-rule gap is thus stable over the projection horizon;
+demography shifts the distribution's weight toward $C_0$ under either
+rule.
+% =====================================================================
+\section{Conclusions and Future Developments}
+% =====================================================================
+\label{sec:conclusions}
+
+We have built a forward-time cluster-dynamics model of U.S.\ pedigree
+structure, grounded in measured demographic series over 1650--2025 and
+projected to 2050, and used it to compare two limiting definitions of
+inherited pedigree depth.  Three conclusions stand out.
+
+First, the inheritance rule is the dominant modeling choice.  From
+identical births, deaths, immigration, and mating patterns, shallowest
+inheritance yields a 2025 America in which 0.45\% of the population
+sits in the deepest pedigree cluster, while deepest inheritance yields
+18.35\% --- a forty-fold gap produced by pure definition.  Any
+empirical claim about ``how deep American roots run'' must therefore
+state its inheritance rule, or it is not a claim at all.
+
+Second, the rule's effect is structural, not parametric.  It survives
+across assortativity values, across regional and religious
+disaggregation, and across the 2025--2050 projection; it is amplified,
+not created, by age structure.  Totals are untouched throughout: the
+rule redistributes, never creates or destroys, people.
+
+Third, the framework is validated as a forward laboratory.  Hindcast
+error is sub-percent on totals, the $\alpha$ calibration is
+independently anchored, stochastic ensembles (being regenerated under
+the revised rules) test the ODE for finite-population bias,
+and the religious projection reproduces Pew's measured unaffiliated
+share.  The honest gaps --- the $\sim$24\% total shortfall from
+sex-specific mortality and unauthorized accounting, the
+Midwest-versus-South deep-geography mismatch against self-reported
+ancestry --- are reported as findings, since a model that cannot
+disagree with data cannot be trusted where data are absent.
+
+Future developments, in order of priority: (i)~age$\times$religion
+joint structure, to test whether the age--deepest interaction found
+here concentrates further within high-endogamy groups; (ii)~regional
+vital rates and paternal age schedules, replacing the national
+schedules currently imposed on every region; (iii)~a settlement-history
+process for the colonial spin-up, replacing the all-$C_0$ 1650
+approximation; (iv)~re-affiliation flows, now that disaffiliation alone
+is calibrated; (v)~coupling the pedigree state to policy scenarios ---
+immigration levels, fertility supports --- as a compositional
+consequence engine for public policy.
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

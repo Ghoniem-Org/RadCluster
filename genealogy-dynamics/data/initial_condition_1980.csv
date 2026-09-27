@@ -1,0 +1,14 @@
+class,millions,basis
+0,14.08,1980 Census foreign-born (data)
+1,20.0,assumption: ~2nd generation (no 1980 measurement exists)
+2,4.0,assumption: thin mid-depth (low immigration 1930-1970)
+3,4.0,assumption: thin mid-depth
+4,4.0,assumption: thin mid-depth
+5,5.0,assumption: thin mid-depth
+6,6.0,assumption: thin mid-depth
+7,7.0,assumption: thin mid-depth
+8,8.0,assumption: thin mid-depth
+9,9.0,assumption: thin mid-depth
+10,20.0,assumption: old stock
+11,30.0,assumption: old stock
+12,96.145,residual: 1980 total minus classes 0-11

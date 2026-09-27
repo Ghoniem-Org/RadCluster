@@ -1,0 +1,451 @@
+% Beamer presentation: Genealogy Dynamics
+% Style mirrors the NuMat 2026 presentation
+% "Graph-Based Cluster Dynamics of Irradiated Materials" (N.M. Ghoniem).
+\documentclass[10pt]{beamer}
+
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes,calc}
+\usepackage{booktabs}
+\usepackage{xcolor}
+
+\definecolor{nmblue}{RGB}{0,51,153}
+\definecolor{nmgray}{RGB}{90,90,90}
+
+% Free cluster-depth parameter n (matches GENEALOGY_MAX_DEPTH in code).
+\newcommand{\maxped}{12}
+
+\usecolortheme[named=nmblue]{structure}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}{
+  \leavevmode\hbox{%
+  \begin{beamercolorbox}[wd=.30\paperwidth,ht=2.5ex,dp=1ex,left]{author in head/foot}%
+    \usebeamerfont{author in head/foot}\hspace{1em}\insertshortauthor
+  \end{beamercolorbox}%
+  \begin{beamercolorbox}[wd=.48\paperwidth,ht=2.5ex,dp=1ex,center]{title in head/foot}%
+    \usebeamerfont{title in head/foot}\insertshorttitle
+  \end{beamercolorbox}%
+  \begin{beamercolorbox}[wd=.22\paperwidth,ht=2.5ex,dp=1ex,right]{date in head/foot}%
+    \usebeamerfont{date in head/foot}\insertshortdate\hspace{1em}\insertframenumber/\inserttotalframenumber\hspace{1em}
+  \end{beamercolorbox}}%
+  \vskip0pt%
+}
+
+\title[Genealogy Dynamics]{Genealogy Dynamics:\\ A Graph-Based Two-Sex Cluster-Dynamics Model\\ of the U.S. Population, 1650--2050}
+\author[N.M. Ghoniem]{Nasr M. Ghoniem}
+\institute[UCLA]{Department of Mechanical \& Aerospace Engineering\\
+University of California, Los Angeles}
+\date[Sept 2026]{September 2026}
+
+\begin{document}
+
+% ---------------- Title ----------------
+\begin{frame}
+  \titlepage
+  \begin{center}
+    \small\textcolor{nmgray}{Adapted from the graph-based cluster-dynamics framework (RadCluster).}
+  \end{center}
+\end{frame}
+
+% ---------------- Outline ----------------
+\begin{frame}{Outline}
+  \tableofcontents
+\end{frame}
+
+\begin{frame}{Related work}
+  \small
+  \begin{itemize}
+    \item \textbf{Pedigree theory:} Chang (1999) --- two-parent Wright--Fisher,
+      genealogical MRCA at $\sim\!\log_2 n$, identical-ancestors point at
+      $1.77\log_2 n$; Rohde, Olson \& Chang (2004, \textit{Nature}) ---
+      recent common ancestry survives realistic substructure (simulation);
+      Derrida, Manrubia \& Zanette (1999, 2000) --- pedigree-collapse
+      statistics, stationary after $\sim\!\log N$ generations.
+    \item \textbf{Cultural transmission:} Manrubia \& Zanette (2002) ---
+      birth--death model of a vertically transmitted trait (surnames);
+      Cavalli-Sforza \& Feldman (1981) --- quantitative theory of cultural
+      transmission, foundation for group endogamy $+$ disaffiliation.
+    \item \textbf{Caveat:} Matsen \& Evans (2008) --- genealogical $\ne$
+      genetic ancestry; cluster depth is about pedigrees, not genes.
+    \item \textbf{This work:} forward-time cluster-dynamics ODEs ported from
+      irradiated materials; catalytic mating on an explicit RAG; two-sex,
+      age, regional, religious structure; 1650--2025 U.S.\ run on measured
+      series $+$ 2025--2050 prediction.
+  \end{itemize}
+\end{frame}
+
+% ================================================================
+\section{Graph-Based Population Dynamics}
+% ================================================================
+
+\begin{frame}{From clusters to genealogy clusters}
+  \begin{itemize}
+    \item RadCluster partitions \textbf{defect clusters} into discrete classes (vertices); every reaction is an admissible transition (edge) with a rate kernel.
+    \item The same mathematics describes a \textbf{human population}:
+    \begin{itemize}
+      \item vertices $\to$ clusters $C_0,\dots,C_n$ in two populations $P_{\mathrm{pat}},P_{\mathrm{mat}}$ ($n{=}14$ default),
+      \item edges $\to$ immigration, mating/birth, death, emigration.
+    \end{itemize}
+    \item State $\mathbf{c}(t)\in\mathbb{R}^{2(n+1)}_{\ge 0}$ (millions): paternal block then maternal block, integrated as ODEs.
+    \item Two cases: \textbf{Case 1}, the 1650--2025 colonial run on measured inputs; \textbf{Case 2}, a 2025--2050 projection from the Case-1 handoff state.
+    \item Two inheritance rules carried in parallel:
+    \begin{itemize}
+      \item \textbf{Shallowest inheritance:} child $=\min(n,1{+}\min(q,r))$ --- the child takes the \emph{shallower} parental bloodline; deep lineages are pulled down in mixed pairings.
+      \item \textbf{Deepest inheritance:} child $=\min(n,1{+}\max(q,r))$ --- the child takes the \emph{deeper} parental bloodline; depth never decreases, so mass ratchets to the cap.
+    \end{itemize}
+    \item Assortativity $\alpha$: \textbf{0.8} enforced central (anchored to mean religious endogamy $\bar\rho_g{\approx}0.78$); 0.0 null, 0.9 bound. CPS-calibrated $0.66$.
+  \end{itemize}
+\end{frame}
+
+% ================================================================
+\section{Model Formulation}
+% ================================================================
+
+\begin{frame}{Master equation (matrix form)}
+  State $\mathbf{c}(t)\in\mathbb{R}^{2(n+1)}$: $c_{d,\mathrm{pat}}$ = paternal cluster $C_d$, $c_{d,\mathrm{mat}}$ = maternal (millions; $n=14$ default).
+  \begin{equation*}
+    \frac{d\mathbf{c}}{dt} \;=\; \mathbf{P}(t) + \mathbf{S}\,\mathbf{J}(\mathbf{c}) - \mathbf{D}(t)\,\mathbf{c}
+  \end{equation*}
+  \begin{itemize}
+    \item \textbf{Source:} $\mathbf{P}(t)$ --- immigration $I(t)$ splits $\sigma/(1{-}\sigma)$ into $C_0$ of each population ($\sigma(t)$ data-driven series, Step 5).
+    \item \textbf{Loss:} $\mathbf{D}(t)$ diagonal --- mortality $\mu(t)$ plus emigration $\varepsilon$, uniform across sexes (default); sex-specific rates supported.
+    \item \textbf{Flux:} $J_{qr} = B\,[\alpha\,\delta_{qr}m^{\mathrm{pat}}_q + (1-\alpha)m^{\mathrm{pat}}_q m^{\mathrm{mat}}_r]$ over ordered pairs $(q,r)$; $B=\min(\sum\beta^{\mathrm{pat}}c_{\mathrm{pat}},\sum\beta^{\mathrm{mat}}c_{\mathrm{mat}})$ (marriage-function style).
+    \item \textbf{Stoichiometry:} $S_{(d,\mathrm{pat}),(q,r)}=s$, $S_{(d,\mathrm{mat}),(q,r)}=1{-}s$ iff $\mathrm{child}(q,r)=d$ ($s=0.512$ measured, NCHS~\cite{nchs-natality}) --- each $\mathbf{S}$ column sums to 1, so births conserve people exactly.
+    \item Parents are catalytic (not consumed). Extensions: $\times$8 religious groups (240 ODEs at $n{=}14$), $\times$18 age bands (540 states), $\times$4 regions (120 states).
+  \end{itemize}
+\end{frame}
+
+% ---- Reaction graphs (generated from code, not hand-drawn) ----
+\begin{frame}{Reaction graph: two-sex model}
+  \centering
+  \resizebox{!}{0.74\textheight}{\input{figs/rag_twosex.tex}}
+
+  {\small Generated \emph{from the model code} (NetworkX, seed 20260926): every vertex a state variable, every edge a right-hand-side term. Rectangles paternal, ellipses maternal; diamonds $M_{qr}$ mating pairs; child edges colored by rule agreement.}
+\end{frame}
+
+\begin{frame}{Reaction graph: religious extension}
+  \centering
+  \resizebox{\textwidth}{!}{\input{figs/rag_religious.tex}}
+
+  {\small $n{=}2$ shown (240 ODEs at $n{=}14$): group-colored lanes, within-group mating, sampled cross-group edges, disaffiliation transfers $(d,s,g){\to}(d,s,\mathrm{una})$ at $\delta(t)$.}
+\end{frame}
+
+\begin{frame}{Reaction graph: age-structured model}
+  \centering
+  \resizebox{!}{0.74\textheight}{\input{figs/rag_age.tex}}
+
+  {\small $n{=}2$, ages 0--4 to 20--24 shown (540 states): aging edges at $\gamma_a{=}1/5$/yr, reproductive-age mating, newborns into band 0.}
+\end{frame}
+
+\begin{frame}{Reaction graph: regional model}
+  \centering
+  \resizebox{!}{0.74\textheight}{\input{figs/rag_regional.tex}}
+
+  {\small $n{=}2$ shown (120 states): within-region mating diamonds; one transfer arrow $m_{r_1\to r_2}$ per ordered region pair; immigration splits by region into $C_0$.}
+\end{frame}
+
+% ================================================================
+\section{Reaction Kernels and Input Data}
+% ================================================================
+
+\begin{frame}{Reaction kernel table}
+  \small
+  \begin{tabular}{@{}clll@{}}
+    \toprule
+    \# & Process class & Transition & Kernel / flux \\
+    \midrule
+    1 & Immigration (source) & $\varnothing \to (C_0,\mathrm{pat}),\,(C_0,\mathrm{mat})$
+        & $\sigma(t)I(t),\,(1{-}\sigma(t))I(t)$~~[M/yr], $\sigma(t)$ series: 0.65 ass.\ (1650--1819), 0.629 est.\ (1820--1917), $\to$0.50 by 1950 est., DHS LPR-by-sex meas.\ + unauth.\ proxy est.\ (2015--23), 0.470 (2024) \\
+    2 & Birth (mating) & $((C_q,\mathrm{pat}),(C_r,\mathrm{mat}))\to (C_{g},\cdot)$
+        & $J_{qr}=B\,[\alpha\,\delta_{qr}m^{\mathrm{pat}}_q+(1-\alpha)m^{\mathrm{pat}}_qm^{\mathrm{mat}}_r]$,\\
+      & & & $B=\min(\sum\beta^{\mathrm{pat}}c_{\mathrm{pat}},\sum\beta^{\mathrm{mat}}c_{\mathrm{mat}})$;\\
+      & & & births split $s/(1{-}s)$ into $(C_g,\mathrm{pat})$, $(C_g,\mathrm{mat})$, $s=0.512$ meas. \\
+    3 & Mortality (sink) & $(C_d,\alpha) \to \varnothing$ & $\mu_\alpha(t)\,c_{d,\alpha}$ \\
+    4 & Emigration (sink) & $(C_d,\alpha) \to \varnothing$ & $\varepsilon_\alpha\,c_{d,\alpha}$ \\
+    \bottomrule
+  \end{tabular}
+  \vspace{0.6em}
+
+  Child-cluster kernel $g(q,r)$: shallowest $\min(n,1{+}\min(q,r))$; deepest $\min(n,1{+}\max(q,r))$. Parents are catalytic.
+\end{frame}
+
+\begin{frame}{Input parameters and assumptions}
+  \tiny
+  \begin{tabular}{@{}lllp{2.6cm}l@{}}
+    \toprule
+    Parameter & Symbol & Value / series & Source & Quality \\
+    \midrule
+    LPR immigration & $I_{\mathrm{LPR}}(t)$ & FY1980--FY2024 & DHS Yearbook, Tbl.~1~\cite{dhs-yearbook} & measured \\
+    Unauthorized inflow & $I_{\mathrm{unauth}}(t)$ & 1980--2024 & DHS reports, stock$\to$flow~\cite{dhs-unauth} & estimated \\
+    Colonial immigration & $I(t)$ & 1650--1819 & residual vs.\ anchors~\cite{census-hsus} & assumed \\
+    Fertility & $\beta(t)$ & $2\,\mathrm{CBR}(t)/1000$ (uniform sexes) & WDI~\cite{wdi}; Haines~\cite{haines} & meas./interp. \\
+    Mortality & $\mu_\alpha(t)$ & $\mathrm{CDR}(t)/1000$ scaled by the measured HLD sex differential (2024 $\approx 1.069$) & WDI~\cite{wdi}; HLD~\cite{hld} & meas./est. \\
+    Emigration & $\varepsilon$ & $7.5{\times}10^{-4}$/yr (uniform) & fit to totals~\cite{census-decennial} & calibrated \\
+    Sex ratio at birth & $s$ & $0.512$ ($\approx 1.05$ male/female) & NCHS natality~\cite{nchs-natality} & measured \\
+    Immigrant M fraction & $\sigma(t)$ & 0.65 ass.\ (1650--1819); 0.629 est.\ (1820--1917); $\to$0.50 by 1950 est.; DHS Tbl.~9 meas.\ + unauth.\ proxy est.\ (2015--23); 0.470 (2024) & HSUS~\cite{hsus-immig}; DHS Tbl.~9~\cite{dhs-lpr-sex}; DHS Tbl.~4~\cite{dhs-unauth-table4} & ass./est./meas. \\
+    Assortativity & $\alpha$ & \textbf{0.8} central; swept $0.0,0.8,0.9$ & CPS-calibrated $0.66$~\cite{cps-asec-2024,p23-214} & assumed (kept) \\
+    Age fertility/mortality & $\beta_a(t),\mu_{s,a}(t)$ & 18 bands; 1900--2023 & UN WPP 2024~\cite{unwpp-2024}; HLD~\cite{hld}; Bell~\&~Miller~\cite{bell-miller}; NCHS~\cite{nchs-lifetables} & est./meas. \\
+    Inter-regional migration & $m_{r\to r'}$ & 12 pairs, 2023--24 & ACS state-to-state flows~\cite{acs-migration} & measured \\
+    Immigration allocation & $\lambda_r(t)$ & 4 regions, FY2014--23 & DHS Yearbook Tbl.~4~\cite{dhs-table4} & measured \\
+    Case-2 $\beta,\mu,I,\delta$ & projected & CBR $10.26{\to}5.26$; CDR $9.20{\to}11.09$/1000; $I{=}1.705$M/yr & OLS on WDI~\cite{wdi}; 2024 measured & projected \\
+    \bottomrule
+  \end{tabular}
+  \vspace{0.5em}
+
+  \textbf{Validation:} 1980--2024 hindcast within \textbf{2.87\,M max error} ($-0.8\%$ in 2024); exact total-balance to $10^{-15}$. Every input labeled measured / interpolated / estimated / calibrated / assumed / projected.
+\end{frame}
+
+% ================================================================
+\section{Results}
+% ================================================================
+
+\begin{frame}{Case 1: colonial run 1650--2025 --- the rules diverge}
+  \centering
+  \begin{minipage}{0.49\textwidth}\centering
+    \includegraphics[width=\textwidth]{figs/dist_shallowest_inheritance_linear.png}\\
+    {\scriptsize\textbf{(a) Shallowest:} $C_{14}$ = \textbf{0.45\%} by 2025 ($\alpha{=}0.8$)}
+  \end{minipage}\hfill
+  \begin{minipage}{0.49\textwidth}\centering
+    \includegraphics[width=\textwidth]{figs/dist_deepest_inheritance_linear.png}\\
+    {\scriptsize\textbf{(b) Deepest:} $C_{14}$ = \textbf{18.35\%} by 2025 ($\alpha{=}0.8$)}
+  \end{minipage}
+
+  {\small 2025 $C_{14}$ share, $\alpha{=}0.0/0.8/0.9$, $n{=}14$: shallowest 0.00/\textbf{0.45}/1.46\%; deepest 71.88/\textbf{18.35}/9.44\%. Totals rule-independent (259.0\,M). \textbf{Mechanism:} shallowest pulls deep lineages down in mixed pairings; deepest never pulls down, so depth ratchets to the cap. Stronger $\alpha$ \emph{reduces} the deepest accumulation (shallow groups pair shallow).}
+\end{frame}
+
+\begin{frame}{Case 2: 2025--2050 projection}
+  \centering
+  \includegraphics[width=0.62\textwidth]{figs/proj2050_cn_by_rule.png}
+
+  {\small From the Case-1 2025 handoff state. 2050 total: \textbf{279.7\,M} (both rules). 2050 $C_{14}$ at $\alpha{=}0.8$ (2025 in parens): shallowest \textbf{0.42\%} (0.45\%); deepest \textbf{16.66\%} (18.35\%). Full 2050 $\alpha$ sweep (0.0/0.8/0.9): shallowest 0.00/0.42/1.34\%; deepest 65.29/16.66/8.61\%. Both rules dilute slightly as post-2025 immigration refreshes $C_0$ (24.0\%$\to$30.2\%). Inputs: $\beta(t)$ OLS-projected CBR, $\mu(t)$ OLS-projected CDR (excl.\ COVID), $I$ frozen at 2024, $\sigma$ held at 2024 blend (0.4703), $\varepsilon$ calibrated.}
+\end{frame}
+
+\begin{frame}{Time-varying assortativity $\alpha(t)$}
+  \centering
+  \includegraphics[width=0.88\textwidth]{figs/alpha_t_comparison.png}
+
+  \vspace{0.5em}
+  {\small The $\alpha(t)$ schedule (0.95 colonial $\to$ 0.653 in 2025, from intermarriage literature and Pew series~\cite{pew-intermarriage-2023}) gives 2025 $C_{14}$ of \textbf{1.87\%} shallowest / \textbf{7.78\%} deepest, vs 0.45\% / 18.35\% at constant $\alpha{=}0.8$. Shallowest retains path dependence (exceeds the 0.9 bound); deepest undershoots (schedule ends below 0.8 when recent mixing matters most). Sensitivity only --- constant 0.8 stays central.}\end{frame}
+
+\begin{frame}{Sex-specific rates: the maternal bottleneck}
+  \centering
+  \includegraphics[width=0.82\textwidth]{figs/step5_sigma_series.png}
+
+  {\small Immigrant male share $\sigma(t)$: 0.65 \emph{assumed} (1650--1819); 0.629 \emph{estimated} (1820--1917, HSUS~\cite{hsus-immig}); $\to$0.50 by 1950; measured DHS LPR-by-sex~\cite{dhs-lpr-sex} + unauthorized proxy~\cite{dhs-unauth-table4} from 2015. Male-skewed immigration + $\min(W^{\mathrm{pat}},W^{\mathrm{mat}})$ makes the maternal side binding: 2025 total 259.0\,M (old $\sigma$ 300.2\,M); anchor worst error $-29.3\%$ (1830) --- reported, not recalibrated. Mortality sex differential measured (HLD~\cite{hld}, 2024 $\approx 1.069$).}
+\end{frame}
+
+\begin{frame}{Depth resolution: $n{=}14$ and the bit-conserved cap}
+  \centering
+  \includegraphics[width=0.85\textwidth]{figs/step6_tail_shape.png}
+
+  \vspace{0.5em}
+  {\small 2025 $C_n$ at $\alpha{=}0.8$: shallowest 1.33/{\bf0.45}/0.03/0.00\%; deepest 22.74/{\bf18.35}/9.33/1.31\% ($n{=}12/14/18/24$). Totals $n$-invariant (258.95\,M); cap bit-conserved ($C_{14} = \sum_{d\ge14}$) under both rules. Deepest cap accumulates by design (ratchet, not pile-up); $n{=}24$ resolves the tail (flat $\sim$2.2\%/cluster to $C_{17}$). $n{=}14$ is the operating point.}\end{frame}
+
+\begin{frame}{Age structure: resolved tail nearly matches the aggregate}
+  \begin{columns}
+    \begin{column}{0.55\textwidth}
+      \centering
+      \includegraphics[width=\textwidth]{figs/cluster_dist_2025.png}
+    \end{column}
+    \begin{column}{0.43\textwidth}
+      {\small
+      \begin{itemize}
+        \item 540 states: $15{\times}2{\times}18$ ($n{=}14$); aging $\gamma{=}1/5$/yr; $\sigma(t)$ series (Step 5).
+        \item 2025 $C_{14}$ at $\alpha{=}0.8$: shallowest \textbf{1.62\%} vs 0.45\% agg.; deepest \textbf{38.90\%} vs 18.35\% agg. --- age structure \emph{amplifies} deep concentration, especially under deepest inheritance: older cohorts preserve a deep reservoir that the ratchet then lifts to the cap.
+        \item Male-fertility sensitivity (age model): fathers $\sim$2\,yr older $\to$ 2025 $C_{14}$ $-0.8$\,pp (shallowest) to $-10$\,pp (deepest) at $\alpha{=}0.8$; totals $-4.9\%$ --- material, stays \emph{assumed}.
+      \end{itemize}}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Generation-delay wavefront}
+  \centering
+  \includegraphics[width=0.88\textwidth]{figs/wavefront_comparison.png}
+
+  {\small Years for each cluster to reach 0.1\% share (closed population, constant rates, shallowest inheritance, $\alpha=0.8$). Left (1650 rates): aggregate climbs $\approx$1.9$\times$ faster --- missing generation-delay artifact (no 15-yr parental-age floor). Right (2024 rates): aggregate is mass-accumulation-limited and runs slower. A \emph{rate} measurement, independent of $n$.}\end{frame}
+
+\begin{frame}{Regional compartments: the Midwest runs deepest}
+  \centering
+  \begin{minipage}{0.58\textwidth}\centering
+    \includegraphics[width=\textwidth]{figs/regional_dist_2025.png}\\
+    {\scriptsize 2025 per-region cluster distributions (Case 1, $\alpha{=}0.8$)}
+  \end{minipage}\hfill
+  \begin{minipage}{0.39\textwidth}\centering
+    \includegraphics[width=\textwidth]{figs/regional_deepest_traj.png}\\
+    {\scriptsize $C_{14}$ trajectories 1650--2025}
+  \end{minipage}
+
+  {\small 120 states, 4 Census regions; within-region mating (assumed); migration conservative. 2025 $C_{14}$ ($\alpha{=}0.8$): shallowest NE 0.36 / MW \textbf{0.53} / S 0.49 / W 0.43\%; deepest NE 14.74 / MW \textbf{20.61} / S 19.54 / W 17.20\%. Midwest deepest under both rules: smallest immigration share (11.3\%, DHS Tbl.~4~\cite{dhs-table4}) dilutes deep mass least; flows from ACS 2023--24~\cite{acs-migration}. Regional Case-2 projection in progress.}
+\end{frame}
+
+\begin{frame}{CPS parental-nativity calibration of $\alpha$}
+  \centering
+  \includegraphics[width=0.85\textwidth]{figs/cps_calibration.png}
+
+  {\small CPS ASEC 2024 Tbl.~1: second-generation share 2005--2024, 10.5\%$\to$12.6\% (measured~\cite{cps-asec-2024}); P23-214: 2013 second generation 11.7\%, 59\% with two foreign-born parents (measured~\cite{p23-214}). Model ratio deepest-$C_1$/shallowest-$C_1$ vs 59\% $\to$ $\alpha_{\mathrm{CPS}}{=}\mathbf{0.66}$; $|0.66{-}0.8|{=}0.14$ not material $\to$ keep central $\alpha{=}0.8$ (also anchored to mean religious endogamy 0.78).}
+\end{frame}
+
+\begin{frame}{Religious dimension: 8 groups, $n{=}14$}
+  \centering
+  \includegraphics[width=0.88\textwidth]{figs/fig_religious_shares.png}
+
+  {\small State $(d,s,g)$: 240 ODEs. Group endogamy $\rho_g$: mor .87, pro .81, cat .75, mus .84, jew .62, una .68 (est.\ from Pew), dhr .85, oth .80 (ass.); children take the \textbf{mother's} group (ass.). Disaffiliation ramps 1970--90 to $\delta_{\max}{=}8{\times}10^{-3}$/yr, \textbf{calibrated} to Pew unaffiliated 29\% (model 27.9\%, rule-independent). $\times$ = Pew 2023--24 RLS anchors~\cite{pew-rls-2025}. 2025 composition ($\alpha{=}0.8$, both rules): pro 43.3 / cat 17.9 / mor 0.2 / jew 3.2 / mus 2.2 / dhr 2.7 / oth 2.6 / una 27.9\%.}
+\end{frame}
+
+\begin{frame}{Deepest cluster $C_{14}$ by religious group, 2025}
+  \centering
+  \includegraphics[width=0.88\textwidth]{figs/fig_religious_cn_by_group.png}
+
+  {\small $C_{14}$ share of total 2025 pop.\ ($\alpha{=}0.8$, $n{=}14$): shallowest 0.45\% / deepest \textbf{17.93\%}. Demographic, not theological: long-tenure groups run deep (Protestant 24.5\%, unaffiliated 18.7\% under deepest); post-1965-immigrant groups stay shallow (Muslim, Hindu/Buddhist $\approx 1.6\%$). Under shallowest, all groups sit below 0.7\%.}
+\end{frame}
+
+\begin{frame}{Case-2 religious projection, 2025--2050}
+  \centering
+  {\large\color{nmgray} Run in progress under the new inheritance rules.}
+
+  \vspace{1em}
+  {\small The 2025--2050 religious projection continues disaffiliation at its calibrated rate from the Case-1 2025 handoff state. Prior pattern to retest: the unaffiliated share climbs on the one-way disaffiliation flow (a flagged artifact; two-way switching is future work).}
+\end{frame}
+
+\begin{frame}{Stochastic colonial era: the deterministic trajectory is unbiased}
+  \centering
+  \includegraphics[width=0.8\textwidth]{figs/stochastic_fan_total.png}
+
+  \vspace{0.5em}
+  {\small
+  \begin{itemize}
+    \item $\tau$-leaping, $N{=}300$ traj.\ 1650--1800, both rules.
+    \item No bias: $|z|\le1.40$, max dev $6.1\times10^{-4}$; mean-field check $7.7\times10^{-5}$.
+    \item Deep mass robust: CV($C_{14}$) 9.5\% (shallowest) / 2.7\% (deepest) at 1800.
+    \item CV(total) peaks 0.72\% $\sim$1710, never reaches 1\%; 0/300 empty $C_{12}$--$C_{14}$.
+  \end{itemize}}
+\end{frame}
+
+\begin{frame}{Independent validation: rerun in progress}
+  \centering
+  {\large\color{nmgray} Validation checks being rerun under the new rules.}
+
+  \vspace{1em}
+  {\small
+  \begin{itemize}
+    \item \textbf{(a) ``American''-ancestry} (2023 ACS B04006, measured~\cite{acs-2023-b04006-b05002}): regional deep-share ranking vs observed --- prior run found a structural gap (model MW-peaked vs observed S-peaked, $\rho{=}0.60$); retesting with shallowest/deepest.
+    \item \textbf{(b) Surnames:} genuine-attempt negative --- no defensible check found (2010 list~\cite{census-surnames-2010}); stands.
+    \item \textbf{(c) Foreign-born} (B05002; consistency, not validation): level gap decomposition into the total bias + unauthorized accounting; rank correlation to retest.
+  \end{itemize}}
+\end{frame}
+
+% ================================================================
+\section{Future Work and References}
+% ================================================================
+
+\begin{frame}{Suggestions for more accurate models and data}
+  \small
+  \begin{enumerate}
+    \item \textbf{Age $\times$ religion interaction:} the 540-state age model and 240-ODE religious model are verified unbroken but not yet combined.
+    \item \textbf{Regional vital-rate differences:} regional fertility/mortality and cluster-specific migration unmodeled; regional totals uncalibrated.
+    \item \textbf{Paternal age schedule:} male fertility still the female ASFR shape (assumed); a $\sim$2\,yr older paternal schedule moves 2025 $C_n$ by 2--5\,pp at $\alpha\ge0.8$; calibrate from NCHS fatherhood data.
+    \item \textbf{$\alpha(t)$ for the extended models:} the time-varying assortativity schedule is two-sex only; port it to the religious, age, and regional models.
+    \item \textbf{Re-affiliation in disaffiliation:} the one-way flow is an honest artifact (unaffiliated 27.9\%$\to$36.4\% by 2050); add re-affiliation.
+    \item \textbf{Settlement-history process for regional deep shares:} Step 8 found a real structural gap (model peaks MW, observed ``American'' ancestry peaks S) --- add a settlement-history/identity mechanism before the regional deep ranking can be trusted.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{References}
+  \tiny
+  \begin{thebibliography}{9}
+  \bibitem{dhs-yearbook}
+  U.S.\ DHS, OHSS. \textit{Yearbook of Immigration Statistics}, Table~1 (LPRs, 1980--2024): measured $I(t)$.
+  \bibitem{dhs-unauth}
+  Baker, B.\ and Warren, R., OHSS, U.S.\ DHS. \textit{Estimates of the Unauthorized Immigrant Population}, various years.
+  \bibitem{wdi}
+  World Bank. \textit{World Development Indicators}: U.S.\ CBR/CDR, 1960--2024 ($\beta(t)$, $\mu(t)$).
+  \bibitem{haines}
+  Haines, M.~R. ``The Fertility Transition in the United States.'' NBER, 2002. Historical TFR/CDR anchors.
+  \bibitem{census-hsus}
+  U.S.\ Bureau of the Census. \textit{Historical Statistics, Colonial Times to 1970}, Ser.\ Z~1--19 (colonial anchors).
+  \bibitem{census-decennial}
+  U.S.\ Census Bureau. \textit{Decennial Census}, 1790--2020 (totals).
+  \bibitem{nchs-natality}
+  Martin, J.~A., et al. \textit{Births: Final Data for 2024.} NVSR 75(2), NCHS, 2026. Sex ratio at birth $s{=}0.512$.
+  \bibitem{inputs-csv}
+  Ghoniem, N.~M. \texttt{genealogy\_dynamics/data/inputs.csv}: compiled inputs, 1650--2024, with quality flags (this project).
+  \bibitem{pew-rls-2025}
+  Pew Research Center. \textit{Religious Landscape Study}, 2023--24. Topline + intermarriage chapter (Feb.\ 2025).
+  \bibitem{pew-muslim-2017}
+  Pew Research Center. \textit{U.S.\ Muslims Concerned About Their Place in Society.} July 2017 (84\% in-marriage).
+  \bibitem{pew-jewish-2021}
+  Pew Research Center. \textit{Jewish Americans in 2020.} May 2021 (58\% in-marriage).
+  \bibitem{pew-immig-2013}
+  Pew Research Center. ``The Religious Affiliation of U.S.\ Immigrants.'' May 2013 (immigrant $\iota_g$).
+  \bibitem{unwpp-2024}
+  UN DESA Population Division. \textit{World Population Prospects 2024}, fertility by single age, USA: ASFR for $\beta_a(t)$.
+  \bibitem{hld}
+  Human Life-Table Database, USA archive: $m(x)$, $L(x)$ by age/sex, 1900--2023, for $\mu_{s,a}(t)$.
+  \bibitem{bell-miller}
+  Bell, F.~C.\ and Miller, M.~L. \textit{Life Tables for the U.S.\ Social Security Area 1900--2100.} SSA Actuarial Study No.~116.
+  \bibitem{nchs-lifetables}
+  NCHS. \textit{United States Life Tables.} NVSR, annual/decennial: HLD 2001--2023; sex ratio at birth.
+  \bibitem{chang1999}
+  Chang, J.~T. \textit{Adv.\ Appl.\ Probab.} 31, 1002--1026 (1999): two-parent WF, genealogical MRCA $\sim\!\log_2 n$.
+  \bibitem{rohde2004}
+  Rohde, Olson \& Chang. \textit{Nature} 431, 562--566 (2004): recent common ancestry under substructure.
+  \bibitem{derrida1999}
+  Derrida, Manrubia \& Zanette. \textit{Phys.\ Rev.\ Lett.} 82, 1987--1990 (1999): genealogical-tree statistics.
+  \bibitem{derrida2000}
+  Derrida, Manrubia \& Zanette. \textit{J.\ Theor.\ Biol.} 203, 303--315 (2000): biparental pedigree collapse.
+  \bibitem{manrubia2002}
+  Manrubia \& Zanette. \textit{J.\ Theor.\ Biol.} 216, 461--477 (2002): birth--death model of surname transmission.
+  \bibitem{cavalli-sforza1981}
+  Cavalli-Sforza \& Feldman. \textit{Cultural Transmission and Evolution.} Princeton UP (1981).
+  \bibitem{matsen2008}
+  Matsen \& Evans. \textit{Theor.\ Popul.\ Biol.} 74, 182--190 (2008): genealogical $\ne$ genetic ancestry.
+  \end{thebibliography}
+\end{frame}
+
+\begin{frame}[shrink]{References (cont.)}
+  \tiny
+  \begin{thebibliography}{9}
+  \bibitem{acs-migration}
+  U.S.\ Census Bureau. ACS 1-year state-to-state migration flows, 2023--2024.
+  \bibitem{dhs-table4}
+  U.S.\ DHS, OHSS. \textit{Yearbook 2023}, Table~4: LPRs by state, FY2014--2023.
+  \bibitem{cps-asec-2024}
+  U.S.\ Census Bureau. CPS 2024 ASEC, Foreign-Born Table~1: population by generation, 2005--2024.
+  \bibitem{p23-214}
+  Trevelyan et~al. \textit{Characteristics of the U.S.\ Population by Generational Status: 2013.} P23-214, 2016.
+  \bibitem{pew-intermarriage}
+  Pew Research Center. ``Interracial Marriage Grows,'' June 15, 2023; Livingston \& Brown, ``Intermarriage in the U.S.\ 50 Years After \textit{Loving v.\ Virginia},'' May 18, 2017.
+  \bibitem{alba-anchors}
+  Alba \& Golden, ``Patterns of Ethnic Marriage in the United States,'' \textit{Social Forces} 65(1), 1986; Alba, \textit{Italian Americans}, Prentice-Hall, 1983.
+  \bibitem{endogamy-1880}
+  Sp\"orlein et~al., 2014; Logan \& Shin, ``Assimilation by the Third Generation?,'' \textit{IMR} 46(3), 2012.
+  \bibitem{endogamy-1910}
+  Pagnini \& Morgan, ``Intermarriage and Social Distance,'' \textit{AJS} 96(2), 1990; Draschler, \textit{Intermarriage in New York City}, Columbia UP, 1921.
+  \bibitem{hsus-immig}
+  \textit{Historical Statistics of the U.S.}, Millennial Ed.: Aa essay (62.9\% male, 1820--1917); Ad essay (parity by 1950).
+  \bibitem{dhs-lpr-sex}
+  U.S.\ DHS, OHSS. \textit{Yearbook}, Table~9: LPR admissions by sex, 2015--2023.
+  \bibitem{dhs-unauth-table4}
+  U.S.\ DHS, OHSS. Unauthorized-immigrant estimates, Table~4 (sex composition).
+  \bibitem{gillespie-1976}
+  Gillespie, D.~T. \textit{J.\ Comput.\ Phys.} 22(4), 403--434, 1976: exact SSA (the simulated jump process).
+  \bibitem{gillespie-2001}
+  Gillespie, D.~T. \textit{J.\ Chem.\ Phys.} 115(4), 1716--1733, 2001: $\tau$-leaping.
+  \bibitem{cao-gillespie-petzold-2006}
+  Cao, Y., Gillespie, D.~T.\ and Petzold, L.~R. \textit{J.\ Chem.\ Phys.} 124(4), 044109, 2006: adaptive $\tau$.
+  \bibitem{kurtz-1970}
+  Kurtz, T.~G. \textit{J.\ Appl.\ Probab.} 7(1), 49--58, 1970: mean-field limit (jump process $\to$ ODE).
+  \bibitem{acs-2023-b04006-b05002}
+  U.S.\ Census Bureau. 2023 ACS 1-year, Tables B04006/B05002, table-based summary files, accessed 2026-09-26.
+  \bibitem{census-surnames-2010}
+  U.S.\ Census Bureau. 2010 Census surnames, \texttt{Names\_2010Census.csv}, accessed 2026-09-26 (no defensible check found).
+  \end{thebibliography}
+\end{frame}
+
+\begin{frame}
+  \vfill
+  \centering
+  {\Large\bfseries\color{nmblue} Thank you}
+  \vfill
+\end{frame}
+
+\end{document}

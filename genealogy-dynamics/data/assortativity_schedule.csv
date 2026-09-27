@@ -1,0 +1,35 @@
+year,alpha,quality,basis
+1650,0.95,assumed,colonial: small homogeneous settler communities; no marriage data exist
+1700,0.95,assumed,colonial; held at 1650 value
+1776,0.94,assumed,independence; colonial endogamy assumed persistent
+1800,0.94,assumed,interpolated between 1776 and 1850 anchors
+1850,0.93,estimated,19th-c. European ethnic endogamy strong (Alba & Golden 1986)
+1880,0.93,estimated,60-70% of immigrants endogamous (Spoerlein et al. 2014); strong third-generation endogamy (Logan & Shin 2012)
+1900,0.935,interpolated,between the 1880 and 1910 anchors
+1910,0.94,estimated,"endogamy 'castelike' for new ethnics ~1910 (Pagnini & Morgan 1990); first-generation exogamy low (Draschler 1921, NYC 1908-12)"
+1920,0.94,interpolated,between the 1910 and 1940 anchors
+1930,0.94,interpolated,between the 1910 and 1940 anchors
+1940,0.945,estimated,"pre-WWII; intermarriage rose 'dramatically after World War II' (Alba 1983), so pre-WWII endogamy still high"
+1950,0.95,interpolated,between the 1940 anchor and the 1960 measured-series value
+1960,0.9557,measured-series,Pew newlywed intermarriage x=2.4% -> alpha = 1 - 1.8462*x (Pew 2023 'Interracial Marriage Grows')
+1965,0.9465,measured-series,Pew newlywed intermarriage x=2.9% -> alpha = 1 - 1.8462*x (Pew 2023 'Interracial Marriage Grows')
+1967,0.9446,measured-series,Pew newlywed intermarriage x=3.0% -> alpha = 1 - 1.8462*x (Pew 2017 'Intermarriage ... 50 Years After Loving v. Virginia')
+1970,0.9262,measured-series,Pew newlywed intermarriage x=4.0% -> alpha = 1 - 1.8462*x (Pew 2023 'Interracial Marriage Grows')
+1975,0.9077,measured-series,Pew newlywed intermarriage x=5.0% -> alpha = 1 - 1.8462*x (Pew 2023 'Interracial Marriage Grows')
+1980,0.8763,measured-series,Pew newlywed intermarriage x=6.7% -> alpha = 1 - 1.8462*x (Pew 2023 'Interracial Marriage Grows')
+1985,0.8652,measured-series,Pew newlywed intermarriage x=7.3% -> alpha = 1 - 1.8462*x (Pew 2023 'Interracial Marriage Grows')
+1990,0.8468,measured-series,Pew newlywed intermarriage x=8.3% -> alpha = 1 - 1.8462*x (Pew 2023 'Interracial Marriage Grows')
+1995,0.8283,measured-series,Pew newlywed intermarriage x=9.3% -> alpha = 1 - 1.8462*x (Pew 2023 'Interracial Marriage Grows')
+2000,0.7932,measured-series,Pew newlywed intermarriage x=11.2% -> alpha = 1 - 1.8462*x (Pew 2023 'Interracial Marriage Grows')
+2005,0.7582,measured-series,Pew newlywed intermarriage x=13.1% -> alpha = 1 - 1.8462*x (Pew 2023 'Interracial Marriage Grows')
+2008,0.7323,measured-series,Pew newlywed intermarriage x=14.5% -> alpha = 1 - 1.8462*x (Pew 2023 'Interracial Marriage Grows')
+2009,0.7157,measured-series,Pew newlywed intermarriage x=15.4% -> alpha = 1 - 1.8462*x (Pew 2023 'Interracial Marriage Grows')
+2010,0.7212,measured-series,Pew newlywed intermarriage x=15.1% -> alpha = 1 - 1.8462*x (Pew 2023 'Interracial Marriage Grows')
+2011,0.7138,measured-series,Pew newlywed intermarriage x=15.5% -> alpha = 1 - 1.8462*x (Pew 2023 'Interracial Marriage Grows')
+2013,0.7,measured-series,x(2013)=16.25% interpolated 2011-2015; alpha(2013)=0.7000 = alpha_CPS (0.70) by construction
+2015,0.6862,measured-series,Pew newlywed intermarriage x=17.0% -> alpha = 1 - 1.8462*x (Pew 2017 'Intermarriage ... 50 Years After Loving v. Virginia'; mapping normalized so alpha(2013)=0.70 = alpha_CPS (Step 3))
+2020,0.6695,estimated,x=17.9%: moderated trend (0.18 pp/yr = half the 2008-2015 rate; Pew 2017 notes the rise slowing)
+2025,0.6529,estimated,x=18.8%: moderated trend (0.18 pp/yr = half the 2008-2015 rate; Pew 2017 notes the rise slowing)
+2030,0.6529,assumed,Case-2 neutral continuation: held at alpha(2025)=0.6529
+2040,0.6529,assumed,Case-2 neutral continuation: held at alpha(2025)=0.6529
+2050,0.6529,assumed,Case-2 neutral continuation: held at alpha(2025)=0.6529

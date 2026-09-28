@@ -217,6 +217,15 @@ Index additions enter uniformly: s/15 per bin with s = 8×10⁻⁴/month
 (**measured** panel appearance rate). Removals exit proportionally:
 d·c_b with d ≈ 0 (**measured** disappearance rate).
 
+### 2.8 Reaction-admissibility graph
+
+All admissible transitions as a tile graph: 15 regime-cluster vertices
+(M_mV_v), drift edges between adjacent bins, advection along the momentum
+axis, herding toward the winner column, entry/exit, and the rev-3
+persistence damper on the extreme bins.
+
+![Reaction-admissibility graph](figs/rag_market_dynamics.png)
+
 ### 2.8 Calibration protocol
 
 | Episode | Drift window **T** | h₁, λ₁ fit on |

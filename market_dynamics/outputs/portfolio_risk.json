@@ -1,0 +1,11 @@
+{
+ "tilt_predicted_vol_annual": 0.14355868641207054,
+ "market_predicted_vol_annual": 0.15906267546753272,
+ "spy_realized_vol_annual": 0.15395413947760114,
+ "tilt_max_bin_weight": 0.3300054457129827,
+ "reversal_prob_C_Q5": 0.33962264150943394,
+ "reversal_prob_C_Q1": 0.41818181818181815,
+ "reversal_n_Q5": 53,
+ "reversal_n_Q1": 55,
+ "note": "Predicted vol from 24-bin return covariance 2001-2022 (measured). Tilt = mass-flow tilt, params_rev5, frozen at 2022-12 (diagnostic). Reversal = top lane trails market next month; quintiles expanding."
+}

@@ -123,7 +123,7 @@ def load_market_driver(path=None, source='panel'):
     return out
 
 
-def advect(c, M, k_up, k_down, w_eff=0.15):
+def advect(c, M, k_up, k_down, w_eff=0.15, damp_0=1.0, damp_4=1.0):
     """Donor-cell advection along the momentum axis within each vol lane,
     scaled MECHANICALLY: a window-delta M shifts momentum by M in return
     space, i.e. by M/w_eff bins.  k_up/k_down are O(1) fudge factors
@@ -132,6 +132,10 @@ def advect(c, M, k_up, k_down, w_eff=0.15):
     M > 0 shifts mass toward winner bins, M < 0 toward loser bins.
     Reflecting boundaries: the extreme bins accumulate (this generates
     spikes).  w_eff=0.15 is the typical momentum-bin width (assumed).
+
+    damp_0/damp_4: persistence dampers (<=1) applied to the extreme
+    SOURCE bin outflow (bin 0 when M>0, bin 4 when M<0).  They encode
+    the depth of spike mass: 1.0 = no impedance (uniform donor-cell).
     """
     out = c.copy()
     k = k_up if M > 0 else k_down
@@ -143,13 +147,15 @@ def advect(c, M, k_up, k_down, w_eff=0.15):
         if M > 0:
             for m in range(N_MOM - 1):
                 i = m * N_VOL + v
-                fl = f * c[i]
+                ff = f * (damp_0 if m == 0 else 1.0)
+                fl = ff * c[i]
                 out[i] -= fl
                 out[i + N_VOL] += fl
         else:
             for m in range(1, N_MOM):
                 i = m * N_VOL + v
-                fl = f * c[i]
+                ff = f * (damp_4 if m == N_MOM - 1 else 1.0)
+                fl = ff * c[i]
                 out[i] -= fl
                 out[i - N_VOL] += fl
     return out
@@ -162,12 +168,15 @@ def bot_share(c):
     return sum(c[m * N_VOL + v] for m in [0] for v in range(N_VOL))
 
 
-def step_full(c, T, M, k_up, k_down, h0, h1, s_vec, d, lam1=0.0):
+def step_full(c, T, M, k_up, k_down, h0, h1, s_vec, d, lam1=0.0,
+              damp_0=1.0, damp_4=1.0):
     """One monthly step: sticky drift -> autocatalytic herding -> advection.
 
     lam1: concentration-dependent drift stickiness.  lam = lam1*max(w,l);
     the drift becomes (1-lam)*T + lam*I, so concentrated distributions
     relax more slowly (sticky spikes).  lam1=0 recovers the plain drift.
+    damp_0/damp_4: extreme-bin outflow persistence dampers (see advect).
+    Returns c_new.
     """
     w, l = top_share(c), bot_share(c)
     lam = min(lam1 * max(w, l), 0.9)
@@ -175,17 +184,49 @@ def step_full(c, T, M, k_up, k_down, h0, h1, s_vec, d, lam1=0.0):
     c = Teff.T @ c
     h_eff = h0 + h1 * (w - l)
     c = c + h_eff * herding_flux(c)
-    c = advect(c, M, k_up, k_down)
+    c = advect(c, M, k_up, k_down, damp_0=damp_0, damp_4=damp_4)
     c = c + s_vec - d * c
     return c / c.sum()
 
 
-def simulate_full(c0, T, Ms, k_up, k_down, h0, h1, s_rate, d_rate, n, lam1=0.0):
+def simulate_full(c0, T, Ms, k_up, k_down, h0, h1, s_rate, d_rate, n,
+                  lam1=0.0, p_damp=1.2, tau_build=6.0, gate=0.5):
+    """Full simulation with spike-persistence dampers.
+
+    p_damp: power-law exponent for the outflow impedance.  When M reverses
+    out of a spike, the extreme-bin outflow fraction is (|M|/build)^p_damp
+    (capped at 1), where build is the characteristic |M| that built the
+    spike.  Assumed 1.2 (tuned for post-peak decay).
+    tau_build: decay time (months) for the build-step memory.  Assumed 6.0.
+    gate: the damper only engages when the extreme source bin exceeds this
+    share (spike state).  Assumed 0.5.
+    """
     s_vec = np.full(N_BIN, s_rate / N_BIN)
     traj = [c0.copy()]
     c = c0.copy()
+    build_0, build_4 = 0.15, 0.15  # neutral: one bin width
+    bdecay = np.exp(-1.0 / tau_build)
+    M_prev = Ms[0] if len(Ms) > 0 else 0.0
     for t in range(n):
-        c = step_full(c, T, Ms[t], k_up, k_down, h0, h1, s_vec, d_rate, lam1)
+        M = Ms[t]
+        F = abs(M)
+        w, l = top_share(c), bot_share(c)
+        # Update build memories (decay + reinforce on inflow)
+        build_0 = 0.15 + (build_0 - 0.15) * bdecay
+        build_4 = 0.15 + (build_4 - 0.15) * bdecay
+        if M < 0:
+            build_0 = max(build_0, F)
+        elif M > 0:
+            build_4 = max(build_4, F)
+        # Dampers: engage only on reversal out of a spike
+        damp_0, damp_4 = 1.0, 1.0
+        if M > 0 and M_prev < 0 and l > gate:
+            damp_0 = min((F / build_0) ** p_damp, 1.0)
+        elif M < 0 and M_prev > 0 and w > gate:
+            damp_4 = min((F / build_4) ** p_damp, 1.0)
+        c = step_full(c, T, M, k_up, k_down, h0, h1, s_vec, d_rate, lam1,
+                      damp_0, damp_4)
+        M_prev = M
         traj.append(c)
     return np.array(traj)
     return float(np.sqrt(np.mean((a - b) ** 2)))

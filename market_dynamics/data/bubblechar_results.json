@@ -1,0 +1,116 @@
+{
+  "n_episodes_total": 247,
+  "n_crash_test": 247,
+  "n_dropped_forward": 0,
+  "n_return_test": 180,
+  "crash_rate": 0.1862,
+  "calibration_bins": {
+    "100-150pct": {
+      "n": 161,
+      "crash_rate": 0.1863
+    },
+    "gt150pct": {
+      "n": 86,
+      "crash_rate": 0.186
+    }
+  },
+  "univariate": {
+    "accel": {
+      "mean_crash": 0.8797,
+      "mean_nocrash": 1.0875,
+      "diff": -0.2078,
+      "t": -1.74,
+      "p": 0.0854,
+      "expected_sign": "+",
+      "sign_ok": false
+    },
+    "dvol": {
+      "mean_crash": -0.0541,
+      "mean_nocrash": -0.0405,
+      "diff": -0.0136,
+      "t": -0.35,
+      "p": 0.7272,
+      "expected_sign": "+",
+      "sign_ok": false
+    },
+    "age_rank": {
+      "mean_crash": 0.5347,
+      "mean_nocrash": 0.5115,
+      "diff": 0.0232,
+      "t": 0.663,
+      "p": 0.5095,
+      "expected_sign": "-",
+      "sign_ok": false
+    }
+  },
+  "logit": {
+    "accel": {
+      "coef": -0.3897,
+      "z": -1.485,
+      "p": 0.1376
+    },
+    "dvol": {
+      "coef": -0.0478,
+      "z": -0.08,
+      "p": 0.9365
+    },
+    "age_rank": {
+      "coef": 0.5514,
+      "z": 0.699,
+      "p": 0.4843
+    },
+    "pseudo_R2": 0.0134
+  },
+  "ols": {
+    "ret24_raw": {
+      "n": 180,
+      "coefs": {
+        "accel": {
+          "coef": 0.0876,
+          "t": 1.349,
+          "p": 0.179
+        },
+        "dvol": {
+          "coef": 0.0479,
+          "t": 0.396,
+          "p": 0.6926
+        },
+        "age_rank": {
+          "coef": -0.0714,
+          "t": -0.381,
+          "p": 0.704
+        }
+      },
+      "r2": 0.0121
+    },
+    "ret24_net": {
+      "n": 180,
+      "coefs": {
+        "accel": {
+          "coef": -0.0072,
+          "t": -0.12,
+          "p": 0.9048
+        },
+        "dvol": {
+          "coef": -0.0157,
+          "t": -0.101,
+          "p": 0.9201
+        },
+        "age_rank": {
+          "coef": 0.0912,
+          "t": 0.528,
+          "p": 0.5981
+        }
+      },
+      "r2": 0.0011
+    }
+  },
+  "n_sig_logit": 0,
+  "sig_b_return": {
+    "ret24_raw": 0,
+    "ret24_net": 0
+  },
+  "pass_a": false,
+  "pass_b": false,
+  "verdict": "HONEST NEGATIVE - no mechanism"
+}

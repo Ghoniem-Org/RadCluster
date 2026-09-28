@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.9.28)  28 SEP 2026 16:15
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.9.28)  28 SEP 2026 16:18
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -874,7 +874,7 @@ File: l3backend-pdftex.def 2024-01-04 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count349
 \l__pdf_internal_box=\box101
 )
-No file stock_market_dynamics_slides.aux.
+(./stock_market_dynamics_slides.aux)
 \openout1 = `stock_market_dynamics_slides.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 33.
@@ -895,6 +895,7 @@ LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 33.
 LaTeX Font Info:    ... okay on input line 33.
 LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 33.
 LaTeX Font Info:    ... okay on input line 33.
+
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
 *geometry* verbose mode - [ preamble ] result:
@@ -952,6 +953,8 @@ File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
 Package hyperref Info: Link coloring OFF on input line 33.
+
+(./stock_market_dynamics_slides.out) (./stock_market_dynamics_slides.out)
 \@outlinefile=\write5
 \openout5 = `stock_market_dynamics_slides.out'.
 
@@ -1021,9 +1024,7 @@ Dictionary: translator-numbers-dictionary, Language: English
 (/usr/share/texlive/texmf-dist/tex/latex/translator/translator-theorem-dictiona
 ry-English.dict
 Dictionary: translator-theorem-dictionary, Language: English 
-)
-No file stock_market_dynamics_slides.nav.
-[1
+) (./stock_market_dynamics_slides.nav) [1
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
 LaTeX Font Info:    Trying to load font information for U+msa on input line 48.
@@ -1816,22 +1817,15 @@ LaTeX Font Info:    Font shape `OT1/cmss/b/n' in size <6> not available
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-01-22>
  ***********
-
-
-Package rerunfilecheck Warning: File `stock_market_dynamics_slides.out' has cha
-nged.
-(rerunfilecheck)                Rerun to get outlines right
-(rerunfilecheck)                or use package `bookmark'.
-
-Package rerunfilecheck Info: Checksums for `stock_market_dynamics_slides.out':
-(rerunfilecheck)             Before: <no file>
-(rerunfilecheck)             After:  D41D8CD98F00B204E9800998ECF8427E;0.
+Package rerunfilecheck Info: File `stock_market_dynamics_slides.out' has not ch
+anged.
+(rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
  ) 
 Here is how much of TeX's memory you used:
- 26843 strings out of 476182
- 549975 string characters out of 5795595
+ 26887 strings out of 476182
+ 550629 string characters out of 5795595
  1951975 words of memory out of 5000000
- 48292 multiletter control sequences out of 15000+600000
+ 48328 multiletter control sequences out of 15000+600000
  571048 words of font info for 83 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  101i,15n,107p,403b,1031s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -1853,7 +1847,7 @@ share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/
 texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/share/texlive
 /texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/share/texlive/texmf-
 dist/fonts/type1/public/amsfonts/symbols/msam10.pfb>
-Output written on stock_market_dynamics_slides.pdf (14 pages, 209288 bytes).
+Output written on stock_market_dynamics_slides.pdf (14 pages, 209337 bytes).
 PDF statistics:
  221 PDF objects out of 1000 (max. 8388607)
  145 compressed objects within 2 object streams

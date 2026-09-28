@@ -114,7 +114,7 @@ Full-distribution RMSE 0.1685. Predicted bottom-lane peak 0.88 (2008-12) vs. rea
 
 ### 5.2 2020–21
 
-Full-distribution RMSE 0.1110. Predicted top-lane peak 0.95 (2021-04) vs. realized 0.92 (2021-03): amplitude within 0.03, one month late. Same-calendar-month decay: +1mo 0.418/0.406, +2mo 0.275/0.326, +3mo 0.239/0.357 (predicted/realized). The damper (rev-3) is what aligns the decay; without it the model drains ~2× too fast.
+Full-distribution RMSE 0.1110. Predicted top-lane peak 0.95 (2021-04) vs. realized 0.92 (2021-03): amplitude within 0.03, one month late. The realized series is volatile around the peak (0.92 in Mar → 0.49 in Apr → 0.90 in May → 0.86–0.87 through Jul); the model produces a smoother hump (0.58 → 0.95 → 0.61 → 0.43 → 0.35) and does not resolve the sharp April dip. The damper (rev-3) aligns the broad decay envelope; without it the model drains ~2× too fast.
 
 **Mechanism before results.** Both episodes work for the same reason: the driver $M$ translates the entire momentum distribution, and reflecting extreme bins accumulate the translated mass. The model spikes at the right time because $M$ spikes at the right time — the distribution mechanics are slaves to the driver. This is why the **forecast** (§6) is the binding constraint, not the hindcast.
 

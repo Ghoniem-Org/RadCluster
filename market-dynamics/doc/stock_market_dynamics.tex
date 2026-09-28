@@ -73,6 +73,33 @@ and index entry/exit.}}
 \tableofcontents
 \newpage
 
+% ---------------- Abstract ----------------
+\begin{abstract}
+\noindent We present a cluster-dynamics prototype that ports the RadCluster
+reaction--advection framework to the cross-sectional distribution of S\&P~500
+stocks across market regimes.  The state is the 15-bin regime distribution
+$\mathbf{c}(t)\in\mathbb{R}^{15}$ (5 absolute momentum bins $\times$ 3
+volatility terciles).  Four reaction kernels act on it: (i) a
+\textbf{measured} Markov drift $\mathbf{T}$; (ii) \textbf{market advection},
+a rigid translation of the distribution along the momentum axis driven by
+the measured cross-sectional window-delta
+$M_{\mathrm{cs}}(t)=r(t)-r(t-12)$; (iii) \textbf{autocatalytic herding}, a
+bilinear flux toward above-average-momentum bins with signed rate
+$h_{\mathrm{eff}}=h_1(w-\ell)$; (iv) a \textbf{spike-persistence damper}
+that impedes extreme-bin outflow on driver-sign reversal, modeling the
+unresolvable within-bin tail depth.  Two out-of-sample hindcasts
+conditioned on the realized market move --- the 2020--21 COVID recovery
+and the 2008--09 financial crisis --- reproduce the observed concentration
+spikes ($0.515$ vs.\ $0.546$ actual top-bin peak, 2021; $0.994$ vs.\
+$0.978$ actual bottom-bin peak, 2008) and their post-peak decay
+($+1$-month: $0.418$ vs.\ $0.406$, 2021; $0.988$ vs.\ $0.966$, 2008) with
+full-distribution RMSE $0.0914$ and $0.1037$.  The advection kernel is the
+spike generator; herding is an amplifier; the persistence damper is the
+decay-rate kernel.  All inputs are labeled measured / mechanical /
+calibrated / assumed.  The hindcast is conditional on realized $M_{\mathrm{cs}}$
+(exogenous forcing), not a lookahead-free forecast.
+\end{abstract}
+
 % ---------------- 1. Introduction ----------------
 \section{Introduction}
 This document describes a stock-market prototype built by reusing the
@@ -98,7 +125,8 @@ Absolute bins are essential: quintile ranks would freeze every marginal at
 $20\%$ by construction and the distribution could never concentrate, which
 is the phenomenon under study.
 
-Three edge classes act on the graph, plus the forcing:
+Three edge classes act on the graph, plus the forcing and the rev.~3
+persistence damper:
 \begin{itemize}
   \item \textbf{Drift} --- the measured month-to-month Markov transition
     matrix $\mathbf{T}$: momentum builds or decays and volatility shifts, so
@@ -114,6 +142,9 @@ Three edge classes act on the graph, plus the forcing:
     the assortativity/mating term: capital flows toward recent winners (or
     away from losers in a crash), the candidate amplifier of concentration
     episodes.  $h_1=0$ is the drift-only null.
+  \item \textbf{Spike persistence (rev.~3)} --- damps the extreme-bin outflow
+    when the market reverses out of a spike, modeling the within-bin tail
+    depth the 15-bin state cannot resolve (Sec.~2, Eq.~\eqref{eq:damp}).
   \item \textbf{Source/sink} --- index additions (IPOs, promotions) and
     removals (delistings, acquisitions), measured but tiny.
 \end{itemize}
@@ -595,6 +626,25 @@ momentum bin $m$, volatility bin $v$.}
   hindcast with rolling 12-month-ahead forecasts over the full window,
   reporting probabilistic skill (CRPS on bin shares) rather than RMSE alone.
 \end{enumerate}
+
+% ---------------- 7b. Conclusions ----------------
+\section{Conclusions}
+Four conclusions stand.  \textbf{(1)} A cluster-dynamics master equation
+with four mechanistic kernels reproduces both the amplitude and the
+post-peak decay of the two largest S\&P~500 regime-concentration spikes
+of the last 25~years, conditional on the realized market move.
+\textbf{(2)} The spike generator is market advection --- the rigid
+translation of the momentum distribution by the measured window-delta
+$M_{\mathrm{cs}}$ --- not herding: herding is an amplifier that cannot
+create spikes from a mean-reverting base.  \textbf{(3)} The decay rate is
+controlled by within-bin tail depth, modeled here by the
+spike-persistence damper of Eq.~\eqref{eq:damp}: deep spike mass cannot
+exit on a shallow reversal.  \textbf{(4)} All parameters are measured,
+mechanical, pre-episode calibrated, or explicitly assumed; nothing was
+fit on the spike months.  The stated limitations bound the claim: the
+hindcast is conditional (exogenous forcing), the 2021 peak is one month
+late, the 2008 maximum four months early, the damper parameters are
+assumed, and the 2021 $+3$-month tail remains too fast.
 
 % ---------------- 8. References ----------------
 \section{References}

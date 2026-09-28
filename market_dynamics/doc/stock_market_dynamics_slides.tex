@@ -1,4 +1,4 @@
-% Beamer: Stock-Market Dynamics rev. 5
+% Beamer: Stock-Market Dynamics rev. 6 — The Winners
 \documentclass[10pt]{beamer}
 
 \usepackage{tikz}
@@ -26,7 +26,7 @@
   \vskip0pt%
 }
 
-\title[Market Dynamics rev.\,5]{Stock-Market Dynamics, Rev.\,5:\\ Honest Negative on the Return Mechanism,\\ Data Integrity Fix, and Three Risk Metrics}
+\title[Market Dynamics rev.\,6]{Stock-Market Dynamics, Rev.\,6:\\ The Winners --- the Systematic Buffett Screen\\ and the Validated Regime Engine}
 \author[N.\,Ghoniem]{N.\,M. Ghoniem}
 \date[2026-09-28]{2026-09-28}
 
@@ -36,92 +36,90 @@
 \titlepage
 \end{frame}
 
-\begin{frame}{Rev-5 in one slide}
+\begin{frame}{Rev-6 in one slide}
 \begin{itemize}
-\item Rev-4's diagnosis: the model predicts \emph{where capital sits}, not \emph{which bins will pay} (mass-flow $\to$ return corr.\ 0.009)
-\item Rev-5 asked: does concentration predict returns? \textbf{Pre-registered test $\to$ honest negative.} No return mechanism built.
-\item Along the way: found and fixed \textbf{consistent $10^3$--$10^6\times$ unit errors} in share counts (SRE backfill $=$ \$5{,}000T) that corrupted every cap-weighted object in rev-4
-\item Three \textbf{risk metrics} as diagnostics: ensemble forecast intervals, fragility index, portfolio risk
-\item Clean-data re-calibration: distribution hindcasts improve markedly
-\item \textbf{No new paper track. No real-capital deployment.}
+\item Seven pre-registered return-forecast tests. \textbf{All seven failed walk-forward.} Their sections leave the report.
+\item What survived: \textbf{(1) the systematic Buffett screen} --- quality/value/low-beta, backtest 2009--2022: \textbf{CAGR 14.8\% vs.\ 13.6\% SPY, Sharpe 1.27 vs.\ 0.94}; \textbf{(2) the regime engine} --- validated census, scenario engine, fragility monitor. \emph{Not} a return forecaster.
+\item The screen was not pre-registered $\to$ \textbf{paper-trading protocol}. No real capital until the paper record holds.
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Data integrity fix}
+\begin{frame}{Winner: systematic Buffett screen}
+The unlevered selection leg of ``Buffett's Alpha'' (Frazzini--Kabiller--Pedersen: HML/QMJ/BAB + 1.6$\times$ float leverage --- leverage \emph{not} applied):
 \begin{itemize}
-\item Jump-based cleaner missed \emph{consistent} wrong units: SRE backfill \$5,000T $\to$ top-lane share flipped 0.999/0.002 monthly; QCOM filed era \$136T; EOG, SYK, HAL, Citi \dots
-\item Fix: segment split-adjusted shares at $>20\times$ jumps; check each segment vs.\ \textbf{absolute anchors} --- cap in [\$200M, \$4T], daily turnover in [0.02\%, 100\%]
-\item Rescale by $10^{\pm3}, 10^{\pm6}$ only where \emph{both} turn sane; drop (never invent) the rest: 28 segments fixed, 17 dropped
-\item Verification: binnable cap 2007 \$10.2T ($\approx$ \$13T true), 2021 \$41.3T ($\approx$ \$40T)
+\item Universe: true historical S\&P\,500 members, June 2009--2021
+\item Scores (cross-sectional $z$, winsorized $\pm3$, point-in-time):
+\begin{itemize}
+\item \textbf{Quality:} ROE (net income / equity), ROA secondary --- SEC XBRL 10-K facts
+\item \textbf{Value:} book/market, earnings yield
+\item \textbf{Low beta:} trailing 252-day beta vs.\ SPY
+\end{itemize}
+\item Composite = mean of the three; \textbf{top 30, equal-weight, rebalanced yearly} (Buffett holds for years)
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Buffett screen: results}
+2009-07--2022-06, 156 months:
+\begin{itemize}
+\item \textbf{CAGR 14.8\% vs.\ 13.6\%}; Sharpe \textbf{1.27 vs.\ 0.94}; vol 11.1\% vs.\ 14.2\%; max DD $-$19.6\% vs.\ $-$20.0\%; \$1 $\to$ \textbf{\$6.01} vs.\ \$5.26
+\item FF3 alpha \textbf{+0.46\%/mo, $t=2.71$} (+5.5\% ann.); Mkt 0.64; SMB $-$0.31; \textbf{HML $\approx$ 0} --- quality neutralizes value: this is \textbf{quality + low-beta}, not deep value
+\item Wins down years (2011, 2018, 2022); lags raging bulls (2020: $-$0.6\% vs.\ +18.3\%)
 \end{itemize}
 \begin{center}
-\includegraphics[width=\textwidth]{figures/data_fix.png}
+\includegraphics[width=\textwidth]{figures/buffett_screen_equity.png}
 \end{center}
 \end{frame}
 
-\begin{frame}{Concentration $\to$ return: honest negative}
-Pre-registered, estimated 2001--2007, judged walk-forward 2008--2022:
+\begin{frame}{Buffett screen: honest limits}
 \begin{itemize}
-\item Form~1 (threshold-linear): $b=-0.18$, $t=-0.41$, $R^2=0.002$; WF corr $-0.045$ --- \textbf{fail}
-\item Form~2 (quintiles): Q5$-$Q1 $-0.59\%$/mo ($t=-0.40$) in-sample, $-0.52\%$/mo ($t=-0.52$) walk-forward --- \textbf{statistically zero}, non-monotone
-\item $\mathrm{corr}(C, r^e)$: $-0.083$ / $-0.001$. Nothing tradeable.
+\item \textbf{Not pre-registered} --- researcher degrees of freedom; weaker evidence than the negative tests
+\item No float leverage, no crisis deal-flow, no transaction costs (53\% annual turnover $\approx$ 0.1--0.3\%/yr), 11 tickers excluded, one 14-year bull-market window
+\item \textbf{Paper-trading protocol:} frozen design, live tracking vs.\ SPY. Real capital only if the paper record holds --- then a small pilot.
 \end{itemize}
-\begin{center}
-\includegraphics[width=\textwidth]{figures/concentration_test.png}
-\end{center}
 \end{frame}
 
-\begin{frame}{Risk metric 1: ensemble forecast with intervals}
-200 scenarios from 2022-12: Dirichlet $T$ (Kish $N_{\mathrm{eff}}$) + AR(1) driver + VIX-regime Markov:
+\begin{frame}{Validated: the regime engine (not a return forecaster)}
 \begin{itemize}
-\item 12-mo top-lane share: median \textbf{0.239}, 90\% interval \textbf{[0.106, 0.503]}
-\item HHI: [0.110, 0.175]. The width \emph{is} the finding.
+\item 24 capital-weighted states (momentum $\times$ vol $\times$ turnover $\times$ size), true historical membership, master equation $d\mathbf{c}/dt = \mathbf{P} + \mathbf{S}\mathbf{J} - \mathbf{D}\mathbf{c}$
+\item Data integrity: consistent $10^3$--$10^6\times$ share-unit errors fixed (SRE backfill = \$5{,}000T); binnable cap now \$10.2T (2007) / \$41.3T (2021)
+\item \textbf{Scenario engine:} 200 scenarios, 12-mo top-lane share median \textbf{0.239}, 90\% interval \textbf{[0.106, 0.503]} --- the width \emph{is} the finding
+\item \textbf{Fragility monitor:} 2022-12 top-lane share 0.101 (\textbf{25th pctile} --- not crowded)
+\item Standing verdict: prices \emph{states}, not \emph{returns}. Never a deployment signal.
 \end{itemize}
-\begin{center}
-\includegraphics[width=\textwidth]{figures/ensemble_forecast.png}
-\end{center}
 \end{frame}
 
-\begin{frame}{Risk metric 2: fragility index}
-Top-lane share and HHI as percentiles of own history:
+\begin{frame}{Discarded candidates}
+All pre-registered, all failed walk-forward; full test docs stay in the repo:
 \begin{itemize}
-\item \textbf{2022-12:} $C=0.101$ (\textbf{25th pctile} --- not crowded); HHI 52nd pctile
-\item Most crowded: 2004-02 (0.570), 2010-01 (0.571), 2001-02 (0.423)
-\item A state descriptor, \textbf{not} a signal --- crowding does not predict returns (\S3)
+\item \textbf{Rev-4 tilt:} mass-flow $\to$ return corr.\ 0.009 --- reclassification, not price pressure
+\item \textbf{Concentration $\to$ returns:} $t=-0.41$, WF corr $-0.045$ --- honest negative
+\item \textbf{Dispersion:} all OOS $R^2$ negative in the large-cap panel
+\item \textbf{Comomentum:} wrong sign, OOS $R^2=-0.082$
+\item \textbf{Short interest:} published sign reversed in the modern subsample
+\item \textbf{Bubble characteristics:} pseudo-$R^2=0.0134$, key predictor unavailable
+\item \textbf{HF crowding (13F proxy):} all pass criteria failed; marginal signal died under size control
 \end{itemize}
-\begin{center}
-\includegraphics[width=\textwidth]{figures/fragility.png}
-\end{center}
-\end{frame}
-
-\begin{frame}{Risk metric 3: portfolio risk}
-\begin{itemize}
-\item Predicted vol from 24-bin covariance (2001--2022): tilt \textbf{14.4\%} vs.\ market 15.9\% vs.\ SPY 15.4\% --- the tilt's failure was return-side, not risk-side
-\item $P(\text{top lane unwinds next month} \mid C\text{ quintile})$: 41.8\% / 44.0\% / 35.8\% / 53.8\% / \textbf{34.0\%} --- no monotone pattern; most-crowded reverses \emph{least}
-\end{itemize}
-\vspace{1em}
-\textbf{Clean-data hindcasts} (realized-$M$ forcing): 2008--09 RMSE \textbf{0.0899} (was 0.1685); 2020--21 \textbf{0.0714} (was 0.1110), peak amplitude exact. The distribution mechanics survive the fix and work better.
 \end{frame}
 
 \begin{frame}{Verdict}
 \begin{center}
-\Large\bfseries\color{nmblue} No return mechanism. No new paper track.\\ No real-capital deployment.
+\Large\bfseries\color{nmblue} One paper-trading winner. One validated diagnostic.\\ No real-capital deployment yet.
 \end{center}
 \vspace{1em}
 \begin{itemize}
-\item Concentration does not predict returns (honest negative, $n=263$ months)
-\item Risk metrics are \textbf{diagnostics}, not signals: ensemble intervals, fragility percentiles, predicted vol / reversal odds
-\item Distribution model re-calibrated on clean data; code and data preserved for any future attempt
-\item Next: return-side economics (earnings, flows) --- or admit the framework prices \emph{states}, not \emph{returns}
+\item Buffett screen: promising backtest, frozen, paper-traded forward
+\item Regime engine: census + scenarios + fragility monitor --- diagnostics, not signals
+\item Everything else: tested, failed, documented, removed
 \end{itemize}
 \end{frame}
 
 \begin{frame}{References}
 \footnotesize
 \begin{itemize}
-\item fja05680/sp500 --- \emph{S\&P 500 Historical Components \& Changes} (public GitHub reconstruction). Membership.
-\item Yahoo Finance --- adjusted closes, splits, SPY total return. Prices, benchmark.
-\item SEC EDGAR --- companyconcept XBRL shares outstanding. Point-in-time shares; consistent-unit-error repair documented.
+\item Frazzini, Kabiller \& Pedersen (2018) --- Buffett's Alpha. The screen's design.
+\item Fama--French Data Library --- FF3 factor series for attribution.
+\item Brown, Howard \& Lundblad (2022); Rapach, Ringgenberg \& Zhou (2016); Greenwood, Shleifer \& You (2019); Lou \& Polk (2022) --- tested, discarded.
+\item fja05680/sp500 --- point-in-time membership. Yahoo Finance --- prices, SPY. SEC EDGAR --- XBRL fundamentals and shares.
 \end{itemize}
 \end{frame}
 

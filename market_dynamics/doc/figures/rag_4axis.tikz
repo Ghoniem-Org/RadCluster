@@ -1,0 +1,77 @@
+% Four-axis Reaction-Admissibility Graph: 24 bins
+% 3 momentum x 2 volatility tiles, arranged 2x2 by (turnover x size)
+% Literal \textwidth, no subfigures.
+\begin{tikzpicture}[scale=0.95, every node/.style={font=\small}]
+\tikzstyle{bin}=[circle, draw=navy!70!black, fill=blue!12, thick, minimum size=0.9cm, inner sep=1pt]
+\tikzstyle{adv}=[->, red!80!black, thick, >=stealth]
+\tikzstyle{advdown}=[->, blue!80!black, thick, >=stealth]
+\tikzstyle{drift}=[<->, gray!70, dashed, >=stealth]
+
+% ---- Panel (t=0,s=0): turnover LOW, size SMALL ----
+\begin{scope}[shift={(0,0)}]
+\node at (1.6,4.6) {\textbf{turnover LOW / size SMALL}};
+\foreach \m/\y in {2/3.4, 1/2.1, 0/0.8} {
+  \foreach \v/\x in {0/0.3, 1/2.9} {
+    \node[bin] (t0s0m\m v\v) at (\x,\y) {\m\v};
+  }
+  \node[anchor=east, red!60!black] at (-0.4,\y) {\ifnum\m=2 $m_2{:}\,r{>}30\%\fi\ifnum\m=1 $m_1{:}\,0{-}30\%\fi\ifnum\m=0 $m_0{:}\,r{<}0\%\fi};
+}
+\node[anchor=south, green!50!black] at (0.3,5.0) {$v_0$ low vol};
+\node[anchor=south, green!50!black] at (2.9,5.0) {$v_1$ high vol};
+\draw[adv] (t0s0m0v0) -- (t0s0m1v0); \draw[adv] (t0s0m1v0) -- (t0s0m2v0);
+\draw[advdown] (t0s0m1v0) -- (t0s0m0v0); \draw[advdown] (t0s0m2v0) -- (t0s0m1v0);
+\draw[adv] (t0s0m0v1) -- (t0s0m1v1); \draw[adv] (t0s0m1v1) -- (t0s0m2v1);
+\draw[advdown] (t0s0m1v1) -- (t0s0m0v1); \draw[advdown] (t0s0m2v1) -- (t0s0m1v1);
+\draw[drift] (t0s0m2v0) -- (t0s0m2v1); \draw[drift] (t0s0m1v0) -- (t0s0m1v1); \draw[drift] (t0s0m0v0) -- (t0s0m0v1);
+\end{scope}
+
+% ---- Panel (t=0,s=1): turnover LOW, size LARGE ----
+\begin{scope}[shift={(7.5,0)}]
+\node at (1.6,4.6) {\textbf{turnover LOW / size LARGE}};
+\foreach \m/\y in {2/3.4, 1/2.1, 0/0.8} {
+  \foreach \v/\x in {0/0.3, 1/2.9} {
+    \node[bin] (t0s1m\m v\v) at (\x,\y) {\m\v};
+  }
+}
+\draw[adv] (t0s1m0v0) -- (t0s1m1v0); \draw[adv] (t0s1m1v0) -- (t0s1m2v0);
+\draw[advdown] (t0s1m1v0) -- (t0s1m0v0); \draw[advdown] (t0s1m2v0) -- (t0s1m1v0);
+\draw[adv] (t0s1m0v1) -- (t0s1m1v1); \draw[adv] (t0s1m1v1) -- (t0s1m2v1);
+\draw[advdown] (t0s1m1v1) -- (t0s1m0v1); \draw[advdown] (t0s1m2v1) -- (t0s1m1v1);
+\draw[drift] (t0s1m2v0) -- (t0s1m2v1); \draw[drift] (t0s1m1v0) -- (t0s1m1v1); \draw[drift] (t0s1m0v0) -- (t0s1m0v1);
+\end{scope}
+
+% ---- Panel (t=1,s=0): turnover HIGH, size SMALL ----
+\begin{scope}[shift={(0,-6.5)}]
+\node at (1.6,4.6) {\textbf{turnover HIGH / size SMALL}};
+\foreach \m/\y in {2/3.4, 1/2.1, 0/0.8} {
+  \foreach \v/\x in {0/0.3, 1/2.9} {
+    \node[bin] (t1s0m\m v\v) at (\x,\y) {\m\v};
+  }
+  \node[anchor=east, red!60!black] at (-0.4,\y) {\ifnum\m=2 $m_2$\fi\ifnum\m=1 $m_1$\fi\ifnum\m=0 $m_0$\fi};
+}
+\draw[adv] (t1s0m0v0) -- (t1s0m1v0); \draw[adv] (t1s0m1v0) -- (t1s0m2v0);
+\draw[advdown] (t1s0m1v0) -- (t1s0m0v0); \draw[advdown] (t1s0m2v0) -- (t1s0m1v0);
+\draw[adv] (t1s0m0v1) -- (t1s0m1v1); \draw[adv] (t1s0m1v1) -- (t1s0m2v1);
+\draw[advdown] (t1s0m1v1) -- (t1s0m0v1); \draw[advdown] (t1s0m2v1) -- (t1s0m1v1);
+\draw[drift] (t1s0m2v0) -- (t1s0m2v1); \draw[drift] (t1s0m1v0) -- (t1s0m1v1); \draw[drift] (t1s0m0v0) -- (t1s0m0v1);
+\end{scope}
+
+% ---- Panel (t=1,s=1): turnover HIGH, size LARGE ----
+\begin{scope}[shift={(7.5,-6.5)}]
+\node at (1.6,4.6) {\textbf{turnover HIGH / size LARGE}};
+\foreach \m/\y in {2/3.4, 1/2.1, 0/0.8} {
+  \foreach \v/\x in {0/0.3, 1/2.9} {
+    \node[bin] (t1s1m\m v\v) at (\x,\y) {\m\v};
+  }
+}
+\draw[adv] (t1s1m0v0) -- (t1s1m1v0); \draw[adv] (t1s1m1v0) -- (t1s1m2v0);
+\draw[advdown] (t1s1m1v0) -- (t1s1m0v0); \draw[advdown] (t1s1m2v0) -- (t1s1m1v0);
+\draw[adv] (t1s1m0v1) -- (t1s1m1v1); \draw[adv] (t1s1m1v1) -- (t1s1m2v1);
+\draw[advdown] (t1s1m1v1) -- (t1s1m0v1); \draw[advdown] (t1s1m2v1) -- (t1s1m1v1);
+\draw[drift] (t1s1m2v0) -- (t1s1m2v1); \draw[drift] (t1s1m1v0) -- (t1s1m1v1); \draw[drift] (t1s1m0v0) -- (t1s1m0v1);
+\end{scope}
+
+% Legend
+\node[anchor=west, font=\footnotesize\itshape] at (0,-2.6) {Red: up-momentum advection ($\kappa M{>}0$); Blue: down-momentum advection ($\kappa M{<}0$);};
+\node[anchor=west, font=\footnotesize\itshape] at (0,-3.1) {Gray dashed: volatility drift (measured $T$, dense $24{\times}24$ --- representative edges shown).};
+\end{tikzpicture}

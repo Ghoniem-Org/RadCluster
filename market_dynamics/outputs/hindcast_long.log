@@ -1,0 +1,15 @@
+regimes: 106885 rows
+T_calm 63592 transitions, T_stress 31225 transitions
+T_stress stationary top-bin share: 0.056
+[2020-21] 24 months, 13 stress
+  stationary: RMSE=0.0888
+  stationary+h: RMSE=0.0865
+  regime: RMSE=0.0872
+  regime+h: RMSE=0.0821
+2000-07: T_calm 19696, T_stress 11538
+[2008-09] 24 months, 22 stress
+  stationary: RMSE=0.1293
+  stationary+h: RMSE=0.1431
+  regime: RMSE=0.1110
+  regime+h: RMSE=0.1269
+DONE

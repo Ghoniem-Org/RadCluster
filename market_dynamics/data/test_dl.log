@@ -1,0 +1,8 @@
+Cookie/crumb fetch failed (Timeout), continuing without crumb
+Failed to get ticker 'AAPL' reason: Failed to perform, curl: (28) Operation timed out after 10001 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+Cookie/crumb fetch failed (Timeout), continuing without crumb
+Failed to get ticker 'NVDA' reason: Failed to perform, curl: (28) Operation timed out after 10001 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+Cookie/crumb fetch failed (Timeout), continuing without crumb
+(21, 15)
+[('Close', 'AAPL'), ('Close', 'MSFT'), ('Close', 'NVDA'), ('High', 'AAPL')]
+OK

@@ -37,7 +37,7 @@ def main():
     dates = px.index
     # month-ends present in data
     me = px.resample('M').last().dropna(how='all').index
-    me = [d for d in me if d >= pd.Timestamp('2015-12-31')]
+    me = [d for d in me if d >= pd.Timestamp('2000-12-31')]
     rows = []
     logp = np.log(px)
     for d in me:

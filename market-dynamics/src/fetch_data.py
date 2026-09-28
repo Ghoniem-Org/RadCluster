@@ -7,7 +7,7 @@ DATA = os.path.join(HERE, '..', 'data')
 RAW = os.path.join(DATA, 'raw')
 os.makedirs(RAW, exist_ok=True)
 
-P1, P2 = 1420070400, 1640995200  # 2015-01-01 to 2022-01-01
+P1, P2 = 946684800, 1640995200  # 2000-01-01 to 2022-01-01
 
 def fetch_one(t):
     url = (f"https://query2.finance.yahoo.com/v8/finance/chart/{t}"

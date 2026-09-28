@@ -1,0 +1,31 @@
+T_idio 2000-19: 44180 transitions, 105 neutral months
+== calibrate T_full ==
+[T_full] kappa=0.5, h0=0.1, h1=1.0: 1-step RMSE=0.0294
+[T_full] kappa=0.5, h0=0.0, h1=0.5: 1-step RMSE=0.0295
+[T_full] kappa=0.5, h0=0.1, h1=0.5: 1-step RMSE=0.0295
+[T_full] kappa=0.5, h0=0.0, h1=1.0: 1-step RMSE=0.0296
+[T_full] kappa=0.5, h0=0.0, h1=0.0: 1-step RMSE=0.0296
+== calibrate T_idio ==
+[T_idio] kappa=0.5, h0=0.1, h1=1.0: 1-step RMSE=0.0294
+[T_idio] kappa=0.5, h0=0.0, h1=0.5: 1-step RMSE=0.0294
+[T_idio] kappa=0.5, h0=0.0, h1=1.0: 1-step RMSE=0.0295
+[T_idio] kappa=0.5, h0=0.1, h1=0.5: 1-step RMSE=0.0295
+[T_idio] kappa=0.5, h0=0.0, h1=0.0: 1-step RMSE=0.0296
+[2020-21 T_full] kappa=0.5,h0=0.1,h1=1.0: free-run RMSE=0.0846 | peak actual 0.55 @ 2021-03-31, predicted 0.24 @ 2021-04-30
+[2020-21 T_idio] kappa=0.5,h0=0.1,h1=1.0: free-run RMSE=0.0853 | peak actual 0.55 @ 2021-03-31, predicted 0.27 @ 2021-04-30
+T_idio 2000-07: 13902 transitions, 37 neutral months
+== calibrate T2_full ==
+[T2_full] kappa=0.5, h0=0.1, h1=1.0: 1-step RMSE=0.0244
+[T2_full] kappa=0.5, h0=0.0, h1=0.5: 1-step RMSE=0.0244
+[T2_full] kappa=0.5, h0=0.0, h1=1.0: 1-step RMSE=0.0245
+[T2_full] kappa=0.5, h0=0.1, h1=0.5: 1-step RMSE=0.0246
+[T2_full] kappa=0.5, h0=0.0, h1=0.0: 1-step RMSE=0.0247
+== calibrate T2_idio ==
+[T2_idio] kappa=0.5, h0=0.0, h1=0.5: 1-step RMSE=0.0244
+[T2_idio] kappa=0.5, h0=0.1, h1=1.0: 1-step RMSE=0.0244
+[T2_idio] kappa=0.5, h0=0.0, h1=1.0: 1-step RMSE=0.0244
+[T2_idio] kappa=0.5, h0=0.1, h1=0.5: 1-step RMSE=0.0245
+[T2_idio] kappa=0.5, h0=0.0, h1=0.0: 1-step RMSE=0.0246
+[2008-09 T2_full] kappa=0.5,h0=0.1,h1=1.0: free-run RMSE=0.1118 | peak actual 0.98 @ 2009-03-31, predicted 0.75 @ 2008-11-30
+[2008-09 T2_idio] kappa=0.5,h0=0.0,h1=0.5: free-run RMSE=0.1248 | peak actual 0.98 @ 2009-03-31, predicted 0.70 @ 2008-11-30
+DONE

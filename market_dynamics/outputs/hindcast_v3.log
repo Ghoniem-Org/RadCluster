@@ -1,0 +1,27 @@
+== cal 2000-19: stage 1 (kappa on |M|>0.08) ==
+  kappa=0.25: high-M 1-step RMSE=0.0372
+  kappa=0.5: high-M 1-step RMSE=0.0405
+  kappa=0.75: high-M 1-step RMSE=0.0472
+  kappa=1.0: high-M 1-step RMSE=0.0556
+  kappa=1.25: high-M 1-step RMSE=0.0636
+  kappa=1.5: high-M 1-step RMSE=0.0693
+== cal 2000-19: stage 2 (h0,h1 on all months, kappa=0.25) ==
+  h0=0.1, h1=1.0: all-month 1-step RMSE=0.0287
+  h0=0.0, h1=0.5: all-month 1-step RMSE=0.0287
+  h0=0.1, h1=0.5: all-month 1-step RMSE=0.0288
+  h0=0.0, h1=1.0: all-month 1-step RMSE=0.0289
+[2020-21] k=0.25,h0=0.1,h1=1.0: free-run RMSE=0.0861 | peak actual 0.55 @ 2021-03-31, predicted 0.16 @ 2021-04-30
+== cal 2000-07: stage 1 (kappa on |M|>0.08) ==
+  kappa=0.25: high-M 1-step RMSE=0.0258
+  kappa=0.5: high-M 1-step RMSE=0.0288
+  kappa=0.75: high-M 1-step RMSE=0.0354
+  kappa=1.0: high-M 1-step RMSE=0.0440
+  kappa=1.25: high-M 1-step RMSE=0.0523
+  kappa=1.5: high-M 1-step RMSE=0.0566
+== cal 2000-07: stage 2 (h0,h1 on all months, kappa=0.25) ==
+  h0=0.0, h1=0.5: all-month 1-step RMSE=0.0234
+  h0=0.1, h1=1.0: all-month 1-step RMSE=0.0234
+  h0=0.0, h1=1.0: all-month 1-step RMSE=0.0235
+  h0=0.1, h1=0.5: all-month 1-step RMSE=0.0235
+[2008-09] k=0.25,h0=0.0,h1=0.5: free-run RMSE=0.1178 | peak actual 0.98 @ 2009-03-31, predicted 0.57 @ 2008-11-30
+DONE

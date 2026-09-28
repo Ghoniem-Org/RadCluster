@@ -1,0 +1,43 @@
+Traceback (most recent call last):
+  File "<stdin>", line 4, in <module>
+  File "/usr/lib/python3/dist-packages/pandas/io/html.py", line 1245, in read_html
+    return _parse(
+           ^^^^^^^
+  File "/usr/lib/python3/dist-packages/pandas/io/html.py", line 988, in _parse
+    tables = p.parse_tables()
+             ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/pandas/io/html.py", line 248, in parse_tables
+    tables = self._parse_tables(self._build_doc(), self.match, self.attrs)
+                                ^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/pandas/io/html.py", line 811, in _build_doc
+    raise e
+  File "/usr/lib/python3/dist-packages/pandas/io/html.py", line 790, in _build_doc
+    with get_handle(
+         ^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/pandas/io/common.py", line 718, in get_handle
+    ioargs = _get_filepath_or_buffer(
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/pandas/io/common.py", line 372, in _get_filepath_or_buffer
+    with urlopen(req_info) as req:
+         ^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/pandas/io/common.py", line 274, in urlopen
+    return urllib.request.urlopen(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 215, in urlopen
+    return opener.open(url, data, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 521, in open
+    response = meth(req, response)
+               ^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 630, in http_response
+    response = self.parent.error(
+               ^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 559, in error
+    return self._call_chain(*args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 492, in _call_chain
+    result = func(*args)
+             ^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 639, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 403: Forbidden

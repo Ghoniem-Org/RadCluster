@@ -1,0 +1,5 @@
+[cal 2000-19] best 1-step: kappa=1, h0=0.1, h1=1.0, RMSE=0.0286
+[2020-21] free-run RMSE=0.0897 | peak actual 0.55 @ 2021-03-31, predicted 0.09 @ 2021-04-30
+[cal 2000-07] best 1-step: kappa=2, h0=0.1, h1=1.0, RMSE=0.0236
+[2008-09] free-run RMSE=0.1098 | peak actual 0.98 @ 2009-03-31, predicted 0.65 @ 2008-11-30
+DONE

@@ -1,0 +1,188 @@
+% Beamer: Stock-Market Dynamics rev. 4
+\documentclass[10pt]{beamer}
+
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes,calc}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{graphicx}
+
+\definecolor{nmblue}{RGB}{0,51,153}
+\definecolor{nmgray}{RGB}{90,90,90}
+
+\usecolortheme[named=nmblue]{structure}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}{
+  \leavevmode\hbox{%
+  \begin{beamercolorbox}[wd=.30\paperwidth,ht=2.5ex,dp=1ex,left]{author in head/foot}%
+    \usebeamerfont{author in head/foot}\hspace{1em}\insertshortauthor
+  \end{beamercolorbox}%
+  \begin{beamercolorbox}[wd=.48\paperwidth,ht=2.5ex,dp=1ex,center]{title in head/foot}%
+    \usebeamerfont{title in head/foot}\insertshorttitle
+  \end{beamercolorbox}%
+  \begin{beamercolorbox}[wd=.22\paperwidth,ht=2.5ex,dp=1ex,right]{date in head/foot}%
+    \usebeamerfont{date in head/foot}\insertshortdate\hspace{1em}\insertframenumber/\inserttotalframenumber\hspace{1em}
+  \end{beamercolorbox}}%
+  \vskip0pt%
+}
+
+\title[Market Dynamics rev.\,4]{Stock-Market Dynamics, Rev.\,4:\\ Four-Axis Regimes, Capital Weighting,\\ and a Paper-Trading Protocol}
+\author[N.\,Ghoniem]{N.\,M. Ghoniem}
+\date[2026-09-28]{2026-09-28}
+
+\begin{document}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}{Objectives}
+\begin{itemize}
+\item Four regime axes: momentum $\times$ volatility $\times$ turnover $\times$ size $= 24$ bins
+\item \textbf{Capital-weighted} bin shares (not headcounts)
+\item \textbf{True historical} S\&P\,500 membership --- never backfilled
+\item Zero-lookahead walk-forward forecast $\to$ monthly \textbf{tilt portfolio} with frozen weights
+\item Benchmarks: SPY buy-and-hold; \textbf{equal-weight historical members}
+\item Paper record $=$ \textbf{prerequisite} for any real-capital deployment
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Data}
+\begin{itemize}
+\item \textbf{Membership:} fja05680/sp500 public reconstruction, 2,720 snapshots 1996--2026 \emph{(community, not official S\&P)}
+\item \textbf{Prices:} Yahoo Finance, 659 tickers; aliases hand-validated (FB$\to$META, UTX/RTN$\to$RTX, \dots)
+\item \textbf{Shares:} SEC EDGAR XBRL, 47.9k facts; starts mid-2009 --- pre-2009 backfilled, \emph{estimated}
+\item \textbf{Turnover} $=$ dollar volume / mcap: a \emph{measured liquidity proxy}, not true turnover
+\item Panel: 138,255 member/months; 80.7\% binnable on all four axes
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Four-axis reaction-admissibility graph}
+\begin{center}
+\resizebox{\textwidth}{!}{\input{figures/rag_4axis.tikz}}
+\end{center}
+\end{frame}
+
+\begin{frame}{Master equation}
+\begin{equation*}
+\frac{d\mathbf{c}}{dt} = (T_{\mathrm{eff}}-I)\mathbf{c} + A(M)\,\mathbf{c} + H(\mathbf{c})\,\mathbf{c} + \mathbf{e}
+\end{equation*}
+\begin{itemize}
+\item \textbf{Drift:} cap-weighted $T$, calm vs.\ stress regimes --- \emph{measured}
+\item \textbf{Advection:} $M(t)=\bar r(t)-\bar r(t{-}12)$ translates momentum lanes; $\kappa=1$ \emph{mechanical}; reflecting extremes pile mass (spikes)
+\item \textbf{Herding / sticky drift:} calibrated $h_1=\lambda_1=0$ on 2000--2007 --- \emph{off} in rev-4
+\item \textbf{Damper:} impedes extreme-bin outflow post-spike; $p=1.2$, 6-mo memory, gate 0.5 --- \emph{assumed} (rev-3 episode tuning)
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Driver forecast: mechanical nowcast}
+\begin{equation*}
+\widehat M(t{+}1) = R_{\mathrm{SPY}}(t) - R_{\mathrm{SPY}}(t{-}12)
+\end{equation*}
+\begin{itemize}
+\item From the momentum definition: $\mathrm{mom}_i(t{+}1)-\mathrm{mom}_i(t)\approx r_i(t)-r_i(t{-}12)$
+\item Both terms known at month-end $t$ --- \textbf{zero lookahead}
+\item 2008--2022: corr.\ 0.50, 70\% directional, RMSE 0.074
+\item Expanding AR(1): corr.\ $-0.02$, 41\% directional --- \textbf{discarded}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Conditional hindcasts}
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{2008--09} (RMSE 0.1685)
+\begin{itemize}
+\item Bottom-lane peak: 0.88 pred.\ vs.\ 1.00 real
+\item Amplitude close, \textbf{3 months early}
+\item 2009 V-recovery under-predicted (uniform-bin limit)
+\end{itemize}
+\column{0.5\textwidth}
+\textbf{2020--21} (RMSE 0.1110)
+\begin{itemize}
+\item Top-lane peak: 0.95 pred.\ vs.\ 0.92 real
+\item Within 0.03, one month late
+\item Decay aligned by damper
+\end{itemize}
+\end{columns}
+\vspace{1em}
+\emph{Mechanism:} $M$ translates the distribution; reflecting extremes accumulate it. The model spikes when $M$ spikes.
+\end{frame}
+
+\begin{frame}{Paper-trading protocol}
+At each month-end $t$ (2008--2022):
+\begin{enumerate}
+\item Compute $\widehat M(t{+}1)$ mechanically
+\item Simulate one step to $\widehat{\mathbf{c}}(t{+}1)$
+\item Tilt: $\pi_b \propto \max(c_b + \gamma(\widehat c_b-c_b),0)$, $\gamma=1$ \emph{(additive)}
+\item Cap-weight stocks within bins; \textbf{freeze} through $t{+}1$
+\item 5\,bps one-way on turnover (timing bug found and fixed)
+\end{enumerate}
+Benchmarks: SPY; \textbf{true equal-weight historical members}.\\
+Monthly equity \emph{and} frozen holdings snapshots saved.
+\end{frame}
+
+\begin{frame}{Results: 2008--2022 walk-forward}
+\begin{table}
+\centering
+\begin{tabular}{lrrrrr}
+\toprule
+ & Total & CAGR & Vol & Sharpe & Max DD \\
+\midrule
+Tilt (paper) & +196\% & 7.6\% & 19.2\% & 0.48 & $-35.9$\% \\
+SPY & +284\% & 9.5\% & 16.3\% & 0.64 & $-46.3$\% \\
+Equal-weight & +327\% & 10.3\% & 13.3\% & 0.81 & $-27.0$\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+2022: tilt $-18.7$\%, SPY $-18.2$\%, EW $-4.2$\%.
+\end{frame}
+
+\begin{frame}{Why the tilt fails --- mechanism}
+\begin{itemize}
+\item corr(predicted $\Delta\widehat c_b$, realized bin return) $=$ \textbf{0.009}
+\item Perfect-foresight variant (realized $M$): Sharpe 0.47 --- no better
+\item \textbf{Advection mass flows are reclassification, not price pressure:} crashing stocks are reclassified into the loser bin --- it ``gains mass'' while its members lose money
+\item The model predicts \emph{where capital sits}, not \emph{which bins will pay}
+\item A return-predictive tilt needs a return model this framework lacks
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Verdict}
+\begin{center}
+\Large\bfseries\color{nmblue} The paper record does not support\\ real-capital deployment.
+\end{center}
+\vspace{1em}
+\begin{itemize}
+\item Distribution model captures conditional spikes \checkmark
+\item Mechanical driver nowcast has genuine skill \checkmark
+\item But the portfolio trails both benchmarks on every risk-adjusted metric \texttimes
+\item \textbf{Prerequisite not met.} Protocol, code, and snapshots remain so any future tilt is judged by the same bar.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Next steps}
+\begin{enumerate}
+\item \textbf{Return-predictive tilt} --- auxiliary return model, or crash-risk overlays instead of cross-sectional tilts
+\item Within-bin heterogeneity (depth coordinate / particle level)
+\item Pre-2009 shares: SEC XBRL starts mid-2009
+\item Membership: community reconstruction, day-scale lags possible
+\item Damper: assumed parameters need in-sample spike calibration
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{References}
+\footnotesize
+\begin{itemize}
+\item fja05680/sp500 --- \emph{S\&P 500 Historical Components \& Changes} (public GitHub reconstruction). Membership.
+\item Yahoo Finance --- adjusted closes, splits, SPY total return. Prices, benchmark.
+\item SEC EDGAR --- companyconcept XBRL shares outstanding. Point-in-time shares.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\begin{center}
+\Large Thank you.
+\end{center}
+\end{frame}
+
+\end{document}

@@ -1,0 +1,29 @@
+503 tickers, 503 to fetch
+ABNB: short
+APP: short
+  50/503 ok=48
+  100/503 ok=98
+COIN: short
+CEG: err HTTP Error 400: Bad Request
+  150/503 ok=146
+DASH: short
+EXE: short
+FDXF: err HTTP Error 400: Bad Request
+  200/503 ok=193
+GEHC: err HTTP Error 400: Bad Request
+GEV: err HTTP Error 400: Bad Request
+HONA: err HTTP Error 400: Bad Request
+  250/503 ok=240
+KVUE: err HTTP Error 400: Bad Request
+  300/503 ok=289
+  350/503 ok=339
+Q: err HTTP Error 400: Bad Request
+RDDT: err HTTP Error 400: Bad Request
+HOOD: short
+  400/503 ok=386
+SNDK: err HTTP Error 400: Bad Request
+SOLV: err HTTP Error 400: Bad Request
+  450/503 ok=434
+VLTO: err HTTP Error 400: Bad Request
+  500/503 ok=483
+DONE ok=486

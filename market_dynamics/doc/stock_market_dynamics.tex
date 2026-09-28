@@ -1,0 +1,272 @@
+% Stock-Market Dynamics, Revision 4
+% Four-axis regime model, capital weighting, historical membership, paper-trading protocol
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=2.4cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage[font=small,labelfont=bf]{caption}
+\setlength{\abovecaptionskip}{4pt}
+\setlength{\belowcaptionskip}{4pt}
+\setlength{\textfloatsep}{8pt}
+\setlength{\floatsep}{6pt}
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.9}
+\renewcommand{\textfraction}{0.05}
+\setcounter{totalnumber}{5}
+\setcounter{topnumber}{5}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes,calc}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{sectsty}
+\usepackage{fancyhdr}
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+
+\definecolor{nmblue}{RGB}{0,51,153}
+\definecolor{nmgray}{RGB}{90,90,90}
+
+\usepackage[colorlinks=true,linkcolor=nmblue,citecolor=nmblue,urlcolor=nmblue]{hyperref}
+
+\allsectionsfont{\color{nmblue}\sffamily\bfseries}
+\subsectionfont{\color{nmblue!80!black}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[L]{\footnotesize\textcolor{nmgray}{N.M. Ghoniem}}
+\fancyfoot[C]{\footnotesize\textcolor{nmgray}{Stock-Market Dynamics, Rev.\,4: Four-Axis Regimes and Paper Trading}}
+\fancyfoot[R]{\footnotesize\textcolor{nmgray}{\thepage}}
+\renewcommand{\headrulewidth}{0pt}
+
+\setlength{\parskip}{0.45em}
+\setlength{\parindent}{0pt}
+
+\begin{document}
+
+\begin{center}
+{\Large\bfseries\color{nmblue} Stock-Market Dynamics, Revision\,4}\\[0.4em]
+{\large Four-Axis Regime Model with Capital Weighting, Historical Membership,\\ and a Walk-Forward Paper-Trading Deployment Protocol}\\[1.0em]
+{\normalsize N.\,M. Ghoniem}\\[0.3em]
+{\small 2026-09-28}
+\end{center}
+
+\tableofcontents
+\newpage
+
+%=====================================================================
+\section{Introduction}
+
+This revision rebuilds the S\&P\,500 regime model on four requirements: (1)~four regime axes --- momentum $\times$ volatility $\times$ turnover/liquidity $\times$ size, giving $3{\times}2{\times}2{\times}2 = 24$ bins; (2)~capital-weighted bin shares rather than headcounts; (3)~true historical index membership, never backfilled; and (4)~a deployment protocol: a zero-lookahead walk-forward forecast driving a monthly tilt portfolio with frozen weights, benchmarked against SPY and an equal-weight historical-member portfolio, with monthly equity and holdings snapshots saved as the paper track record.
+
+A further requirement governs the whole exercise: the paper record is the \emph{prerequisite} for any real-capital deployment. Section~\ref{sec:verdict} states the verdict plainly.
+
+%=====================================================================
+\section{Data}
+\label{sec:data}
+
+\subsection{Historical S\&P\,500 membership}
+Index membership comes from the public reconstruction \texttt{fja05680/sp500} (\emph{S\&P 500 Historical Components \& Changes (Updated).csv}): 2,720 snapshots/change dates from 1996-01-02 through 2026-08-18~\cite{fja05680}. This is a community reconstruction, \emph{not} an official S\&P database; change dates may lag true effective dates by days. All membership joins use the latest snapshot on or before each month-end (point-in-time).
+
+\subsection{Prices}
+Daily adjusted closes from \textbf{Yahoo Finance}~\cite{yahoo} for every ticker ever appearing in the membership file (659 raw files after alias resolution). Corporate-action aliases were validated by hand (e.g.\ \texttt{BK}$\to$\texttt{BNY}, \texttt{FB}$\to$\texttt{META}, \texttt{UTX/RTN}$\to$\texttt{RTX}). Snapshot price coverage: 2000:~57\%, 2008:~65\%, 2015:~76\%, 2021:~90\%, 2022:~94\%.
+
+\subsection{Shares outstanding and splits}
+\textbf{SEC EDGAR} companyconcept XBRL~\cite{sec} (\texttt{SharesOutstanding}, \texttt{WeightedAverageNumberOfSharesOutstanding}) provides point-in-time shares: 47,902 raw facts, 920 apparent $1{,}000\times$/$1{,}000{,}000\times$ unit errors mechanically rescaled. SEC coverage begins mid-2009; \textbf{no facts were filed by 2008-12-31}, so pre-2009 shares use earliest-filing backfill and are \emph{estimated with lookahead limitations}, flagged per-row. \textbf{Yahoo Finance} corporate-action history~\cite{yahoo} supplies 1,844 split events. \textbf{Turnover} is dollar volume over split-adjusted market cap --- a \emph{measured liquidity proxy}, not true share turnover, unless valid point-in-time shares exist.
+
+\subsection{Panel}
+\texttt{data/panel\_v2.csv}: 138,255 historical-member/month rows; 83.2\% of priced rows have cap and turnover; 80.7\% are binnable on all four axes. Figure~\ref{fig:coverage} shows coverage over time.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/coverage.png}
+\caption{Historical coverage: true S\&P\,500 members vs.\ rows with prices and rows binnable on all four axes.}
+\label{fig:coverage}
+\end{figure}
+
+%=====================================================================
+\section{Model}
+\label{sec:model}
+
+\subsection{State}
+The capital distribution over 24 bins, $b = (m,v,\tau,s)$:
+\begin{equation}
+\mathbf{c}(t) \in \Delta^{23}, \qquad
+c_b(t) = \frac{\sum_{i\in b}\mathrm{cap}_i(t)}{\sum_i \mathrm{cap}_i(t)} .
+\end{equation}
+Bin edges (Table~\ref{tab:edges}) are round absolute levels, \textbf{assumed} for interpretability, not calibrated quantiles; several low-turnover/high-volatility cells are frequently empty.
+
+\begin{table}[h]
+\centering
+\caption{Four regime axes. All edges \textbf{assumed}.}
+\label{tab:edges}
+\begin{tabular}{lll}
+\toprule
+Axis & Levels & Edges \\
+\midrule
+Momentum $m$ & 3 & $[-1,\,0,\,0.30,\,3]$ (12--1m return) \\
+Volatility $v$ & 2 & $[0,\,0.28,\,5]$ (annualized) \\
+Turnover $\tau$ & 2 & $[0,\,0.008,\,10]$ (dollar vol / mcap) \\
+Size $s$ & 2 & $[0,\,\$10\mathrm{B},\,\infty)$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Master equation}
+\begin{equation}
+\frac{d\mathbf{c}}{dt} =
+\underbrace{(T_{\mathrm{eff}}-I)\mathbf{c}}_{\text{drift}}
++ \underbrace{A(M)\,\mathbf{c}}_{\text{market advection}}
++ \underbrace{H(\mathbf{c})\,\mathbf{c}}_{\text{herding}}
++ \underbrace{\mathbf{e}}_{\text{entry/exit}},
+\end{equation}
+stepped monthly. Figure~\ref{fig:rag} shows the reaction-admissibility graph.
+
+\paragraph{Drift (measured).} $T$ is the cap-weighted month-to-month transition matrix, estimated on 2000--2007 and expanded thereafter; $T_{\mathrm{calm}}$ for $|M|<0.05$, $T_{\mathrm{stress}}$ otherwise.
+
+\paragraph{Market advection (mechanical).} The cross-sectional window-delta $M(t)=\bar r(t)-\bar r(t{-}12)$ shifts every stock's 12-month momentum window identically --- a pp is a pp, so $\kappa=1$ is \textbf{mechanical}. Conservative fractional remap translates each momentum lane; reflecting extreme bins accumulate mass (the spike mechanism). Participation $w_{\mathrm{eff}}=0.15$ is \textbf{assumed}.
+
+\paragraph{Herding and sticky drift (calibrated).} The 2000--2007 grid selected $h_1=0$ and $\lambda_1=0$: neither autocatalytic herding nor sticky drift improved the pre-2008 objective. Both are \textbf{off} in rev-4; rev-3 values are not carried over as calibrated.
+
+\paragraph{Spike-persistence damper (assumed).} At a true peak the extreme bin's mass sits deep in the tail (Mar-2021: median top-bin momentum 103\%, measured in rev-3), so a uniform donor-cell drains $\sim$2$\times$ too fast. The damper impedes extreme-bin outflow on driver-sign reversal out of a spike (gate: share $>0.5$): $\mathrm{damp}=\min((|M|/B)^p,1)$, $p=1.2$, $B$ a 6-month-decay memory of spike-building $|M|$. All damper parameters are \textbf{assumed} (rev-3 episode tuning; unidentified in the pre-2008 grid).
+
+\begin{figure}[t]
+\centering
+\resizebox{\textwidth}{!}{\input{figures/rag_4axis.tikz}}
+\caption{Reaction-admissibility graph of the 24 regime bins: $3$ momentum $\times$ $2$ volatility tiles arranged $2{\times}2$ by turnover $\times$ size. Red/blue: market advection along momentum; gray dashed: volatility drift (measured $T$ is dense $24{\times}24$; representative edges shown).}
+\label{fig:rag}
+\end{figure}
+
+\subsection{Driver forecast $\widehat M_{t+1}$}
+From the momentum definition, $\mathrm{mom}_i(t{+}1)-\mathrm{mom}_i(t)\approx r_i(t)-r_i(t{-}12)$, hence the \textbf{mechanical nowcast}
+\begin{equation}
+\widehat M(t{+}1) = R_{\mathrm{SPY}}(t) - R_{\mathrm{SPY}}(t{-}12),
+\end{equation}
+both known at month-end $t$ (zero lookahead). Over 2008--2022: correlation 0.50 with realized $M$, 70\% directional accuracy, RMSE 0.074 --- vs.\ $-0.02$ / 41\% for an expanding AR(1), which is discarded. The raw form overstates $|M|$ by $\sim$1.6$\times$ (measured slope 0.63, disclosed); it is used unshrunk to avoid lookahead.
+
+%=====================================================================
+\section{Parameters}
+\label{sec:params}
+
+\begin{table}[h]
+\centering
+\caption{Every input labeled. \textbf{Measured / mechanical / calibrated / assumed} per the standing rule.}
+\label{tab:params}
+\begin{tabular}{llll}
+\toprule
+Parameter & Value & Label & Basis \\
+\midrule
+Bin edges (4 axes) & \S3.1 & assumed & round interpretable levels \\
+$\kappa$ (advection gain) & 1.0 & mechanical & a pp is a pp \\
+$w_{\mathrm{eff}}$ & 0.15 & assumed & monthly participation \\
+$h_1$ (herding) & 0 & calibrated & 2000--2007 grid: no gain \\
+$\lambda_1$ (sticky) & 0 & calibrated & 2000--2007 grid: no gain \\
+Damper $p$/$\tau_{\mathrm{build}}$/gate & 1.2 / 6\,mo / 0.5 & assumed & rev-3 episode tuning \\
+Tilt $\gamma$ & 1.0 & assumed & additive tilt strength \\
+Cost & 5\,bps one-way & assumed & institutional estimate \\
+$T_{\mathrm{calm}},T_{\mathrm{stress}}$ & $24{\times}24$ & measured & cap-weighted, expanding \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%=====================================================================
+\section{Conditional hindcasts}
+\label{sec:hind}
+
+These are \textbf{conditional hindcasts} (realized destination-month $M(t{+}1)$ forcing), testing the distribution mechanics --- not forecasts.
+
+\subsection{2008--09}
+Full-distribution RMSE 0.1685. Predicted bottom-lane peak 0.88 (2008-12) vs.\ realized 1.00 (2009-03): amplitude close, \textbf{three months early}. The realized 1.00 is audited saturation --- at the March-2009 trough nearly the entire cross-section sat below 0\% twelve-month momentum; no single-name outlier drives it. Post-peak decay matches within $\sim$0.05 share. The 2009 V-recovery is under-predicted: uniform-within-bin advection cannot resolve it (structural limitation).
+
+\subsection{2020--21}
+Full-distribution RMSE 0.1110. Predicted top-lane peak 0.95 (2021-04) vs.\ realized 0.92 (2021-03): within 0.03, one month late. Same-calendar-month decay (pred/real): +1\,mo 0.418/0.406, +2\,mo 0.275/0.326, +3\,mo 0.239/0.357. The damper is what aligns the decay; without it the model drains $\sim$2$\times$ too fast.
+
+\paragraph{Mechanism before results.} Both episodes work for one reason: $M$ translates the whole momentum distribution and reflecting extreme bins accumulate the mass. The model spikes when $M$ spikes --- the distribution mechanics are slaves to the driver, which is why the \emph{forecast} is the binding constraint.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/hindcast_2008-09.png}
+\caption{2008--09 conditional hindcast: winner and loser lane capital shares, predicted (realized-$M$ forcing) vs.\ realized.}
+\label{fig:h08}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/hindcast_2020-21.png}
+\caption{2020--21 conditional hindcast: winner and loser lane capital shares, predicted vs.\ realized.}
+\label{fig:h20}
+\end{figure}
+
+%=====================================================================
+\section{Genuine 2022 out-of-sample forecast}
+Model frozen on pre-2022 data; $\widehat M$ from the mechanical nowcast only (Fig.~\ref{fig:f22}). The forecast anticipates the growth-to-value rotation's loser-lane buildup but underestimates its persistence --- the uniform-bin limitation again.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/forecast_2022.png}
+\caption{2022 genuine out-of-sample: tilt vs.\ SPY vs.\ equal-weight members, rebased to 2022-01.}
+\label{fig:f22}
+\end{figure}
+
+%=====================================================================
+\section{Paper-trading deployment protocol}
+\label{sec:paper}
+
+\subsection{Rules}
+At each month-end $t$ from 2008-01: (i)~compute $\widehat M(t{+}1)$ mechanically; (ii)~simulate one step to $\widehat{\mathbf{c}}(t{+}1)$; (iii)~tilt $\pi_b \propto \max(c_b + \gamma(\widehat c_b - c_b),0)$, $\gamma=1$ (\textbf{additive} --- the earlier exponential form was numerically unstable and is discarded); (iv)~cap-weight stocks within bins; (v)~\textbf{freeze} weights through $t{+}1$; (vi)~deduct 5\,bps one-way on turnover from correctly drifted prior weights (an early timing bug that drifted weights with future returns was found and fixed).
+
+Benchmarks: \textbf{SPY} buy-and-hold (dividends via Yahoo adjusted closes)~\cite{yahoo}, and a \textbf{true equal-weight historical-member portfolio} (equal weights over eligible point-in-time members; the earlier equal-across-bins version is replaced). Monthly equity \emph{and} frozen per-ticker holdings snapshots are saved as first-class deployment records.
+
+\subsection{Results}
+\begin{table}[h]
+\centering
+\caption{2008--2022 walk-forward (zero lookahead).}
+\label{tab:paper}
+\begin{tabular}{lrrrrr}
+\toprule
+Portfolio & Total & CAGR & Ann.\ vol & Sharpe & Max DD \\
+\midrule
+Tilt (paper) & +196\% & 7.6\% & 19.2\% & 0.48 & $-35.9$\% \\
+SPY & +284\% & 9.5\% & 16.3\% & 0.64 & $-46.3$\% \\
+Equal-weight members & +327\% & 10.3\% & 13.3\% & 0.81 & $-27.0$\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+2022: tilt $-18.7$\%, SPY $-18.2$\%, EW $-4.2$\%. Figure~\ref{fig:equity} shows the full track record.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/paper_equity.png}
+\caption{Top: paper-trading equity vs.\ SPY and equal-weight historical members (walk-forward, frozen monthly weights, 5\,bps). Bottom: mechanical $M$ nowcast vs.\ realized.}
+\label{fig:equity}
+\end{figure}
+
+\subsection{The tilt does not work --- mechanism}
+\label{sec:verdict}
+The mass-flow tilt was tested to destruction. Correlation between predicted bin mass change $\Delta\widehat c_b$ and realized bin return: \textbf{0.009} (winner 0.031, loser 0.064, mid $-0.099$). A perfect-foresight variant (realized $M$, zero forecast error) reaches Sharpe 0.47 --- no better. \textbf{The failure is in the tilt mechanism, not the forecast.}
+
+Why: advection-driven mass flows are \emph{reclassification}, not price pressure. When stocks crash they are reclassified into the loser bin --- the bin ``gains mass'' while its constituents lose money. Overweighting predicted mass-gainers overweights bins whose members just fell (or chases winners after the move). The distribution mechanics predict \emph{where capital sits}, not \emph{which bins will pay}; a return-predictive tilt needs a return model this framework does not have.
+
+\paragraph{Verdict.} \textbf{The paper record does not support real-capital deployment.} The distribution model captures conditional spikes and the mechanical driver nowcast has genuine skill, but the portfolio built on them trails both benchmarks on every risk-adjusted metric. The prerequisite is not met. Protocol, code, and snapshots remain in place so any future tilt is judged by the same bar.
+
+%=====================================================================
+\section{Limitations and next steps}
+\begin{enumerate}
+\item \textbf{Return-predictive tilt} --- the binding gap: tilt on predicted bin returns via an auxiliary return model, or use the distribution forecast for crash-risk overlays rather than cross-sectional tilts.
+\item \textbf{Within-bin heterogeneity} --- uniform-bin advection under-resolves V-recoveries (2009, 2022). A depth coordinate or particle-level extension is the structural fix.
+\item \textbf{Pre-2009 shares} --- SEC XBRL starts mid-2009; early size/turnover bins lean on backfilled shares (flagged estimated).
+\item \textbf{Membership reconstruction} --- community-sourced~\cite{fja05680}, not official S\&P; day-scale change-date lags possible.
+\item \textbf{Empty cells} --- low-turnover/high-volatility bins often empty; edges kept fixed for interpretability.
+\item \textbf{Damper parameters} --- assumed from rev-3 episode tuning; genuine calibration needs identified spike episodes in-sample.
+\end{enumerate}
+
+%=====================================================================
+\begin{thebibliography}{9}
+\bibitem{fja05680} fja05680/sp500. \emph{S\&P 500 Historical Components \& Changes (Updated).csv} --- public GitHub reconstruction; 2,720 snapshots, 1996-01-02--2026-08-18. Used in \S2.1 for point-in-time membership.
+\bibitem{yahoo} Yahoo Finance. Daily adjusted closes, corporate-action (split) history, SPY total-return series. Used in \S2.2 (prices), \S2.3 (splits), \S7.1 (SPY benchmark).
+\bibitem{sec} SEC EDGAR. Companyconcept XBRL: \texttt{SharesOutstanding}, \texttt{WeightedAverageNumberOfSharesOutstanding}. Used in \S2.3 for point-in-time shares.
+\end{thebibliography}
+
+\end{document}

@@ -18,6 +18,7 @@ import pandas as pd
 HERE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(HERE, '..', 'data')
 N_BIN = 15
+N_MOM, N_VOL = 5, 3
 
 def bin_mom_q(b):
     return b // 3
@@ -89,7 +90,104 @@ def simulate(n0, T, h, s_rate, d_rate, months):
         traj.append(n.copy())
     return np.array(traj)
 
+
 def rmse(a, b):
+    return float(np.sqrt(np.mean((a - b) ** 2)))
+
+
+def load_market_driver(path=None, source='panel'):
+    """Monthly window-delta driver M(t) = r(t) - r(t-12).
+
+    source='panel' (default): cross-sectional driver from the equal-weighted
+    price panel (data/panel_monthly.csv, measured).  This is the mechanically
+    correct driver: it is the mean over stocks of the individual window-delta
+    r_i(t) - r_i(t-12) that moves each stock's 12m momentum.
+    source='index': ^GSPC-based driver (data/spx_monthly.csv, measured).
+
+    M(t) is known at month-end t -> legitimate for 1-month-ahead forecasts.
+    """
+    import csv as _csv
+    if path is None:
+        p = os.path.join(DATA, 'panel_monthly.csv' if source == 'panel'
+                         else 'spx_monthly.csv')
+    else:
+        p = path
+    col = 'M_cs' if source == 'panel' else 'M'
+    out = {}
+    with open(p) as f:
+        for row in _csv.DictReader(f):
+            try:
+                out[row['ym']] = float(row[col])
+            except (ValueError, TypeError, KeyError):
+                pass
+    return out
+
+
+def advect(c, M, k_up, k_down, w_eff=0.15):
+    """Donor-cell advection along the momentum axis within each vol lane,
+    scaled MECHANICALLY: a window-delta M shifts momentum by M in return
+    space, i.e. by M/w_eff bins.  k_up/k_down are O(1) fudge factors
+    (k=1 is the mechanical value).
+
+    M > 0 shifts mass toward winner bins, M < 0 toward loser bins.
+    Reflecting boundaries: the extreme bins accumulate (this generates
+    spikes).  w_eff=0.15 is the typical momentum-bin width (assumed).
+    """
+    out = c.copy()
+    k = k_up if M > 0 else k_down
+    f = k * abs(M) / w_eff
+    if f <= 0:
+        return out
+    f = min(f, 1.0)
+    for v in range(N_VOL):
+        if M > 0:
+            for m in range(N_MOM - 1):
+                i = m * N_VOL + v
+                fl = f * c[i]
+                out[i] -= fl
+                out[i + N_VOL] += fl
+        else:
+            for m in range(1, N_MOM):
+                i = m * N_VOL + v
+                fl = f * c[i]
+                out[i] -= fl
+                out[i - N_VOL] += fl
+    return out
+
+def top_share(c):
+    return sum(c[m * N_VOL + v] for m in [N_MOM - 1] for v in range(N_VOL))
+
+
+def bot_share(c):
+    return sum(c[m * N_VOL + v] for m in [0] for v in range(N_VOL))
+
+
+def step_full(c, T, M, k_up, k_down, h0, h1, s_vec, d, lam1=0.0):
+    """One monthly step: sticky drift -> autocatalytic herding -> advection.
+
+    lam1: concentration-dependent drift stickiness.  lam = lam1*max(w,l);
+    the drift becomes (1-lam)*T + lam*I, so concentrated distributions
+    relax more slowly (sticky spikes).  lam1=0 recovers the plain drift.
+    """
+    w, l = top_share(c), bot_share(c)
+    lam = min(lam1 * max(w, l), 0.9)
+    Teff = (1.0 - lam) * T + lam * np.eye(len(c))
+    c = Teff.T @ c
+    h_eff = h0 + h1 * (w - l)
+    c = c + h_eff * herding_flux(c)
+    c = advect(c, M, k_up, k_down)
+    c = c + s_vec - d * c
+    return c / c.sum()
+
+
+def simulate_full(c0, T, Ms, k_up, k_down, h0, h1, s_rate, d_rate, n, lam1=0.0):
+    s_vec = np.full(N_BIN, s_rate / N_BIN)
+    traj = [c0.copy()]
+    c = c0.copy()
+    for t in range(n):
+        c = step_full(c, T, Ms[t], k_up, k_down, h0, h1, s_vec, d_rate, lam1)
+        traj.append(c)
+    return np.array(traj)
     return float(np.sqrt(np.mean((a - b) ** 2)))
 
 def transition_matrix_by_regime(reg, vix_monthly, d0, d1, thresh=20.0):
@@ -117,6 +215,33 @@ def transition_matrix_by_regime(reg, vix_monthly, d0, d1, thresh=20.0):
         T[empty, np.arange(N_BIN)[empty]] = 1.0
         return T
     return norm(c_calm), norm(c_stress), int(c_calm.sum()), int(c_stress.sum())
+
+def transition_matrix_mneutral(reg, Ms, d0, d1, thresh=0.03):
+    """Drift estimated on M-neutral months only (|M(t)| < thresh).
+
+    The common (market-wide) migration is carried by the advection kernel;
+    this matrix is the idiosyncratic residual.  The transition t -> t+1 is
+    included when |M(t)| < thresh, M(t) being known at month-end t.
+    """
+    import pandas as pd
+    r = reg[(reg['date'] >= d0) & (reg['date'] <= d1)].copy()
+    r['ym'] = pd.to_datetime(r['date']).dt.strftime('%Y-%m')
+    months = sorted(r['ym'].unique())
+    counts = np.zeros((N_BIN, N_BIN))
+    n_used = 0
+    for a, b in zip(months[:-1], months[1:]):
+        if abs(Ms.get(a, 0.0)) >= thresh:
+            continue
+        da = r[r['ym'] == a].set_index('ticker')['bin']
+        db = r[r['ym'] == b].set_index('ticker')['bin']
+        common = da.index.intersection(db.index)
+        for t in common:
+            counts[int(da[t]), int(db[t])] += 1
+        n_used += 1
+    row = counts.sum(axis=1, keepdims=True)
+    T = np.divide(counts, row, out=np.eye(N_BIN), where=row > 0)
+    return T, int(counts.sum()), n_used
+
 
 def simulate_regime(n0, T_calm, T_stress, regimes, h, s_rate, d_rate):
     """regimes: list of bool, True=stress, one per step."""

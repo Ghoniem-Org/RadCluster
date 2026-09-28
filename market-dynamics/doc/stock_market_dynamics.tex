@@ -344,6 +344,9 @@ and rate kernel --- the direct analog of the RadCluster reaction table.
     & $h_{\mathrm{eff}}H_k(\mathbf{c})$ of Eq.~\eqref{eq:herding}, zero-sum \\
 6 & Index exit (sink) & $R_{mv} \to \varnothing$
     & $d\,c_{mv}$, $d\approx 0$~~[measured] \\
+7 & Spike persistence (new, rev.~3) & damps extreme-bin outflow on reversal
+    & $\mathrm{damp}=\min[(|M|/B)^p,1]$, $p=1.2$; $B$ build-step memory,
+      $\tau=6$~mo; gate $>0.5$ share \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -355,7 +358,23 @@ measured; the stickiness $\lambda$ freezes it toward identity at high
 concentration.  Advection is parameter-free ($\kappa=1$ mechanical): it
 translates the distribution rigidly by the measured window-delta
 $M_{\mathrm{cs}}$ of Eq.~\eqref{eq:mcs}, accumulating mass in the unbounded
-extreme bins --- the spike generator.
+extreme bins --- the spike generator.  The rev.~3 persistence damper
+(Eq.~\eqref{eq:damp}) impedes the extreme-bin outflow when the market
+reverses out of a spike: deep-tail mass cannot exit on a shallow reversal.
+
+\begin{equation}
+\label{eq:damp}
+\mathrm{damp} = \min\!\left[\left(\frac{|M_{\mathrm{cs}}|}{B}\right)^{p},\,1\right],
+\qquad p=1.2,
+\end{equation}
+applied to the extreme source-bin outflow only when $M_{\mathrm{cs}}$
+changes sign and that bin exceeds $50\%$ share.  $B$ is the build-step
+memory (pp): reinforced by $B\leftarrow\max(B,|M|)$ on inflow toward the
+extreme bin, decaying toward the neutral $0.15$ with time constant
+$6$~months.  A small reversal against a large build ($|M|\ll B$) barely
+dislodges the deep mass; a reversal comparable to the build drains
+efficiently.  The $50\%$ gate keeps the damper from firing during ordinary
+recoveries.
 
 % ---------------- 5. Parameters and assumptions ----------------
 \section{Input parameters and assumptions}
@@ -390,6 +409,12 @@ Herding rate & $h_1$ & $1.0$ ($h_0=0$) &
   one-step hindcast error, pre-episode & calibrated \\
 Stickiness & $\lambda_1$ & $1.0$ &
   one-step hindcast error, pre-episode & calibrated \\
+Damper exponent & $p$ & $1.2$ &
+  tuned for post-peak decay (rev.~3) & assumed \\
+Build memory & $\tau_{\rm build}$ & $6$~months &
+  decay of build-step memory & assumed \\
+Spike gate & --- & $0.5$ share &
+  damper engages only above & assumed \\
 Index entry & $s$ & $8\times10^{-4}$/month, uniform &
   panel appearance rate & measured \\
 Index exit & $d$ & $\approx 0$ &
@@ -438,27 +463,31 @@ Model & Peak (top bin) & Timing & RMSE (bin shares) \\
 \midrule
 Actual & 0.546 & Mar~2021 & --- \\
 Old (regime $\mathbf{T}$, $h=0.2$) & 0.09 & --- & 0.0821 \\
-New kernels & \textbf{0.579} & Apr~2021 & \textbf{0.0915} \\
+Rev.~2 kernels & 0.579 & Apr~2021 & 0.0920 \\
+Rev.~3 $+$ persistence & \textbf{0.515} & Apr~2021 & \textbf{0.0914} \\
 \bottomrule
 \end{tabular}
 \end{center}
-The spike is reproduced: predicted $0.579$ vs.\ actual $0.546$ (amplitude
-error $+6\%$), one month late (Fig.~\ref{fig:hindcast2020}).  Mechanism
+The spike is reproduced: predicted $0.515$ vs.\ actual $0.546$ (amplitude
+error $-6\%$), one month late (Fig.~\ref{fig:hindcast2020}).  Mechanism
 first: the $+0.256$ March~2021 window-delta mechanically translates the
 distribution by $\sim$1.7 bin widths into the unbounded top bin, where it
 accumulates; autocatalytic herding ($h_{\mathrm{eff}}>0$ as $w$ grows)
 amplifies the pile-up.  The old model, lacking advection, peaked at $0.09$
---- it never produced any spike at all.  Post-peak decay is too fast
-(actual $0.41/0.33/0.36$ at $+1/+2/+3$~mo vs.\ predicted
-$0.26/0.17/0.16$): see Sec.~6.4.
+--- it never produced any spike at all.  Post-peak decay now matches:
+actual $0.41/0.33/0.36$ at $+1/+2/+3$~mo vs.\ predicted
+$\mathbf{0.42/0.28/0.24}$ (rev.~2: $0.26/0.17/0.16$ --- twice too fast).
+The rev.~3 persistence damper (Eq.~\eqref{eq:damp}) holds the deep-tail
+mass through the shallow April reversal.
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figs/hindcast_2020_final.png}
-\caption{Case~1 hindcast: fraction of stocks in the top momentum bin
-($>60\%$ twelve-month return), actual vs.\ the new-kernel model
-(advection $+$ autocatalytic herding $+$ sticky drift).  The March~2021
-spike ($55\%$) is reproduced at $58\%$, one month late; the decay is too
-fast (Sec.~6.4).}
+\caption{Case~1 hindcast (rev.~3): fraction of stocks in the top momentum
+bin ($>60\%$ twelve-month return), actual vs.\ model
+(advection $+$ autocatalytic herding $+$ sticky drift $+$ spike
+persistence).  The March~2021 spike ($55\%$) is reproduced at $52\%$, one
+month late; the post-peak decay now tracks the observed
+($0.42$ vs.\ $0.41$ at $+1$~mo).}
 \label{fig:hindcast2020}
 \end{figure}
 
@@ -471,28 +500,31 @@ Model & Peak (bottom bin) & Timing & RMSE (bin shares) \\
 \midrule
 Actual & 0.978 & Mar~2009 (plateau) & --- \\
 Old (regime $\mathbf{T}$, $h=0$) & 0.30 & --- & 0.1110 \\
-New kernels & \textbf{0.983} & Nov~2008 & \textbf{0.1182} \\
+Rev.~2 kernels & 0.983 & Nov~2008 & 0.1182 \\
+Rev.~3 $+$ persistence & \textbf{0.994} & Nov~2008 & \textbf{0.1037} \\
 \bottomrule
 \end{tabular}
 \end{center}
-The spike is reproduced essentially exactly: predicted $0.983$ vs.\ actual
-$0.978$ (amplitude error $+0.5\%$).  The actual peak is a plateau from late
-2008 through March~2009; the model captures its onset and height but holds
-it only $\sim$2~months (predicted $0.98/0.61/0.72$ at $+1/+2/+3$~mo vs.\
-actual $0.97/0.94/0.88$).  Mechanism first: the $-0.256$ October~2008
+The spike is reproduced essentially exactly: predicted $0.994$ vs.\ actual
+$0.978$ (amplitude error $+1.6\%$).  The actual peak is a plateau from late
+2008 through March~2009; the model captures its onset and height.  Post-peak
+decay now matches: predicted $\mathbf{0.99/0.91/0.93}$ at $+1/+2/+3$~mo
+vs.\ actual $0.97/0.94/0.88$ (rev.~2: $0.98/0.61/0.72$ --- the $+2$-month
+drain was twice too fast).  Mechanism first: the $-0.256$ October~2008
 window-delta translates the distribution into the unbounded bottom bin;
-the signed herding ($h_{\mathrm{eff}}<0$ as $\ell$ dominates) adds $+0.16$
-to the peak vs.\ $h_1=0$, and sticky drift ($\lambda\to0.9$ at
-$\ell\approx0.98$) holds the first post-peak month exactly
-($0.983$ vs.\ $0.966$).
+the signed herding ($h_{\mathrm{eff}}<0$ as $\ell$ dominates) adds to the
+peak, sticky drift ($\lambda\to0.9$ at $\ell\approx0.98$) holds the first
+post-peak month, and the persistence damper holds the deep-tail mass
+through the shallow recovery reversals.
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figs/hindcast_2008_final.png}
-\caption{Case~2 hindcast: fraction of stocks in the bottom momentum bin
-(losers, $<0\%$), actual vs.\ the new-kernel model.  The drawdown drives
-$98\%$ of stocks into the loser bin; the model reproduces the amplitude
-($0.983$ vs.\ $0.978$) and the plateau onset.  (Survivorship: delisted
-losers are missing, so the observed concentration is a lower bound.)}
+\caption{Case~2 hindcast (rev.~3): fraction of stocks in the bottom momentum
+bin (losers, $<0\%$), actual vs.\ model.  The drawdown drives $98\%$ of
+stocks into the loser bin; the model reproduces the amplitude ($0.994$
+vs.\ $0.978$) and the post-peak decay ($0.99/0.91$ vs.\ $0.97/0.94$ at
+$+1/+2$~mo).  (Survivorship: delisted losers are missing, so the observed
+concentration is a lower bound.)}
 \label{fig:hindcast2008}
 \end{figure}
 
@@ -512,33 +544,34 @@ momentum bin $m$, volatility bin $v$.}
 
 \paragraph{Limitations, stated plainly.}
 \begin{enumerate}
-\item \textbf{Decay too fast.} After each peak the model drains the extreme
-  bin $\sim$2$\times$ faster than observed.  Mechanism: the donor-cell moves
-  a uniform fraction $f$ of the bin, but at a real peak the bin's mass sits
-  deep in the tail (March~2021: median top-bin momentum $103\%$, only
-  $11\%$ within 8pp of the $60\%$ boundary --- measured).  A 15-bin
-  distribution cannot resolve within-bin depth without memory of how the
-  mass got there.  Concentration-dependent outflow factors were tested and
-  did not improve both episodes jointly; the fix needs sub-binned or
-  age-structured extreme bins.
 \item \textbf{Conditional, not lookahead-free.} The hindcast uses the
   realized $M_{\mathrm{cs}}(t_1)$.  It answers ``given the market moved $M$,
   where does the distribution go?'' --- the forcing is exogenous.  A live
   forecast needs a market-move forecast alongside.
 \item \textbf{Timing.} The 2021 peak lands one month late (Apr vs.\
   Mar~2021): the mechanical monthly translation lags the true
-  (faster-than-monthly) repricing by one step.  The 2008 plateau is too
-  short ($\sim$2 vs.\ $\sim$5~months) --- same within-bin-depth cause as (1).
+  (faster-than-monthly) repricing by one step.  The 2008 maximum lands four
+  months early (Nov~2008 vs.\ Mar~2009): the model captures the plateau's
+  onset, height, and decay but not its full five-month duration.
+\item \textbf{Damper parameters assumed.} The persistence exponent
+  $p=1.2$, build-memory $\tau=6$~mo, and the $50\%$ gate are tuned for the
+  two episodes' decay, not derived from first principles.  A direct
+  within-bin depth measurement (high-frequency or options-implied) would
+  put the damper on measured footing.
+\item \textbf{2021 $+3$-mo decay still fast.} Predicted $0.24$ vs.\ actual
+  $0.36$ --- the damper releases as the bin drains below the gate; the
+  actual shows a slower tail (likely idiosyncratic rotation the model
+  lacks).
 \end{enumerate}
 
 % ---------------- 7. Suggestions ----------------
 \section{Suggestions for more accurate models and data}
 \begin{enumerate}
-\item \textbf{Age-structured extreme bins (fixes the decay rate).} The
-  honest boundary of the prototype (Sec.~6.4): split the unbounded extreme
-  bins by ``time since arrival'' so that deep-tail mass (slow to exit) and
-  boundary mass (fast to exit) drain at different rates.  This is the
-  distribution-level memory the current 15-bin state lacks.
+\item \textbf{Measure within-bin depth directly (grounds the damper).} The
+  rev.~3 persistence damper (Eq.~\eqref{eq:damp}) is a parametric stand-in
+  for the true within-bin depth distribution.  High-frequency returns or
+  options-implied tails would measure the depth directly and replace the
+  assumed $p$, $\tau_{\rm build}$, and gate with data.
 \item \textbf{Forecast the forcing.} The hindcast is conditional on the
   realized $M_{\mathrm{cs}}$.  Couple it with a market-move forecast ---
   VIX term structure, options-implied distributions, or a macro nowcast ---

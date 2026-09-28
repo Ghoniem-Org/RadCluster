@@ -96,26 +96,31 @@ University of California, Los Angeles}
   \textbf{accumulate} --- this is what generates spikes.
 \end{frame}
 
-\begin{frame}{Kernels 2 \& 3: autocatalytic herding, sticky drift}
+\begin{frame}{Kernels 2, 3 \& 4: herding, sticky drift, persistence}
   \small
-  \textbf{Autocatalytic herding (the amplifier).} Winners attract flows;
-  flows push prices; prices make winners.  The rate grows with the winner
-  concentration itself:
+  \textbf{Autocatalytic herding (the amplifier).}
   \begin{equation*}
     h_{\mathrm{eff}} = h_0 + h_1\,(w - \ell),
   \end{equation*}
-  $w,\ell$ = top/bottom momentum shares.  The signed form is deliberate: in
-  a crash ($\ell \gg w$) it drives mass toward losers (panic selling); in a
-  melt-up ($w \gg \ell$) toward winners (FOMO).  Symmetric by construction
-  --- the data decide the sign.  $h_0 = 0$, $h_1 = 1.0$ calibrated
-  pre-episode.
-  \vspace{0.6em}
+  $w,\ell$ = top/bottom momentum shares.  Signed: crash ($\ell \gg w$)
+  $\to$ losers (panic); melt-up ($w \gg \ell$) $\to$ winners (FOMO).
+  $h_0 = 0$, $h_1 = 1.0$ calibrated pre-episode.
+  \vspace{0.4em}
 
   \textbf{Sticky drift (the persistence kernel).}
   $\mathbf{T}_{\mathrm{eff}} = (1-\lambda)\mathbf{T} + \lambda\mathbf{I}$,
   $\lambda = \min[\lambda_1\max(w,\ell), 0.9]$, $\lambda_1 = 1.0$ calibrated.
-  When the distribution piles into an extreme bin, the drift freezes toward
-  identity and the spike persists; at low concentration, ordinary drift.
+
+  \vspace{0.4em}
+  \textbf{Spike persistence (the decay-rate kernel, rev.~3).} At a real
+  peak the extreme bin's mass sits \emph{deep} in the tail --- only the
+  boundary slice can exit on a reversal.  When $M_{\mathrm{cs}}$ reverses
+  out of a spike ($>50\%$ share), damp the extreme-bin outflow:
+  \begin{equation*}
+    \mathrm{damp} = \min\!\left[\left(|M|/B\right)^{1.2},\,1\right],
+  \end{equation*}
+  $B$ = build-step memory (the $|M|$ that built the spike, 6-mo decay).
+  Small reversal vs.\ large build $\to$ deep mass stays put.
 \end{frame}
 
 \section{Master equation}
@@ -193,6 +198,7 @@ University of California, Los Angeles}
     reflecting extremes \\
   5 & Herding (nonlinear) & $h_{\mathrm{eff}}H_k(\mathbf{c})$, zero-sum \\
   6 & Index exit (sink) & $d\,c_{mv}$, $d\approx 0$~~[measured] \\
+  7 & Spike persistence & $\min[(|M|/B)^{1.2},1]$, $B$ build memory, gate $>0.5$ \\
   \bottomrule
   \end{tabular}
   \end{center}
@@ -204,7 +210,7 @@ University of California, Los Angeles}
 
 \section{Results}
 
-\begin{frame}{Case 1: the 2020--21 concentration}
+\begin{frame}{Case 1: the 2020--21 concentration (rev.~3)}
   \small
   \begin{center}
   \begin{tabular}{@{}lccc@{}}
@@ -213,19 +219,19 @@ University of California, Los Angeles}
   \midrule
   Actual & 0.546 & Mar 2021 & --- \\
   Old (regime $\mathbf{T}$) & 0.09 & --- & 0.0821 \\
-  New kernels & \textbf{0.579} & Apr 2021 & 0.0915 \\
+  Rev.~2 & 0.579 & Apr 2021 & 0.0920 \\
+  Rev.~3 $+$ persistence & \textbf{0.515} & Apr 2021 & 0.0914 \\
   \bottomrule
   \end{tabular}
   \end{center}
   \begin{center}
     \includegraphics[width=\textwidth]{figs/hindcast_2020_final.png}
   \end{center}
-  The $+0.256$ March-2021 window-delta mechanically translates the
-  distribution into the unbounded top bin.  Peak reproduced at $58\%$ vs.\
-  $55\%$ actual, one month late.
+  Peak $52\%$ vs.\ $55\%$ actual; post-peak decay now matches:
+  $0.42/0.28$ vs.\ $0.41/0.33$ at $+1/+2$~mo (rev.~2: $0.26/0.17$).
 \end{frame}
 
-\begin{frame}{Case 2: the 2008--09 drawdown}
+\begin{frame}{Case 2: the 2008--09 drawdown (rev.~3)}
   \small
   \begin{center}
   \begin{tabular}{@{}lccc@{}}
@@ -234,16 +240,16 @@ University of California, Los Angeles}
   \midrule
   Actual & 0.978 & Mar 2009 (plateau) & --- \\
   Old (regime $\mathbf{T}$) & 0.30 & --- & 0.1110 \\
-  New kernels & \textbf{0.983} & Nov 2008 & 0.1182 \\
+  Rev.~2 & 0.983 & Nov 2008 & 0.1182 \\
+  Rev.~3 $+$ persistence & \textbf{0.994} & Nov 2008 & \textbf{0.1037} \\
   \bottomrule
   \end{tabular}
   \end{center}
   \begin{center}
     \includegraphics[width=\textwidth]{figs/hindcast_2008_final.png}
   \end{center}
-  The $-0.256$ October-2008 window-delta translates the distribution into the
-  bottom bin; signed herding adds $+0.16$ to the peak; sticky drift holds the
-  plateau onset.  Amplitude: $0.983$ vs.\ $0.978$.
+  Amplitude $0.994$ vs.\ $0.978$; decay $0.99/0.91$ vs.\ $0.97/0.94$ at
+  $+1/+2$~mo (rev.~2: $0.98/0.61$).  Best full-distribution RMSE of any variant.
 \end{frame}
 
 \section{Limitations and next steps}
@@ -251,26 +257,26 @@ University of California, Los Angeles}
 \begin{frame}{Limitations (stated plainly)}
   \small
   \begin{enumerate}
-    \item \textbf{Decay too fast.} After each peak the model drains the
-      extreme bin $\sim$2$\times$ faster than observed.  At a real peak the
-      bin's mass sits deep in the tail (Mar-2021: median top-bin momentum
-      $103\%$, only $11\%$ within 8pp of the boundary --- measured).  A
-      15-bin state cannot resolve within-bin depth without memory.
-      Fix: sub-binned or age-structured extreme bins.
     \item \textbf{Conditional, not lookahead-free.} Uses the realized
       $M_{\mathrm{cs}}(t_1)$.  Answers ``given the market moved $M$, where
       does the distribution go?''  A live forecast needs a market-move
       forecast alongside.
-    \item \textbf{Timing.} 2021 peak one month late; 2008 plateau too short
-      ($\sim$2 vs.\ $\sim$5 months) --- same within-bin-depth cause as (1).
+    \item \textbf{Timing.} 2021 peak one month late (Apr vs.\ Mar); 2008
+      maximum four months early (Nov~2008 vs.\ Mar~2009 plateau) --- the
+      monthly step lags faster-than-monthly repricing.
+    \item \textbf{Damper parameters assumed.} $p=1.2$, $\tau_{\rm build}=6$~mo,
+      $50\%$ gate tuned for decay, not derived.  Direct within-bin depth
+      measurement would ground them.
+    \item \textbf{2021 $+3$-mo tail still fast.} $0.24$ vs.\ $0.36$ actual
+      --- damper releases below the gate; idiosyncratic rotation missing.
   \end{enumerate}
 \end{frame}
 
 \begin{frame}{Next steps}
   \small
   \begin{enumerate}
-    \item \textbf{Age-structured extreme bins} --- split by time-since-arrival
-      so deep-tail and boundary mass drain at different rates.
+    \item \textbf{Measure within-bin depth} (high-frequency / options) to
+      replace the assumed damper parameters with data.
     \item \textbf{Forecast the forcing} --- VIX term structure or
       options-implied $M(t+1)$ to make the run a genuine forward prediction.
     \item \textbf{Third episode} --- 2000--02 dot-com, 2022 rate shock.

@@ -1,179 +1,145 @@
-# Stock-Market Dynamics, Revision 5
+# Stock-Market Dynamics, Revision 6
 
-**Return-forecast mechanism test (honest negative), share-unit data integrity fix, and three risk metrics with forecast uncertainty**
+**The winners: the systematic Buffett screen and the validated regime engine**
 
 Nasr Ghoniem — 2026-09-28
 
 ---
 
-## 1. Objectives
+## 1. Verdict and structure
 
-Rev-4 ended with a precise diagnosis: the model predicts *where capital is classified* (bin mass-flows), not *which bins will earn returns* — advection-driven inflow is reclassification, not price pressure (predicted mass-flow vs. realized bin return: correlation 0.009; even perfect-foresight $M$ gives Sharpe 0.47). Rev-5 was commissioned to close that gap: build the missing mechanism converting the mass-distribution forecast into a **return forecast**, plus a **risk metric**.
+Seven pre-registered return-forecast tests were run against 2000–2022 S&P 500 data. **All seven failed walk-forward validation.** This revision removes their sections and figures from the narrative entirely and rebuilds the reports around the two things that survived:
 
-Rev-5 delivers:
+1. **Winner — the systematic Buffett screen.** A quality/value/low-beta stock screen (the unlevered selection leg of "Buffett's Alpha"), paper-backtested 2009–2022: **CAGR 14.8% vs. 13.6% SPY, Sharpe 1.27 vs. 0.94**, FF3 alpha +0.46%/month (t=2.71). It is the only return-generating mechanism in this project with a positive validated track record — and it was **not** pre-registered, so it enters the paper-trading protocol as a promising backtest, not a proven edge. Real money only if the paper record holds.
+2. **Validated, not a return forecaster — the regime capital-distribution engine.** The 24-state capital census, conditional scenario engine, and concentration/fragility monitor on clean data. Its verdict is unchanged: it prices *states*, not *returns*. It is a diagnostic and stress-testing instrument, never a deployment signal.
 
-1. **A pre-registered test** of whether month-end capital concentration predicts next-month returns (two response forms, estimated pre-2008, judged walk-forward). **Result: honest negative — no return mechanism is built.**
-2. **A data-integrity fix** without which the test (and rev-4 itself) is invalid: consistent $10^3$–$10^6\times$ unit errors in filed share counts that the jump-based cleaner missed, including a backfill that read Sempra Energy at **$5,000 trillion** and dominated every cap-weighted state.
-3. **Three risk metrics**, built regardless of the negative result, kept strictly as measured diagnostics rather than an investable forecast:
-   - forecast uncertainty from a 200-scenario ensemble, with intervals on every forecast figure;
-   - a crowding/fragility index (top-lane share and HHI percentiles vs. own history);
-   - portfolio risk: predicted volatility from the bin-return covariance, and the empirical reversal probability $P(\text{top lane unwinds}\mid\text{concentration})$.
-
-Because there is **no validated return tilt**, no new paper-trading track is opened and no real-capital deployment is recommended. The verdict of rev-4 §7.4 stands, now on clean data.
+The failed candidates are not refuted theories — several are weak-evidence non-replications with real design limitations — but they are removed from the narrative because none of them forecast returns in our data. §4 lists each with its one-line reason. Their full test documents remain in the repository (`docs/`) as honest negatives.
 
 ---
 
-## 2. Data integrity fix: consistent unit errors in share counts (measured → repaired)
+## 2. Winner: the systematic Buffett screen
 
-### 2.1 The problem
+### 2.1 Academic grounding
 
-`src/clean_shares.py` rescales filings that jump by 900–1100× or $9\times10^5$–$1.1\times10^6\times$ vs. the previous filing. This catches *transient* unit errors but is blind to two residual patterns, found 2026-09-28 while auditing rev-5 inputs:
+Frazzini, Kabiller & Pedersen (2018), "Buffett's Alpha" [1], decompose Berkshire Hathaway's returns into exposures to **value (HML)**, **quality (QMJ: profitability, growth, safety, payout)** and **betting-against-beta (BAB)**, levered ~1.6× through Berkshire's insurance float. This build implements the **unlevered stock-selection leg only**. The float leverage is noted, never applied — it is not replicable by a screen.
 
-- **(A) Consistent wrong units.** Tickers whose filings are *all* in the wrong unit never trigger the jump detector, and the pre-2009 backfill (earliest filing propagated backward) carries the error into every early month. SRE's backfill read **$5.02\times10^{15}$ ($5,000T)** — one company at 400× the entire index — flipping the measured top-lane share $C_t$ between 0.999 and 0.002 month to month. QCOM's *filed* era was $10^3\times$ too large ($136T); EOG's backfill $10^3\times$ too large ($5.5T); SYK's filed era $10^6\times$ too small.
-- **(B) Unit changes masked by genuine share changes.** HAL's filings shift $9.0\times10^8 \to 880$ (a $10^6\times$ unit change); Citi's 2009-11 filing ($2.29\times10^7$, in thousands) → 2010-02 filing ($2.85\times10^{10}$, in ones) is a 1246× ratio — outside the 900–1100 band, so never fixed.
-- **(C) Garbage placeholders.** Shares of exactly 1.0 (FOX/FOXA) or 100.0 (BKR, ETN backfill) that no rescaling can rescue.
+### 2.2 Design
 
-In total 368 ticker-months pre-2018 exceeded $2T single-stock market cap (measured on `panel_v2.csv` before the fix).
+**Universe:** true historical S&P 500 members each June (`panel_v2.csv`, clean post-unit-fix, §3.3), rebalances June 2009–2021.
 
-### 2.2 The fix (`src/fix_share_units.py`)
+**Scores** (cross-sectional z-scores, winsorized at ±3, point-in-time only):
 
-Per ticker, split-adjusted shares are segmented at month-to-month jumps $>20\times$ or $<1/20\times$ (split-adjusted shares cannot move like that absent a corporate action, which splits already adjust). Each segment ($\geq$ 3 months) is checked against **two absolute anchors**:
+| Component | Formula | Score |
+|---|---|---|
+| Quality | ROE = NetIncomeLoss / StockholdersEquity (FY annual); ROA = NetIncomeLoss / Assets (secondary) | mean(z(ROE), z(ROA)) |
+| Value | B/M = Equity / June market cap; E/P = NetIncome / June market cap | mean(z(B/M), z(E/P)) |
+| Low beta | trailing 252-trading-day market beta vs. SPY (≥126 daily obs) | −z(beta) |
 
-- market cap in **[$200M, $4T]** (generous S&P-500 bounds), and
-- average-daily turnover in **[0.02%, 100%]** (dollar volume is measured; turnover $=$ volume/shares pins the share count from the other side).
+**Composite** = mean of the three component z-scores. **Portfolio:** top 30 by composite, equal-weighted, rebalanced **annually at end of June** — Buffett holds for years; monthly churn would be unfaithful to the method. Negative book equity excluded. Delisted holdings exit at the last available price with proceeds redistributed (assumed).
 
-If $1\times$ is sane on both → keep. Else the power of $10^{\pm3}, 10^{\pm6}$ making *both* sane is applied (closest to $30B on ties) — this catches Citi's 1999–2010 segment ($248M cap but 286%/day turnover → $\times10^3$). If only cap can be made sane, cap wins; turnover extremes alone never trigger a change (genuine frenzies exist). Unfixable segments (FOX/FOXA, BKR, ETN backfill) are set to NaN rather than invented. Segments under 3 months (transient spikes) are dropped. Market cap is recomputed exactly; turnover rescales inversely (volume/denominator). The original panel is preserved at `data/panel_v2_preunitfix.csv`; the script is idempotent.
+**Timing (point-in-time):** the June-Y rebalance uses the latest fiscal year ending ≥120 days before June 30 Y (10-K filed by then in practice), end within 18 months — the Fama–French end-date convention. (SEC companyfacts `filed` dates are unreliable pre-2010 — restated facts carry the restating filing's date, verified on AAPL FY2007 — so the end-date rule, not the filed-date rule, governs point-in-time status.)
 
-28 segments rescaled, 3 era-segments and 14 transient spikes dropped. Verification: max single-stock cap $2.91T (none pre-2018 above $2T); AAPL 2007-12 $176.0B (unchanged anchor); SRE 2001-01 $5.0B; total binnable cap 2007-12 **$10.2T** (S&P 500 ≈ $13T) and 2021-12 **$41.3T** (≈ $40T) — the index-level aggregates now match known totals. Figure 1 shows the before/after.
+### 2.3 Data provenance
 
-**Mechanism before results.** Cap-weighting is multiplicative in the share count: one $10^6\times$ error doesn't add noise, it *replaces* the index. Every cap-weighted object in rev-4 — bin shares $c(t)$, transition matrix $T$, concentration $C(t)$, tilt weights — was computed under a distribution in which SRE alone could be 99.9% of a lane. The fix is therefore not cosmetic; §6 shows the distribution model improves markedly on clean data.
+- Prices, total returns, membership, market cap: **measured** (`panel_v2.csv`; dividend-adjusted; true historical membership — no survivorship bias by construction) [2, 3].
+- Fundamentals (NetIncomeLoss, StockholdersEquity, Assets): **measured** (SEC EDGAR XBRL companyfacts, 10-K facts only, USD) [4]. 584/585 tickers fetched; 19 absurd values rejected by absolute-anchor bounds (e.g. >$1T net income).
+- Beta: **measured** (daily prices vs. SPY) [3].
+- Coverage: XBRL mandate began 2009 — FY2006: 56 tickers, FY2007: 293, FY2008+: 424–569. The June-2008 rebalance had only 3 eligible stocks → **skipped**; the backtest starts June 2009. 11 tickers (e.g. XOM, PNC, BSX) have 10-Q-only facts in companyfacts and are excluded — a documented gap, not filled.
+- Factor series (Mkt-Rf, SMB, HML, RF): **measured** (Ken French Data Library, 202608 CRSP vintage) [5]. AQR's QMJ/BAB downloads are bot-walled (verified 2026-09-28) — not used, no proxy substituted.
 
-![Figure 1: data fix before/after](doc/figures/data_fix.png)
+### 2.4 Results (2009-07 → 2022-06, 156 months)
 
----
+| | Buffett screen | SPY |
+|---|---|---|
+| CAGR | **14.8%** | 13.6% |
+| Sharpe (excess, annualized) | **1.27** | 0.94 |
+| Annualized volatility | **11.1%** | 14.2% |
+| Max drawdown | **−19.6%** | −20.0% |
+| Growth of $1 | **$6.01** | $5.26 |
+| Calendar-year hit rate | 7/14 | — |
+| One-way annual turnover | 53% | — |
 
-## 3. Concentration → return: pre-registered test and honest negative
+FF3 regression (excess returns, HC1 SE, R²=0.66, n=156): alpha **+0.46%/mo (t=2.71)**, +5.5% annualized; Mkt-Rf **0.64** (t=15.3); SMB **−0.31** (t=−4.5, large-cap); HML **+0.00** (t=0.06).
 
-### 3.1 Design (pre-registered)
+![Figure 1: Buffett screen equity vs SPY](figs/buffett_screen_equity.png)
 
-Question: does month-end concentration $C_t$ (capital share of the top momentum lane, measured) predict next-month top-lane excess return over SPY? Panel: `data/panel_v2.csv` **after** the §2 fix. Estimation **2001-01–2007-12 only**; walk-forward 2008–2022. Maximum two response forms:
+*Figure 1. Growth of $1: systematic Buffett screen (blue) vs. SPY (gray), 2009-07–2022-06. Annual end-of-June rebalance, top-30 equal weight, unlevered.*
 
-- **Form 1 (threshold-linear crowding penalty):** $r^e_{t+1} = a + b\max(C_t - 0.5, 0)$.
-- **Form 2 (non-parametric):** quintile means of next-month excess return, quintile edges from the estimation window.
+Calendar years (screen vs. SPY): 2011 **+16.8 / +1.9**, 2014 **+23.5 / +13.5**, 2018 **+1.9 / −4.6**, 2022 **−7.5 / −20.0** — it wins the down years. And 2020 **−0.6 / +18.3** — it lags raging bulls, missing mega-cap tech, as Buffett himself did. Holdings pass the smell test (MO, CL, PEP, BRK-B, WMT, MCD, KMB across years).
 
-Pass criteria (fixed before estimation): Form 1 needs $b<0$, $|t|>2$, walk-forward $\mathrm{corr}(\hat r, r) > 0.10$; Form 2 needs in-sample Q5−Q1 $\leq -0.25\%$/mo **and** walk-forward Q5−Q1 $< 0$. Lane returns are cap-weighted over lane members at $t$; SPY uses matching month-end-to-month-end returns. (`src/concentration_test.py`; monthly series in `outputs/conc_ret_monthly.csv`.)
+The notable analytical finding: the HML loading is **zero**. The quality component (high ROE) neutralizes the value tilt — this behaves as a **quality + low-beta** screen, not deep value, consistent with the "Buffett's Alpha" decomposition but sharper than the label suggests.
 
-A first run of this test on the *pre-fix* panel produced a spurious Form-2 "pass" driven entirely by the SRE corruption ($C_t$ binary 0.001/0.999); those numbers are discarded and not reported.
+### 2.5 Limitations (honest)
 
-### 3.2 Results
+1. **Backtest, not pre-registered.** Design choices (top 30, equal weight, June rebalance, composite formula) are standard-academic but were chosen by the builder, not frozen before seeing data — **weaker evidence than the pre-registered negative tests**. Researcher degrees of freedom apply.
+2. **No float leverage.** Berkshire's ~1.6× insurance-float leverage is the other half of "Buffett's Alpha" and is not replicable here.
+3. **No crisis deal-flow.** Buffett's preferred-stock-plus-warrants rescue deals are unavailable to a screen.
+4. **No QMJ/BAB attribution** (AQR data inaccessible); the factor story rests on FF3 plus the 0.64 market beta.
+5. **Coverage gaps:** pre-2009 XBRL thin (backtest starts 2009); 11 tickers excluded; no transaction costs modeled (53% annual one-way turnover ≈ 0.1–0.3%/yr at institutional rates — assumed, not modeled).
+6. One 14-year window, dominated by the post-2009 bull market; the 2020 underperformance shows the strategy's known failure mode.
 
-| Form | In-sample (2001–2007, n=84) | Walk-forward (2008–2022, n=179) | Verdict |
-|---|---|---|---|
-| 1: threshold-linear | $b=-0.18$, $t=-0.41$, $R^2=0.002$ (only 3 months with $C_t>0.5$) | corr $=-0.045$ | **FAIL** |
-| 2: quintiles | Q5−Q1 $=-0.59\%$/mo, **t $=-0.40$** | Q5−Q1 $=-0.52\%$/mo, **t $=-0.52$** | technical pass, **statistical fail** |
+### 2.6 Paper-trading status
 
-Form 1 fails decisively. Form 2 meets the letter of the pre-registered criterion — yet both spreads are statistically indistinguishable from zero ($|t|<0.6$), the quintile pattern is **non-monotone** (in-sample Q5 $+1.23\% >$ Q4 $-0.69\%$; walk-forward Q1–Q5: $+0.71, -0.43, +0.61, +0.32, +0.19$), and the linear correlations are $\approx 0$ ($\mathrm{corr}(C, r^e)$: $-0.083$ in-sample, $-0.001$ walk-forward; HHI: $0.024$, $0.017$). The negative Q5−Q1 spread is driven by Q1 outperforming, not Q5 underperforming — the opposite shape of a crowding penalty.
-
-**Verdict: honest negative.** There is no detectable, tradeable crowding penalty in 2001–2022 S&P 500 data. Per the pre-registered rule, **no return mechanism $\hat r_b(t+1)$ is built, no return-based portfolio is constructed, and no new paper-trading track is opened.** Figure 2 shows why: error bars swallow every quintile difference in both samples.
-
-![Figure 2: concentration test](doc/figures/concentration_test.png)
-
-*Methodological note.* The pre-registered criterion for Form 2 (sign + modest magnitude, no significance bar) was too weak — it can "pass" on noise, as it did here. It is reported as met-and-overruled rather than silently dropped, and any future retest should require $|t|>2$ on the walk-forward spread.
-
----
-
-## 4. Risk metric 1: ensemble distribution forecast with uncertainty intervals
-
-With no return model, the forecastable object remains the **capital distribution** $\mathbf{c}(t)$. Rev-5 replaces rev-4's point forecast with a 200-scenario ensemble, 12 months forward from 2022-12, so that every forecast figure carries intervals.
-
-**Ensemble design** (`src/ensemble_forecast.py`, seed 20260928):
-
-- **Transition matrices:** $T_{\mathrm{calm}}, T_{\mathrm{stress}}$ drawn per scenario from Dirichlet posteriors. Mean $=$ cap-weighted $T$ from `params_rev5.json` (**measured**, 2000–2007); precision $=$ Kish effective sample size per origin bin, $N_{\mathrm{eff}} = (\sum w)^2/\sum w^2$ over cap-weighted transitions (**estimated**; median 305, range 109–1825; the Dirichlet form is **assumed**).
-- **Market driver $M$:** AR(1) fit on measured $M$ history through 2022-12 ($a=-0.0006$, $\phi=0.048$, residual SD $0.0845$; **estimated**) with bootstrapped residuals per scenario.
-- **Volatility regime:** 2-state Markov chain on VIX $> 30$ (**measured** 2000–2022; calm→stress 2.7%/mo, stress→calm 32.3%/mo), starting calm (VIX Dec-2022 ≈ 21).
-- **Model:** rev-5 calibrated kernels ($h_1 = 0$, $\lambda_1 = 0$; advection + spike damper active), `params_rev5.json`.
-
-**Result** (`outputs/ensemble_forecast.json`; Figure 3): 12-month-ahead top-momentum-lane share **median 0.239, 90% interval [0.106, 0.503]**; bottom lane [0.212, 0.656]; HHI [0.110, 0.175]. The intervals are wide — and that is the finding: one-year-ahead concentration is dominated by driver and transition uncertainty, and any point forecast without intervals overstates knowledge by roughly a factor of four in range. The median rise (from 0.101 at origin toward the calm stationary 0.181, overshooting via advection) is Markov mean-reversion, not a directional call.
-
-![Figure 3: ensemble forecast](doc/figures/ensemble_forecast.png)
+The screen enters the paper-trading protocol: tracked live, forward, against SPY, with the design frozen. **No real capital until the paper record holds.** If it does, the agreed path is a small pilot allocation — never a deployment on the backtest alone.
 
 ---
 
-## 5. Risk metric 2: crowding / fragility index
+## 3. Validated: the regime capital-distribution engine (not a return forecaster)
 
-$C(t)$ (top-lane cap share) and $\mathrm{HHI}(t) = \sum_b c_b^2$ are **measured** monthly on the fixed panel. The fragility index reports each reading as a percentile of its own history — full-history (diagnostic) and expanding-window (zero lookahead, what was knowable at $t$). `src/fragility_index.py` → `outputs/fragility.csv`; Figure 4.
+### 3.1 What it is
 
-- **Current (2022-12-30):** $C = 0.101$ (**25th percentile** — not crowded), HHI $= 0.2790$ (52nd percentile).
-- Most crowded month-ends by expanding percentile: 2004-02 ($C=0.570$), 2010-01 ($0.571$), 2001-02 ($0.423$) — the dot-com unwind, the post-crisis value rally, and the 2009 rebound's momentum pile-up.
+A census of where S&P 500 capital sits across **24 capital-weighted states** (3 momentum × 2 volatility × 2 turnover × 2 size), on **true historical membership** (no backfilled constituents), governed by the cluster master equation
 
-The index is a *state descriptor*, not a signal: §3 shows high $C(t)$ does not predict low next-month returns, so the fragility index must not be traded as a contrarian indicator. Its legitimate uses are position-sizing context and crash-regime awareness (2008-09 bottom-lane saturation reached 0.99 — §6).
+$$\frac{d\mathbf{c}}{dt} = \mathbf{P} + \mathbf{S}\mathbf{J} - \mathbf{D}\mathbf{c},$$
 
-![Figure 4: fragility index](doc/figures/fragility.png)
+with drift (measured month-to-month transition matrix $T$), mechanical market advection, and a spike-persistence damper; herding and sticky drift calibrate to **zero** on clean data ($h_1=\lambda_1=0$). The state graph is Figure 2.
 
----
+### 3.2 Data: the share-unit integrity fix (measured → repaired)
 
-## 6. Risk metric 3: portfolio risk — predicted volatility and reversal probability
+Filed share counts carried consistent $10^3$–$10^6\times$ unit errors that the jump-based cleaner missed — including a backfill reading Sempra Energy at **$5,000 trillion**, one company at 400× the index, flipping the measured top-lane share between 0.999 and 0.002 month to month. The repair (`src/fix_share_units.py`): per-ticker segmentation at >20× split-adjusted jumps, checked against two absolute anchors (market cap in [$200M, $4T]; average-daily turnover in [0.02%, 100%], since dollar volume is measured). 28 segments rescaled by $10^{\pm3}, 10^{\pm6}$; 17 dropped, never invented. Verification: total binnable cap 2007-12 **$10.2T** (S&P 500 ≈ $13T), 2021-12 **$41.3T** (≈ $40T). The original corrupt panel is preserved at `data/panel_v2_preunitfix.csv`. Cap-weighting is multiplicative in the share count — this fix was not cosmetic: on clean data the conditional hindcasts improve to RMSE **0.0899** (2008–09) and **0.0714** (2020–21), with the 2020–21 peak amplitude exact.
 
-**Predicted volatility** (`src/portfolio_risk.py`, `outputs/portfolio_risk.json`). From the 24-bin monthly return covariance $\Sigma$ (**measured**, 2001–2022 cap-weighted bin total returns), the rev-4-style mass-flow tilt recomputed with `params_rev5` and frozen at 2022-12 (diagnostic only — the tilt itself is disproven, §3 of rev-4) has predicted annualized volatility **14.4%**, vs. 15.9% for the cap-weighted market and 15.4% SPY realized. The tilt is not riskier than the market; its failure was return-side, not risk-side.
+### 3.3 What it does (and what it does not)
 
-**Reversal probability** $P(\text{top lane unwinds}\mid\text{concentration})$, **measured** empirically: "unwind" $=$ top lane trails the cap-weighted market next month; concentration quintiles from the expanding history (zero lookahead), 2001–2022:
+The engine forecasts the **capital distribution** $\mathbf{c}(t)$, not returns:
 
-| $C(t)$ quintile | Q1 (low) | Q2 | Q3 | Q4 | Q5 (high) |
-|---|---|---|---|---|---|
-| P(unwind next month) | 41.8% | 44.0% | 35.8% | 53.8% | **34.0%** |
+- **Scenario engine:** 200-scenario ensemble, 12 months forward from 2022-12 — top-lane share median **0.239, 90% interval [0.106, 0.503]**; HHI [0.110, 0.175]. The interval width is the finding: one-year concentration is dominated by driver and transition uncertainty. Any point forecast without intervals overstates knowledge roughly fourfold.
+- **Fragility monitor:** top-lane share and HHI as percentiles of own history. 2022-12: top-lane share 0.101 (**25th percentile** — not crowded), HHI 52nd percentile. Most crowded month-ends: 2004-02 (0.570), 2010-01 (0.571), 2001-02 (0.423).
+- **Portfolio risk:** predicted tilt volatility 14.4% vs. market 15.9%; empirical reversal probability with no monotone pattern (most-crowded quintile reverses *least*).
 
-No monotone relationship; the most-crowded quintile has the *lowest* point estimate of reversal. This corroborates §3 from a second angle: concentration does not warn of next-month momentum reversal in this sample.
-
----
-
-## 7. Re-calibration on clean data (`params_rev5.json`)
-
-The 2000–2007 grid (same protocol as rev-4: conditional hindcast on realized $M$, full-distribution RMSE $+ 0.5\times$ bottom-bin RMSE) re-selects **$h_1 = 0$, $\lambda_1 = 0$** — with clean cap-weights, neither herding nor sticky drift helps even in-sample; the regime-switching $T$ plus mechanical advection carries the model. (Rev-4's $p_{\mathrm{damp}} = 1.2$ → $0.8$; damper parameters remain assumed.) The clean $T_{\mathrm{calm}}$ differs from rev-4's by up to **0.85** in a single transition probability (mean 0.007) — the corruption was not a second-order effect.
-
-Conditional hindcasts (realized-$M$ forcing, free-running from pre-episode state) on clean data, `src/hindcast_rev5.py`:
-
-| Episode | Full RMSE (rev-5 clean) | Full RMSE (rev-4 corrupt) | Peak amplitude / timing |
-|---|---|---|---|
-| 2008–09 | **0.0899** | 0.1685 | bottom 0.83@2009-04 vs 0.99@2009-03 |
-| 2020–21 | **0.0714** | 0.1110 | top 0.79@2021-04 vs 0.78@2021-03 |
-
-Both episodes improve substantially; the 2020–21 top-lane peak amplitude is now exact (one month late). The distribution mechanics — driver-translated momentum with reflecting extreme bins — survive the data fix and work better without the corruption. These remain **conditional hindcasts**, not forecasts; the forecast track record is the ensemble of §4.
+**Standing verdict, unchanged since rev-4 and re-confirmed on clean data in rev-5:** the regime model does not forecast returns and must not drive capital deployment. Its legitimate uses are regime census, conditional scenario analysis, and concentration/fragility monitoring.
 
 ---
 
-## 8. Parameter table (rev-5)
+## 4. Discarded candidates
 
-| Parameter | Value | Label | Basis |
-|---|---|---|---|
-| Bin edges (4 axes) | §3.1 of rev-4 | assumed | round interpretable levels |
-| $\kappa$ (advection gain) | 1.0 | mechanical | a pp is a pp |
-| $w_{\mathrm{eff}}$ | 0.15 | assumed | monthly participation fraction |
-| $h_1$ (herding) | 0 | calibrated | 2000–2007 grid on clean data: no gain |
-| $\lambda_1$ (sticky) | 0 | calibrated | 2000–2007 grid on clean data: no gain |
-| Damper $p$/$\tau_{\mathrm{build}}$/gate | 0.8 / 6 mo / 0.5 | assumed | rev-3 episode tuning; $p$ re-gridded |
-| $T_{\mathrm{calm}}, T_{\mathrm{stress}}$ | $24\times24$ | measured | cap-weighted, 2000–2007, clean panel |
-| Ensemble $M$ | 200 scenarios | assumed | Dirichlet-T + AR(1)-M + VIX-Markov |
-| $N_{\mathrm{eff}}$ (Dirichlet) | 109–1825/bin | estimated | Kish effective transitions |
-| Tilt $\gamma$ / cost | 1.0 / 5 bps | assumed | diagnostics only (tilt disproven) |
+Seven return-forecast mechanisms were tested with pre-registered designs and walk-forward validation. All failed; their sections and figures are removed from this report. Full test documents remain in `docs/` as honest negatives. One-line reasons:
+
+- **Rev-4 walk-forward tilt** — predicted mass-flow vs. realized bin return: correlation 0.009; tilt Sharpe 0.48 vs. SPY 0.64. Bin-boundary migration is reclassification, not price pressure.
+- **Concentration → returns (rev-5)** — threshold-linear $t=-0.41$, walk-forward corr $-0.045$; quintile spreads statistically zero ($|t|<0.6$), non-monotone. Honest negative.
+- **Dispersion → returns** (Goyal & Santa-Clara style) — no replication in the large-cap panel; all out-of-sample R² negative.
+- **Comomentum** (Lou & Polk) — winner-lane slope $-0.46$ (NW $t=-0.27$) with the wrong sign on the winner component; walk-forward corr $-0.095$, OOS R² $-0.082$.
+- **Short interest** (Rapach, Ringgenberg & Zhou) — the published *negative* relationship reversed sign in the modern subsample (12-month $\beta=+0.42$, NW $t=+1.31$); not accepted post hoc.
+- **Bubble characteristics** (Greenwood, Shleifer & You, adapted to individual stocks) — crash logit pseudo-R² 0.0134; acceleration $p=0.138$ with the wrong sign; issuance (one of the paper's strongest predictors) unavailable. Weak evidence, not a refutation.
+- **Hedge-fund crowding** (Brown, Howard & Lundblad) — public-13F proxy non-replication: all three pass criteria failed (max in-sample $t=+1.80$; mixed-sign walk-forward; hit rates ≤0.58); the one marginal signal (hf_own 3-month, $t=+2.13$) collapsed to $t=+1.22$ under size control; CUSIP→ticker mapping covered only 25.6% of CUSIPs.
 
 ---
 
-## 9. Limitations and next steps
+## 5. Next steps
 
-1. **No return model.** The honest negative of §3 is the binding result: nothing in 2001–2022 data supports turning concentration into expected returns. Real-capital deployment remains off the table. A return model would need genuine return-side economics (earnings momentum, crowding *flow* data), not reclassification arithmetic.
-2. **Ensemble is model-conditional.** The §4 intervals quantify parameter/driver uncertainty *within* the rev-5 model; they do not cover model misspecification (uniform-within-bin advection, fixed edges, no depth coordinate).
-3. **Pre-2009 shares remain backfilled** (estimated), now unit-fixed; FOX/FOXA/BKR/ETN-backfill months are dropped, not imputed.
-4. **Membership reconstruction** is community-sourced [1], not official S&P.
-5. **The Form-2 criterion was weak** (§3, methodological note) — future retests should require walk-forward significance, not just sign.
+1. **Paper-trade the Buffett screen** (frozen design, live tracking vs. SPY). Real capital only if the paper record holds; then a small pilot.
+2. **Keep the regime engine as a diagnostic**: census, scenario intervals, fragility monitor. No return-forecast development without return-side economics (earnings, flows) — reclassification arithmetic is exhausted.
+3. The discarded candidates' test documents stay in the repo as the permanent record of what was tried and why it was dropped.
 
 ---
 
 ## References
 
-[1] fja05680/sp500 — *S&P 500 Historical Components & Changes (Updated).csv* (public GitHub reconstruction; 2,720 snapshots, 1996-01-02–2026-08-18). Used in §2.1 of rev-4 for point-in-time membership.
-[2] Yahoo Finance — daily adjusted closes, corporate-action (split) history, and SPY total-return series. Used for prices, splits, and the SPY benchmark.
-[3] SEC EDGAR — companyconcept XBRL, *SharesOutstanding* / *WeightedAverageNumberOfSharesOutstanding*. Used for point-in-time shares; §2 documents the consistent-unit-error repair.
+[1] Frazzini, A., Kabiller, D. & Pedersen, L.H. (2018). "Buffett's Alpha." *Financial Analysts Journal* 74(4). Used in §2: the HML/QMJ/BAB + float-leverage decomposition the screen's design is faithful to.
+[2] fja05680/sp500 — *S&P 500 Historical Components & Changes (Updated).csv* (public GitHub reconstruction; 2,720 snapshots, 1996-01-02–2026-08-18). Used in §2.2 and §3.1 for point-in-time membership.
+[3] Yahoo Finance — daily adjusted closes, corporate-action (split) history, SPY total-return series. Used in §2.2–2.4 for prices, betas, and the SPY benchmark.
+[4] SEC EDGAR — companyfacts XBRL (NetIncomeLoss, StockholdersEquity, Assets; 10-K facts) and share-count facts. Used in §2.2–2.3 for fundamentals; §3.2 documents the share-unit repair.
+[5] Ken French Data Library — Fama–French factor series (Mkt-Rf, SMB, HML, RF), 202608 CRSP vintage. Used in §2.4 for the FF3 attribution regression.
 
 ---
 
-*Reproducibility.* `src/fix_share_units.py` (data fix) → `src/calibrate_rev5.py` (params) → `src/concentration_test.py` (honest negative) → `src/ensemble_forecast.py`, `src/fragility_index.py`, `src/portfolio_risk.py` (risk metrics) → `src/figures_rev5.py`. Original corrupt panel preserved at `data/panel_v2_preunitfix.csv`. Random seed 20260928.
+*Reproducibility.* `src/fetch_fundamentals.py` → `src/build_fundamentals_panel.py` → `src/buffett_screen.py` (winner); `src/fix_share_units.py` → `src/calibrate_rev5.py` → `src/ensemble_forecast.py`, `src/fragility_index.py`, `src/portfolio_risk.py` (regime engine). Test documents for discarded candidates: `docs/DISPERSION_TEST.md`, `docs/COMOMENTUM_TEST.md`, `docs/SHORTINTEREST_TEST.md`, `docs/BUBBLECHAR_TEST.md`, `docs/HFCROWDING_TEST.md`.

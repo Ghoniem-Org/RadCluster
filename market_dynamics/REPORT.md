@@ -1,6 +1,6 @@
-# Stock-Market Dynamics, Revision 4
+# Stock-Market Dynamics, Revision 5
 
-**Four-axis regime model with capital weighting, true historical membership, and a walk-forward paper-trading deployment protocol**
+**Return-forecast mechanism test (honest negative), share-unit data integrity fix, and three risk metrics with forecast uncertainty**
 
 Nasr Ghoniem — 2026-09-28
 
@@ -8,169 +8,172 @@ Nasr Ghoniem — 2026-09-28
 
 ## 1. Objectives
 
-Rev-4 rebuilds the market-dynamics model on four requirements:
+Rev-4 ended with a precise diagnosis: the model predicts *where capital is classified* (bin mass-flows), not *which bins will earn returns* — advection-driven inflow is reclassification, not price pressure (predicted mass-flow vs. realized bin return: correlation 0.009; even perfect-foresight $M$ gives Sharpe 0.47). Rev-5 was commissioned to close that gap: build the missing mechanism converting the mass-distribution forecast into a **return forecast**, plus a **risk metric**.
 
-1. **Four regime axes** — momentum × volatility × turnover/liquidity × size (3×2×2×2 = 24 bins).
-2. **Capital weighting** — bin shares are capital shares, not headcounts.
-3. **True historical S&P 500 membership** — point-in-time constituents, never backfilled.
-4. **A deployment protocol** — zero-lookahead walk-forward forecast, monthly tilt portfolio with frozen weights, benchmarked against SPY and an equal-weight historical-member portfolio, with monthly equity and holdings snapshots saved as the paper track record.
+Rev-5 delivers:
 
-A further requirement, added during the build: the paper record is the **prerequisite** for any real-capital deployment. This report states the verdict plainly.
+1. **A pre-registered test** of whether month-end capital concentration predicts next-month returns (two response forms, estimated pre-2008, judged walk-forward). **Result: honest negative — no return mechanism is built.**
+2. **A data-integrity fix** without which the test (and rev-4 itself) is invalid: consistent $10^3$–$10^6\times$ unit errors in filed share counts that the jump-based cleaner missed, including a backfill that read Sempra Energy at **$5,000 trillion** and dominated every cap-weighted state.
+3. **Three risk metrics**, built regardless of the negative result, kept strictly as measured diagnostics rather than an investable forecast:
+   - forecast uncertainty from a 200-scenario ensemble, with intervals on every forecast figure;
+   - a crowding/fragility index (top-lane share and HHI percentiles vs. own history);
+   - portfolio risk: predicted volatility from the bin-return covariance, and the empirical reversal probability $P(\text{top lane unwinds}\mid\text{concentration})$.
 
----
-
-## 2. Data
-
-### 2.1 Historical S&P 500 membership (measured, with caveats)
-
-Index membership comes from the public reconstruction **fja05680/sp500** ("S&P 500 Historical Components & Changes"), file *S&P 500 Historical Components & Changes (Updated).csv*: 2,720 snapshots/change dates from 1996-01-02 through 2026-08-18 [1]. This is a community reconstruction, **not** an official S&P database; change dates may lag true effective dates by days. All membership joins use the latest snapshot on or before each month-end (point-in-time).
-
-### 2.2 Prices (measured)
-
-Daily adjusted closes from **Yahoo Finance** [2] for every ticker ever appearing in the membership file (659 raw files after alias resolution). Corporate-action aliases were validated by hand: `BK→BNY`, `BLL→BALL`, `ABC→COR`, `ANTM→ELV`, `FB→META`, `DISCA/DISCK→WBD`, `ACE→CB`, `DLPH→APTV`, `TMK→GL`, `STI/BBT→TFC`, `UTX/RTN→RTX`, `PX→LIN`.
-
-Snapshot price coverage (fraction of members with a valid price): 2000: 57%, 2008: 65%, 2015: 76%, 2021: 90%, 2022: 94%. Coverage rises as Yahoo history deepens; early years lose delisted names permanently.
-
-### 2.3 Shares outstanding and splits (measured / estimated)
-
-**SEC EDGAR companyconcept XBRL** [3] (`SharesOutstanding`, `WeightedAverageNumberOfSharesOutstanding`) provides point-in-time shares: 47,902 raw facts, 47,841 positive after filtering, with 920 apparent 1,000×/1,000,000× unit errors mechanically rescaled. SEC coverage begins mid-2009; **no facts were filed by 2008-12-31**. Pre-2009 shares use earliest-filing backfill and are **estimated with lookahead limitations**, flagged per-row in `panel_v2.csv`. **Yahoo Finance** corporate-action history [2] supplies 1,844 split events; all share counts are split-adjusted.
-
-**Turnover** is dollar volume divided by split-adjusted market cap — a **measured liquidity proxy**, not true share turnover, unless valid point-in-time shares exist (they do for ~83% of priced rows; the rest use backfilled shares and are flagged estimated).
-
-### 2.4 Panel
-
-`data/panel_v2.csv`: 138,255 historical-member/month rows with momentum (12–1m), volatility (12m daily σ, annualized), split-adjusted shares, market cap, dollar-volume turnover, filing dates, and provenance flags. 83.2% of priced rows have cap and turnover; 80.7% are binnable on all four axes. Sanity: AAPL 2007-12 ≈ $176.0B (backfilled, estimated); 2022-12 ≈ $2.067T (filing-based, measured).
+Because there is **no validated return tilt**, no new paper-trading track is opened and no real-capital deployment is recommended. The verdict of rev-4 §7.4 stands, now on clean data.
 
 ---
 
-## 3. Model
+## 2. Data integrity fix: consistent unit errors in share counts (measured → repaired)
 
-### 3.1 State
+### 2.1 The problem
 
-The capital distribution over 24 bins:
+`src/clean_shares.py` rescales filings that jump by 900–1100× or $9\times10^5$–$1.1\times10^6\times$ vs. the previous filing. This catches *transient* unit errors but is blind to two residual patterns, found 2026-09-28 while auditing rev-5 inputs:
 
-$$\mathbf{c}(t) \in \Delta^{23}, \qquad c_b(t) = \frac{\sum_{i \in b} \mathrm{cap}_i(t)}{\sum_i \mathrm{cap}_i(t)}.$$
+- **(A) Consistent wrong units.** Tickers whose filings are *all* in the wrong unit never trigger the jump detector, and the pre-2009 backfill (earliest filing propagated backward) carries the error into every early month. SRE's backfill read **$5.02\times10^{15}$ ($5,000T)** — one company at 400× the entire index — flipping the measured top-lane share $C_t$ between 0.999 and 0.002 month to month. QCOM's *filed* era was $10^3\times$ too large ($136T); EOG's backfill $10^3\times$ too large ($5.5T); SYK's filed era $10^6\times$ too small.
+- **(B) Unit changes masked by genuine share changes.** HAL's filings shift $9.0\times10^8 \to 880$ (a $10^6\times$ unit change); Citi's 2009-11 filing ($2.29\times10^7$, in thousands) → 2010-02 filing ($2.85\times10^{10}$, in ones) is a 1246× ratio — outside the 900–1100 band, so never fixed.
+- **(C) Garbage placeholders.** Shares of exactly 1.0 (FOX/FOXA) or 100.0 (BKR, ETN backfill) that no rescaling can rescue.
 
-Bin index $b = (m, v, \tau, s)$:
+In total 368 ticker-months pre-2018 exceeded $2T single-stock market cap (measured on `panel_v2.csv` before the fix).
 
-| Axis | Levels | Edges | Label |
+### 2.2 The fix (`src/fix_share_units.py`)
+
+Per ticker, split-adjusted shares are segmented at month-to-month jumps $>20\times$ or $<1/20\times$ (split-adjusted shares cannot move like that absent a corporate action, which splits already adjust). Each segment ($\geq$ 3 months) is checked against **two absolute anchors**:
+
+- market cap in **[$200M, $4T]** (generous S&P-500 bounds), and
+- average-daily turnover in **[0.02%, 100%]** (dollar volume is measured; turnover $=$ volume/shares pins the share count from the other side).
+
+If $1\times$ is sane on both → keep. Else the power of $10^{\pm3}, 10^{\pm6}$ making *both* sane is applied (closest to $30B on ties) — this catches Citi's 1999–2010 segment ($248M cap but 286%/day turnover → $\times10^3$). If only cap can be made sane, cap wins; turnover extremes alone never trigger a change (genuine frenzies exist). Unfixable segments (FOX/FOXA, BKR, ETN backfill) are set to NaN rather than invented. Segments under 3 months (transient spikes) are dropped. Market cap is recomputed exactly; turnover rescales inversely (volume/denominator). The original panel is preserved at `data/panel_v2_preunitfix.csv`; the script is idempotent.
+
+28 segments rescaled, 3 era-segments and 14 transient spikes dropped. Verification: max single-stock cap $2.91T (none pre-2018 above $2T); AAPL 2007-12 $176.0B (unchanged anchor); SRE 2001-01 $5.0B; total binnable cap 2007-12 **$10.2T** (S&P 500 ≈ $13T) and 2021-12 **$41.3T** (≈ $40T) — the index-level aggregates now match known totals. Figure 1 shows the before/after.
+
+**Mechanism before results.** Cap-weighting is multiplicative in the share count: one $10^6\times$ error doesn't add noise, it *replaces* the index. Every cap-weighted object in rev-4 — bin shares $c(t)$, transition matrix $T$, concentration $C(t)$, tilt weights — was computed under a distribution in which SRE alone could be 99.9% of a lane. The fix is therefore not cosmetic; §6 shows the distribution model improves markedly on clean data.
+
+![Figure 1: data fix before/after](doc/figures/data_fix.png)
+
+---
+
+## 3. Concentration → return: pre-registered test and honest negative
+
+### 3.1 Design (pre-registered)
+
+Question: does month-end concentration $C_t$ (capital share of the top momentum lane, measured) predict next-month top-lane excess return over SPY? Panel: `data/panel_v2.csv` **after** the §2 fix. Estimation **2001-01–2007-12 only**; walk-forward 2008–2022. Maximum two response forms:
+
+- **Form 1 (threshold-linear crowding penalty):** $r^e_{t+1} = a + b\max(C_t - 0.5, 0)$.
+- **Form 2 (non-parametric):** quintile means of next-month excess return, quintile edges from the estimation window.
+
+Pass criteria (fixed before estimation): Form 1 needs $b<0$, $|t|>2$, walk-forward $\mathrm{corr}(\hat r, r) > 0.10$; Form 2 needs in-sample Q5−Q1 $\leq -0.25\%$/mo **and** walk-forward Q5−Q1 $< 0$. Lane returns are cap-weighted over lane members at $t$; SPY uses matching month-end-to-month-end returns. (`src/concentration_test.py`; monthly series in `outputs/conc_ret_monthly.csv`.)
+
+A first run of this test on the *pre-fix* panel produced a spurious Form-2 "pass" driven entirely by the SRE corruption ($C_t$ binary 0.001/0.999); those numbers are discarded and not reported.
+
+### 3.2 Results
+
+| Form | In-sample (2001–2007, n=84) | Walk-forward (2008–2022, n=179) | Verdict |
 |---|---|---|---|
-| Momentum $m$ | 3 | $[-1, 0, 0.30, 3]$ (12–1m return) | **assumed** (round absolute levels) |
-| Volatility $v$ | 2 | $[0, 0.28, 5]$ (annualized) | **assumed** |
-| Turnover $\tau$ | 2 | $[0, 0.008, 10]$ (dollar vol / mcap) | **assumed** |
-| Size $s$ | 2 | $[0, \$10\mathrm{B}, \infty)$ | **assumed** |
+| 1: threshold-linear | $b=-0.18$, $t=-0.41$, $R^2=0.002$ (only 3 months with $C_t>0.5$) | corr $=-0.045$ | **FAIL** |
+| 2: quintiles | Q5−Q1 $=-0.59\%$/mo, **t $=-0.40$** | Q5−Q1 $=-0.52\%$/mo, **t $=-0.52$** | technical pass, **statistical fail** |
 
-The edges are round numbers chosen for interpretability, **not** calibrated quantiles; several $(v{=}1,\tau{=}0)$ cells are frequently empty. This is disclosed, not hidden.
+Form 1 fails decisively. Form 2 meets the letter of the pre-registered criterion — yet both spreads are statistically indistinguishable from zero ($|t|<0.6$), the quintile pattern is **non-monotone** (in-sample Q5 $+1.23\% >$ Q4 $-0.69\%$; walk-forward Q1–Q5: $+0.71, -0.43, +0.61, +0.32, +0.19$), and the linear correlations are $\approx 0$ ($\mathrm{corr}(C, r^e)$: $-0.083$ in-sample, $-0.001$ walk-forward; HHI: $0.024$, $0.017$). The negative Q5−Q1 spread is driven by Q1 outperforming, not Q5 underperforming — the opposite shape of a crowding penalty.
 
-### 3.2 Master equation
+**Verdict: honest negative.** There is no detectable, tradeable crowding penalty in 2001–2022 S&P 500 data. Per the pre-registered rule, **no return mechanism $\hat r_b(t+1)$ is built, no return-based portfolio is constructed, and no new paper-trading track is opened.** Figure 2 shows why: error bars swallow every quintile difference in both samples.
 
-$$\frac{d\mathbf{c}}{dt} = \underbrace{(T_{\mathrm{eff}} - I)\mathbf{c}}_{\text{drift}} + \underbrace{A(M)\,\mathbf{c}}_{\text{market advection}} + \underbrace{H(\mathbf{c})\,\mathbf{c}}_{\text{herding}} + \underbrace{\mathbf{e}}_{\text{entry/exit}},$$
+![Figure 2: concentration test](doc/figures/concentration_test.png)
 
-with discrete monthly stepping.
-
-**Mechanism — drift (measured).** $T$ is the cap-weighted month-to-month bin transition matrix, estimated on 2000–2007 (pre-episode, expanding thereafter). Two regimes: $T_{\mathrm{calm}}$ for $|M|<0.05$, $T_{\mathrm{stress}}$ otherwise (measured).
-
-**Mechanism — market advection (mechanical).** The cross-sectional window-delta $M(t) = \bar r(t) - \bar r(t{-}12)$ shifts every stock's 12-month momentum window by the same amount — a pp is a pp, so $\kappa = 1$ is **mechanical**, not fitted. Fractional remap (conservative, multi-bin) translates each momentum lane; reflecting boundaries at the extreme bins pile mass (the spike mechanism). $w_{\mathrm{eff}} = 0.15$ is **assumed** (fraction of cap participating per month).
-
-**Mechanism — herding (calibrated).** Signed autocatalytic flux $h_{\mathrm{eff}} = h_1 (w - \ell)$ toward the winning extreme; calibration on 2000–2007 selected **$h_1 = 0$** — herding did not improve the pre-2008 objective, so it is **off** in rev-4. Rev-3's $h_1 = 1.0$ is not carried over as calibrated.
-
-**Mechanism — sticky drift (calibrated).** $T_{\mathrm{eff}} = (1-\lambda)T + \lambda I$ with $\lambda = \lambda_1 (w+\ell)$; calibration selected **$\lambda_1 = 0$**. Also off.
-
-**Mechanism — spike-persistence damper (assumed, episode-tuned in rev-3).** At a true peak the extreme bin's mass sits deep in the tail (Mar-2021: median top-bin momentum 103%, only 11% within 8pp of the 60% boundary — measured in rev-3), so a uniform donor-cell drains ~2× too fast. The damper impedes extreme-bin outflow on driver-sign reversal out of a spike (gate: share > 0.5): $\mathrm{damp} = \min((|M|/B)^p, 1)$, $p = 1.2$, $B$ = 6-month-decay memory of the $|M|$ that built the spike. All three damper parameters are **assumed** (carried from rev-3 episode tuning, unidentified in the pre-2008 grid).
-
-### 3.3 Driver forecast $\widehat M_{t+1}$ (measured, zero lookahead)
-
-From the momentum definition, $\mathrm{mom}_i(t{+}1) - \mathrm{mom}_i(t) \approx r_i(t) - r_i(t{-}12)$, so
-
-$$\widehat M(t{+}1) = R_{\mathrm{SPY}}(t) - R_{\mathrm{SPY}}(t{-}12),$$
-
-both known at month-end $t$. This **mechanical nowcast** (not an AR(1) extrapolation) achieves correlation 0.50 with realized $M$ and 70% directional accuracy over 2008–2022, vs. −0.02 / 41% for an expanding AR(1), which collapses to zero and is discarded. The raw form overstates $|M|$ by ~1.6× (measured slope 0.63 on the full sample, disclosed); it is used unshrunk to avoid lookahead.
+*Methodological note.* The pre-registered criterion for Form 2 (sign + modest magnitude, no significance bar) was too weak — it can "pass" on noise, as it did here. It is reported as met-and-overruled rather than silently dropped, and any future retest should require $|t|>2$ on the walk-forward spread.
 
 ---
 
-## 4. Parameter table
+## 4. Risk metric 1: ensemble distribution forecast with uncertainty intervals
+
+With no return model, the forecastable object remains the **capital distribution** $\mathbf{c}(t)$. Rev-5 replaces rev-4's point forecast with a 200-scenario ensemble, 12 months forward from 2022-12, so that every forecast figure carries intervals.
+
+**Ensemble design** (`src/ensemble_forecast.py`, seed 20260928):
+
+- **Transition matrices:** $T_{\mathrm{calm}}, T_{\mathrm{stress}}$ drawn per scenario from Dirichlet posteriors. Mean $=$ cap-weighted $T$ from `params_rev5.json` (**measured**, 2000–2007); precision $=$ Kish effective sample size per origin bin, $N_{\mathrm{eff}} = (\sum w)^2/\sum w^2$ over cap-weighted transitions (**estimated**; median 305, range 109–1825; the Dirichlet form is **assumed**).
+- **Market driver $M$:** AR(1) fit on measured $M$ history through 2022-12 ($a=-0.0006$, $\phi=0.048$, residual SD $0.0845$; **estimated**) with bootstrapped residuals per scenario.
+- **Volatility regime:** 2-state Markov chain on VIX $> 30$ (**measured** 2000–2022; calm→stress 2.7%/mo, stress→calm 32.3%/mo), starting calm (VIX Dec-2022 ≈ 21).
+- **Model:** rev-5 calibrated kernels ($h_1 = 0$, $\lambda_1 = 0$; advection + spike damper active), `params_rev5.json`.
+
+**Result** (`outputs/ensemble_forecast.json`; Figure 3): 12-month-ahead top-momentum-lane share **median 0.239, 90% interval [0.106, 0.503]**; bottom lane [0.212, 0.656]; HHI [0.110, 0.175]. The intervals are wide — and that is the finding: one-year-ahead concentration is dominated by driver and transition uncertainty, and any point forecast without intervals overstates knowledge by roughly a factor of four in range. The median rise (from 0.101 at origin toward the calm stationary 0.181, overshooting via advection) is Markov mean-reversion, not a directional call.
+
+![Figure 3: ensemble forecast](doc/figures/ensemble_forecast.png)
+
+---
+
+## 5. Risk metric 2: crowding / fragility index
+
+$C(t)$ (top-lane cap share) and $\mathrm{HHI}(t) = \sum_b c_b^2$ are **measured** monthly on the fixed panel. The fragility index reports each reading as a percentile of its own history — full-history (diagnostic) and expanding-window (zero lookahead, what was knowable at $t$). `src/fragility_index.py` → `outputs/fragility.csv`; Figure 4.
+
+- **Current (2022-12-30):** $C = 0.101$ (**25th percentile** — not crowded), HHI $= 0.2790$ (52nd percentile).
+- Most crowded month-ends by expanding percentile: 2004-02 ($C=0.570$), 2010-01 ($0.571$), 2001-02 ($0.423$) — the dot-com unwind, the post-crisis value rally, and the 2009 rebound's momentum pile-up.
+
+The index is a *state descriptor*, not a signal: §3 shows high $C(t)$ does not predict low next-month returns, so the fragility index must not be traded as a contrarian indicator. Its legitimate uses are position-sizing context and crash-regime awareness (2008-09 bottom-lane saturation reached 0.99 — §6).
+
+![Figure 4: fragility index](doc/figures/fragility.png)
+
+---
+
+## 6. Risk metric 3: portfolio risk — predicted volatility and reversal probability
+
+**Predicted volatility** (`src/portfolio_risk.py`, `outputs/portfolio_risk.json`). From the 24-bin monthly return covariance $\Sigma$ (**measured**, 2001–2022 cap-weighted bin total returns), the rev-4-style mass-flow tilt recomputed with `params_rev5` and frozen at 2022-12 (diagnostic only — the tilt itself is disproven, §3 of rev-4) has predicted annualized volatility **14.4%**, vs. 15.9% for the cap-weighted market and 15.4% SPY realized. The tilt is not riskier than the market; its failure was return-side, not risk-side.
+
+**Reversal probability** $P(\text{top lane unwinds}\mid\text{concentration})$, **measured** empirically: "unwind" $=$ top lane trails the cap-weighted market next month; concentration quintiles from the expanding history (zero lookahead), 2001–2022:
+
+| $C(t)$ quintile | Q1 (low) | Q2 | Q3 | Q4 | Q5 (high) |
+|---|---|---|---|---|---|
+| P(unwind next month) | 41.8% | 44.0% | 35.8% | 53.8% | **34.0%** |
+
+No monotone relationship; the most-crowded quintile has the *lowest* point estimate of reversal. This corroborates §3 from a second angle: concentration does not warn of next-month momentum reversal in this sample.
+
+---
+
+## 7. Re-calibration on clean data (`params_rev5.json`)
+
+The 2000–2007 grid (same protocol as rev-4: conditional hindcast on realized $M$, full-distribution RMSE $+ 0.5\times$ bottom-bin RMSE) re-selects **$h_1 = 0$, $\lambda_1 = 0$** — with clean cap-weights, neither herding nor sticky drift helps even in-sample; the regime-switching $T$ plus mechanical advection carries the model. (Rev-4's $p_{\mathrm{damp}} = 1.2$ → $0.8$; damper parameters remain assumed.) The clean $T_{\mathrm{calm}}$ differs from rev-4's by up to **0.85** in a single transition probability (mean 0.007) — the corruption was not a second-order effect.
+
+Conditional hindcasts (realized-$M$ forcing, free-running from pre-episode state) on clean data, `src/hindcast_rev5.py`:
+
+| Episode | Full RMSE (rev-5 clean) | Full RMSE (rev-4 corrupt) | Peak amplitude / timing |
+|---|---|---|---|
+| 2008–09 | **0.0899** | 0.1685 | bottom 0.83@2009-04 vs 0.99@2009-03 |
+| 2020–21 | **0.0714** | 0.1110 | top 0.79@2021-04 vs 0.78@2021-03 |
+
+Both episodes improve substantially; the 2020–21 top-lane peak amplitude is now exact (one month late). The distribution mechanics — driver-translated momentum with reflecting extreme bins — survive the data fix and work better without the corruption. These remain **conditional hindcasts**, not forecasts; the forecast track record is the ensemble of §4.
+
+---
+
+## 8. Parameter table (rev-5)
 
 | Parameter | Value | Label | Basis |
 |---|---|---|---|
-| Bin edges (4 axes) | see §3.1 | assumed | round interpretable levels |
+| Bin edges (4 axes) | §3.1 of rev-4 | assumed | round interpretable levels |
 | $\kappa$ (advection gain) | 1.0 | mechanical | a pp is a pp |
 | $w_{\mathrm{eff}}$ | 0.15 | assumed | monthly participation fraction |
-| $h_1$ (herding) | 0 | calibrated | 2000–2007 grid: no improvement |
-| $\lambda_1$ (sticky) | 0 | calibrated | 2000–2007 grid: no improvement |
-| Damper $p$ / $\tau_{\mathrm{build}}$ / gate | 1.2 / 6 mo / 0.5 | assumed | rev-3 episode tuning; unidentified pre-2008 |
-| Tilt $\gamma$ | 1.0 | assumed | additive tilt strength |
-| Cost | 5 bps one-way | assumed | institutional estimate |
-| $T_{\mathrm{calm}}$, $T_{\mathrm{stress}}$ | 24×24 | measured | cap-weighted, 2000–2007 → expanding |
+| $h_1$ (herding) | 0 | calibrated | 2000–2007 grid on clean data: no gain |
+| $\lambda_1$ (sticky) | 0 | calibrated | 2000–2007 grid on clean data: no gain |
+| Damper $p$/$\tau_{\mathrm{build}}$/gate | 0.8 / 6 mo / 0.5 | assumed | rev-3 episode tuning; $p$ re-gridded |
+| $T_{\mathrm{calm}}, T_{\mathrm{stress}}$ | $24\times24$ | measured | cap-weighted, 2000–2007, clean panel |
+| Ensemble $M$ | 200 scenarios | assumed | Dirichlet-T + AR(1)-M + VIX-Markov |
+| $N_{\mathrm{eff}}$ (Dirichlet) | 109–1825/bin | estimated | Kish effective transitions |
+| Tilt $\gamma$ / cost | 1.0 / 5 bps | assumed | diagnostics only (tilt disproven) |
 
 ---
 
-## 5. Conditional hindcasts (realized $M(t{+}1)$ forcing)
+## 9. Limitations and next steps
 
-These are **conditional hindcasts**, not forecasts: the model is driven by the realized destination-month driver. They test the distribution mechanics, not the forecast.
-
-### 5.1 2008–09
-
-Full-distribution RMSE 0.1685. Predicted bottom-lane peak 0.88 (2008-12) vs. realized 1.00 (2009-03): amplitude close, **three months early**. The realized 1.00 reflects near-total bottom-lane saturation at the March-2009 trough (audited: no single-name outlier; the entire cross-section sat below 0% twelve-month momentum). Post-peak decay is captured to within ~0.05 share. The 2009 recovery is under-predicted — the uniform-within-bin advection approximation cannot resolve the sharp V-bounce, a known structural limitation.
-
-### 5.2 2020–21
-
-Full-distribution RMSE 0.1110. Predicted top-lane peak 0.95 (2021-04) vs. realized 0.92 (2021-03): amplitude within 0.03, one month late. The realized series is volatile around the peak (0.92 in Mar → 0.49 in Apr → 0.90 in May → 0.86–0.87 through Jul); the model produces a smoother hump (0.58 → 0.95 → 0.61 → 0.43 → 0.35) and does not resolve the sharp April dip. The damper (rev-3) aligns the broad decay envelope; without it the model drains ~2× too fast.
-
-**Mechanism before results.** Both episodes work for the same reason: the driver $M$ translates the entire momentum distribution, and reflecting extreme bins accumulate the translated mass. The model spikes at the right time because $M$ spikes at the right time — the distribution mechanics are slaves to the driver. This is why the **forecast** (§6) is the binding constraint, not the hindcast.
-
----
-
-## 6. Genuine 2022 out-of-sample forecast
-
-Model frozen on pre-2022 data; $\widehat M$ from the mechanical nowcast only. The 2022 distribution forecast correctly anticipates the growth-to-value rotation's loser-lane buildup but underestimates its persistence — the same uniform-bin limitation seen in 2009. Forecast-skill (2008–2022 walk-forward): RMSE 0.074, correlation 0.50, directional 70%.
-
----
-
-## 7. Paper-trading deployment protocol
-
-### 7.1 Rules (frozen, zero lookahead)
-
-At each month-end $t$ from 2008-01: (i) compute $\widehat M(t{+}1)$ mechanically; (ii) simulate one step to $\widehat{\mathbf{c}}(t{+}1)$; (iii) set tilt weights $\pi_b \propto \max(c_b + \gamma(\widehat c_b - c_b), 0)$, $\gamma = 1$ (additive — the earlier exponential form was numerically unstable and is discarded); (iv) within each bin, weight stocks by market cap; (v) **freeze** weights through $t{+}1$; (vi) deduct 5 bps one-way on rebalanced turnover, computed from correctly drifted prior weights (a timing bug in the first implementation used future returns in the drift — fixed).
-
-Benchmarks: **SPY** buy-and-hold (dividends via Yahoo adjusted closes) [2], and a **true equal-weight historical-member portfolio** (equal weights over eligible point-in-time members, same rebalance/cost accounting — the earlier "EW" was equal-weight across bins and is replaced).
-
-Monthly equity **and** frozen per-ticker holdings snapshots are saved to `~/workspace/goals/stock-market-dynamics/hidden_files/` as first-class deployment records.
-
-### 7.2 Results (2008–2022 walk-forward)
-
-| Portfolio | Total | CAGR | Ann. vol | Sharpe | Max DD |
-|---|---|---:|---:|---:|---:|
-| Tilt (paper) | +196% | 7.6% | 19.2% | 0.48 | −35.9% |
-| SPY | +284% | 9.5% | 16.3% | 0.64 | −46.3% |
-| Equal-weight members | +327% | 10.3% | 13.3% | 0.81 | −27.0% |
-
-2022: tilt −18.7%, SPY −18.2%, EW −4.2%.
-
-### 7.3 The tilt does not work — mechanism
-
-The mass-flow tilt was tested to destruction. Correlation between predicted bin mass change $\Delta\widehat c_b$ and realized bin return: **0.009** overall (winner bins 0.031, loser bins 0.064, mid −0.099). A perfect-foresight variant (realized $M$, zero forecast error) achieves Sharpe 0.47 — no better. **The failure is in the tilt mechanism, not the forecast.**
-
-Why: advection-driven mass flows are **reclassification**, not price pressure. When stocks crash they are reclassified into the loser bin — the bin "gains mass" while its constituents lose money. Overweighting predicted mass-gainers systematically overweights bins whose members just fell (loser inflow) or, symmetrically, chases winners after the move. The model's distribution mechanics predict *where capital sits*, not *which bins will pay*. A return-predictive tilt needs a return model the current framework does not have.
-
-### 7.4 Verdict
-
-**The paper record does not support real-capital deployment.** The distribution model captures conditional spikes and the mechanical driver nowcast has genuine skill, but the portfolio built on them trails both benchmarks on every risk-adjusted metric. The prerequisite is not met. The protocol, code, and snapshots remain in place so any future tilt can be judged by the same bar.
-
----
-
-## 8. Limitations and next steps
-
-1. **Return-predictive tilt.** The binding gap. Options: tilt on predicted bin returns via an auxiliary return model; use the distribution forecast for crash-risk overlays rather than cross-sectional tilts.
-2. **Within-bin heterogeneity.** Uniform-bin advection under-resolves V-recoveries (2009, 2022 persistence). A depth coordinate or particle-level extension is the structural fix.
-3. **Pre-2009 shares.** SEC XBRL starts mid-2009; early size/turnover bins lean on backfilled shares (flagged estimated).
-4. **Membership reconstruction.** Community-sourced [1], not official S&P; change-date lags of days are possible.
-5. **Empty cells.** Low-turnover/high-volatility bins are often empty; edges could be recalibrated on pre-sample data (kept fixed here for interpretability).
-6. **Damper parameters.** Assumed from rev-3 episode tuning; a genuine calibration needs identified spike episodes in the training window.
+1. **No return model.** The honest negative of §3 is the binding result: nothing in 2001–2022 data supports turning concentration into expected returns. Real-capital deployment remains off the table. A return model would need genuine return-side economics (earnings momentum, crowding *flow* data), not reclassification arithmetic.
+2. **Ensemble is model-conditional.** The §4 intervals quantify parameter/driver uncertainty *within* the rev-5 model; they do not cover model misspecification (uniform-within-bin advection, fixed edges, no depth coordinate).
+3. **Pre-2009 shares remain backfilled** (estimated), now unit-fixed; FOX/FOXA/BKR/ETN-backfill months are dropped, not imputed.
+4. **Membership reconstruction** is community-sourced [1], not official S&P.
+5. **The Form-2 criterion was weak** (§3, methodological note) — future retests should require walk-forward significance, not just sign.
 
 ---
 
 ## References
 
-[1] fja05680/sp500 — *S&P 500 Historical Components & Changes (Updated).csv* (public GitHub reconstruction; 2,720 snapshots, 1996-01-02–2026-08-18). Used in §2.1 for point-in-time membership.
-[2] Yahoo Finance — daily adjusted closes, corporate-action (split) history, and SPY total-return series. Used in §2.2 (prices), §2.3 (splits), §7.1 (SPY benchmark).
-[3] SEC EDGAR — companyconcept XBRL, *SharesOutstanding* / *WeightedAverageNumberOfSharesOutstanding*. Used in §2.3 for point-in-time shares.
+[1] fja05680/sp500 — *S&P 500 Historical Components & Changes (Updated).csv* (public GitHub reconstruction; 2,720 snapshots, 1996-01-02–2026-08-18). Used in §2.1 of rev-4 for point-in-time membership.
+[2] Yahoo Finance — daily adjusted closes, corporate-action (split) history, and SPY total-return series. Used for prices, splits, and the SPY benchmark.
+[3] SEC EDGAR — companyconcept XBRL, *SharesOutstanding* / *WeightedAverageNumberOfSharesOutstanding*. Used for point-in-time shares; §2 documents the consistent-unit-error repair.
+
+---
+
+*Reproducibility.* `src/fix_share_units.py` (data fix) → `src/calibrate_rev5.py` (params) → `src/concentration_test.py` (honest negative) → `src/ensemble_forecast.py`, `src/fragility_index.py`, `src/portfolio_risk.py` (risk metrics) → `src/figures_rev5.py`. Original corrupt panel preserved at `data/panel_v2_preunitfix.csv`. Random seed 20260928.

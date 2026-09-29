@@ -1,0 +1,41 @@
+# Genealogy-Dynamics is an ORPHAN branch: `genealogy-dynamics/` is the only
+# thing it tracks, and it shares no history with `main`.
+#
+# Switching here from main deletes main's tracked files but leaves behind
+# everything main did NOT track -- build output, run directories, virtualenvs,
+# stray documents.  main's own .gitignore goes with it, so none of that is
+# hidden any more: ~3,300 files and ~570 MB show up as plain untracked
+# entries, and a reflexive `git add -A` would sweep the whole RadCluster tree
+# into the genealogy history.
+#
+# Every rule below is anchored with a leading slash, so it matches only at the
+# repository root and can never hide anything inside genealogy-dynamics/.
+
+# RadCluster working trees left behind by a branch switch
+/RadCluster_2_0/
+/RadCluster_2_1/
+/archive/
+/docs/
+/scripts/
+/h2jupynb/
+
+# Scratch and tooling
+/Claude outputs/
+/.claude/
+/.EuroVenv/
+
+# Python
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# LaTeX build artifacts (the genealogy report compiles in place)
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc

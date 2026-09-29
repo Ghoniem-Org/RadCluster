@@ -21,7 +21,7 @@ not a rewrite of the solver.
   C++17 (production ODE solver, SUNDIALS/CVODE).
 - **License** — MIT.
 - **Primary reference** — N. M. Ghoniem, *A Generalized Graph-Based Cluster Dynamics
-  Framework for Irradiated Materials* (2026);
+  Framework for Irradiated Materials*, Journal of Nuclear Materials (submitted, 2026);
   [`docs/Formulation/cluster_dynamics_framework/Generalized_Cluster_Dynamics.pdf`](docs/Formulation/cluster_dynamics_framework/Generalized_Cluster_Dynamics.pdf).
   Section and equation numbers throughout the code and this README refer to that document.
 
@@ -542,15 +542,16 @@ from inside its own folder.
 If you use RadCluster, please cite the framework manuscript:
 
 > N. M. Ghoniem, *A Generalized Graph-Based Cluster Dynamics Framework for Irradiated
-> Materials* (2026).
+> Materials*, Journal of Nuclear Materials (submitted, 2026).
 
 ```bibtex
 @article{Ghoniem2026RadCluster,
   author  = {Ghoniem, N. M.},
   title   = {A Generalized Graph-Based Cluster Dynamics Framework for
              Irradiated Materials},
+  journal = {Journal of Nuclear Materials},
   year    = {2026},
-  note    = {RadCluster formulation manuscript}
+  note    = {Submitted}
 }
 ```
 
@@ -560,17 +561,17 @@ The formulation continues a long line of work on defect cluster kinetics:
   and Pulsed Irradiation*, Ph.D. thesis, University of Wisconsin–Madison (1977).
 - N. M. Ghoniem and D. D. Cho, *The simultaneous clustering of point defects during
   irradiation*, Phys. Status Solidi A **54** (1979) 171–178.
-  [doi:10.1002/pssa.2210540121](https://doi.org/10.1002/pssa.2210540121)
+  [doi:10.1002/pssa.2210540122](https://doi.org/10.1002/pssa.2210540122)
 - N. M. Ghoniem and S. Sharafat, *A numerical solution to the Fokker–Planck equation
   describing the evolution of the interstitial loop microstructure during irradiation*,
   J. Nucl. Mater. **92** (1980) 121–135.
   [doi:10.1016/0022-3115(80)90148-8](https://doi.org/10.1016/0022-3115(80)90148-8)
-- N. M. Ghoniem, D. D. Cho, *The simultaneous clustering of point defects during
-  irradiation*, Phys. Status Solidi A **74** (1983) 261–274.
-  [doi:10.1002/pssa.2210740131](https://doi.org/10.1002/pssa.2210740131)
+- N. M. Ghoniem and D. D. Cho, *The early stages of void and interstitial loop evolution
+  in pulsed fusion reactors*, J. Nucl. Mater. **89** (1980) 359–371.
+  [doi:10.1016/0022-3115(80)90068-9](https://doi.org/10.1016/0022-3115(80)90068-9)
 - N. M. Ghoniem, J. N. Alhajji and D. Kaletta, *The effect of helium clustering on its
   transport to grain boundaries*, J. Nucl. Mater. **136** (1985) 192–206.
-  [doi:10.1016/0022-3115(85)90109-7](https://doi.org/10.1016/0022-3115(85)90109-7)
+  [doi:10.1016/0022-3115(85)90007-8](https://doi.org/10.1016/0022-3115(85)90007-8)
 - N. M. Ghoniem, *Stochastic theory of diffusional planar-atomic clustering and its
   application to dislocation loops*, Phys. Rev. B **39** (1989) 11810–11819.
   [doi:10.1103/PhysRevB.39.11810](https://doi.org/10.1103/PhysRevB.39.11810)

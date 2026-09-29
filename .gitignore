@@ -1,0 +1,35 @@
+# Stock-Market-Dynamics is an ORPHAN branch: `stock-market-dynamics/` is the
+# only thing it tracks, and it shares no history with `main`.
+#
+# Switching here from main deletes main's tracked files but leaves behind
+# everything main did NOT track -- build output, run directories, virtual
+# environments. main's own .gitignore leaves with it, so none of that is
+# hidden any more: roughly 3,300 files and 570 MB show up as plain untracked
+# entries, and a reflexive `git add -A` would sweep the whole RadCluster tree
+# into this history.
+#
+# Every rule below is anchored with a leading slash, so it matches only at the
+# repository root and can never hide anything inside stock-market-dynamics/.
+
+# RadCluster working trees left behind by a branch switch
+/RadCluster_2_0/
+/RadCluster_2_1/
+/archive/
+/docs/
+/scripts/
+/h2jupynb/
+
+# Scratch and tooling
+/Claude outputs/
+/.claude/
+/.EuroVenv/
+
+# Python
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# NOTE: *.log, *.aux, *.out and *.toc are deliberately NOT ignored here.
+# Unlike the genealogy branch, this one tracks 18 such files on purpose --
+# data/fetch.log, data/regimes.log and the LaTeX build products under doc/ --
+# and a blanket rule would silently hide their regenerated successors.

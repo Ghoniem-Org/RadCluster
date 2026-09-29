@@ -287,6 +287,59 @@ RadCluster/
 Archived modules are kept so that published results remain reproducible; they receive
 no further development.
 
+### Branches
+
+The repository carries one production line and several standalone side branches.
+The side branches are **orphan branches**: they share no history with `main` and
+contain none of the RadCluster source, so checking one out replaces the working
+tree entirely.
+
+| Branch | Kind | Contents |
+|---|---|---|
+| `main` | production | The RadCluster suite — modules, documentation, verification campaign. |
+| `Genealogy-Dynamics` | orphan | `genealogy-dynamics/` — two-sex cluster-dynamics model of the U.S. population. |
+| `Stock-Market-Dynamics` | orphan | `stock-market-dynamics/` — S&P 500 market-regime cluster dynamics. |
+| `campaign-verification` | orphan | `claims/` and `results/` — the coordination store the distributed verification campaign writes to; read through `RadCluster_2_1/digital_twin/verification/.sync/`. |
+| `CodeDevelopment` | dormant | Fully merged into `main`; retained for reference, not developed. |
+
+#### The method applied outside radiation damage
+
+`Genealogy-Dynamics` and `Stock-Market-Dynamics` are ports of this repository's
+abstract layers, not separate codebases. Both integrate the same master equation
+of Section 2.1 and keep the same Reaction Admissibility Graph structure — a
+binned state space, a source, admissible transitions between bins, and sinks.
+Only the host declaration changes:
+
+| | Vertices (state) | Source | Transitions | Sinks |
+|---|---|---|---|---|
+| **RadCluster** | defect clusters binned by size | displacement cascade | growth, shrinkage, coalescence, character conversion | network dislocations, grain boundaries, precipitates |
+| **Genealogy** | people binned by pedigree depth, in paternal and maternal populations | immigration | cross-population mating and births | death, emigration |
+| **Stock market** | 15 regime bins — momentum × trailing volatility | index entry | measured Markov drift, bilinear herding flux | index exit |
+
+Each side branch is self-contained, with its own `README.md`, data, scripts and
+report. They are kept as orphan branches rather than as directories on `main` so
+that the RadCluster history stays about RadCluster, and so that neither project
+inherits the other's build artifacts or dependencies.
+
+#### Working on a side branch
+
+```bash
+git checkout Genealogy-Dynamics     # working tree becomes genealogy-dynamics/
+git checkout main                   # RadCluster restored
+```
+
+Switching to an orphan branch deletes RadCluster's tracked files from the working
+tree — they remain safely in `main` and in the object store — and leaves behind
+everything `main` did *not* track: build output, run directories, virtual
+environments. `main`'s `.gitignore` leaves with it, so those leftovers are no
+longer hidden and can amount to hundreds of megabytes of apparently untracked
+files. `Genealogy-Dynamics` carries a root-anchored `.gitignore` of its own for
+exactly this reason; the other orphan branches need the same care.
+
+The practical rule while on a side branch: **stage explicitly** — `git add
+stock-market-dynamics/` — rather than `git add -A`, which can otherwise sweep an
+entire unrelated working tree into the wrong history.
+
 ---
 
 ## 4. Installation

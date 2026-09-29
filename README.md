@@ -333,8 +333,13 @@ tree — they remain safely in `main` and in the object store — and leaves beh
 everything `main` did *not* track: build output, run directories, virtual
 environments. `main`'s `.gitignore` leaves with it, so those leftovers are no
 longer hidden and can amount to hundreds of megabytes of apparently untracked
-files. `Genealogy-Dynamics` carries a root-anchored `.gitignore` of its own for
-exactly this reason; the other orphan branches need the same care.
+files. `Genealogy-Dynamics` and `Stock-Market-Dynamics` each carry a
+root-anchored `.gitignore` of their own for exactly this reason. The market
+branch's is deliberately the narrower of the two: it omits the `*.log`,
+`*.aux`, `*.out` and `*.toc` rules, because unlike the genealogy branch it
+tracks eighteen such files on purpose — `data/fetch.log` and `data/regimes.log`
+are data, not build litter — and a blanket rule would have hidden their
+regenerated successors.
 
 The practical rule while on a side branch: **stage explicitly** — `git add
 stock-market-dynamics/` — rather than `git add -A`, which can otherwise sweep an

@@ -19,9 +19,11 @@ not a rewrite of the solver.
 
 - **Current release** — `v2.2.0`, the active module `radcluster_code/`. This
   release changes what a checkout contains, not what the solver computes: the
-  five archived modules, the assistant's local session state and a scratch
-  output directory are no longer tracked — 226 files and 27 MB fewer in the
-  working tree (240 MB → 212 MB). Note that this does not shrink the *download*:
+  five archived modules, the assistant's local session state and the
+  `Claude outputs/` scratch directory are no longer tracked — 226 files and
+  27 MB fewer in the working tree (240 MB → 212 MB). Run output under
+  `radcluster_code/output/` stays gitignored as before, still with the single
+  exemption for the designated reference run. Note that this does not shrink the *download*:
   git still fetches the full history, which retains every one of those files.
   The physics is unchanged from `v2.1.2`, which carried the
   Frenkel-pair conservation correction (§2.9); `v2.1.1` renamed the module. The
@@ -726,8 +728,12 @@ parameter set, are in the `.bib` files under `docs/Formulation/`.
   between versions requires no re-orientation.
 - **Physics lives in the workbook, not in the code.** Parameters carry a `Symbol` key, a
   unit and a source citation; code reads them, it does not hard-code them.
-- **Outputs are immutable and stamped.** Runs never overwrite one another;
-  `output/` and `build/` are gitignored.
+- **Outputs are immutable and stamped.** Runs never overwrite one another.
+  `build/` and `output/` are gitignored, with one exemption: the designated
+  reference run is tracked, because `digital_twin/verification/runs.py` and
+  `make_tables.py` read it by name and the campaign cannot run without it.
+  When that run is superseded, update the `.gitignore` exemption and those two
+  files together.
 - **New physics is Python-first.** Develop in the graph walker, pass the conservation
   gate, mirror in C++, then calibrate.
 - **Archives are read-only, and local.** Superseded modules stay unchanged in

@@ -6,7 +6,7 @@ Physics-based simulation suite for **EUROFER97 / ferritic-martensitic steel** be
 
 ```
 RadCluster/
-├── RadCluster_2_1/     # Active development — adds dislocation evolution + RIS (clone of 2_0)
+├── radcluster_code/     # Active development — adds dislocation evolution + RIS (clone of 2_0)
 ├── archive/            # Archived modules (read-only, kept for reproducibility)
 │   ├── RadCluster_2_0/     # Archived 2026-10-01 — released as v2.0.0; baseline for RadCluster_2_1
 │   ├── Eurofer/            # Archived earlier microstructure work
@@ -33,7 +33,7 @@ the module layout change, both need updating — they describe the same contract
 
 | Module | Status | Description |
 |---|---|---|
-| `RadCluster_2_1/` | **Active (dev)** | Clone of `RadCluster_2_0` adding two capabilities: **(a)** a dislocation-evolution / loop→network loss edge that saturates loop density, and **(b)** Radiation-Induced Segregation (RIS) + solute precipitation. Plans: [`docs/Formulation/dislocation_loops/loop_network_loss.tex`](docs/Formulation/dislocation_loops/loop_network_loss.tex) and [`docs/Formulation/segregation_and_precipitation/radcluster_2_1_RIS_plan.tex`](docs/Formulation/segregation_and_precipitation/radcluster_2_1_RIS_plan.tex). See `RadCluster_2_1/CLAUDE.md` §0. |
+| `radcluster_code/` | **Active (dev)** | Clone of `RadCluster_2_0` adding two capabilities: **(a)** a dislocation-evolution / loop→network loss edge that saturates loop density, and **(b)** Radiation-Induced Segregation (RIS) + solute precipitation. Plans: [`docs/Formulation/dislocation_loops/loop_network_loss.tex`](docs/Formulation/dislocation_loops/loop_network_loss.tex) and [`docs/Formulation/segregation_and_precipitation/radcluster_2_1_RIS_plan.tex`](docs/Formulation/segregation_and_precipitation/radcluster_2_1_RIS_plan.tex). See `radcluster_code/CLAUDE.md` §0. |
 | `archive/RadCluster_2_0/` | Archived 2026-10-01 | Generalized graph-based cluster dynamics (Ghoniem 2026). Two-layer RAG architecture (abstract core + EUROFER-97 host declaration). Released as git tag `v2.0.0`; stable reference for the 2_1 work. Notebooks: `RadCluster_2_0.ipynb` (simulation driver) and `EuroferExperiments.ipynb`. |
 | `archive/RadCluster_1_0/` | Archived 2026-06-13 | Superseded by `RadCluster_2_0/`. Earlier (non-graph) generalized cluster dynamics. |
 | `archive/Monomer_CD/` | Archived 2026-06-13 | Monomer-mobility cluster dynamics scaling reference (Ghoniem & Cho 1979, no He). |

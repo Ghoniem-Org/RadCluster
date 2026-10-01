@@ -374,7 +374,7 @@ matching the reference run's configuration. The reference cost 1317 s that way.
 Template (Table 1, rung B3):
 
 ```bash
-cd RadCluster_2_1/digital_twin
+cd radcluster_code/digital_twin
 python run_ensemble.py \
     --design design/T1_B3.csv \
     --conditions conditions_S8_40dpa.json \

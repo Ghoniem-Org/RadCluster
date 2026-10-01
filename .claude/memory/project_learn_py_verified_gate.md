@@ -8,7 +8,7 @@ metadata:
   modified: 2026-09-05T19:29:22.902Z
 ---
 
-`RadCluster_2_1/digital_twin/learn.py` ranks calibration rows on
+`radcluster_code/digital_twin/learn.py` ranks calibration rows on
 `n_in_range_verified` **first**: an unverified row cannot take the top slot no
 matter how many target bands it sits in. The gate is deliberate — a `d_cavity`
 grid artefact (`d = 0.2825*(0.37V)^(1/3)`) once led the leaderboard for twelve

@@ -64,7 +64,7 @@ not a rewrite of the solver.
 | Conservation diagnostics | Eqs. 96, 97 | Frenkel-pair ($\delta_{\rm FP}$) and helium ($\delta_{\rm He}$) residuals reported every run |
 | Adaptive size domain | — | the tracked cluster-size domain is expanded on demand when the distribution reaches the boundary |
 | Provenance-stamped output | — | every run writes a timestamped directory with git SHA, parameters, solution, summary table and figures |
-| Experimental microstructure database | `RadCluster_2_1/Eurofer_micro_database/` | digitized loop/cavity densities and sizes for neutron- and ion-irradiated F/M steels, with fitting and plotting notebooks |
+| Experimental microstructure database | `radcluster_code/Eurofer_micro_database/` | digitized loop/cavity densities and sizes for neutron- and ion-irradiated F/M steels, with fitting and plotting notebooks |
 
 **Under development in `RadCluster_2_1`** — a loop → network-dislocation loss channel
 with a dynamically evolving network density (so SIA loop number density saturates with
@@ -233,7 +233,7 @@ representation.
 
 ```
 RadCluster/
-├── RadCluster_2_1/         # Active development — recommended entry point
+├── radcluster_code/         # Active development — recommended entry point
 │   ├── CLAUDE.md               # Physics and solver reference (equations, tables, options)
 │   ├── py_utils/               # Python package
 │   │   ├── core/                   # Layer 1 — abstract, host-independent
@@ -277,7 +277,7 @@ RadCluster/
 
 | Module | Status | Description |
 |---|---|---|
-| `RadCluster_2_1/` | **Active (development)** | Graph-based cluster dynamics plus dislocation-network evolution and RIS/precipitation. Recommended starting point for new users. |
+| `radcluster_code/` | **Active (development)** | Graph-based cluster dynamics plus dislocation-network evolution and RIS/precipitation. Recommended starting point for new users. |
 | `archive/RadCluster_2_0/` | Archived | The published two-layer graph framework — abstract core plus EUROFER-97 declaration. Released as `v2.0.0`; kept as the regression reference for 2_1. |
 | `archive/RadCluster_1_0/` | Archived | Earlier non-graph generalized cluster dynamics; superseded by 2_0. |
 | `archive/Monomer_CD/` | Archived | Monomer-mobility cluster-dynamics scaling reference (Ghoniem & Cho, 1979; no helium). |
@@ -299,7 +299,7 @@ tree entirely.
 | `main` | production | The RadCluster suite — modules, documentation, verification campaign. |
 | `Genealogy-Dynamics` | orphan | `genealogy-dynamics/` — two-sex cluster-dynamics model of the U.S. population. |
 | `Stock-Market-Dynamics` | orphan | `stock-market-dynamics/` — S&P 500 market-regime cluster dynamics. |
-| `campaign-verification` | orphan | `claims/` and `results/` — the coordination store the distributed verification campaign writes to; read through `RadCluster_2_1/digital_twin/verification/.sync/`. |
+| `campaign-verification` | orphan | `claims/` and `results/` — the coordination store the distributed verification campaign writes to; read through `radcluster_code/digital_twin/verification/.sync/`. |
 | `CodeDevelopment` | dormant | Fully merged into `main`; retained for reference, not developed. |
 
 #### The method applied outside radiation damage
@@ -386,7 +386,7 @@ Optional, each auto-detected and each degrading gracefully if absent:
 Build:
 
 ```bash
-cd RadCluster_2_1
+cd radcluster_code
 cmake -S cpp_utils -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --config Release
 ```
@@ -408,7 +408,7 @@ CVODE's error estimator diverge on these stiff systems.
 
 ### 5.1 Notebook (recommended)
 
-Open `RadCluster_2_1/codes/Notebooks/RadCluster_2_1.ipynb`. The notebook documents
+Open `radcluster_code/codes/Notebooks/RadCluster_2_1.ipynb`. The notebook documents
 every control variable inline, builds the C++ solver if needed, runs the case, prints
 the end-of-run summary with conservation diagnostics, and writes a timestamped output
 directory. A separate cell re-renders all figures from saved data without re-running the
@@ -417,7 +417,7 @@ solver, and another inspects the live reaction graph for the configured case.
 ### 5.2 Python API
 
 ```python
-from RadCluster_2_1.py_utils.simulation import RadClusterSimulation
+from radcluster_code.py_utils.simulation import RadClusterSimulation
 
 sim = RadClusterSimulation(
     I=1000,                     # max SIA cluster size tracked
@@ -454,7 +454,7 @@ constructor.
 
 ## 6. Inputs
 
-All physics parameters live in one workbook, `RadCluster_2_1/input/input_parameters.xlsx`,
+All physics parameters live in one workbook, `radcluster_code/input/input_parameters.xlsx`,
 organized into five sheets:
 
 | Sheet | Contents |
@@ -505,23 +505,23 @@ a figure can always be traced back to the exact code and inputs that produced it
 
 ## 8. Examples, tests and verification
 
-**Driver notebooks** — `RadCluster_2_1/codes/Notebooks/RadCluster_2_1.ipynb` (full
+**Driver notebooks** — `radcluster_code/codes/Notebooks/RadCluster_2_1.ipynb` (full
 workflow), `archive/RadCluster_2_0/codes/Notebooks/RadCluster_2_0.ipynb` (baseline), and
 `EuroferExperiments.ipynb` (comparison against measured microstructures).
 
-**Physics and numerics checks** — `RadCluster_2_1/codes/Python_Testing/` holds standalone
+**Physics and numerics checks** — `radcluster_code/codes/Python_Testing/` holds standalone
 scripts that gate the physics rather than merely exercising the code: helium and
 Frenkel-pair conservation, bin-moment versus discrete equivalence, discrete-prefix
 convergence, loop-conversion kernel and conservation checks, graph-declaration
 consistency, linear-solver and window-mode comparisons, Woodbury benchmarks, and
 parameter sweeps.
 
-**Experimental database** — `RadCluster_2_1/Eurofer_micro_database/` contains a curated
+**Experimental database** — `radcluster_code/Eurofer_micro_database/` contains a curated
 spreadsheet of loop and cavity number densities and mean sizes for neutron- and
 ion-irradiated ferritic–martensitic steels, a notebook that fits and plots them, and the
 resulting dose–temperature coverage maps and size distributions used for calibration.
 
-**Digital twin / verification campaign** — `RadCluster_2_1/digital_twin/` drives
+**Digital twin / verification campaign** — `radcluster_code/digital_twin/` drives
 systematic calibration and verification: a design generator, an ensemble runner keyed by
 a parameter hash, a calibration ledger, a rescoring pass, a verification pass that emits
 exactly the runs needed to confirm unverified observables under a change of grid extent,
@@ -588,7 +588,7 @@ optional extras.
 | `docs/Formulation/verification_campaign/` | verification plan, campaign results, approximation studies |
 | `docs/Database/` | experimental radiation-microstructure databases for F/M steels |
 | `docs/Literature/` | the reference library underlying the parameter set |
-| `RadCluster_2_1/CLAUDE.md` | the working physics and solver reference: state vector, kernels, reductions, solver options, parameter tables |
+| `radcluster_code/CLAUDE.md` | the working physics and solver reference: state vector, kernels, reductions, solver options, parameter tables |
 
 LaTeX sources sit next to their compiled PDFs and `.bib` files; each document compiles
 from inside its own folder.

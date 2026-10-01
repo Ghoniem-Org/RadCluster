@@ -18,4 +18,4 @@ never fall back to matplotlib's 10-12pt defaults, and never hardcode `fontsize=`
 - Set `plt.rcParams` for `axes.titlesize`, `axes.labelsize`, `xtick.labelsize`, `ytick.labelsize`, `legend.fontsize`, and `legend.title_fontsize` at module load time — at the 22/20/16 tiers, not a flat 16.
 - Do not pass explicit `fontsize=` overrides on `legend()`, `set_title()`, `set_xlabel()`, etc. unless the user explicitly asks for a different size.
 - When adding new plotting code, rely on the rcParams defaults rather than hard-coding sizes.
-- The live wiring is `RadCluster_2_1/py_utils/visualization.py` (`_LABEL_FONTSIZE`/`_TICK_FONTSIZE`/`_PLOT_FONTSIZE` + the rcParams update at the top); new plots in any module should follow that pattern. The `RadCluster_1_0` path named here originally is archived.
+- The live wiring is `radcluster_code/py_utils/visualization.py` (`_LABEL_FONTSIZE`/`_TICK_FONTSIZE`/`_PLOT_FONTSIZE` + the rcParams update at the top); new plots in any module should follow that pattern. The `RadCluster_1_0` path named here originally is archived.

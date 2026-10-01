@@ -4,7 +4,14 @@
 # maintained from, so the image is built here rather than locally.  Pushing the
 # tag is what triggers both jobs:
 #
-#     git tag -a v2.2.0 -m "..." && git push origin v2.2.0
+#     git tag -a v2.2.0 --cleanup=verbatim -F notes.md
+#     git push origin v2.2.0
+#
+# Use -F with --cleanup=verbatim, never -m.  The annotation becomes the release
+# notes, and git's default cleanup strips every line beginning with "#" as a
+# comment -- which silently deletes all the Markdown headings.  That happened to
+# v2.2.0 when its tag was moved with -m: the published notes lost every section
+# title and ran together as one block.
 #
 # The image lands at ghcr.io/<owner>/radcluster, which GitHub surfaces as a
 # Package attached to the repository.

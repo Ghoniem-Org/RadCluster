@@ -261,8 +261,8 @@ RadCluster/
 │   ├── input/                  # input_parameters.xlsx and builders
 │   ├── build/                  # CMake artifacts (gitignored)
 │   └── output/                 # timestamped run directories (gitignored)
-├── RadCluster_2_0/         # Stable graph-based baseline (same layout)
 ├── archive/                # Read-only earlier modules, kept for reproducibility
+│   └── RadCluster_2_0/     # Graph-based baseline, released as v2.0.0 (same layout)
 ├── docs/
 │   ├── Formulation/            # derivations, paper sections, study reports (by topic)
 │   ├── Database/               # experimental microstructure databases (xlsx)
@@ -278,7 +278,7 @@ RadCluster/
 | Module | Status | Description |
 |---|---|---|
 | `RadCluster_2_1/` | **Active (development)** | Graph-based cluster dynamics plus dislocation-network evolution and RIS/precipitation. Recommended starting point for new users. |
-| `RadCluster_2_0/` | **Active (baseline)** | The published two-layer graph framework — abstract core plus EUROFER-97 declaration. Stable reference for regression comparison. |
+| `archive/RadCluster_2_0/` | Archived | The published two-layer graph framework — abstract core plus EUROFER-97 declaration. Released as `v2.0.0`; kept as the regression reference for 2_1. |
 | `archive/RadCluster_1_0/` | Archived | Earlier non-graph generalized cluster dynamics; superseded by 2_0. |
 | `archive/Monomer_CD/` | Archived | Monomer-mobility cluster-dynamics scaling reference (Ghoniem & Cho, 1979; no helium). |
 | `archive/Zr_RadCluster_1_0/` | Archived | Zirconium variant of the 1_0 formulation. |
@@ -506,7 +506,7 @@ a figure can always be traced back to the exact code and inputs that produced it
 ## 8. Examples, tests and verification
 
 **Driver notebooks** — `RadCluster_2_1/codes/Notebooks/RadCluster_2_1.ipynb` (full
-workflow), `RadCluster_2_0/codes/Notebooks/RadCluster_2_0.ipynb` (baseline), and
+workflow), `archive/RadCluster_2_0/codes/Notebooks/RadCluster_2_0.ipynb` (baseline), and
 `EuroferExperiments.ipynb` (comparison against measured microstructures).
 
 **Physics and numerics checks** — `RadCluster_2_1/codes/Python_Testing/` holds standalone

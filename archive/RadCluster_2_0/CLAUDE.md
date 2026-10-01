@@ -3,7 +3,7 @@
 ## Source Document
 
 All equations cite the formulation manuscript, which lives under
-[`docs/Formulation/cluster_dynamics_framework/`](../docs/Formulation/cluster_dynamics_framework/):
+[`docs/Formulation/cluster_dynamics_framework/`](../../docs/Formulation/cluster_dynamics_framework/):
 > Ghoniem, N.M. (2026), *"A Generalized Graph-Based Cluster Dynamics Framework for
 > Irradiated Materials"* — `Generalized_Cluster_Dynamics.pdf`, with the paper sections
 > as `.tex` sources alongside it.
@@ -11,7 +11,7 @@ All equations cite the formulation manuscript, which lives under
 The symbolic equation labels used below (`ME_SIA`, `P1`–`P8`, Tables 2–30) are that
 document's labels. The former single-file path `docs/Formulation/rate_equations.tex`
 no longer exists: `docs/Formulation/` is now organized by topic — see
-[`docs/Formulation/README.md`](../docs/Formulation/README.md) for the folder map.
+[`docs/Formulation/README.md`](../../docs/Formulation/README.md) for the folder map.
 
 ---
 
@@ -511,7 +511,7 @@ counterproductive at that scale.
 
 Parameters: `prec_type` (0/1), `prec_bw` (auto), `prec_rank` (auto).
 The Jacobian structure and the preconditioner derivation are documented in
-[`docs/Formulation/reaction_admissibility_graph/supplement_S1/`](../docs/Formulation/reaction_admissibility_graph/supplement_S1/)
+[`docs/Formulation/reaction_admissibility_graph/supplement_S1/`](../../docs/Formulation/reaction_admissibility_graph/supplement_S1/)
 (`supp_rag_implementation.tex`, `S1_jacobian_tikz.tex`). The old
 `Docs/Formulation/Jacobian_Preconditioner.tex` path is gone.
 

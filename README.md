@@ -19,8 +19,8 @@ not a rewrite of the solver.
 
 - **Current release** — `v2.1.2`, the active module `radcluster_code/`, with the
   Frenkel-pair conservation correction (§2.9). `v2.1.1` renamed the module. The
-  preceding graph-based baseline is archived at `archive/RadCluster_2_0/` and
-  tagged `v2.0.0`.
+  preceding graph-based baseline is tagged `v2.0.0` (see *Archived modules*
+  below — they are no longer carried in a clone).
 - **Languages** — Python (model definition, orchestration, post-processing) and
   C++17 (production ODE solver, SUNDIALS/CVODE).
 - **License** — MIT.
@@ -296,14 +296,13 @@ RadCluster/
 │   ├── input/                  # input_parameters.xlsx and builders
 │   ├── build/                  # CMake artifacts (gitignored)
 │   └── output/                 # timestamped run directories (gitignored)
-├── archive/                # Read-only earlier modules, kept for reproducibility
-│   └── RadCluster_2_0/     # Graph-based baseline, released as v2.0.0 (same layout)
+├── archive/                # Earlier modules — gitignored, NOT in a clone (recover from history)
 ├── docs/
 │   ├── Formulation/            # derivations, paper sections, study reports (by topic)
 │   ├── Database/               # experimental microstructure databases (xlsx)
 │   ├── Literature/             # ~60 reference papers (PDF)
 │   └── design_notes/
-├── scripts/                # repository utilities
+├── scripts/                # repository utilities (h2jupynb: Hoffman2 Jupyter launcher)
 ├── requirements.txt
 └── LICENSE
 ```
@@ -313,14 +312,33 @@ RadCluster/
 | Module | Status | Description |
 |---|---|---|
 | `radcluster_code/` | **Active (development)** | Graph-based cluster dynamics plus dislocation-network evolution and RIS/precipitation. Recommended starting point for new users. |
-| `archive/RadCluster_2_0/` | Archived | The published two-layer graph framework — abstract core plus EUROFER-97 declaration. Released as `v2.0.0`; kept as the regression reference for 2_1. |
-| `archive/RadCluster_1_0/` | Archived | Earlier non-graph generalized cluster dynamics; superseded by 2_0. |
-| `archive/Monomer_CD/` | Archived | Monomer-mobility cluster-dynamics scaling reference (Ghoniem & Cho, 1979; no helium). |
-| `archive/Zr_RadCluster_1_0/` | Archived | Zirconium variant of the 1_0 formulation. |
-| `archive/Eurofer/`, `archive/Eurofer_CD/` | Archived | Earlier EUROFER microstructure and cluster-dynamics notebooks. |
+| `RadCluster_2_0` | Archived | The published two-layer graph framework — abstract core plus EUROFER-97 declaration. Released as `v2.0.0`; the regression reference for 2_1. |
+| `RadCluster_1_0` | Archived | Earlier non-graph generalized cluster dynamics; superseded by 2_0. |
+| `Monomer_CD` | Archived | Monomer-mobility cluster-dynamics scaling reference (Ghoniem & Cho, 1979; no helium). |
+| `Zr_RadCluster_1_0` | Archived | Zirconium variant of the 1_0 formulation. |
+| `Eurofer`, `Eurofer_CD` | Archived | Earlier EUROFER microstructure and cluster-dynamics notebooks. |
 
-Archived modules are kept so that published results remain reproducible; they receive
-no further development.
+#### Archived modules are in the history, not in a clone
+
+The five archived modules receive no further development, and `archive/` is
+gitignored, so **a fresh clone does not contain them**. They are 276 MB of
+superseded code that nothing in the active module imports, and carrying it in
+every clone served no purpose.
+
+Nothing was deleted. They were untracked, not removed, so published results
+stay reproducible — recover any of them from the history:
+
+```bash
+git checkout e9f92c3 -- archive/                       # all five, as of the last commit carrying them
+git checkout e9f92c3 -- archive/RadCluster_2_0/        # or just one
+```
+
+`e9f92c3` is the right ref for this because it is the last commit in which the
+modules sat under `archive/`. The tags `v2.0.0` and `eurofer_cd-final` predate
+the moves into `archive/`, so at those refs the same modules are at the
+repository root — `git checkout v2.0.0 -- RadCluster_2_0/` and
+`git checkout eurofer_cd-final -- Eurofer_CD/`, which restore to the root path,
+not into `archive/`.
 
 ### Branches
 
@@ -536,8 +554,9 @@ a figure can always be traced back to the exact code and inputs that produced it
 ## 8. Examples, tests and verification
 
 **Driver notebooks** — `radcluster_code/codes/Notebooks/RadCluster_2_1.ipynb` (full
-workflow), `archive/RadCluster_2_0/codes/Notebooks/RadCluster_2_0.ipynb` (baseline), and
-`EuroferExperiments.ipynb` (comparison against measured microstructures).
+workflow) and `EuroferExperiments.ipynb` (comparison against measured
+microstructures). The 2_0 baseline driver, `RadCluster_2_0.ipynb`, is in the
+archived module — restore it from the history as shown under *Module status*.
 
 **Physics and numerics checks** — `radcluster_code/codes/Python_Testing/` holds standalone
 scripts that gate the physics rather than merely exercising the code: helium and
@@ -680,11 +699,13 @@ parameter set, are in the `.bib` files under `docs/Formulation/`.
   `output/` and `build/` are gitignored.
 - **New physics is Python-first.** Develop in the graph walker, pass the conservation
   gate, mirror in C++, then calibrate.
-- **Archives are read-only.** Superseded modules stay in `archive/` unchanged so that
-  published results remain reproducible.
-- `scripts/link-memory.sh` links the committed project-assistant memory
-  (`.claude/memory/`) into the per-machine path used by the development tooling; it is a
-  developer convenience and is not needed to run the code.
+- **Archives are read-only, and local.** Superseded modules stay unchanged in
+  `archive/`, which is gitignored; recover them from the history as shown under
+  *Module status* when a reproducibility question needs them.
+- **Local working state is not versioned.** `.claude/` (assistant session state)
+  and `Claude outputs/` (a scratch drop for generated drafts) are gitignored.
+  `scripts/link-memory.sh` belonged to a retired scheme for sharing that state
+  across machines and is kept only because earlier commits reference it.
 
 Issues and pull requests are welcome. Changes that touch reaction kernels or
 stoichiometry should come with the relevant conservation check from

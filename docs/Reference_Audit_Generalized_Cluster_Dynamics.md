@@ -498,8 +498,8 @@ The detail below comes from the automated checks: Crossref/DOI records plus abst
 - **Recommended fix:** Fix the DOI space. On p.4, add a separate citation for loop rotation (e.g., Eyre & Bullough, Philos. Mag. 12 (1965) 31) or rephrase so that [49] covers only the junction reaction.
 
 ### [50] Ghoniem 2026 (RadCluster software)
-- **Metadata:** OK — the GitHub repository Ghoniem-Org/RadCluster exists and is public. Its description, "Cluster dynamics modeling of Eurofer microstructure", matches the entry. There is no DOI; consider archiving a release on Zenodo for a citable DOI and version.
-- **Source checked:** https://github.com/Ghoniem-Org/RadCluster
+- **Metadata:** OK — the GitHub repository Ghoniem/RadCluster exists and is public. Its description, "Cluster dynamics modeling of Eurofer microstructure", matches the entry. There is no DOI; consider archiving a release on Zenodo for a citable DOI and version.
+- **Source checked:** https://github.com/Ghoniem/RadCluster
 - **Citations:**
   - p.4: SUPPORTED — this is the code the paper describes.
   - p.6: SUPPORTED — self-reference to the code-variable mapping.

@@ -22,6 +22,7 @@ FROM ubuntu:24.04 AS build
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
+        gfortran \
         cmake \
         ca-certificates \
         curl \
@@ -37,6 +38,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Building against the distribution package fails to compile, and pinning
 # 7.1.1 here matches the version CLAUDE.md pins for every other platform
 # rather than quietly running the image on a different SUNDIALS.
+# gfortran is in that list for SUNDIALS, not for this project: enabling LAPACK
+# makes SUNDIALS probe the Fortran name-mangling scheme by compiling a small
+# Fortran library (cmake/tpl/SundialsLapack.cmake), and without a Fortran
+# compiler that probe fails and the configure aborts with
+#     FATAL_ERROR: SUNDIALS interface to LAPACK is not functional.
+# which is what broke the first two attempts at this image.
+
 ARG SUNDIALS_VERSION=7.1.1
 RUN curl -fsSL -o /tmp/sundials.tar.gz \
         "https://github.com/LLNL/sundials/releases/download/v${SUNDIALS_VERSION}/sundials-${SUNDIALS_VERSION}.tar.gz" \

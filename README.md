@@ -308,7 +308,7 @@ RadCluster/
 │   ├── Database/               # experimental microstructure databases (xlsx)
 │   ├── Literature/             # ~60 reference papers (PDF)
 │   └── design_notes/
-├── scripts/                # repository utilities (h2jupynb: Hoffman2 Jupyter launcher)
+├── scripts/                # h2jupynb — Hoffman2 Jupyter launcher (see §4.2)
 ├── requirements.txt
 └── LICENSE
 ```
@@ -735,8 +735,8 @@ parameter set, are in the `.bib` files under `docs/Formulation/`.
   *Module status* when a reproducibility question needs them.
 - **Local working state is not versioned.** `.claude/` (assistant session state)
   and `Claude outputs/` (a scratch drop for generated drafts) are gitignored.
-  `scripts/link-memory.sh` belonged to a retired scheme for sharing that state
-  across machines and is kept only because earlier commits reference it.
+  A `scripts/link-memory.sh` that tried to share that state across machines
+  never worked and has been deleted.
 
 Issues and pull requests are welcome. Changes that touch reaction kernels or
 stoichiometry should come with the relevant conservation check from

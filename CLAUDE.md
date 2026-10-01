@@ -19,8 +19,7 @@ RadCluster/
 │   ├── Formulation/        # Derivations, paper sections, studies — by topic (see Formulation/README.md)
 │   ├── Literature/         # Peer-reviewed papers (PDF)
 │   └── design_notes/       # Working design notes
-├── scripts/            # Repository utilities (h2jupynb — Hoffman2 Jupyter launcher;
-│                    #   link-memory.sh — retired, see Environment)
+├── scripts/            # Repository utilities (h2jupynb — Hoffman2 Jupyter launcher)
 ├── README.md           # Public-facing introduction: methodology, install, usage, citation
 ├── requirements.txt
 └── LICENSE             # MIT
@@ -183,12 +182,12 @@ drafts, neither of which belongs in the history of a public repository.
 
 Memory was briefly committed at `.claude/memory/` and symlinked into
 `~/.claude/projects/<slug>/memory/` by `scripts/link-memory.sh`, so that it
-would survive a clone onto a second machine. That scheme is retired. It failed
-quietly: the link was never established on the Windows checkout, so the
-committed copy and the live harness memory drifted into two different sets of
-files, and what reached the remote was a stale snapshot that no session read.
-`scripts/link-memory.sh` is kept only because the earlier commits reference it.
-Each machine now keeps its own memory under the harness path.
+would survive a clone onto a second machine. That scheme is retired and the
+script is deleted. It failed quietly: the link was never established on the
+Windows checkout, so the committed copy and the live harness memory drifted
+into two different sets of files, and what reached the remote was a stale
+snapshot that no session read. Each machine now keeps its own memory under the
+harness path; the script remains in the history if it is ever wanted back.
 
 ## Shared Resources
 

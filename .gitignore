@@ -28,15 +28,23 @@ EuroferMicro_venv/
 # to descend, and no negation below could then re-include anything inside it.
 */output/*
 
-# EXEMPT: the designated reference run is tracked, because output/ is otherwise
-# gitignored and the reference figures + provenance would exist on one machine
-# only (that is exactly how the original make_figures.py was lost).  This pins a
-# timestamped directory name — UPDATE IT when the reference run is superseded.
-!radcluster_code/output/20260906_063055_full_system_bin_moment_CD_fission_I80000V20000_im5vm5/
-# ...but not its 37 MB plot_data.pkl: a regenerable cache, and a pickle of live
-# InputData/RateEquations objects that will not load after a class refactor.  It
-# is 92% of the directory and the worst possible archival format.
-radcluster_code/output/*/plots/plot_data.pkl
+# No exemptions.  The designated reference run used to be tracked here so that
+# its figures and provenance would not live on one machine only -- that is how
+# the original make_figures.py was lost.  That exemption is now withdrawn: no
+# run output is pushed.
+#
+# The cost is real and worth stating.  The reference run
+# 20260906_063055_full_system_bin_moment_CD_fission_I80000V20000_im5vm5
+# (32 files, 3.4 MB of figures, summary.csv, diagnostics.txt and provenance.md)
+# is now on this machine and in the history, nowhere else.  Recover it with:
+#     git checkout 12965a5 -- radcluster_code/output/
+# Back it up elsewhere before relying on a single disk.
+#
+# Two consumers read that directory by name and will fail on a fresh clone
+# until it is restored:
+#     radcluster_code/digital_twin/verification/runs.py:33        (REFERENCE)
+#     radcluster_code/digital_twin/verification/make_tables.py:72
+# This matters when the verification campaign is run on a second machine.
 
 # Temporary / OS
 .DS_Store

@@ -32,9 +32,11 @@ the module layout change, both need updating — they describe the same contract
 
 ### Archived modules are no longer pushed
 
-`archive/` is gitignored. It holds 276 MB of superseded code that nothing
-outside it imports, and it was being carried in every clone for no working
-purpose. The files remain on this machine and in the history — they were
+`archive/` is gitignored. It holds five superseded modules that nothing outside
+it imports: 276 MB on disk, of which 27 MB across 216 files was tracked and
+pushed (the rest was already-ignored `build/` and `output/`). Dropping it takes
+the working tree from 240 MB to 212 MB. It does not shrink a clone's download —
+git still fetches the full history, which retains every one of those files. The files remain on this machine and in the history — they were
 untracked with `git rm --cached`, not deleted:
 
 ```bash

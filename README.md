@@ -17,8 +17,14 @@ a fixed catalogue of ten abstract classes; the right-hand side of the ODE system
 then assembled by walking that graph. Adding a new host material is a declaration,
 not a rewrite of the solver.
 
-- **Current release** — `v2.1.2`, the active module `radcluster_code/`, with the
-  Frenkel-pair conservation correction (§2.9). `v2.1.1` renamed the module. The
+- **Current release** — `v2.2.0`, the active module `radcluster_code/`. This
+  release changes what a checkout contains, not what the solver computes: the
+  five archived modules, the assistant's local session state and a scratch
+  output directory are no longer tracked — 226 files and 27 MB fewer in the
+  working tree (240 MB → 212 MB). Note that this does not shrink the *download*:
+  git still fetches the full history, which retains every one of those files.
+  The physics is unchanged from `v2.1.2`, which carried the
+  Frenkel-pair conservation correction (§2.9); `v2.1.1` renamed the module. The
   preceding graph-based baseline is tagged `v2.0.0` (see *Archived modules*
   below — they are no longer carried in a clone).
 - **Languages** — Python (model definition, orchestration, post-processing) and
@@ -36,7 +42,7 @@ not a rewrite of the solver.
 1. [Capabilities](#1-capabilities)
 2. [Methodology](#2-methodology)
 3. [Repository structure](#3-repository-structure)
-4. [Installation](#4-installation)
+4. [Installation](#4-installation) — [container image](#40-container-image-no-build-required)
 5. [Quick start](#5-quick-start)
 6. [Inputs](#6-inputs)
 7. [Outputs and provenance](#7-outputs-and-provenance)
@@ -396,6 +402,31 @@ entire unrelated working tree into the wrong history.
 ---
 
 ## 4. Installation
+
+### 4.0 Container image (no build required)
+
+A published image carries the compiled solver, the Python layer and the input
+workbook, so nothing has to be built locally:
+
+```bash
+docker pull ghcr.io/ghoniem/radcluster:v2.2.0
+docker run --rm -it ghcr.io/ghoniem/radcluster:v2.2.0
+```
+
+Inside, `solver` is on `PATH` and `/work` holds `py_utils/`, `input/` and
+`codes/` with `PYTHONPATH` already set. Output is written inside the container
+and is lost when it exits, so mount a host directory for anything you want to
+keep:
+
+```bash
+docker run --rm -v "$PWD/output:/work/output" ghcr.io/ghoniem/radcluster:v2.2.0     python3 codes/Python_Testing/check_eurofer_rag.py
+```
+
+The solver in the image is compiled for `x86-64-v2` rather than the building
+machine's own architecture, so it runs on any x86-64 CPU from about 2009
+onwards. That costs a little speed against a local `-march=native` build: for
+sustained production runs, build from source as below. The image is rebuilt and
+published by `.github/workflows/release.yml` whenever a `v*` tag is pushed.
 
 ### 4.1 Python environment
 

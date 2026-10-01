@@ -97,3 +97,10 @@ Claude outputs/
 # eurofer_cd-final (Eurofer_CD) pin the states CLAUDE.md cites.  What changes
 # is that a FRESH CLONE no longer materialises archive/ in the working tree.
 archive/
+
+# The user's global ignore file (~/.gitignore_global) starts with ".*", which
+# hides every dotfile -- including .github/.  A repo .gitignore outranks the
+# global one, so this negation is what keeps CI workflows trackable without a
+# "git add -f" every time.  Without it a new workflow is silently never staged.
+!.github/
+!.github/**

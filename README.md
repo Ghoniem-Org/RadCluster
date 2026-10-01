@@ -17,6 +17,9 @@ a fixed catalogue of ten abstract classes; the right-hand side of the ODE system
 then assembled by walking that graph. Adding a new host material is a declaration,
 not a rewrite of the solver.
 
+- **Current release** — `v2.1.1`, the active module `radcluster_code/`. The
+  preceding graph-based baseline is archived at `archive/RadCluster_2_0/` and
+  tagged `v2.0.0`.
 - **Languages** — Python (model definition, orchestration, post-processing) and
   C++17 (production ODE solver, SUNDIALS/CVODE).
 - **License** — MIT.
@@ -66,7 +69,7 @@ not a rewrite of the solver.
 | Provenance-stamped output | — | every run writes a timestamped directory with git SHA, parameters, solution, summary table and figures |
 | Experimental microstructure database | `radcluster_code/Eurofer_micro_database/` | digitized loop/cavity densities and sizes for neutron- and ion-irradiated F/M steels, with fitting and plotting notebooks |
 
-**Under development in `RadCluster_2_1`** — a loop → network-dislocation loss channel
+**Under development in `radcluster_code`** — a loop → network-dislocation loss channel
 with a dynamically evolving network density (so SIA loop number density saturates with
 dose), and radiation-induced segregation (RIS) with solute-rich precipitation
 (Cr-rich α′ and Mn–Ni–Si nanofeatures). Both are declared as new populations, edges and
@@ -289,60 +292,55 @@ no further development.
 
 ### Branches
 
-The repository carries one production line and several standalone side branches.
-The side branches are **orphan branches**: they share no history with `main` and
-contain none of the RadCluster source, so checking one out replaces the working
-tree entirely.
-
 | Branch | Kind | Contents |
 |---|---|---|
-| `main` | production | The RadCluster suite — modules, documentation, verification campaign. |
-| `Genealogy-Dynamics` | orphan | `genealogy-dynamics/` — two-sex cluster-dynamics model of the U.S. population. |
-| `Stock-Market-Dynamics` | orphan | `stock-market-dynamics/` — S&P 500 market-regime cluster dynamics. |
+| `main` | production | The RadCluster suite — module, documentation, verification campaign. |
 | `campaign-verification` | orphan | `claims/` and `results/` — the coordination store the distributed verification campaign writes to; read through `radcluster_code/digital_twin/verification/.sync/`. |
 | `CodeDevelopment` | dormant | Fully merged into `main`; retained for reference, not developed. |
 
-#### The method applied outside radiation damage
+`campaign-verification` is an **orphan branch**: it shares no history with `main`
+and holds only machine-written campaign state, never source. It is consumed
+through a git worktree rather than checked out directly, so that a pull can never
+move a file underneath a running solver.
 
-`Genealogy-Dynamics` and `Stock-Market-Dynamics` are ports of this repository's
-abstract layers, not separate codebases. Both integrate the same master equation
-of Section 2.1 and keep the same Reaction Admissibility Graph structure — a
-binned state space, a source, admissible transitions between bins, and sinks.
-Only the host declaration changes:
+#### Retired side branches: the method applied outside radiation damage
+
+Two further projects were developed on orphan branches of this repository and
+have since been retired. They are preserved as tags rather than branches, on the
+remote as well as locally:
+
+| Tag | Project |
+|---|---|
+| `gsd-freeze-genealogy` | Genealogy Dynamics — a two-sex cluster-dynamics model of the U.S. population |
+| `gsd-freeze-market` | Stock-Market Dynamics — S&P 500 market-regime cluster dynamics |
+
+Both were ports of this repository's abstract layers, not separate codebases.
+Each integrated the same master equation of Section 2.1 and kept the same
+Reaction Admissibility Graph structure — a binned state space, a source,
+admissible transitions between bins, and sinks. Only the host declaration
+changed, which is the point worth recording:
 
 | | Vertices (state) | Source | Transitions | Sinks |
 |---|---|---|---|---|
 | **RadCluster** | defect clusters binned by size | displacement cascade | growth, shrinkage, coalescence, character conversion | network dislocations, grain boundaries, precipitates |
 | **Genealogy** | people binned by pedigree depth, in paternal and maternal populations | immigration | cross-population mating and births | death, emigration |
-| **Stock market** | 15 regime bins — momentum × trailing volatility | index entry | measured Markov drift, bilinear herding flux | index exit |
+| **Stock market** | regime bins — momentum × trailing volatility | index entry | measured Markov drift, bilinear herding flux | index exit |
 
-Each side branch is self-contained, with its own `README.md`, data, scripts and
-report. They are kept as orphan branches rather than as directories on `main` so
-that the RadCluster history stays about RadCluster, and so that neither project
-inherits the other's build artifacts or dependencies.
-
-#### Working on a side branch
+To bring one back as a working branch:
 
 ```bash
-git checkout Genealogy-Dynamics     # working tree becomes genealogy-dynamics/
-git checkout main                   # RadCluster restored
+git checkout -b Genealogy-Dynamics gsd-freeze-genealogy
 ```
 
-Switching to an orphan branch deletes RadCluster's tracked files from the working
-tree — they remain safely in `main` and in the object store — and leaves behind
-everything `main` did *not* track: build output, run directories, virtual
-environments. `main`'s `.gitignore` leaves with it, so those leftovers are no
-longer hidden and can amount to hundreds of megabytes of apparently untracked
-files. `Genealogy-Dynamics` and `Stock-Market-Dynamics` each carry a
-root-anchored `.gitignore` of their own for exactly this reason. The market
-branch's is deliberately the narrower of the two: it omits the `*.log`,
-`*.aux`, `*.out` and `*.toc` rules, because unlike the genealogy branch it
-tracks eighteen such files on purpose — `data/fetch.log` and `data/regimes.log`
-are data, not build litter — and a blanket rule would have hidden their
-regenerated successors.
-
-The practical rule while on a side branch: **stage explicitly** — `git add
-stock-market-dynamics/` — rather than `git add -A`, which can otherwise sweep an
+Be aware of what that does to the working tree. Checking out an orphan branch
+deletes RadCluster's tracked files — they remain safely in `main` and in the
+object store — and leaves behind everything `main` did *not* track: build
+output, run directories, virtual environments. `main`'s `.gitignore` leaves with
+it, so those leftovers are no longer hidden and can amount to hundreds of
+megabytes of apparently untracked files. Both frozen branches carry a
+root-anchored `.gitignore` of their own for exactly this reason, and the
+practical rule while on one is to **stage explicitly** — `git add
+genealogy-dynamics/` — rather than `git add -A`, which would otherwise sweep an
 entire unrelated working tree into the wrong history.
 
 ---

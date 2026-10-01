@@ -17,7 +17,8 @@ a fixed catalogue of ten abstract classes; the right-hand side of the ODE system
 then assembled by walking that graph. Adding a new host material is a declaration,
 not a rewrite of the solver.
 
-- **Current release** — `v2.1.1`, the active module `radcluster_code/`. The
+- **Current release** — `v2.1.2`, the active module `radcluster_code/`, with the
+  Frenkel-pair conservation correction (§2.9). `v2.1.1` renamed the module. The
   preceding graph-based baseline is archived at `archive/RadCluster_2_0/` and
   tagged `v2.0.0`.
 - **Languages** — Python (model definition, orchestration, post-processing) and
@@ -224,6 +225,37 @@ which yields the dimensionless Frenkel-pair residual $\delta_{\rm FP}(t)$; the h
 balance yields $\delta_{\rm He}(t)$. Both should stay below $\sim10^{-6}$ — values
 above $10^{-3}$ indicate a coding error, and the test scripts in
 `codes/Python_Testing/` gate on them.
+
+**Frenkel-pair correction (v2.1.2).** Before v2.1.2, the regression case `im5vm2` had
+$\delta_{\rm FP} = 1.24\times10^{-2}$ at $t = 10^{-2}$ s, above the error level.
+
+*Cause.* In all three C++ right-hand sides (fission, fusion and bin-moment), SIA thermal
+emission $I_{n+1}\to I_n + I_1$ moved the emitting cluster down one size, but never added
+the emitted monomer to $I_1$. Vacancy emission does this through `emit_mono`. One SIA was
+therefore lost per emission event:
+
+- the vacancy arm of the residual closed to $10^{-12}$;
+- the time integral of the emitted-monomer flux equals the SIA arm's deficit at every
+  output time.
+
+*Fix.* The monomer is now returned. On `im5vm2`, $\delta_{\rm FP}$ falls to
+$2.9\times10^{-7}$, $\delta_{\rm He}$ is $2\times10^{-14}$, and $C_{\rm SIA}^{\rm tot}$ rises
+by 0.5 %; the vacancy and helium observables are unchanged.
+
+*Option.* The switch is `sia_emission_monomer` in the reaction parameters:
+
+- `"returned"` is the default;
+- `"dropped"` restores the earlier arithmetic bit for bit, for reproducing results
+  obtained before v2.1.2;
+- in the solver parameter file it is the key `sia_emission_monomer` (1 or 0; absent
+  means 0).
+
+*Remaining residual.* In long loop-coarsening runs, the loop distribution can outgrow the
+size axis. Products beyond $I$ then carry content out of the domain, and $\delta_{\rm FP}$
+grows. Check it against the axis length; it falls as $I$ grows. The correction was found
+in the migration of RadCluster into
+[GSD](https://github.com/Ghoniem/GSD) (v2.0.0, Stage 5), whose declared equations cannot lose
+content and match this C++ kernel at round-off.
 
 Size distributions are rendered as TEM-comparable per-bin densities $dc/dn$ or $dc/dD$
 (stair segments whose integral is the population in the displayed range), rather than

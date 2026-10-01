@@ -114,6 +114,7 @@ struct Parameters {
     // and the mean size pins AT the cutoff.  D_loop_coal continues the same
     // glide law past it and is used ONLY by the loop–loop coalescence edge.
     int    loop_coal = 0;            // 0 = off (legacy), 1 = on
+    int    sia_emission_monomer = 0; // 1 = SIA emission returns its monomer to I_1 (v2.1.0); 0 = before v2.1.0
     std::vector<double> D_loop_coal; // [I]: glide D with no mobility cutoff
     double A_sph_inv_O23;            // A_sph / Ω^{2/3}  [m^-2]
     double A_loop_inv_O23;           // A_loop / Ω^{2/3} [m^-2]  (loop geometry for n≥4)
@@ -498,6 +499,7 @@ inline Parameters build_parameters(const std::map<std::string, double>& p) {
     for (int k = 0; k < P.V; ++k)
         P.D_VAC_eff[k] = optional_param(p, "D_VAC_eff_" + std::to_string(k), 0.0);
     P.loop_coal = static_cast<int>(optional_param(p, "loop_coal", 0.0));
+    P.sia_emission_monomer = static_cast<int>(optional_param(p, "sia_emission_monomer", 0.0));
     P.D_loop_coal.assign(P.I, 0.0);
     if (P.loop_coal)
         for (int k = 0; k < P.I; ++k)

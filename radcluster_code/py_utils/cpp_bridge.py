@@ -366,6 +366,12 @@ def write_param_file(sim, solver_config, path, y0_override=None):
         lines.append(f"D_VAC_eff_{k}={v:.17e}")
     # ½⟨111⟩ loop coarsening: glide law continued past i_mobile, used ONLY by
     # the loop–loop coalescence edge (see ReactionRates.D_loop_coal).
+    # SIA thermal emission returns its monomer to I_1 ("returned", the default since v2.1.0) or drops it
+    # ("dropped", the arithmetic before v2.1.0, which made delta_FP 1.2e-2 on im5vm2).
+    _emission = sim.input_data.reactions.get('sia_emission_monomer', 'returned')
+    if _emission not in ('returned', 'dropped'):
+        raise ValueError(f"sia_emission_monomer must be 'returned' or 'dropped', not {_emission!r}")
+    lines.append(f"sia_emission_monomer={1 if _emission == 'returned' else 0}")
     _lc = int(getattr(rr, 'loop_coal', 0))
     lines.append(f"loop_coal={_lc}")
     if _lc:

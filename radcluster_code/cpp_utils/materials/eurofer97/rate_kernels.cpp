@@ -491,6 +491,18 @@ static int rhs_case2(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
         dci[n] -= P.k2_SIA[n] * cn;
     }
 
+
+    // SIA thermal emission I_{n+1} -> I_n + I_1 moves the cluster down one size above; the emitted monomer
+    // is returned to I_1 here, as emit_mono does for vacancies. Before v2.1.0 it was omitted, which lost one
+    // SIA per emission event and was the whole of the Frenkel-pair residual delta_FP (1.2e-2 on im5vm2;
+    // 2.9e-7 with the monomer returned). sia_emission_monomer = 0 restores the old arithmetic bit for bit.
+    if (P.sia_emission_monomer) {
+        double emit_mono_sia = 0.0;
+        for (int n = 1; n <= x_hi_i_win; ++n)
+            emit_mono_sia += P.GII[n] * std::max(c_i[n], 0.0);
+        dci[0] += emit_mono_sia;
+    }
+
     // Window boundary: suppress SIA coalescence reactions whose product
     // exceeds the current window frontier but stays within I.  When
     // I_{k} + I_{np} → I_{k+np} with k+np > wlim (1-indexed window
@@ -1102,6 +1114,18 @@ static int rhs_case1(sunrealtype /*t*/, N_Vector yv, N_Vector ydotv,
         }
 
         dci[n] -= P.k2_SIA[n] * cn;
+    }
+
+
+    // SIA thermal emission I_{n+1} -> I_n + I_1 moves the cluster down one size above; the emitted monomer
+    // is returned to I_1 here, as emit_mono does for vacancies. Before v2.1.0 it was omitted, which lost one
+    // SIA per emission event and was the whole of the Frenkel-pair residual delta_FP (1.2e-2 on im5vm2;
+    // 2.9e-7 with the monomer returned). sia_emission_monomer = 0 restores the old arithmetic bit for bit.
+    if (P.sia_emission_monomer) {
+        double emit_mono_sia = 0.0;
+        for (int n = 1; n <= x_hi_i_win; ++n)
+            emit_mono_sia += P.GII[n] * std::max(c_i[n], 0.0);
+        dci[0] += emit_mono_sia;
     }
 
     // Window boundary: suppress SIA coalescence beyond window frontier.
@@ -1985,6 +2009,18 @@ int rhs_bin_moment(sunrealtype t, N_Vector yv, N_Vector ydotv, void* user_data) 
         }
 
         dc_n[n] -= P.k2_SIA[n] * cn;
+    }
+
+
+    // SIA thermal emission I_{n+1} -> I_n + I_1 moves the cluster down one size above; the emitted monomer
+    // is returned to I_1 here, as emit_mono does for vacancies. Before v2.1.0 it was omitted, which lost one
+    // SIA per emission event and was the whole of the Frenkel-pair residual delta_FP (1.2e-2 on im5vm2;
+    // 2.9e-7 with the monomer returned). sia_emission_monomer = 0 restores the old arithmetic bit for bit.
+    if (P.sia_emission_monomer) {
+        double emit_mono_sia = 0.0;
+        for (int n = 1; n <= I - 1; ++n)
+            emit_mono_sia += P.GII[n] * std::max(c_n[n], 0.0);
+        dc_n[0] += emit_mono_sia;
     }
 
     // Reflection boundary: suppress overflow reactions whose product exceeds I

@@ -10,7 +10,7 @@ metadata:
 
 `density_vs_dose.png` and `size_vs_dose.png` — the figures RadCluster_2_1 is
 presented against — are **not produced by the notebook**. They come from
-`RadCluster_2_1/codes/make_dose_figures.py` (committed 2026-09-05, `2f7a64c`).
+`radcluster_code/codes/make_dose_figures.py` (committed 2026-09-05, `2f7a64c`).
 
 **Why:** the script that originally drew the reference figures was written into
 the gitignored `output/` tree and no longer exists. The only surviving relative,

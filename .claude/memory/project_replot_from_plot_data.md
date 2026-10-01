@@ -26,7 +26,7 @@ files alone is wrong, and on that run would have cost a needless 22-minute
 re-integration.
 
 **Machine-local, though.** `.gitignore:41` excludes
-`RadCluster_2_1/output/*/plots/plot_data.pkl` on purpose — 37 MB, 92 % of the
+`radcluster_code/output/*/plots/plot_data.pkl` on purpose — 37 MB, 92 % of the
 tracked reference directory, and a pickle of live `InputData`/`RateEquations`
 objects that will not unpickle after a class refactor. So the pickle exists only
 on the machine that ran the simulation: on a fresh clone the tracked reference

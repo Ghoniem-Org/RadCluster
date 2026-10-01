@@ -410,7 +410,7 @@ After the Python `GraphWalker` reference is validated, mirror in
 
 ## 7. Proposed build order
 
-Files to touch are listed per step (all paths under `RadCluster_2_1/`).
+Files to touch are listed per step (all paths under `radcluster_code/`).
 
 1. **Layer-1 core** — ✅ **DONE (2026-06-11)**. `COALESCENCE` `product_population`
    + walker gain-redirect; 5/5 conservation tests pass.

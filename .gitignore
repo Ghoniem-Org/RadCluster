@@ -34,11 +34,11 @@ archive/*/output/
 # gitignored and the reference figures + provenance would exist on one machine
 # only (that is exactly how the original make_figures.py was lost).  This pins a
 # timestamped directory name — UPDATE IT when the reference run is superseded.
-!RadCluster_2_1/output/20260906_063055_full_system_bin_moment_CD_fission_I80000V20000_im5vm5/
+!radcluster_code/output/20260906_063055_full_system_bin_moment_CD_fission_I80000V20000_im5vm5/
 # ...but not its 37 MB plot_data.pkl: a regenerable cache, and a pickle of live
 # InputData/RateEquations objects that will not load after a class refactor.  It
 # is 92% of the directory and the worst possible archival format.
-RadCluster_2_1/output/*/plots/plot_data.pkl
+radcluster_code/output/*/plots/plot_data.pkl
 
 # Temporary / OS
 .DS_Store
@@ -50,16 +50,16 @@ Thumbs.db
 .vscode/launch.json
 
 # Campaign runtime state (pid of the detached worker; per-machine, never shared)
-RadCluster_2_1/digital_twin/results/*.pid
+radcluster_code/digital_twin/results/*.pid
 
 # Graceful-halt sentinel. LOCAL ONLY: it was committed in 8a600c7 and every
 # machine that pulled it halted at startup, because run_ensemble checks
 # STOP_FILE.exists() inside the submission loop. Never version this.
-RadCluster_2_1/digital_twin/CAMPAIGN_STOP
+radcluster_code/digital_twin/CAMPAIGN_STOP
 
 # Per-machine "already tallied" sentinels (zero-byte, written by ad-hoc
 # tally loops, referenced by nothing that is versioned). Local like *.pid.
-RadCluster_2_1/digital_twin/results/*.seen
+radcluster_code/digital_twin/results/*.seen
 
 # Verification campaign (docs/Formulation/verification_campaign/paper_revision_verification_plan.md).
 # .sync/ is a git WORKTREE for the campaign-verification branch: coordination
@@ -67,8 +67,8 @@ RadCluster_2_1/digital_twin/results/*.seen
 # main checkout -- the dead-inode failure run_ensemble.py documents.  logs/ is
 # per-machine live progress, rewritten per solver step; the campaign board on
 # the branch is the shared record.
-RadCluster_2_1/digital_twin/verification/.sync/
-RadCluster_2_1/digital_twin/verification/logs/
+radcluster_code/digital_twin/verification/.sync/
+radcluster_code/digital_twin/verification/logs/
 
 # LaTeX build artifacts (the .tex and the .pdf are tracked; the rest regenerate)
 docs/Formulation/**/*.aux

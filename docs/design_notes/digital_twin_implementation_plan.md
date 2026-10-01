@@ -6,7 +6,7 @@ Appendix F (parameter-identification algorithm), Appendix G (experimental
 microstructure database), Appendix H (digital-twin construction), and in
 particular Tables H.37 (target measurements) and H.38 (prior ranges).
 
-**Target code:** `RadCluster_2_1/` at commit `b17fe85`.
+**Target code:** `radcluster_code/` at commit `b17fe85`.
 
 **Status:** plan, with the revision-3 input-path fixes and the revision-4
 conversion fixes **implemented** (§4/T0.5 tasks a, b, c, c3, c4, d). Everything
@@ -399,7 +399,7 @@ E_b^fit(n) = A_111 · n^{+B_111}      ⟹      E_b^i(2) = A_111 · 2^{+B_111}
 > binding as 2.29 eV; the correct legacy value is **3.92 eV**.
 >
 > **Resolved 2026-08-16.** The sign was corrected at source in
-> `RadCluster_2_1/CLAUDE.md` §10, `RadCluster_2_0/CLAUDE.md` §10 and
+> `radcluster_code/CLAUDE.md` §10, `archive/RadCluster_2_0/CLAUDE.md` §10 and
 > `docs/Formulation/cluster_dynamics_framework/simulation_methodology.tex` (the `⟨100⟩` branch carried the
 > same typo). This erratum is retained as the record of the discrepancy, not as
 > a live warning.
@@ -835,7 +835,7 @@ channel is identically zero on any grid — which is precisely why T0.4b exists.
 
 ## 3. Modules to build
 
-Directory `RadCluster_2_1/digital_twin/`, mirroring the Appendix H.11 checklist
+Directory `radcluster_code/digital_twin/`, mirroring the Appendix H.11 checklist
 one-for-one so the correspondence is auditable:
 
 ```
@@ -1988,7 +1988,7 @@ bytes and cannot merge-conflict.
 On each machine k, at any checkpoint and again at the end:
 
 ```bash
-cd RadCluster_2_1/digital_twin
+cd radcluster_code/digital_twin
 git add results/<design>_machine$K.jsonl results/worker_machine$K.log
 git commit -m "T2 results, machine $K, $(date -u +%Y-%m-%dT%H:%MZ)"
 git pull --rebase && git push

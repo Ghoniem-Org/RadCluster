@@ -84,7 +84,14 @@ if(MSVC)
     target_compile_options(solver PRIVATE /arch:AVX2 /GL /fp:precise)
     target_link_options(solver PRIVATE /LTCG)
 else()
-    target_compile_options(solver PRIVATE -O3 -march=native)
+    # -march=native is right for a local build and wrong for a redistributable
+    # one: it bakes in the building machine's instruction set, and a binary
+    # compiled on a newer host dies with SIGILL on an older one.  The container
+    # image build overrides this with -DRADCLUSTER_ARCH_FLAGS=-march=x86-64-v2.
+    # Default unchanged, so an ordinary local build is bit-for-bit as before.
+    set(RADCLUSTER_ARCH_FLAGS "-march=native" CACHE STRING
+        "Architecture flags for the solver (set to e.g. -march=x86-64-v2 for a portable build)")
+    target_compile_options(solver PRIVATE -O3 ${RADCLUSTER_ARCH_FLAGS})
 endif()
 
 # ── OpenMP (active_window solver mode) ────────────────────────────────────────

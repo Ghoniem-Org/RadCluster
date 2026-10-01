@@ -83,16 +83,22 @@ tunnel that node's port to your laptop over SSH. There are two ways to do this.
 IDRE ships a Python helper that does *everything* — requests a node, starts Jupyter, opens the
 tunnel, and launches your browser:
 
-```bash
-# download once
-curl -O https://raw.githubusercontent.com/rdauria/jupyter-notebook/main/h2jupynb
-# or grab the current copy from the IDRE Hoffman2 docs
+A copy lives in this repository at [`scripts/h2jupynb`](../scripts/h2jupynb) — use
+that one rather than re-downloading. It carries fixes this repo depends on that the
+upstream copy may not have: Unicode decoding of remote output (`errors='replace'`,
+line 653) and Ctrl-C / `CTRL_BREAK_EVENT` handling so the countdown can be
+interrupted from Windows PowerShell. A fresh `curl -O` would silently drop them.
 
-# launch:  -u user  -t walltime(hr)  -m mem(GB/core)  -c cores  -v python version
-python3 h2jupynb -u ghoniem -t 8 -m 8 -c 2 -v 3.10 -l lab
+```bash
+# run it from your LAPTOP, not from inside an SSH session on Hoffman2
+#   -u user  -t walltime(hr)  -m mem(GB/core)  -c cores  -v python version
+python3 scripts/h2jupynb -u ghoniem -t 8 -m 8 -c 2 -v 3.10 -l lab
 ```
 
-Run `python3 h2jupynb -h` to see all flags (GPU, architecture, directory, port, etc.). This is the
+Upstream, if you ever need to compare against it:
+<https://github.com/rdauria/jupyter-notebook> (author: IDRE, `hpc@ucla.edu`).
+
+Run `python3 scripts/h2jupynb -h` to see all flags (GPU, architecture, directory, port, etc.). This is the
 cleanest day‑to‑day method. The manual method below is what to fall back on when you want full
 control or are reconnecting to an existing job.
 

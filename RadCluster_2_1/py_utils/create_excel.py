@@ -259,7 +259,7 @@ REACTIONS = [
     ('Unary barrier size slope',  'gamma_a_conv', 0.03,   'eV',  'per perimeter-segment; calibrate to Arakawa onset + size window'),
     ('Unary attempt frequency',   'nu0_conv',     1.0e13, '1/s', 'Debye'),
     ('Conversion crossover temp', 'T_star_conv_C',450.0,  'C',   'dF(n_ref,T*)=0; in [350,550] (Dudarev Fig. 4)'),
-    ('Conversion reference size', 'n_ref_conv',   50,     '-',   'calibration anchor size for LoopEnergetics'),
+    ('Conversion reference size', 'n_ref_conv',   30,     '-',   'calibration anchor size for LoopEnergetics'),
     ('Junction peak yield',       'phi_max_junc', 0.5,    '-',   'Marian; yield at n=n_prime (0-1)'),
     ('Junction log-size tol.',    'sigma_s_junc', 0.35,   '-',   'Marian comparable-size width in ln(n/n_prime)'),
     ('Junction min size',         'n_j_min_junc', 30,     '-',   'Marian; junctions from n ~ 34-37'),

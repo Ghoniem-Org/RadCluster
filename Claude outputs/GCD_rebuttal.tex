@@ -1,0 +1,621 @@
+\documentclass{article}
+\usepackage{fullpage}
+\usepackage[utf8]{inputenc}
+\usepackage{textgreek}
+\usepackage{amsmath,amssymb}
+\usepackage{authblk}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{bm}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,%
+    citecolor=blue,%
+    filecolor=black,%
+    linkcolor=magenta,%
+    urlcolor=blue,%
+    pdfauthor={Nasr M. Ghoniem}
+}
+
+% ---------------------------------------------------------------------------
+% Author action notes (red). Set \showauthornotesfalse to hide all of them
+% in the version sent to the journal.
+% ---------------------------------------------------------------------------
+\newif\ifshowauthornotes
+\showauthornotestrue
+\newcommand{\authornote}[1]{\ifshowauthornotes{\color{red}\ [\textbf{Author action:} #1]}\fi}
+
+\newcommand{\hkl}[1]{\langle #1\rangle}
+\newcommand{\half}{\tfrac{1}{2}}
+\newcommand{\imob}{i_{\rm mobile}}
+\newcommand{\vmob}{v_{\rm mobile}}
+
+\title{Response to Reviewers' Comments on the Manuscript\\
+~\\
+\textbf{A Graph-Based Cluster Dynamics Framework for Irradiated Materials}\\[4pt]
+\normalsize (Manuscript No.\ JNUMA-D-26-00796; originally submitted as \emph{A Generalized Graph-Based Cluster Dynamics Framework for Irradiated Materials})
+}
+\author{Nasr M. Ghoniem}
+\affil{Department of Mechanical and Aerospace Engineering, University of California Los Angeles, Los Angeles, CA 90095, USA}
+\date{\today}
+\setcounter{Maxaffil}{0}
+\renewcommand\Affilfont{\itshape\small}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\noindent Dear Dr.\ Malerba and Reviewers:
+
+Thank you for your letter of August 26, 2026, and for sharing the four reviewers' comments on our manuscript (JNUMA-D-26-00796) entitled ``A Generalized Graph-Based Cluster Dynamics Framework for Irradiated Materials.'' We are grateful for the careful and, in two cases, very detailed reviews. We recognize that the situation was unusual, and we appreciate the Editor's decision to allow a major revision. We have treated the two most critical reviews (Reviewers \#2 and \#4) as the primary guide for the revision, while also addressing every point raised by Reviewers \#1 and \#3.
+
+The reviews led us to rethink the manuscript rather than simply edit it. The revised version, now entitled ``A Graph-Based Cluster Dynamics Framework for Irradiated Materials,'' differs from the original submission in the following principal respects:
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Fewer, more clearly stated objectives.} The Introduction now states two goals, one algorithmic and one physical, and the claims of each are bounded explicitly. Statements that overstated novelty or agreement with experiment (e.g., ``matching every macroscopic target within a few percent,'' ``more than 20{,}000 ODEs on a single workstation is itself a notable result'') have been removed.
+    \item \textbf{A single, fully specified production calculation.} All results in Section~4 come from one configuration (EUROFER97, fission cascade spectrum, $G=10^{-7}$~dpa\,s$^{-1}$, $330\,^\circ$C, to 40~dpa, $\imob=\vmob=5$, $I=80\,000$, $V=20\,000$, linear dual-basis bin-moment closure, GMRES with the Woodbury preconditioner). These conditions are stated at the start of Section~4 and in every figure caption.
+    \item \textbf{New physics in the model.} (i) The $\half\hkl{111}$ and $\hkl{100}$ loop families are now carried as separate size-resolved populations, with three explicit character-conversion channels (rotation, junction, and size-asymmetric absorption; Class~V kernels). (ii) Loop and cavity incorporation into the evolving dislocation network (Class~VI kernels, with a network-density balance) produces the loop-density saturation that was missing in the original submission. (iii) A production-bias analysis of cavity--loop co-growth is given in Section~3.1 and Supplementary Section~S4.2.
+    \item \textbf{A rigorous treatment of reaction dimensionality.} The rate kernels are reorganized into six physical classes (Supplementary Section~S3). Mixed 1D/3D absorption uses the Trinkaus--Heinisch--Barashev--Golubov--Singh master curve. Mutually 1D-mobile reactions are derived following Gösele--Seeger, Adjanor, and Jourdan--Adjanor, and their exclusion from the EUROFER97 calculation is justified quantitatively.
+    \item \textbf{A quantitative, six-observable comparison with experiment.} A new EUROFER97 neutron-irradiation database (Supplementary Section~S7) is used, and the comparison is scored in Table~2 with its limitations stated.
+    \item \textbf{Verification of the state-space reductions against the exact discrete solution.} This is reported in Section~4.4 and Supplementary Section~S6, and it replaces the former Figure~8.
+    \item \textbf{A complete audit of the bibliography.} All 156 references have been checked against Crossref and publisher records, and every in-text citation has been checked against the content of the cited work (see our response to Reviewer~\#2, Point~\#9).
+\end{enumerate}
+
+\authornote{The template letter states that changes are highlighted in color. Because the revision restructures the entire manuscript, consider whether to submit a highlighted version, a latexdiff, or only this summary, and adjust this paragraph accordingly.}
+
+Below we provide a detailed, point-by-point response to the reviewers' comments, together with an explanation of the corresponding revisions. Unless stated otherwise, section, equation, figure, and table numbers refer to the revised manuscript.
+\vspace{\baselineskip}
+
+%=============================================================================
+\noindent\textbf{Reviewer \#1}
+\begin{itemize}
+\item \textbf{General}\\
+This work presents a modular, graph-based cluster-dynamics (CD) framework for the long-term evolution of radiation-induced defect populations in crystalline solids and demonstrates it on the ferritic-martensitic steel EUROFER-97 under fission and fusion irradiation. This work is comprehensive and novel, as it introduces graph networks to decompose complex processes relevant to cluster dynamics. The validation using the FM steel EUROFER-97 is convincing. The agreement with experimental measurements is remarkable considering the genuine nature of the underlying model. I therefore recommend its publication.\\
+
+\textbf{Response}\\
+We thank the reviewer for the positive assessment of the work and for recommending publication. In response to the other reviewers, we have substantially strengthened both the physical model and the comparison with experiment, and we have moderated how that comparison is described. We believe these changes make the agreement the reviewer refers to more meaningful, because it is now scored observable by observable (Table~2) and bounded by an explicit verification of the numerical reductions (Section~4.4).
+
+\item \textbf{Point \#1}\\
+I only have a question regarding the parameter sensitivity in producing the results. Since the parameters are not optimized, yet excellent agreement with experiments has been obtained, it may be helpful to identify the most influential part of the model in reproducing those results.\\
+
+\textbf{Response}\\
+This is an excellent question, and the revised manuscript addresses it in three ways.
+
+First, the revised model makes clear which inputs are taken from first-principles and molecular-dynamics data (Tables~S1--S3) and which are mesoscale calibration constants. The latter are marked individually as ``calibration'' in Table~S8 (the barriers and branching factors of the loop-conversion channels) and in Table~S9 (the network-incorporation parameters).
+
+Second, the reaction admissibility graph makes the mechanistic sensitivity directly testable, because each edge family can be switched off and the calculation repeated. Using this capability, the revised manuscript identifies the parts of the model that control each observable:
+\begin{enumerate}[label=(\roman*)]
+    \item The co-growth of loops and cavities is controlled by the \emph{production bias}, i.e., by the difference between the in-cascade clustered fractions $f_i^{cl}-f_v^{cl}$ (Table~S1). Controlled calculations that equalize the clustered fractions and the sink capture efficiencies show that co-growth arises from production bias rather than from preferential sink capture (Section~1; Section~3.1, Eqs.~(26)--(27); Supplementary Section~S4.2).
+    \item The saturation of the loop density is controlled by loop incorporation into the dislocation network (Class~VI kernels), which acts as a sharp threshold near 13 interstitials at the steady-state network density (Section~4.2).
+    \item The $\half\hkl{111}\to\hkl{100}$ loop-character partition is controlled by the completion probabilities of the junction and absorption channels (about 6\% and 48\% at $330\,^\circ$C, Table~S7) and by the one-dimensional glide flight length $\ell = 22$~nm through the rotational correlation factor (Eqs.~(S68)--(S70)). It is \emph{not} controlled by the loop formation energy, which sets only the direction of conversion (Section~4.2).
+    \item The near-zero swelling at $330\,^\circ$C follows from the vacancy balance (interstitial annihilation grows to about 40\% of all vacancies produced by 40~dpa; Figure~6b), not from any imposed suppression of cavity growth.
+\end{enumerate}
+
+Third, we state explicitly in Section~4.1 and in the Conclusions that the calculation was run at a single temperature. A temperature series, together with an uncertainty quantification of the underlying DFT and MD parameter set, is the test that will decide how far the reported agreement extends. That work is in preparation and is beyond the scope of the present paper. We also note in Conclusion~(ii) that the junction channel is the part of the present parameterization most exposed to future revision.
+
+\authornote{If the ablation calculations mentioned in (i) are not shown in the manuscript or supplement, either add a short table (channel switched off $\rightarrow$ change in the six observables of Table~2) or soften the wording to ``can be tested''. A one-at-a-time sensitivity table for $f^{cl}_{i}$, $f^{cl}_{v}$, $\ell$, $\rho_{\rm net}$, $\phi_{\max}$ and $\Delta H_2-\Delta H_{\rm rev}$ would answer this reviewer most directly.}
+\end{itemize}
+
+%=============================================================================
+\newpage
+\noindent\textbf{Reviewer \#2}
+\begin{itemize}
+\item \textbf{General Comment}\\
+The author presents a new modular cluster dynamics framework to simulate microstructure evolution in irradiated materials. The framework is applied to neutron irradiation of EUROFER-97, so helium must be accounted for alongside self-defects. Given the large cluster size space, two key approximations are proposed to make calculations tractable: Physically motivated simplifications for helium treatment, tailored to irradiation conditions (fusion/fission), which substantially reduce the cluster size space. A novel grouping method that further reduces the space by directly deriving group moment evolution equations from ungrouped equations, rather than using coarse-grained group-associated coefficients.\\
+
+\textbf{Response}\\
+We thank the reviewer for this accurate summary and for a very detailed and constructive review. The reviewer's criticisms, together with those of Reviewer~\#4, have led to the most substantial changes in the revised manuscript. We agree with the central recommendation that the objectives should be fewer and more clearly achieved. We respond to each point below.
+
+\item \textbf{Point \#1: Presentation of the framework}\\
+The presentation of the framework is quite technical and rather messy, with, for example, undefined quantities, quantities used before their definition, or the same notation for two distinct quantities. A case in point: the concepts of species class and defect populations, which are key to the work here, are introduced on p. 12 (with C now referring to classes, not composition as in Eq. 1), but used in the very first equation on p. 7.\\
+
+\textbf{Response}\\
+We agree and thank the reviewer for the specific example. Section~2 has been rewritten and reordered so that the presentation proceeds from general to specific without forward references:
+\begin{itemize}
+    \item Section~2.1 introduces reaction network graphs and their relation to chemical reaction network theory.
+    \item Section~2.2 defines the cluster identifier $\tau=(\sigma,n,p,c)$ and \emph{all} of its components (polarity, size, population label, and composition vector) at its first appearance, Eq.~(1). The component notation for gas species, interstitial-cluster states $I_{n,\alpha}$, and vacancy-cluster states $V_{m,\ell,\beta}$ is introduced immediately afterwards, before it is used.
+    \item Section~2.3 defines the reaction admissibility graph and the ten edge classes.
+    \item Section~2.4 presents the master equation.
+\end{itemize}
+The former Sections~2.3 (hierarchical subgraph decomposition), 2.4 (host specializations), and 3.1 (abstract model structure) have been consolidated, and repeated material has been removed. The abstract process classes and their EUROFER97 instances are now listed side by side in a single table (Table~1), so that the abstract and concrete forms are read from one object.
+
+\authornote{In the revised Section~2.2 (``Component notation''), the symbols $C_I$ and $C_V$ are still used for the interstitial- and vacancy-cluster classes, while $\mathcal{C}$ denotes the composition set in Eq.~(1). This is exactly the collision the reviewer pointed out. Rename the classes (e.g., $\mathcal{K}_I,\mathcal{K}_V$) or remove them, since the population label already carries the information.}
+
+\item \textbf{Point \#2: Demonstration on an original case}\\
+The level of abstraction gradually decreases and finally the usual set of rate equations is obtained. If one of the goals of the paper is to provide the power of this general framework, I think it should be applied to an original case that current codes cannot handle (see my point below concerning the comparison to experiments and existing simulations in the literature).\\
+
+\textbf{Response}\\
+We agree that recovering the usual rate equations does not, by itself, demonstrate the value of the framework. The revised manuscript applies the framework to physics that goes beyond the original submission and beyond the rate-equation sets commonly used for ferritic steels. We use the case of $\hkl{100}$ loop formation in bcc iron alloys (Section~4.2):
+\begin{itemize}
+    \item The $\half\hkl{111}$ and $\hkl{100}$ loop families are declared as two size-resolved populations of the same polarity. This is a direct use of the population coordinate of the graph.
+    \item Content is transferred between them by three edge families: thermally activated single-loop rotation weighted by the Dudarev driving force, the Marian junction reaction, and a size-asymmetric absorption gate at sessile $\hkl{100}$ hosts. Each carries a completion probability and the rotational correlation factor for 1D glide (Class~V kernels, Supplementary Section~S3).
+    \item Because the three channels are separate edges, their roles can be isolated. Rotation and junction nucleate $\hkl{100}$ loops among small clusters, whereas absorption grows existing hosts far beyond the thermodynamic crossover size (about 23 interstitials at $330\,^\circ$C).
+\end{itemize}
+The calculation predicts a $\hkl{100}$ share that rises sigmoidally in logarithmic dose, passes 50\% near 3~dpa, and reaches about 77\% at 40~dpa (Figure~4). This dose dependence cannot be produced by a purely energetic crossover at fixed temperature, and it lies within the range over which the experimental database records the dominant Burgers vector switching.
+
+The same graph also carries the incorporation of loops and cavities into an evolving dislocation network (Class~VI), including a network-density balance with recovery (Eqs.~(S83)--(S86)). This coupling is not a simple pair reaction, and it is what produces loop-density saturation. Implementation-level evidence that the host-independent layers are reused unchanged is given in Supplementary Section~S2 (three-layer architecture, Figure~S1; Layer-2 declaration for EUROFER97, Table~S5).
+
+\item \textbf{Point \#3: Validation of the size-space reductions}\\
+To validate the physically motivated approximations on He and the grouping method, one would expect careful comparisons across various test cases under different conditions (He-to-dpa ratio, dose rate, etc.), showing: 1) A reference calculation without approximations 2) Calculations with approximations introduced stepwise. No such comparison is provided.\\
+
+\textbf{Response}\\
+We agree that this was a serious omission. The revised manuscript contains a dedicated verification study (Section~4.4, with full detail in Supplementary Section~S6, Tables~S16--S19 and Figures~S3--S5). It follows exactly the structure the reviewer recommends:
+\begin{enumerate}[label=(\alph*)]
+    \item \emph{Reference calculation without approximation.} The fully discrete system is integrated on domains small enough to be affordable ($I=V=4000$ to 2~dpa, 8006 equations; and $I=V=1000$ to 20~dpa, 2006 equations).
+    \item \emph{Approximations introduced stepwise.} The reductions are compared with the reference one parameter at a time:
+    \begin{itemize}
+        \item The bin count is varied at a fixed discrete core (Table~S18). Five of the six observables converge to within 0.3\% of the exact solution by 13 bins (158 equations against 2006).
+        \item The discrete core and the bin count are varied independently (Table~S19). The one persistent residual, $-5$ to $-6.6$\% in the $\half\hkl{111}$ mean diameter, is traced to the extent of the discrete core, falls below 1\% at $i_{\rm discrete}=800$, and is not affected by the bin count.
+        \item Three alternative explanations (a difference between code paths, a domain-edge artifact, and slow error accumulation) were excluded by direct tests.
+    \end{itemize}
+    \item \emph{Internal convergence on the production domain.} Refining the discrete core from 189 to 2048 equations changes $d_{100}$ by only 2\%. Two decades of integration tolerance change no observable in any reported digit (Table~S16).
+    \item \emph{The helium reduction.} Replacing the dynamic helium subsystem by its quasi-steady-state form reproduces all six observables to every reported digit.
+\end{enumerate}
+
+We are careful to state what this test does \emph{not} establish. Under the fission spectrum the total helium concentration is only $1.18\times10^{13}$~m$^{-3}$, so the agreement validates the helium reduction at fission helium levels only, and it says nothing about fusion generation rates. This limitation is stated in Section~4.4 and in Supplementary Section~S6. A systematic comparison across He/dpa ratios and dose rates is planned together with the temperature series mentioned in the Conclusions.
+
+\authornote{If possible, add at least one fusion-spectrum (He/dpa $\sim$10) comparison of the Case~1 reduction against the dynamic (non-reduced) helium treatment on a small domain. That is the specific gap Reviewer~\#2 will look for on re-review.}
+
+\item \textbf{Point \#4: Figure 8 and the effect of the preconditioner}\\
+Figure 8 shows results obtained with different reconstructions, preconditioners, and time solvers, but since these operate at different levels and the specific methods used for each curve are not clearly identified, it is impossible to draw meaningful conclusions. For example, ``bin\_moment\_jacobi'' presumably refers to linear reconstruction with Jacobi preconditioning for GMRES. But why would a preconditioner (which should only affect computational performance) change results by over an order of magnitude? This suggests something is fundamentally wrong or not properly presented.\\
+
+\textbf{Response}\\
+The reviewer is correct. A preconditioner affects only the convergence rate of the linear iterations. If each run is converged to the same tolerance, it cannot change the solution by an order of magnitude. The original Figure~8b mixed three different levels (state representation and closure, linear solver and preconditioner, and time-integration strategy) in a single legend. In addition, several curves corresponded to runs that had not reached the stated dose within the wall-clock limit, or that used a different closure. The figure therefore did not isolate the effect of any single choice, and it should not have been presented as it was.
+
+\authornote{Confirm the actual cause of the order-of-magnitude difference in the ``bin\_moment\_jacobi'' curve (e.g., piecewise-constant closure, unconverged/timed-out run, loose tolerance, or a different $i_{\rm mobile}$) and state it here in one sentence.}
+
+We have removed the former Figure~8 and Section~6.2 entirely. They are replaced by the controlled verification described in our response to Point~\#3, in which only one numerical parameter is changed at a time and every configuration is compared with the exact discrete solution of the same equations. That study also shows directly that the integration tolerance is not a hidden parameter: changing the relative tolerance by two orders of magnitude leaves every observable unchanged in every reported digit (Table~S16). All production results now use a single, stated solver configuration (GMRES with the Woodbury preconditioner).
+
+\item \textbf{Point \#5: Partial validation, oscillations and abrupt shape changes}\\
+Moreover, results are only shown for SIA clusters at a single dose, while results for the other dose, for vacancy clusters and helium inventory, are merely mentioned in the text. This partial validation creates more questions than answers. Why do cluster distributions show oscillations or bumps even with the best method (linear reconstruction)? What causes the abrupt shape changes in Fig. 6-a (around n = 20) and Fig. 6-b (around n = 50)?\\
+
+\textbf{Response}\\
+We agree. The revised verification reports all six observables (number density and mean diameter of $\half\hkl{111}$ loops, $\hkl{100}$ loops, and cavities) in Tables~S16--S19. The dose evolution of the loop and cavity observables along the verification ladder is shown in Figures~S3 and S4. In the production calculation we now show the full dose evolution of:
+\begin{itemize}
+    \item the interstitial size classes (Figure~7a);
+    \item the vacancy content of every size bin (Figure~7b);
+    \item the $\hkl{100}$ and interstitial size distributions (Figure~5);
+    \item the cavity size distribution (Figure~8);
+    \item the free point defects and the partition of all vacancies produced among clusters, fixed sinks, and annihilation, together with the Frenkel-pair conservation identity (Figure~6).
+\end{itemize}
+The helium inventory and its conservation diagnostic are defined in Eqs.~(25) and (S94)--(S97).
+
+Regarding the abrupt features in the former Figure~6, they were representation artifacts rather than physical structure. Two causes contributed:
+\begin{itemize}
+    \item The cascade source term was truncated at the largest cascade cluster size ($i_{\rm cascade}=20$ for SIAs under the fission spectrum, Table~S1), which introduces a slope discontinuity in the distribution at that size.
+    \item The distribution changes character at the boundary between the discrete prefix and the first logarithmic bin. There the per-size values are no longer resolved but reconstructed from two moments, and negative reconstructed values are clamped to zero.
+\end{itemize}
+In the original figure the reconstructed per-size values were plotted as if they were resolved. In the revised figures the binned region is displayed as bins, and the captions say so explicitly. For example, the caption of Figure~5b states that the wide steps above about 15~nm are the logarithmic bins of the reduced representation rather than structure in the distribution.
+
+\authornote{Verify the explanation of the kinks at $n\approx 20$ (SIA) and $n\approx 50$ (vacancy) against the configuration used for the original Figure~6 (source cutoffs $i_{\rm cascade}$, $v_{\rm cascade}$ and the original $i_{\rm discrete}$, $v_{\rm discrete}$), and correct the two bullets above if needed.}
+
+\item \textbf{Point \#6: Comparison with existing EUROFER-97 simulations}\\
+Regarding experimental comparisons, other groups have already tried to simulate EUROFER-97 (see for example J. Gao et al., J. Nucl. Mater. 557 (2021) 153212), at comparable levels of sophistication, including multiple populations and helium effects. The omission of this work (and potentially others) makes it difficult to assess the current model's advantages. Instead, the author paints an unnecessarily grim picture in the introduction of the manuscript of the global state of cluster dynamics models.\\
+
+\textbf{Response}\\
+We thank the reviewer for pointing out this important omission, which we regret. The work of Gao, Gaganidze, Kaiser and Aktaa is now cited and discussed in several places:
+\begin{itemize}
+    \item \emph{Introduction.} It is cited as a demonstration of how far the cluster-dynamics framework has already been extended, both for dual-beam He$^{+}$/Fe$^{3+}$ irradiation of EUROFER97 (J. Nucl. Mater. 547 (2021) 152822) and for coupled helium bubbles, C15 clusters and dislocation loops in ferritic/martensitic steels (J. Nucl. Mater. 557 (2021) 153212).
+    \item \emph{Section~4.2.} The revised manuscript contains a dedicated comparison with the closest published treatment. This is the Gao--Gaganidze--Aktaa parameterization of the loop formation free energy up to 1100~K (J. Nucl. Mater. 559 (2022) 153409), used in their cluster-dynamics model of the relative $\half\hkl{111}$ and $\hkl{100}$ populations in $\alpha$-Fe (Acta Mater. 233 (2022) 117983). Table~3 compares the resulting crossover temperatures $T^*(n)$.
+\end{itemize}
+The discussion identifies where the two models agree, namely that small loops favor $\hkl{100}$ and that the crossover temperature rises with size. It also identifies where they differ:
+\begin{itemize}
+    \item \emph{Energetics.} Their temperature dependence is carried by the $\half\hkl{111}$ coefficients and resolves the side orientations, whereas here it is attributed entirely to $\hkl{100}$ softening.
+    \item \emph{Nucleation of $\hkl{100}$ loops.} In their model this proceeds through C15 cluster collapse; here it proceeds by rotation and junction.
+\end{itemize}
+We state explicitly that conversion-only nucleation suffices to place the crossover within the observed dose range, but that it does not exclude C15-mediated nucleation. We also note that the Gao et al.\ EUROFER97 calculations address dual-beam ion irradiation at high dose rate and low dose. The present calculation extends the coupled cavity--loop--helium treatment to neutron dose rates and doses of tens of dpa.
+
+We have also revised the tone of the Introduction. The review literature is now presented as having identified algorithmic fragmentation (host-specific codes and solvers), not as a failure of the physics of cluster dynamics, which we describe as conceptually mature.
+
+\item \textbf{Point \#7: Agreement with experiment}\\
+While the author states that fitting experiments is not the goal, they nevertheless claim quantitative agreement. Yet the simulated SIA cluster density differs from experimental values by nearly two orders of magnitude, and the lack of SIA cluster density saturation (Fig. 5) casts doubt on the model's validity.\\
+
+\textbf{Response}\\
+The reviewer's criticism of the original results was justified, and the two deficiencies identified have been traced to missing physics in the original model.
+\begin{itemize}
+    \item \emph{Lack of saturation.} The original model had no mechanism for removing loops once they became sessile, so the loop population could only accumulate. The revised model incorporates loops of both characters, and immobile cavities, into the pre-existing dislocation network at a rate set by the network climb velocity and gated by the proximity of the loop's elastic interaction zone to the nearest network line (Class~VI kernels, Eqs.~(S79)--(S86)). The network density itself evolves, with a mandatory recovery term. The $\half\hkl{111}$ loop density is now established below $10^{-3}$~dpa and remains flat to within a factor of two over four further decades of dose (Figure~3a).
+    \item \emph{Density overestimate.} The original $\imob=100$ overstated the mobility of large clusters, and the single SIA population could not represent the sessile $\hkl{100}$ family. With $\imob=5$ and with the two loop families resolved, the calculated densities at 15.72~dpa are $N_{111}=3.5\times10^{21}$~m$^{-3}$ and $N_{100}=4.7\times10^{21}$~m$^{-3}$ (Table~2). Both lie inside the measured ranges for neutron-irradiated EUROFER97 at 300--350\,$^\circ$C.
+\end{itemize}
+
+We have also changed how agreement is described. The claim of quantitative agreement has been replaced by an explicit scoring of six independently measured and independently predicted observables (Table~2). Five of the six lie inside the measured band. The calculated cavity density falls about a factor of three below the only two quantified TEM values. We state that the measured bands are wide, so that falling inside a band is a weak test when each observable is taken alone. What we do claim is limited: one parameter set places all six observables within a factor of three simultaneously, with the correct ordering among them and the correct sense of the dose dependence. A separate paragraph, ``What the comparison does not establish,'' has been added to Section~4.1.
+
+\authornote{The Abstract (``the computed densities and mean diameters \ldots\ fall within the measured ranges'') and Conclusion (i) (``all six lie inside the ranges'') contradict Table~2 and Section~4.1, which state that the cavity density ($3.61\times10^{20}$ vs.\ 11--14$\times10^{20}$~m$^{-3}$) is outside the measured band. Align the Abstract and Conclusions with ``five of six, all within a factor of three'' before resubmission; Reviewers \#2 and \#4 will check this.}
+
+\item \textbf{Point \#8: Inconsistencies between figures}\\
+There also appear to be inconsistencies between figures: Fig. 7b suggests a sharp increase in void diameter at very low dose, but Fig. 7a shows no such variation. Dislocation loops remain small even at 100 dpa (with loop mobility up to n = 100), yet in Fig. 8a they appear larger at just 0.1 dpa (with mobility only up to n = 15).\\
+
+\textbf{Response}\\
+We thank the reviewer for the careful reading. Both inconsistencies arose because the original figures were produced with different model configurations and post-processing conventions, which were not stated:
+\begin{itemize}
+    \item The former Figures~5--7 and Figure~8a used different mobility cutoffs, domain sizes, and closures.
+    \item The mean diameter in the former Figure~7b was computed with a visibility cutoff that was not applied to the mean number of vacancies in Figure~7a.
+\end{itemize}
+
+\authornote{Confirm the specific cause for each of the two inconsistencies and adjust the sentences above.}
+
+In the revised manuscript, every figure in Section~4 is taken from a single production run, and the conditions are repeated in each caption. Mean diameters are computed from the size-resolved populations with one per-character convention, stated in Eq.~(S79) (the same convention used for the TEM-diameter post-processing). The cavity density and mean diameter are shown on the same dose axis in Figure~3. Their joint evolution is consistent: both peak near $5\times10^{-2}$~dpa and then decline as the cavities are progressively re-dissolved. This is explained by the vacancy partition in Figure~6b and by the bin contents in Figure~7b.
+
+\item \textbf{Point \#9: Objectives of the article}\\
+In conclusion, the article's objectives should be fewer in number but more clearly achieved: - if the aim is to provide a general framework, then it should be carefully defined and demonstrated on complex, original cases, and implementation details (e.g., specialized libraries for graph generation/traversal) should be provided. JNM may not be the appropriate journal for such a contribution. - if it is to derive approximations to gain numerical efficiency, the approximations should be thoroughly validated, as mentioned above. - if it is to quantitatively reproduce experiments, the model should present some new features or new parametrization with respect to existing simulations in the literature. In its current form, none of these objectives are met, so I cannot recommend publication in JNM.\\
+
+\textbf{Response}\\
+We accept this assessment of the original submission, and the revision has been organized around it. The Introduction now states two goals, one algorithmic and one physical, and each of the reviewer's three criteria is addressed as follows.
+\begin{enumerate}[label=(\alph*)]
+    \item \emph{General framework.} The framework is defined in Section~2. Its implementation is described in Supplementary Section~S2: the relation to chemical reaction network theory (Table~S4), the three-layer architecture of RadCluster (Figure~S1), and the Layer-2 declaration for EUROFER97 (Table~S5). The section also covers the use of network software: the production solver keeps the graph implicit and uses arrays, whereas NetworkX is used to materialize the graph for structural diagnostics and for drawing Figures~1--2, with 89 vertices and 7078 arcs at $n_{\max}=30$. It further explains how the graph determines the Jacobian sparsity and the choice of preconditioner (Figure~S2). The demonstration on an original case is described in our response to Point~\#2.
+    \item \emph{Validated approximations.} See Point~\#3, Section~4.4, and Supplementary Section~S6.
+    \item \emph{New features with respect to existing simulations.} The model contains features that, to our knowledge, are not combined in existing EUROFER97 calculations:
+    \begin{itemize}
+        \item kinetic conversion between the two loop families through three distinct channels with completion probabilities and 1D correlation;
+        \item loop and cavity incorporation into an evolving dislocation network;
+        \item mixed 1D/3D absorption through the master curve;
+        \item neutron dose rates and doses up to 40~dpa with coupled helium.
+    \end{itemize}
+    Table~3 and the accompanying discussion compare these features with Gao et al.
+\end{enumerate}
+We believe that JNM is the appropriate journal. The physical results concern the loop-character evolution and the near-zero swelling of EUROFER97, and they are compared with the neutron-irradiation database for this steel. The algorithmic content has been reduced to what is needed to make those results reproducible and verifiable.
+
+\item \textbf{Point \#10: Reference 56}\\
+Finally, I note that Reference 56 appears to be fabricated, possibly generated by some AI tool. Its DOI leads to an unrelated paper on Al-based amorphous alloys. The correct reference should be: Z. Jiao et al., J. Nucl. Mater. 504 (2018) 122. Other references might be similarly affected, I haven't checked them all.\\
+
+\textbf{Response}\\
+We are grateful to the reviewer for detecting this error, and we apologize for it. We take full responsibility for the accuracy of the reference list. The reviewer is correct. The intended reference is Z.~Jiao, S.~Taller, K.~Field, G.~Yeli, M.~P.~Moody, G.~S.~Was, \emph{Microstructure evolution of T91 irradiated in the BOR60 fast reactor}, J.~Nucl.\ Mater.\ 504 (2018) 122--134, doi:10.1016/j.jnucmat.2018.03.024. It has been corrected.
+
+\authornote{Decide whether to state how the erroneous entries arose (the manuscript's Declarations already disclose AI assistance in literature research). A brief, candid sentence is generally received better than silence.}
+
+Because the reviewer rightly suspected that other entries might be affected, we audited the entire bibliography. Each of the 156 entries was compared with its Crossref or publisher record (authors, title, journal, volume, year, pages, DOI). Each in-text citation was also checked against the content of the cited work. The substantive corrections are listed in Table~R1, using the reference numbering of the revised manuscript. Minor corrections (page ranges, issue numbers, missing DOIs, and truncated titles) were also made throughout.
+
+\authornote{IMPORTANT: The file resubmission/Generalized\_Cluster\_Dynamics.pdf dated September 17, 2026 still contains all of the errors listed in Table~R1 (e.g., [88] still carries the wrong authors and the amorphous-alloy DOI flagged by this reviewer, and [30], [32]--[34] are still present). Make every correction in ClusterDynamicsRefs.bib and the .tex citations before resubmitting, then delete this note.}
+
+{\small
+\begin{longtable}{@{}p{0.06\textwidth}p{0.36\textwidth}p{0.52\textwidth}@{}}
+\caption*{\textbf{Table R1.} Substantive corrections to the reference list (revised numbering).}\\
+\toprule
+Ref. & Problem found & Correction \\
+\midrule
+\endfirsthead
+\toprule
+Ref. & Problem found & Correction \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+{[10]} & Title and DOI did not correspond to any Hayns paper & M.~R.~Hayns, \emph{On the group method for the approximate solution of a hierarchy of rate equations describing nucleation and growth kinetics}, J.~Nucl.\ Mater.\ 59 (1976) 175--182, doi:10.1016/0022-3115(76)90132-X; the ``transient stages'' sentence now cites Hayns, J.~Nucl.\ Mater.\ 56 (1975) 267--274 \\
+{[21]} & Incorrect title & N.~M.~Ghoniem, J.~N.~Alhajji, D.~Kaletta, \emph{The effect of helium clustering on its transport to grain boundaries}, J.~Nucl.\ Mater.\ 136 (1985) 192--206 \\
+{[28]} & Incorrect authors and pages & J.~Boisse, C.~Domain, C.~S.~Becquart, J.~Nucl.\ Mater.\ 455 (2014) 10--15; removed from Table~S3 (tungsten data) \\
+{[30], [32]--[34]} & No such publications exist; DOIs resolve to unrelated papers or do not resolve & Removed; the corresponding sentences now cite verified works (e.g., Blondel et al., Fusion Sci.\ Technol.\ 71 (2017) 84; Kohnert et al., Comput.\ Mater.\ Sci.\ 149 (2018) 442; Xiong et al., JOM 76 (2024) 5785) \\
+{[39]} & Incorrect title & D.~Stewart, Y.~N.~Osetskiy, R.~E.~Stoller, \emph{Atomistic studies of formation and diffusion of helium clusters and bubbles in BCC iron}, J.~Nucl.\ Mater.\ 417 (2011) 1110--1114 \\
+{[40]} & Incorrect year and source type & R.~Wagner, R.~Kampmann, \emph{Homogeneous second phase precipitation}, in: P.~Haasen (Ed.), Phase Transformations in Materials, Materials Science and Technology Vol.~5, VCH, Weinheim, 1991, pp.~213--303 \\
+{[43]} & Incorrect authors & K.~Xu, B.~G.~Thomas, Y.~Wu, H.~Wang, H.~Kong, Z.~Wu, Metals 10 (2020) 1685 \\
+{[73]} & Risø report could not be located & Removed; citations now rely on Trinkaus et al., Phys.\ Rev.\ B 66 (2002) 060105 and Heinisch et al., J.~Nucl.\ Mater.\ 283--287 (2000) 737 \\
+{[88]} & Incorrect authors; DOI of an unrelated paper (flagged by the reviewer) & Z.~Jiao, S.~Taller, K.~Field, G.~Yeli, M.~P.~Moody, G.~S.~Was, J.~Nucl.\ Mater.\ 504 (2018) 122--134, doi:10.1016/j.jnucmat.2018.03.024 \\
+{[89]} & Incorrect authors, volume and DOI & C.~Zheng, E.~R.~Reese, K.~G.~Field, E.~Marquis, S.~A.~Maloy, D.~Kaoumi, \emph{Microstructure response of ferritic/martensitic steel HT9 after neutron irradiation: effect of dose}, J.~Nucl.\ Mater.\ 523 (2019) 421--433, doi:10.1016/j.jnucmat.2019.06.019 \\
+{[90]} & Entry conflated three records & W.~Zhong, T.~A.~Saleh, L.~Tan, \emph{Neutron irradiation induced defects and clustering in NF616 and T91}, J.~Nucl.\ Mater.\ 552 (2021) 153001, doi:10.1016/j.jnucmat.2021.153001 \\
+{[91]} & Title and data belonged to Weiß et al.\ (= [99]); DOI unrelated & Removed; citations now refer to O.~J.~Weiß, E.~Gaganidze, J.~Aktaa, J.~Nucl.\ Mater.\ 426 (2012) 52--58, doi:10.1016/j.jnucmat.2012.03.027 \\
+{[96]} & Incorrect authors & D.~A.~Terentyev, L.~Malerba, M.~Hou, Phys.\ Rev.\ B 75 (2007) 104108 \\
+{[97]} & Incorrect authors, volume and pages & D.~Terentyev, N.~Anento, A.~Serra, V.~Jansson, H.~Khater, G.~Bonny, J.~Nucl.\ Mater.\ 408 (2011) 272--284 \\
+{[113]} & Entry conflated two papers & A.~De~Backer, A.~E.~Sand, K.~Nordlund, L.~Lunéville, D.~Simeone, S.~L.~Dudarev, EPL 115 (2016) 26001 \\
+{[119]} & Incorrect authors & C.~S.~Becquart, R.~Ngayam-Happy, P.~Olsson, C.~Domain, J.~Nucl.\ Mater.\ 500 (2018) 92--109 \\
+{[123]} & Incorrect co-author & M.~M.~Rahman, F.~El-Mellouhi, N.~Mousseau, Phys.\ Rev.\ Mater.\ 7 (2023) 093602 \\
+{[124]} & Incorrect authors & C.~Barouh, T.~Schuler, C.-C.~Fu, T.~Jourdan, Phys.\ Rev.\ B 92 (2015) 104102 \\
+\end{longtable}
+}
+
+The citation audit also led to the following corrections of \emph{citation context}, where a real paper had been cited for a statement it does not support:
+\begin{itemize}
+    \item The helium migration energy is now attributed to Fu and Willaime (Phys.\ Rev.\ B 72 (2005) 064117) instead of Fu et al.\ (Nat.\ Mater.\ 2005).
+    \item The two-moment grouping method is now attributed to Golubov et al.\ (Philos.\ Mag.\ A 81 (2001) 643) instead of the production-bias paper.
+    \item Tungsten papers are no longer cited as sources of EUROFER97 parameters.
+    \item Wolfer (2007) and Kohnert and Capolungo (2019) are no longer cited for glissile SIA-cluster supply.
+    \item The sentences on reduced mean-helium descriptions, and on carbon/nitrogen and solute trapping of gliding clusters, now cite only works that address those topics.
+    \item The critical size of about 23 interstitials at $330\,^\circ$C is identified as our evaluation of the Dudarev et al.\ free energy (Eq.~(S64)), not as a value reported in that paper.
+\end{itemize}
+
+\authornote{These citation-context fixes are also not yet in the September 17 PDF (e.g., Eq.~$E^h_m\approx0.06$~eV still cites [80]; the grouping sentence still cites [77]; Table~S3 still cites [28] and [118]). The full audit with per-reference detail is in resubmission/audits/Reference\_Audit\_Generalized\_Cluster\_Dynamics.md.}
+\end{itemize}
+
+%=============================================================================
+\newpage
+\noindent\textbf{Reviewer \#3}
+\begin{itemize}
+\item \textbf{General Comment}\\
+They present a graph-based cluster dynamics (CD) framework for irradiation-induced defect populations in metals and demonstrate it using EUROFER-97. The paper is well organized and suitable for publication in JNM. However, some parts are difficult for readers to understand, and the reviewer recommends adding further explanations.\\
+
+\textbf{Response}\\
+We thank the reviewer for the positive assessment and for the specific questions below, each of which has led to a clarification in the revised manuscript.
+
+\item \textbf{Point \#1}\\
+Introducing the effect of cascades is important for cluster dynamics. In displacement cascades, point defect concentrations become very high. Do you think that the intracascade reactions are sufficiently included when calculating the cluster size distribution and Table 2?\\
+
+\textbf{Response}\\
+This is an important question. Intracascade reactions enter the model through the source term, not through the master equations. The production characteristics in Table~S1 (formerly Table~2) are reconstructed from molecular-dynamics cascade simulations that are carried beyond the thermal-spike and cooling phases. They therefore describe the defects that \emph{survive} in-cascade recombination and in-cascade clustering:
+\begin{itemize}
+    \item the number of surviving Frenkel pairs;
+    \item the fractions $f_i^{cl}$ and $f_v^{cl}$ of surviving SIAs and vacancies that are already bound in clusters;
+    \item the mean and largest cluster sizes.
+\end{itemize}
+The very high local defect concentrations within the cascade volume are thus accounted for by using the MD survival and clustering statistics as the input to the mean-field calculation.
+
+What a mean-field CD model cannot represent is the \emph{spatial correlation} of the surviving cascade debris, i.e., the enhanced recombination between defects of the same cascade in the period after the MD simulation ends. This limitation is shared by all rate-theory models. It has been examined by Ortiz and Caturla (Phys.\ Rev.\ B 75 (2007) 184101) and by Souidi et al.\ (J.\ Nucl.\ Mater.\ 419 (2011) 122). We have added a sentence in Supplementary Section~S1 stating that the source term represents post-cascade survival and clustering, and that correlated recombination beyond the MD time window is not included. The clustered fractions are also the quantities that control production bias, which the revised manuscript shows to be decisive for loop--cavity co-growth (Section~3.1 and Supplementary Section~S4.2).
+
+\authornote{Add the sentence referred to above to Supplementary Section~S1 (``Primary damage'' paragraph); it is not in the September 17 PDF.}
+
+\item \textbf{Point \#2}\\
+In this CD framework, precipitation and segregation of solute atoms are not included. However, on p. 9, line 45, the text states: ``This edge represents segregation, ...''. What does ``segregation'' mean in this context? In Figure 1, how is a precipitate formed?\\
+
+\textbf{Response}\\
+We thank the reviewer for noting this ambiguity. The word ``segregation'' in the definition of the inter-population edge referred to the transfer of a defect \emph{cluster} from one population to another (for example, a vacancy cluster in the bulk becoming attached to a grain boundary or dislocation). It did not refer to solute segregation, which is not modeled here. To avoid confusion, the term has been replaced by ``attachment of a cluster to a microstructural feature (grain boundary, dislocation or precipitate interface), sweeping, or capture by a moving sink.''
+
+Precipitates are not formed in the present model. MX and M$_{23}$C$_6$ precipitates enter only as fixed, unresolved sinks with a prescribed radius and number density (Table~S3). The original Figure~1, which drew a precipitate node among the sinks, has been replaced by a figure of the actual EUROFER97 admissibility graph (Figures~1 and 2), in which the precipitates appear only within the fixed-sink terms. We state in the Conclusions (Outlook) that solute segregation and precipitation are natural extensions, obtained by extending the composition axis and the bin-moment closure to additional dimensions.
+
+\authornote{The word ``segregation'' is still present in edge class (6) of Section~2.3 in the September 17 PDF; replace it as described.}
+
+\item \textbf{Point \#3}\\
+Page 10, line 14: ``10. Sink (fixed-sink edge)'' How did you determine the sink strength of grain boundaries, such as planar sinks?\\
+
+\textbf{Response}\\
+The fixed-sink loss rate of a mobile species is $D_\alpha = D_\alpha^{d} + D_\alpha^{gb} + D_\alpha^{p}$ (Eq.~(19)). The dislocation network contributes $Z_\alpha\rho_d$, and the precipitates contribute $4\pi r_p N_p$. For the grain boundaries, treated as planar, unbiased sinks bounding spherical grains of diameter $d_g$ (Table~S3), we use the standard expression of Brailsford and Bullough (Philos.\ Trans.\ R.\ Soc.\ Lond.\ A 302 (1981) 87):
+\[
+k_{gb}^2 = \frac{6\sqrt{k_{\rm int}^2}}{d_g}\quad\text{for}\quad \sqrt{k_{\rm int}^2}\,d_g \gg 1,\qquad
+k_{gb}^2 = \frac{60}{d_g^2}\quad\text{for}\quad \sqrt{k_{\rm int}^2}\,d_g \ll 1,
+\]
+where $k_{\rm int}^2$ is the total sink strength of the grain interior. Because the grain-boundary term depends on the interior sink strength, it is recomputed whenever the kernels are rebuilt between integration segments. The relevant expression has been added to Supplementary Section~S3 (Class~I kernels, dislocation network and fixed sinks).
+
+\authornote{Confirm which grain-boundary sink-strength expression RadCluster actually uses (e.g., $6\sqrt{k^2}/d_g$, $15/R^2$, or $60/d_g^2$) and whether it is recomputed with the evolving interior sink strength; edit the equation above and add it to S3, since it is not in the current PDF.}
+
+\item \textbf{Point \#4}\\
+When two mobile interstitial-type dislocation loops coalesce, is the resulting loop an immobile sessile loop or a mobile loop?\\
+
+\textbf{Response}\\
+In the revised model the outcome depends on the reaction channel. Two $\half\hkl{111}$ clusters that coalesce by the ordinary channel produce a $\half\hkl{111}$ loop of the combined size. This product is mobile if its size does not exceed the mobility cutoff $\imob$, and it is otherwise a sessile loop that acts only as a sink. A fraction $\phi_{\rm junc}$ of the encounters between comparable $\half\hkl{111}$ loops instead follows the Marian junction reaction and produces a sessile $\hkl{100}$ loop (Eqs.~(S71)--(S75)). The junction partitions the encounter rate rather than adding to it, so no encounter is counted twice. When a small mobile $\half\hkl{111}$ cluster is absorbed by a sessile $\hkl{100}$ host, the product retains the $\hkl{100}$ character of the host and is sessile (Eqs.~(S76)--(S78)). This rule is consistent with in-situ observations that interacting loops adopt the Burgers vector of the larger partner (Arakawa et al., Phys.\ Rev.\ Lett.\ 96 (2006) 125506). These rules are stated in Section~4.2 and in Table~S5.
+
+\item \textbf{Point \#5}\\
+Figures 4, 5, 6, and 8: Please describe the irradiation conditions, such as temperature, dose rate, and whether the neutrons are fission or fusion spectrum.\\
+
+\textbf{Response}\\
+Done. The irradiation conditions ($330\,^\circ$C, $G=10^{-7}$~dpa\,s$^{-1}$, fission cascade spectrum, dose to 40~dpa) and the numerical configuration are stated at the beginning of Section~4, together with the statement that all results of that section were obtained under these conditions. The temperature and spectrum are also repeated in the captions of the figures in Section~4.
+
+\authornote{Figures~5--8 captions in the September 17 PDF do not yet repeat temperature, dose rate and spectrum (only Figs.~3 and 4 do); add them.}
+
+\item \textbf{Point \#6}\\
+Figure 7: There is no description of Figure 7 in the text. Please add an explanation.\\
+
+\textbf{Response}\\
+We agree that this was a significant omission, which Reviewer~\#4 also noted. The former Figure~7 (mean loop and cavity sizes compared with experiment) has been replaced by Figure~3, which shows the dose evolution of the number densities and mean diameters of the $\half\hkl{111}$ loop, $\hkl{100}$ loop and cavity populations, with the EUROFER97 neutron data overlaid. Section~4.1 analyzes this figure in detail:
+\begin{itemize}
+    \item the six observables are scored quantitatively at 15.72~dpa (Table~2);
+    \item the dose trajectory of each population is discussed;
+    \item the non-monotonic mean $\hkl{100}$ diameter is explained;
+    \item the comparison with the SANS cavity data is discussed;
+    \item the limits of the comparison are stated.
+\end{itemize}
+The new Figure~7 (concentrations of the interstitial size classes and vacancy content per size bin) is described in Section~4.3.
+
+\item \textbf{Point \#7}\\
+Figure 8: Please explain the meaning of the legend.\\
+
+\textbf{Response}\\
+We agree that the legend of the former Figure~8 relied on undefined abbreviations and mixed several levels of the calculation. As explained in our responses to Reviewer~\#2 (Point~\#4) and Reviewer~\#4, that figure has been removed. It is replaced by a controlled verification study (Section~4.4 and Supplementary Section~S6), in which every configuration is identified in the tables by its discrete-core size, bin count and number of equations. The new Figure~8 shows the cavity size distribution of the production run, and its caption is self-contained.
+
+\item \textbf{Point \#8}\\
+Page 47, lines 48-51: ``even though the input parameter space (formation and binding energies, sink strengths, bias factors, and cascade source terms) was not optimized.'' These are materials parameters. Why is optimization necessary?\\
+
+\textbf{Response}\\
+We thank the reviewer for this question, which exposed an imprecise wording. By ``not optimized'' we meant that no input was fitted to the TEM measurements used for comparison. In principle, material parameters do not need optimization. In practice, however, two sources of uncertainty make the choice of values consequential:
+\begin{itemize}
+    \item \emph{Spread in the atomistic data.} First-principles and MD data for the same quantity differ between sources and interatomic potentials. For example, the reported migration energies of vacancies and self-interstitials in iron vary by more than 0.1~eV, and cascade clustered fractions depend on the potential and the recoil spectrum.
+    \item \emph{Effective parameters of the mean-field description.} Several inputs (bias factors, capture efficiencies, the glide flight length between direction changes, and the fixed-sink microstructure of a tempered martensitic steel) are not uniquely defined material constants.
+\end{itemize}
+Many CD studies therefore adjust some of these parameters to experiment. The sentence has been removed. In the revised manuscript we instead distinguish:
+\begin{itemize}
+    \item inputs taken from atomistic and experimental data (Tables~S1--S3);
+    \item quantities derived from them (Table~S2, and $B_{\rm rot}=2/9$, which is derived and parameter-free);
+    \item the few mesoscale constants that are marked explicitly as calibration (Tables~S8 and S9).
+\end{itemize}
+We state that none of these was adjusted to the measurements against which the results are compared.
+
+\authornote{Table~S8 marks several conversion-kernel barriers and branching factors as ``calibration.'' Make sure the manuscript states what they were calibrated against (e.g., atomistic/literature estimates or the crossover condition), so that the statement ``no parameter was adjusted to any measurement'' in the Conclusions is defensible.}
+
+\item \textbf{Point \#9}\\
+Page 49, line 51: How did you determine the cascade spectrum and the replacement atom ratio used?\\
+
+\textbf{Response}\\
+The cascade production characteristics under fission and fusion neutron spectra (Table~S1) were reconstructed from published molecular-dynamics cascade simulations in $\alpha$-Fe over a range of primary-knock-on-atom (PKA) energies. The references are Bacon et al.\ (2000); Stoller (2000); Malerba et al.\ (2021); and the MD cascade studies cited in Table~S1, e.g., Calder and Bacon (1993); Stoller, Odette and Wirth (1997); Terentyev et al.\ (2006); Calder et al.\ (2010); Zarkadoula et al.\ (2013); De Backer et al.\ (2016); and Nordlund et al.\ (2018). The energy-dependent survival fraction, clustered fractions and cluster-size statistics were weighted by the PKA recoil spectrum characteristic of each neutron spectrum. The fission values correspond to a fast-reactor spectrum, consistent with the BOR-60 data used for comparison, and the fusion values correspond to a 14~MeV first-wall spectrum. Because high-energy recoils fragment into subcascades, the fusion spectrum produces larger mean and maximum cluster sizes but only modestly different clustered fractions.
+
+The ratio of surviving Frenkel pairs to the NRT displacement estimate is $\eta$ \authornote{insert value used, e.g., $\eta\approx 0.3$}, and the displacement rate $G$ is expressed as the NRT-dpa rate. The helium co-production rates are 0.5--1~appm\,He/dpa for the fast-reactor spectrum and about 10~appm\,He/dpa for the fusion spectrum. A paragraph describing this procedure, including the functional form of the cluster-size spectrum used in the source term, has been added to Supplementary Section~S1.
+
+\authornote{Please confirm (a) whether ``replacement atom ratio'' refers to the survival efficiency $\eta$ relative to NRT (as assumed here) or to the replacement-collision fraction, (b) the PKA weighting actually used, and (c) the functional form of $G_n$ between $n=2$ and $i_{\rm cascade}$; then add the paragraph to S1. This also answers Reviewer \#4's comment on the source term.}
+\end{itemize}
+
+%=============================================================================
+\newpage
+\noindent\textbf{Reviewer \#4}
+\begin{itemize}
+\item \textbf{General Comment and Point \#1: Novelty}\\
+This manuscript presents a graph-based cluster dynamics framework and its application to irradiated EUROFER-97. The software effort seems substantial and the numerical implementation appears to be rich and mostly correct. However, I have significant reservations regarding both the physical content and the presentation of the work.
+
+A first concern is that the manuscript repeatedly presents the proposed framework as a major advance in irradiation damage modelling, whereas the novelty appears mainly architectural. The proposed ``graph walker'' denomination sounds appealing but does not introduce a genuinely new physical or mathematical concept beyond providing a systematic taxonomy of reactions and an automated equation-generation strategy. The graph formalism provides a generic representation of reaction networks, but the underlying physics remains largely that of decades-old mean-field cluster dynamics. The paper is very long, highly repetitive (some equations are even repeated twice, like eq-25 and eq-29), and in my opinion offers limited physical novelty compared with existing cluster dynamics formulations.\\
+
+\textbf{Response}\\
+We thank the reviewer for a thorough and technically expert review. We agree with much of this assessment. The graph formalism is, as the reviewer says, a generic representation of reaction networks. The revised manuscript places it explicitly within chemical reaction network theory (Section~2.1 and Supplementary Section~S2, Table~S4), citing the mass-action formalism of Horn and Jackson, the deficiency theory of Feinberg, directed hypergraphs, Petri nets, and rule-based generators such as BioNetGen, Kappa and RMG. It also identifies where that theory stops applying to cluster dynamics. The ``graph walker'' is now defined plainly as the algorithmic traversal of the admissible edges that assembles the right-hand side. We no longer describe the framework as a major advance in physics, and we describe its contribution as architectural: the graph is the \emph{interface} between the host-independent solver and the host-specific physics.
+
+We have also added new physical content, so that the paper is not only architectural:
+\begin{enumerate}[label=(\roman*)]
+    \item The loop-character conversion kinetics, with three separate channels, completion probabilities and 1D correlation, explain the sigmoidal dose dependence of the $\hkl{100}$ fraction as a kinetic rather than thermodynamic transition (Section~4.2).
+    \item Loops and cavities are incorporated into an evolving dislocation network (Class~VI).
+    \item The rate kernels are reorganized by reaction dimensionality (Classes I--III), in direct response to the reviewer's second concern.
+    \item The analysis of loop--cavity co-growth shows that, for iron cascade statistics, co-growth is a production-bias rather than an elastic-bias phenomenon (Section~3.1 and Supplementary Section~S4.2).
+\end{enumerate}
+
+Regarding length and repetition, the formulation sections have been consolidated. The duplicated equations (the former Eqs.~(25) and (29)) and the parallel listings of abstract and EUROFER97 process classes have been merged into a single table (Table~1). The derivations of the rate kernels, the conservation identities and the reductions have been moved to the Supplementary Material, so that the main text contains only their results.
+
+\authornote{Consider stating the reduced page count of the main text relative to the original submission.}
+
+\item \textbf{Point \#2: Treatment of mobile SIA clusters and 1D--1D and 1D--3D kernels}\\
+A second important concern relates to the treatment of mobile SIA clusters. The sensitivity study identifies the mobility cutoff i\_mobile as the dominant parameter controlling the predicted microstructure evolution. However, the corresponding interaction kernels are largely derived from classical sink-strength formulations developed for encounters between a 1D-mobile defect and a fixed-sink population. The proposition of the manuscript seems to be to treat 1D-1D interactions and 1D-3D with the same expressions as 3D-3D interactions: Eq. 79 and 81 are exactly the same usual Smoluchowski kernels, which are only valid for 3D-3D interactions. The manuscript should at least point out these major limitations with respect to more recent developments addressing mixed-mobility reaction kinetics when both interacting species are mobile and not only the fixed sink case, in particular Adjanor (2022) and Jourdan et al. (2025) have generalized the work of Gösele et al (1976) to encompases mixed mobilities and general ratios of diffusion coefficients. Since i\_mobile is shown to be the dominant controlling parameter, the treatment of 1D-1D and 1D-3D interactions should be considered a central modelling issue and not eluded.\\
+
+\textbf{Response}\\
+We agree that this is a central modeling issue, and we thank the reviewer for the specific references. The reviewer is correct that the former Eqs.~(79) and (81) are Smoluchowski kernels, valid only for 3D--3D encounters, and that applying them to 1D-mobile clusters up to $\imob = 100$ was not justified. The treatment of reaction dimensionality has been completely revised. The rate kernels are now organized into six classes by the physics that fixes the rate (Supplementary Section~S3, Table~S6). Three of these classes are distinguished precisely by migration dimensionality.
+
+\begin{enumerate}[label=(\alph*)]
+\item \emph{Class~I (3D--3D).} Diffusion-limited kernels are derived from the capacitance rule. The additivity of capture radii and diffusivities is shown to be exact only for two spheres. For other shapes the relevant quantity is the capacitance of the Minkowski sum, which is not additive (Eqs.~(S3)--(S14)).
+
+\item \emph{Class~II (1D and mixed 1D/3D absorption by immobile sinks).} We show explicitly that inserting a 3D-equivalent diffusivity into a Smoluchowski kernel is \emph{wrong} for a 1D glider. The reason is that the 1D and 3D sink strengths differ not by a constant but in their scaling with sink density ($N_m^2$ against $N_m$), and no rescaling of $D$ reproduces that (Eq.~(S26) and the discussion that follows it). The absorption of gliding SIA clusters by cavities therefore uses the pure-1D line-interception sink strength, $k^2_{(1),m}=6\kappa_m\kappa$, whose factor of 6 is derived from a first-passage argument (Eqs.~(S21)--(S23)). It is combined with the Trinkaus--Heinisch--Barashev--Golubov--Singh master curve for the crossover to 3D kinetics (Eqs.~(S27)--(S33)). In the near-3D branch, which applies to EUROFER97, this reduces to a parameter-free correlation factor, $[1+B_{\rm rot}(\ell_n/r_m)^2]^{-1/2}$ with $B_{\rm rot}=2/9$ derived (Eqs.~(S34)--(S36)). The same construction applies to absorption by immobile \emph{clusters} whose density is a state variable (Eqs.~(S37)--(S39)).
+
+\item \emph{Class~III (mutually 1D-mobile clusters).} Following the reviewer's suggestion, we derive the kernels for two gliding clusters for collinear, intersecting and skew glide lines, and their orientation average for the four $\hkl{111}$ variants (Eqs.~(S40)--(S48), Table~S12). The derivation builds on Gösele and Seeger (Philos.\ Mag.\ 34 (1976) 177), Adjanor (J.\ Nucl.\ Mater.\ 572 (2022) 153970 and 154010), and Jourdan and Adjanor (J.\ Nucl.\ Mater.\ 616 (2025) 156021). We quote their scalings $K\propto(D_A/D_B)^{\delta}$ with $\delta = 0$, $-1/2$ and $-1/3$ for 3D--3D, 3D--1D and 1D--1D encounters (Eq.~(S15)). We also quote their result that the mutually mobile 1D--1D regime persists down to diffusivity ratios of order $10^{-6}$, so that treating the slower partner as a fixed sink is a stronger approximation than is usually assumed. We state explicitly that for two 1D-mobile partners the collinear loss is cubic rather than quadratic in concentration (Eq.~(S16)).
+\end{enumerate}
+
+\emph{Why Class~III kernels are not active in the EUROFER97 calculation.} The reaction graph admits no reaction between two mutually 1D-mobile clusters. This choice is justified in Section~3.1 on two grounds, both of which are stated as assumptions:
+\begin{itemize}
+    \item \emph{Solute-induced direction changes.} Class~III kernels assume straight flights maintained over the whole encounter, a picture established for high-purity iron. In EUROFER97, C, N and substitutional solutes randomize the glide direction after a flight of order $\ell\approx22$~nm (Eqs.~(S69)--(S70)), so a mutually mobile pair crosses over to the 3D kinetics already included.
+    \item \emph{Magnitude.} Expressed as an equivalent sink strength at a mobile-cluster density of $10^{21}$~m$^{-3}$, the non-collinear channel contributes about $1.3\times10^{12}$~m$^{-2}$, i.e., about one percent of the dislocation network sink strength. The collinear channel lies seven orders of magnitude below the network. The non-collinear channel would rival the fixed sinks only at mobile-cluster atomic fractions near $10^{-6}$, which these simulations never approach.
+\end{itemize}
+
+\emph{Mobility cutoff.} The production calculation now uses $\imob=5$ (Table~S3), rather than the original value of 100. Clusters beyond this cutoff are sessile and act only as sinks. The claim that $\imob$ is the ``dominant phase-space knob'' has been removed. As the reviewer notes, a strong dependence of the loop density on the mobility cutoff is not new. In the revised model the loop partition is controlled instead by the conversion completion probabilities and the 1D correlation factor (Section~4.2).
+
+\authornote{Two consistency checks before resubmission: (1) Section~3.1 still says that a gliding SIA cluster enters the binary (Class~I) kernels ``through its three-dimensionally equivalent frequency, one third of its glide frequency,'' while S3 (after Eq.~(S26)) argues this is wrong for sink strengths. Make explicit that $\omega^{\rm eff}$ is used only together with the correlation factor (Eqs.~(S34), (S68)), or state the limitation for the remaining binary SIA--SIA and V--I channels with $n\le i_{\rm mobile}$. (2) The Class~III magnitude estimate in Section~3.1 compares with a network of $10^{14}$~m$^{-2}$, whereas Tables~S3 and S9 use $\rho_{\rm net}=5\times10^{14}$~m$^{-2}$; harmonize.}
+
+\item \textbf{Point \#3: Detailed balance with effective sink-strength kernels}\\
+A related question concerns the use of detailed-balance emission rates together with effective sink-strength reaction kernels. While Eq. (70) is standard for conventional second-order absorption reactions, the manuscript also relies on reaction kernels derived from 1D-mobile defect/fixed-sink formulations. It is unclear whether the same detailed-balance arguments remain applicable in such third order reactions. At the very least, the assumptions and limitations underlying this approximation should be discussed.\\
+
+\textbf{Response}\\
+We thank the reviewer for this subtle and correct observation. In the revised model, detailed balance is invoked \emph{only} for the thermal emission of a monomer (a vacancy, an SIA, or a helium atom) from a cluster (Class~IV, Eqs.~(S49)--(S53)). The reverse of each such emission is the capture of a 3D-migrating monomer by the daughter cluster, which is a conventional second-order reaction with a pair rate constant. The emission frequency is therefore the daughter-cluster capture kernel multiplied by a Boltzmann factor in the binding energy of the last defect, which is the standard constrained-equilibrium argument.
+
+No emission edge is paired with a Class~II or Class~III kernel. Clusters of four or more SIAs, which glide in 1D, are absorbed by cavities and sessile loops through the mixed 1D/3D kernels, but the reverse process (emission of an intact gliding cluster) is not included. The three edges that are not reverses of any capture edge are written without detailed balance:
+\begin{itemize}
+    \item trap mutation, from transition-state theory;
+    \item radiation re-solution of helium, as an athermal driven process;
+    \item the unary loop-rotation channel, as a one-way net-rate closure consistent with the sign of the Dudarev driving force.
+\end{itemize}
+
+We agree that detailed balance cannot be applied to a sink-strength kernel that is not a pair rate constant, because such a kernel depends on the whole sink field and is of higher order in concentration. We have added a statement to this effect, together with the assumptions above, in Supplementary Section~S3 (Class~IV).
+
+\authornote{Add the statement described in the last paragraph to the Class~IV introduction in S3; it is implied but not stated in the September 17 PDF.}
+
+\item \textbf{Point \#4: Multisink character and evolving dislocation networks}\\
+The multisink character of several sink-strength expressions (including grain boundaries) and its compatibility with the proposed graph formalism should be adressed. The manuscript repeatedly emphasizes the generality of the proposed framework. However, no example is given involving an evolving dislocation network. Such models introduce couplings that are not naturally represented as simple graph edges and constitute a major component of state-of-the-art irradiation microstructure simulations. Demonstrating compatibility with such models would considerably strengthen the manuscript.\\
+
+\textbf{Response}\\
+We agree that these couplings are not simple pair edges, and the revised manuscript addresses both aspects.
+
+\emph{Multisink character.} Kernels that depend on the whole sink field are represented on the graph as state-dependent edge labels. The graph fixes which vertices an edge connects and its stoichiometry. The kernel $k_e(t,\mathbf{s},\Theta)$ is allowed to depend on the full state $\mathbf{s}$ (Eq.~(11)). The kinetics is therefore explicitly \emph{not} mass action in the strict sense, and the deficiency and complex-balancing theorems do not apply. We state this in Section~2.1 and in Supplementary Section~S2. Two examples in the model are:
+\begin{itemize}
+    \item the 1D line-interception sink strength, $k^2_{(1),m}=6\kappa_m\kappa$, which carries the screening sum $\kappa=\sum_j\kappa_j$ over \emph{all} sink families (Eq.~(S22));
+    \item absorption by an immobile cluster family, whose density enters both the terminating cross-section and the screening sum $\Sigma_n$ (Eq.~(S37)).
+\end{itemize}
+The grain-boundary sink strength, which depends on the interior sink strength, is handled in the same way (see our response to Reviewer~\#3, Point~\#3). Numerically, such kernels are frozen within an integration segment and rebuilt between segments with the edge set unchanged. The sparsity pattern, coloring and preconditioner therefore carry over (Supplementary Section~S2, item~(iv)).
+
+\emph{Evolving dislocation network.} The revised model includes one. Loops of both characters and immobile cavities are incorporated into the pre-existing network at a rate set by the Bullough--Newman climb velocity evaluated from the monomer concentrations, gated by the proximity of the elastic interaction zone of the loop to the nearest network line (Class~VI, Eqs.~(S79)--(S84)). The network line density is itself a state variable. It evolves by gaining about one loop circumference of line per incorporated loop and by losing line through a recovery term $K_{\rm rec}\rho_{\rm net}^{3/2}$ (Eq.~(S85)). The incorporated interstitials are routed to the fixed-sink ledger, so that the Frenkel-pair conservation diagnostic is unchanged (Eq.~(S86)). This coupling is realized in the framework exactly as the reviewer anticipated: not as a graph edge, but as a state-dependent sink folded into the fixed-sink diagonal, together with an auxiliary reservoir variable. The same edge set, sparsity pattern and preconditioner are retained. It is this channel that produces the loop-density saturation discussed in Section~4.2. A fully resolved dislocation-dynamics coupling is mentioned in the Outlook as a future extension.
+
+\authornote{In the September 17 PDF, the fixed-sink rate $D_\alpha$ in the main-text calculations appears to use a constant $\rho_{\rm net}$ (Table~S9 lists $\rho^{\max}_{\rm net}=\rho_{\rm net}=5\times10^{14}$~m$^{-2}$). If the network density is in fact held at its ceiling in the production run, say so here, to avoid overstating the coupling.}
+
+\item \textbf{Point \#5: Assumptions and limitations of cluster dynamics}\\
+More generally, the manuscript tends to emphasize the generality and flexibility of the proposed framework while giving comparatively little attention to the strong assumptions underlying cluster dynamics itself and the related limitations.\\
+
+\textbf{Response}\\
+We agree. The revised manuscript states the principal assumptions of mean-field cluster dynamics explicitly:
+\begin{itemize}
+    \item Section~2.4 (``Rate equations versus the chemical master equation'') explains that Eq.~(14) follows only after the mean-field closure $\langle N_bN_c\rangle\simeq\langle N_b\rangle\langle N_c\rangle$. It is therefore the large-population, well-mixed limit of the stochastic description rather than its exact first moment. The stochastic description is appropriate when populations are small or fluctuations control nucleation.
+    \item The fixed-sink term $D_ac_a$ is identified as a mean-field closure (Supplementary Section~S2).
+    \item The spatial correlation of cascade debris is not represented (Reviewer~\#3, Point~\#1).
+    \item Class~III reactions are excluded, and the conditions under which this exclusion fails are given (Point~\#2).
+    \item The one-way rotation closure and the calibrated barriers of the conversion channels are identified as mesoscale assumptions (Supplementary Section~S3, Class~V, and Table~S8).
+    \item Section~4.1 now contains a paragraph stating what the comparison with experiment does not establish.
+\end{itemize}
+
+\item \textbf{Point \#6: Missing modelling details}\\
+Several modelling aspects lack sufficient detail: The trap binding energies entering Eq. (125) do not appear to be reported. The modelling of the source term is unclear. Table 2 provides only mean cluster sizes and upper bounds, but the actual production spectra used in the calculations are not specified.\\
+
+\textbf{Response}\\
+We thank the reviewer for identifying these omissions.
+\begin{itemize}
+    \item \emph{Trap binding energies.} The solute concentrations $c_s$, the site multiplicities $z_s$ and the defect--solute binding energies $E_b^{\alpha\text{-}s}$ (for vacancies, SIAs and helium with C, N, Cr and W) that enter the effective reaction frequencies are now listed in Table~S3, with their sources.
+    \item \emph{Source term.} The functional form of the cascade cluster-size spectrum used in the calculations is now given in Supplementary Section~S1, together with the normalization that fixes the clustered fractions and mean sizes of Table~S1, the largest cluster sizes, and the survival efficiency relative to NRT (see also Reviewer~\#3, Point~\#9).
+\end{itemize}
+
+\authornote{Neither item is in the September 17 PDF. (a) Table~S3 lists no solute trap concentrations or binding energies, and the effective-frequency expression (former Eq.~(125)) no longer appears in the main text or S3. Add both, with sources. (b) Add the explicit $G_n$ and $G_{m,\ell}$ used (e.g., normalized power-law or exponential between $n=2$ and $i_{\rm cascade}$) and $\eta$.}
+
+\item \textbf{Point \#7: Galerkin and projection terminology}\\
+The manuscript repeatedly uses terminology borrowed from projection methods, basis-function approximations and Galerkin formulations (``dual basis'', ``Galerkin projection'', ``orthogonal reduction'' in a conceptual sense), yet the underlying functional spaces and associated inner products are never defined. As a result, it is often unclear whether these terms are used in a rigorous mathematical sense or only as heuristic descriptions. Clarification would improve the mathematical consistency of the presentation.\\
+
+\textbf{Response}\\
+We agree and have made the terminology precise. The piecewise-constant and lognormal closures and the term ``orthogonal reduction'' have been removed, and only the linear closure used in the calculations is retained. It is now defined rigorously (Section~3.2, Eqs.~(32)--(35), and Supplementary Section~S5.2):
+\begin{itemize}
+    \item \emph{Space.} The functional setting is the space of real sequences on the integer index set $B_k$ of each bin, with the discrete inner product $\langle f,g\rangle_k=\sum_{n\in B_k}f(n)g(n)$.
+    \item \emph{Test and trial functions.} The test functions are the monomials $\psi_p(n)=n^p$, $p=0,1$, so that the moments are $\mu_k^{(p)}=\langle\psi_p,c\rangle_k$. The trial functions $\phi_{k,q}$ are the linear functions on $B_k$ that satisfy the discrete biorthogonality conditions $\langle\psi_p,\phi_{k,q}\rangle_k=\delta_{pq}$ (Eq.~(33)). ``Dual basis'' is used in exactly this sense.
+    \item \emph{Projection.} Projecting the master equation onto the test functions gives the moment equations (35). Because test and trial spaces differ, this is a Petrov--Galerkin projection. It becomes Galerkin in the continuum limit, where the $\phi_{k,q}$ reduce to finite-element hat functions.
+\end{itemize}
+With these definitions the closure reproduces both moments exactly, and the truncation-error estimate (Eq.~(S122)) is a statement about this projection.
+
+\authornote{The September 17 text still says ``linear dual-basis (Galerkin) reconstruction'' and ``Galerkin formulation'' without defining the inner product. Add the inner-product definition and the Petrov--Galerkin qualification to Section~3.2 or S5.2, or replace ``Galerkin'' by ``moment projection''.}
+
+\item \textbf{Point \#8: Computational performance}\\
+The discussion of computational performance is potentially misleading. Reporting wall-clock times alone is insufficient. The manuscript should complete the data to justify the evaluation of the computational bottleneck, such as a typical number of Newton iterations and linear solver iterations required to reach a typical irradiation dose increment.\\
+
+\textbf{Response}\\
+We agree. The wall-clock comparisons and the ``$\sim40\times$ speed-up'' claim have been removed from the Abstract, the Results and the Conclusions. The verification study reports its cost in terms of the number of equations, which is independent of hardware. The integrator statistics for the production run are now reported in Supplementary Section~S6. These include the number of time steps, nonlinear (Newton) iterations, linear (GMRES) iterations, preconditioner setups and right-hand-side evaluations per decade of dose. The location of the computational bottleneck is identified: for discrete systems, the colored Jacobian rebuilds for sparse direct factorization; for bin-moment systems, the per-size reconstruction; and for the exact reference arm, the $O(N_C^2)$ pair sum of the coarsening channel (Supplementary Sections~S2 and S6).
+
+\authornote{Extract the CVODE counters (nst, nni, nli, npe, nfe, ncfn/ncfl) from the production-run provenance and add a short table to S6, e.g., per dose decade from $10^{-6}$ to 40 dpa; this table is not yet in the manuscript.}
+
+\item \textbf{Point \#9: Computational effort versus scientific contribution}\\
+The manuscript occasionally blurs the distinction between computational effort and scientific contribution. For example, the claim that solving 20,000 coupled stiff ODEs on a single workstation is in itself a notable result is difficult to support given the long history of large-scale cluster dynamics simulations. The value of the work should instead be assessed through the accuracy, robustness and generality of the proposed formulation.\\
+
+\textbf{Response}\\
+We agree, and the claim has been removed. The revised manuscript assesses the reductions by their accuracy against the exact discrete solution (Section~4.4 and Supplementary Section~S6). It assesses the model by the six-observable comparison and the loop-character analysis (Sections~4.1--4.2), and it states the limitations of both.
+
+\item \textbf{Point \#10: Figure 8 and the mobility cutoff}\\
+Finally, I found particularly difficult to interpret what is actually done on the conditions of Figure 8. The caption relies heavily on missing abbreviations, the simulation conditions are not clearly specified, and it is difficult to determine which parameters differ and which are the same between the various curves. Only the discussion in Section 6.2 clarifies part of the comparison. More generally, the conclusion that the mobility cutoff has a major impact on loop density is not new and does not benefit here from state-of-the-art sink strengths when both interacting cluster have a mixed 1D-3D mobility.\\
+
+\textbf{Response}\\
+We agree. The former Figure~8 and Section~6.2 have been removed (see also Reviewer~\#2, Point~\#4, and Reviewer~\#3, Point~\#7). They are replaced by a verification study in which each configuration is identified by its discrete-core size, bin count and number of equations, and in which only one parameter changes between neighboring configurations (Tables~S16--S19). We also agree that the sensitivity of the loop density to the mobility cutoff is not a new result, and that conclusion has been removed. The mixed 1D/3D treatment is described in our response to Point~\#2.
+
+\item \textbf{Point \#11: Claims of agreement with experiment and Figure 7}\\
+I am also not convinced by the repeated claims of very good agreement with experiments. In several figures the predictions are not consistently within the experimental uncertainty and are sometimes barely within the correct order of magnitude. Figure 7 contains what should be the central validation metrics of the manuscript, namely the predicted mean loop and cavity sizes compared with experimental measurements. Surprisingly, the discussion on this figure seems simply absent. The claims of good agreement with experiments would be more convincing if supported by a detailed analysis of Figure 7 rather than a qualitative statement.\\
+
+\textbf{Response}\\
+We agree with this criticism of the original manuscript. The revised Section~4.1 is built around exactly the analysis the reviewer requests. The EUROFER97 neutron-irradiation database is now compiled in Supplementary Section~S7 (Tables~S20 and S21), with values reproduced as the source papers report them. The number densities and mean diameters of the three populations are compared with these data through dose (Figure~3), and they are scored quantitatively at 15.72~dpa, within the dose interval where all three populations have been characterized (Table~2).
+
+The discussion covers the following points:
+\begin{itemize}
+    \item Five of the six observables lie inside the measured band, and the cavity density lies about a factor of three below the only two quantified TEM values.
+    \item The measured bands are wide, reflecting temperature, dose, heat treatment and TEM analysis conditions (Dethloff et al., Nucl.\ Mater.\ Energy 15 (2018) 23), so that falling inside a band is a weak test when each observable is taken alone.
+    \item The best-constrained observables (the $\hkl{100}$ density and mean diameter) sit near the middle of their ranges.
+    \item The SANS cavity sizes lie above the calculated trajectory, and SANS and TEM weight the size distribution differently.
+    \item The calculation was run at a single temperature, whereas the strongest experimental dependence is on temperature.
+\end{itemize}
+Phrases such as ``very good agreement'' and ``quantitatively reproduce'' have been removed.
+
+\item \textbf{Point \#12: ``Every macroscopic target within a few percent''}\\
+Maybe I missed something but I did not see any matching of ``every macroscopic target within a few percent'' (as stated in the abstract). For instance, Figure 7 shows voids mean size observed $\sim$800 whereas it is simulated below 10 it seems... Same goes for the orders of magnitude of discrepancy in number densities. Or does this claim in the abstract refer to comparison between fully discrete and grouped simulation? In that case, I do not see the point of limiting to comparing ``macroscopic targets'' instead of the detailed distributions, and the formulation in very misleading anyway. The corresponding statements in the manuscript should therefore be significantly moderated. For all these reasons, I recommend a Major Revision.\\
+
+\textbf{Response}\\
+The reviewer's second interpretation is correct. The statement referred to the comparison between the reduced (bin-moment) and fully discrete simulations, not to the comparison with experiment, and we agree that the formulation was misleading. It has been removed from the Abstract and the Conclusions. The comparison between the reduced and discrete solutions is now reported separately and quantitatively in Section~4.4 and Supplementary Section~S6, for all six observables and with the one persistent residual identified. Following the reviewer's point about detailed distributions, the revised figures also show the complete size distributions of the production run (Figures~5, 7 and 8). The dose evolution of the observables along the verification ladder is compared with the exact solution in Figures~S3 and S4. The statements on agreement with experiment have been moderated as described in the response to Point~\#11.
+
+\item \textbf{Minor Point \#1: Helium production rates}\\
+The quoted helium production rates for general ``fission'' conditions correspond to fast reactor conditions only. They are not representative of LWR conditions and this should be clearly stated throughout the manuscript.\\
+
+\textbf{Response}\\
+We agree. The helium co-production rate of 0.5--1~appm\,He/dpa quoted for ``fission'' conditions corresponds to a fast-reactor spectrum, consistent with the BOR-60 irradiations in the comparison database. It is not representative of light-water-reactor spectra, where thermal-neutron reactions, notably the two-step $^{58}$Ni$(n,\gamma)^{59}$Ni$(n,\alpha)$ sequence in Ni-bearing alloys and $^{10}$B$(n,\alpha)$, can give different helium production rates. We now state this at first use in Table~S1 and Supplementary Section~S5.1, and we use ``fast-reactor (fission) spectrum'' in Section~4.
+
+\authornote{The September 17 PDF still labels the columns ``Fission'' without qualification (Table~S1, S5.1 ``Under fission irradiation''). Add ``fast-reactor'' as described.}
+
+\item \textbf{Minor Point \#2: Meaning of $\omega = D/a^2$}\\
+The physical meaning of the quantity $\omega=D/a^2$ is unclear. Throughout the manuscript it is referred to as a ``reaction frequency'', while it is subsequently used as if it were a jump frequency. However, ``a'' is defined as the BCC lattice parameter through $\Omega=a^3/2$, whereas first-nearest neighbour defect migration occurs over $1/2\langle 111\rangle$ jumps. It is therefore not obvious what microscopic process $\omega$ actually represents, and several geometrical factors appear to be implicitly absorbed into its definition. This terminology should be clarified, and it should be clearly state whether $\omega$ deverses a precise physical interpretation, or merely serves as an auxiliary quantity introduced for algebraic convenience.\\
+
+\textbf{Response}\\
+The reviewer is correct. $\omega_\alpha\equiv D_\alpha/a^2$ is an auxiliary quantity introduced for algebraic convenience, so that all rate constants in atomic-fraction units can be written as a dimensionless geometric prefactor times $\omega_\alpha$. It is not a jump frequency. For first-nearest-neighbor $\half\hkl{111}$ jumps of length $\lambda=\sqrt{3}a/2$ with total jump frequency $\Gamma$ over the eight neighbors, $D=\Gamma\lambda^2/6=\Gamma a^2/8$, so that $\omega=\Gamma/8$. All geometric factors, including the atomic volume $\Omega=a^3/2$, the jump length and the coordination, are absorbed into the prefactors $A_{\rm sph}$, $A_{\rm loop}$, $\xi(m)$ and $4\sqrt{3}\pi$, which are listed explicitly in Table~S2. We have replaced ``reaction frequency'' by ``reduced diffusivity $\omega_\alpha=D_\alpha/a^2$ (an auxiliary rate, not a jump frequency)'' at its definition in Section~3.1 and at the start of Supplementary Section~S3. We have also reworded the one sentence that compared 1D and 3D transport ``at the same jump frequency.'' For 1D glide, the attempt frequency and jump length entering $\omega^{1D}_n$ are given explicitly in Eq.~(S20).
+
+\authornote{Make the terminology change at the definitions in Section~3.1 and S3 (the September 17 PDF still says ``reaction frequencies $\omega_\alpha=D_\alpha/a^2$''), reword the ``at the same jump frequency'' sentence after Eq.~(S24), and check that the prefactor $3/2$ in Eq.~(S20) is consistent with $\omega=\Gamma/8$ for 1D glide.}
+\end{itemize}
+
+\newpage
+
+\textcolor{blue}{
+We have made extensive changes to the resubmitted manuscript in response to the reviewers' comments. We are grateful to all four reviewers, and especially to Reviewers \#2 and \#4, whose detailed and demanding reviews led to a substantially stronger model, an honest comparison with experiment, a verified numerical reduction, and a corrected bibliography. We hope that the revised manuscript will be found suitable for publication in the Journal of Nuclear Materials.\\}
+
+\noindent Kind regards,\\
+Nasr M. Ghoniem
+
+\end{document}

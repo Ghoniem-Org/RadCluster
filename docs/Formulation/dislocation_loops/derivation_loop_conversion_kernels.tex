@@ -1,0 +1,639 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=1.85cm]{geometry}
+\usepackage{amsmath,amssymb,mathtools,booktabs,array,microtype}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage[round,authoryear]{natbib}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,citecolor=blue!45!black,urlcolor=blue!45!black]{hyperref}
+\setlist{nosep,leftmargin=*}
+\allowdisplaybreaks
+
+\newcommand{\kb}{k_{\mathrm B}}
+\newcommand{\K}{\mathcal K}
+\newcommand{\half}{\tfrac12}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\pos}[1]{\left[#1\right]_{+}}
+\newcommand{\dd}{\mathrm d}
+\newcommand{\e}{\mathrm e}
+\newcommand{\rc}{\textsf{RadCluster}}
+\definecolor{warn}{RGB}{252,244,204}
+
+\title{\vspace{-1.2cm}\textbf{Systematic Derivation of the Three
+$\half\langle111\rangle\!\rightarrow\!\langle100\rangle$ Loop-Conversion Kernels}\\[3pt]
+\large Thermodynamic rotation, collision-induced junction formation, and absorption growth}
+\author{Technical derivation for the \rc{} formulation}
+\date{15 September 2026}
+
+\begin{document}
+\maketitle
+\vspace{-1em}
+
+\begin{abstract}
+This note derives, step by step, the three rate kernels used to transfer
+self-interstitial content between mobile $\half a\langle111\rangle$ loops and
+sessile $a\langle100\rangle$ loops in \rc.  The unary kernel is constructed by
+combining the anisotropic-elastic free-energy difference of
+\citet{DudarevBullough2008} with transition-state kinetics and a one-way net-rate
+closure.  The junction kernel is obtained by multiplying the binary encounter
+kernel by (i) a size-and-orientation compatibility factor and (ii) the
+probability that the metastable $\half\langle110\rangle$ intermediate of
+\citet{MarianWirth2002} reaches $\langle100\rangle$ before reverting.  The
+absorption kernel follows from the same diffusion-limited encounter problem,
+but only the $\half\langle111\rangle$ partner is mobile and the pre-existing
+$\langle100\rangle$ loop templates the product character.  Every empirical or
+calibrated closure is distinguished from quantities taken from elasticity,
+atomistics, or geometry.  Numerical checks expose a parameter inconsistency in
+the supplied draft and give the corrected barrier law.
+\end{abstract}
+
+\section{Reaction network, state variables, and units}
+\label{sec:setup}
+
+Let $c_n^{111}$ and $c_m^{100}$ denote the atomic fractions (number per lattice
+site) of interstitial clusters containing $n$ and $m$ SIAs.  If number densities
+are used instead, write $C_n=c_n/\Omega$, where $\Omega$ is the atomic volume.
+The three admissible reactions are
+\begin{align}
+  111_n &\longrightarrow 100_n,                                      &&\text{unary rotation}, \label{rxn:uni}\\
+  111_n+111_{n'} &\longrightarrow 100_{n+n'},                         &&\text{junction},       \label{rxn:junc}\\
+  100_m+111_n &\longrightarrow 100_{m+n},                             &&\text{absorption}.     \label{rxn:abs}
+\end{align}
+Here $111_n$ abbreviates a $\half a\langle111\rangle$ loop and $100_m$ an
+$a\langle100\rangle$ loop.  The $100$ population is defined only for
+$m\ge n_{\rm loop}^{\min}$ and is sessile, $D_m^{100}=0$.  The $111$ population
+is mobile only for $n\le i_{\rm mobile}$.
+
+For atomic-fraction variables, a unary kernel has units s$^{-1}$ and a binary
+kernel also has units s$^{-1}$:
+\begin{equation}
+  \dot c_a=-\Gamma_a c_a,qquad
+  \dot c_a=-K_{ab}c_ac_b.                                             \label{eq:units}
+\end{equation}
+The corresponding volumetric binary coefficient is
+$k_{ab}^{(V)}=\Omega K_{ab}$, with units m$^3$~s$^{-1}$, because
+$\dot C_a=-k_{ab}^{(V)}C_aC_b$.
+
+\begin{table}[ht]
+\centering\small
+\caption{Logical factorization of the three kernels.  Factors labeled
+``closure'' are not uniquely determined by the cited microscopic theory.}
+\label{tab:factorization}
+\begin{tabular}{p{2.5cm}p{4.3cm}p{4.3cm}p{3.7cm}}
+\toprule
+Kernel & Attempt or encounter & Selection/success & Admissibility \\
+\midrule
+$\Gamma_{\rm uni}(n,T)$ & transition-state attempt rate & Dudarev driving-force gate (closure) & loop floor; $\Delta F>0$ \\
+$K_{nn'}^{\rm junc}$ & $111$--$111$ encounter kernel & size/orientation compatibility and Marian completion probability (closures) & both partners mobile; size floor \\
+$K_{mn}^{\rm abs}$ & mobile $111$ encounter with sessile $100$ & templated completion probability (closure) & $m\ge n_{\rm loop}^{\min}$; $n\le i_{\rm mobile}$; $m+n\le I$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Common geometry and loop free energy}
+\label{sec:geometry}
+
+\subsection{Area, perimeter, and size scaling}
+
+Insertion of $n$ atomic volumes produces a platelet volume $A_Xb_X=n\Omega$.
+Thus, for character $X\in\{111,100\}$,
+\begin{equation}
+ A_X(n)=\frac{n\Omega}{b_X},\qquad
+ b_{111}=\frac{\sqrt3}{2}a,\qquad b_{100}=a.                           \label{eq:area}
+\end{equation}
+For the hexagonal $111$ and square $100$ shapes used in \rc,
+\begin{equation}
+ P_{111}(n)=6\sqrt{\frac{2A_{111}(n)}{3\sqrt3}},\qquad
+ P_{100}(n)=4\sqrt{A_{100}(n)}.                                      \label{eq:perimeters}
+\end{equation}
+Substitution of Eq.~\eqref{eq:area} into Eq.~\eqref{eq:perimeters} gives
+\begin{align}
+ \frac{P_{111}(n)}{b_{111}}
+ &=\underbrace{\frac{6}{b_{111}}
+ \sqrt{\frac{2\Omega}{3\sqrt3\,b_{111}}}}_{C_P}\sqrt n,
+                                                               \label{eq:Cp}\\
+ \frac{P_{100}(n)}{b_{100}}
+ &=\frac{4}{b_{100}}\sqrt{\frac{\Omega}{b_{100}}}\sqrt n.     \label{eq:P100scale}
+\end{align}
+Hence all perimeter-proportional energetic terms scale as $\sqrt n$.
+
+\subsection{Dudarev anisotropic-elastic free energy}
+
+The loop formation free energy is represented by
+\begin{equation}
+ E_l^X(n,T)=P_X(n)\left\{
+ \widehat F_X(T)\ln\!\left[\frac{4R_X^*(n)}{\e\delta}\right]
+ +F_\delta^X+F_c^X\right\},                                         \label{eq:loopF}
+\end{equation}
+where $R_X^*=\sqrt{A_X/\pi}$ is an equal-area radius, $\delta$ is the core
+cutoff, $\widehat F_X$ is the anisotropic prelogarithmic line-energy factor,
+and $F_\delta^X+F_c^X$ represents core traction plus nonlinear core energy
+\citep{DudarevBullough2008}.  The conversion driving force at fixed SIA content
+is
+\begin{equation}
+ \Delta F(n,T)=E_l^{111}(n,T)-E_l^{100}(n,T).                          \label{eq:dF}
+\end{equation}
+The sign convention is important: $\Delta F>0$ means that the $100$ product is
+thermodynamically lower in free energy.
+
+For a pure-edge $001[100]$ dislocation, anisotropic elasticity gives
+\begin{equation}
+ \widehat F_{001}([100],T)=\frac{a^2}{4\pi}(c_{11}+c_{12})
+ \left[\frac{c_{44}(c_{11}-c_{12})}
+ {c_{11}(c_{11}+c_{12}+2c_{44})}\right]^{1/2}.                        \label{eq:F100anis}
+\end{equation}
+Near the bcc--fcc transformation, the tetragonal shear modulus obeys the
+empirical softening law
+\begin{equation}
+ c'(T)=\frac{c_{11}-c_{12}}2\simeq c'_0(1-T/T_c)^{1/2},                \label{eq:cprime}
+\end{equation}
+so Eq.~\eqref{eq:F100anis} implies
+\begin{equation}
+ \widehat F_{100}(T)=\widehat F_{100}^{,0}
+ (1-T/T_c)^{1/4}.                                                     \label{eq:F100T}
+\end{equation}
+This is the physical source of the strong temperature dependence: the $100$
+elastic line energy softens, while the relevant $111$ factors remain finite
+\citep{DudarevBullough2008}.
+
+The fitted zero-temperature coefficient $\widehat F_{100}^{,0}$ is obtained
+from one crossover condition, not independently prescribed.  Define
+\begin{equation}
+ L_X(n)=\ln\!\left[\frac{4R_X^*(n)}{\e\delta}\right],\qquad
+ Q(T)=(1-T/T_c)^{1/4}.                                                \label{eq:LQ}
+\end{equation}
+Imposing $\Delta F(n_{\rm ref},T^*)=0$ in Eq.~\eqref{eq:dF} yields
+\begin{equation}
+ \boxed{
+ \widehat F_{100}^{,0}=
+ \frac{\dfrac{P_{111}}{P_{100}}
+ \left[\widehat F_{111}L_{111}+F_\delta^{111}+F_c^{111}\right]
+ -(F_\delta^{100}+F_c^{100})}
+ {Q(T^*)L_{100}} }
+ \quad\text{at }n=n_{\rm ref}.                                      \label{eq:F100cal}
+\end{equation}
+Equation~\eqref{eq:F100cal} documents exactly which datum is calibrated and
+prevents $\widehat F_{100}^{,0}$ and $T^*$ from being counted as independent
+inputs.
+
+\section{Kernel 1: unary $111_n\rightarrow100_n$ rotation}
+\label{sec:unary}
+
+\subsection{Step 1: transition-state attempt rate}
+
+For a $111$ loop trapped in a local free-energy minimum, transition-state theory
+gives
+\begin{equation}
+ k_+(n,T)=\nu_0\exp\!\left[-\frac{E_a(n)}{\kb T}\right],              \label{eq:kplus}
+\end{equation}
+where $E_a=F^\ddagger-F_{111}$ is the forward activation barrier and $\nu_0$
+is an attempt frequency.  The available atomistic literature motivates a
+thermally activated reorientation pathway, but does not supply a unique barrier
+for every loop size.  The \rc{} closure assumes that the activated portion of
+the loop line grows with perimeter:
+\begin{equation}
+ E_a(n)=E_{a0}+\gamma_a\frac{P_{111}(n)}{b_{111}}.                     \label{eq:Ea}
+\end{equation}
+Here $P_{111}/b_{111}$ is the number of Burgers-vector-length line segments and
+$\gamma_a$ is an effective barrier per segment.
+
+\subsection{Step 2: thermodynamic direction and the net-rate factor}
+
+For an explicitly reversible pair of states, local detailed balance requires
+\begin{equation}
+ \frac{k_+(n,T)}{k_-(n,T)}=
+ \exp\!\left[\frac{\Delta F(n,T)}{\kb T}\right].                     \label{eq:DB}
+\end{equation}
+Choosing $k_-=k_+\exp[-\Delta F/(\kb T)]$ gives the forward-minus-reverse
+coefficient
+\begin{equation}
+ k_+-k_-=k_+\left[1-\exp\!\left(-\frac{\Delta F}{\kb T}\right)\right]. \label{eq:net}
+\end{equation}
+\rc{} uses Eq.~\eqref{eq:net} as an effective irreversible rate only where the
+forward reaction is downhill.  Defining $[x]_+=\max(0,x)$ therefore gives
+\begin{equation}
+ \boxed{
+ \Gamma_{\rm uni}(n,T)=\nu_0\exp\!\left[-\frac{E_a(n)}{\kb T}\right]
+ \pos{1-\exp\!\left[-\frac{\Delta F(n,T)}{\kb T}\right]}
+ \Theta(n-n_{\rm loop}^{\min}) .}                                    \label{eq:Gamma}
+\end{equation}
+The bracket has the correct limiting behavior:
+\begin{equation}
+ \pos{1-\e^{-\Delta F/\kb T}}\simeq
+ \begin{cases}
+   0, & \Delta F\le0,\\
+   \Delta F/(\kb T), & 0<\Delta F\ll\kb T,\\
+   1, & \Delta F\gg\kb T.
+ \end{cases}                                                         \label{eq:gateLimits}
+\end{equation}
+This construction is best described as a \emph{one-way net-rate closure
+consistent with the sign of the Dudarev driving force}.  It is not a fully
+reversible detailed-balance model, because the actual term
+$+k_-c_n^{100}$ is not retained.  A reversible alternative would be
+\begin{equation}
+ \dot c_n^{111}=-k_+c_n^{111}+k_-c_n^{100},\qquad
+ \dot c_n^{100}=+k_+c_n^{111}-k_-c_n^{100}.                            \label{eq:reversible}
+\end{equation}
+
+\subsection{Step 3: population equation and conservation}
+
+The implemented unary contribution is
+\begin{equation}
+ \left.\dot c_n^{111}\right|_{\rm uni}=-\Gamma_{\rm uni}c_n^{111},
+ \qquad
+ \left.\dot c_n^{100}\right|_{\rm uni}=+\Gamma_{\rm uni}c_n^{111}.   \label{eq:uniME}
+\end{equation}
+Therefore
+\begin{equation}
+ \left.\frac{\dd}{\dd t}\sum_n n(c_n^{111}+c_n^{100})\right|_{\rm uni}=0, \label{eq:uniCons}
+\end{equation}
+and loop number is also conserved by this channel.
+
+\subsection{Numerical reduction of the barrier}
+
+Using $a=2.867$~\AA, $\Omega=11.80$~\AA$^3$, and Eq.~\eqref{eq:Cp} gives
+\begin{equation}
+ b_{111}=2.483~\text{\AA},\qquad C_P=3.26835,qquad
+ \frac{P_{111}(n)}{b_{111}}=3.26835\sqrt n.                            \label{eq:CpNum}
+\end{equation}
+With the supplied table values $E_{a0}=2.10$~eV and
+$\gamma_a=0.020$~eV,
+\begin{equation}
+ \boxed{E_a(n)=2.10+0.06537\sqrt n\ \text{eV}.}                       \label{eq:EaNum}
+\end{equation}
+
+\noindent\colorbox{warn}{\parbox{0.96\linewidth}{
+\textbf{Consistency correction.}  The expression
+$E_a=1.80+0.098\sqrt n$~eV in the supplied prose corresponds to the earlier
+defaults $E_{a0}=1.8$~eV and $\gamma_a=0.03$~eV found in the current repository,
+not to the supplied parameter table.  With that table, Eq.~\eqref{eq:EaNum} is
+the correct reduction.  Similarly, if $\Delta F>0$ only for $1\le n\le23$ and
+$n_{\rm loop}^{\min}=4$, the actual support of Eq.~\eqref{eq:Gamma} is
+$4\le n\le23$.}}
+
+\section{Kernel 2: $111_n+111_{n'}\rightarrow100_{n+n'}$ junction}
+\label{sec:junction}
+
+\subsection{Step 1: diffusion-limited encounter rate}
+
+For two three-dimensionally diffusing objects, introduce the relative
+coordinate ${\bf r}={\bf r}_1-{\bf r}_2$ and relative diffusivity
+$D_{\rm rel}=D_n+D_{n'}$.  Outside an absorbing encounter surface of radius
+$R_c=R_n^c+R_{n'}^c$, the steady pair concentration obeys
+\begin{equation}
+ D_{\rm rel}\nabla^2 C=0,\qquad C(R_c)=0,\qquad C(r\rightarrow\infty)=C_\infty. \label{eq:Laplace}
+\end{equation}
+The spherical solution is $C(r)=C_\infty(1-R_c/r)$.  Integrating the inward
+flux at $R_c$ gives the Smoluchowski coefficient
+\begin{equation}
+ k_{nn'}^{(V)}=\int_{S_c}D_{\rm rel}\nabla C\cdot\dd{\bf S}/C_\infty
+ =4\pi R_c(D_n+D_{n'}).                                                \label{eq:Smol}
+\end{equation}
+To reproduce the radius convention used in \rc{}, write
+\begin{equation}
+ R_n^c=2\Omega^{1/3}\xi_n,\qquad
+ \xi_n=\left(\frac{3n}{8\pi}\right)^{1/3}.                            \label{eq:xi}
+\end{equation}
+Dividing Eq.~\eqref{eq:Smol} by $\Omega$ converts the volumetric coefficient to
+the atomic-fraction kernel of Eq.~\eqref{eq:units}:
+\begin{equation}
+ \boxed{
+ \K^{ii}_{n,n'}=\frac{8\pi}{\Omega^{2/3}}
+ (\xi_n+\xi_{n'})(D_n^{111}+D_{n'}^{111}).}                            \label{eq:Kii}
+\end{equation}
+If $D^{111}$ is the isotropic-equivalent diffusivity of a 1D/3D glider, then
+Eq.~\eqref{eq:Kii} is an effective-medium closure.  Pure 1D and mixed-dimensional
+encounters generally require different first-passage coefficients; analytical
+and kinetic Monte Carlo treatments are discussed by \citet{HuangMarian2019}
+and the effect on ferritic-iron cluster dynamics by \citet{KohnertWirth2015}.
+
+\subsection{Step 2: branching at encounter}
+
+The Burgers-vector reaction identified by \citet{MarianWirth2002} is
+\begin{equation}
+ \half[111]+\half[1\bar1\bar1]\longrightarrow[100].                  \label{eq:bvec}
+\end{equation}
+Not every encounter has the required Burgers-vector combination, geometry,
+impact parameter, or relative size.  The binary collision kernel is therefore
+split without changing the total encounter budget:
+\begin{align}
+ K_{nn'}^{111\rightarrow100}&=\varphi_{\rm junc}(n,n',T)\K^{ii}_{n,n'}, \label{eq:Kjunc}\\
+ K_{nn'}^{111\rightarrow111}&=[1-\varphi_{\rm junc}(n,n',T)]\K^{ii}_{n,n'}, \label{eq:Kself}\\
+ K_{nn'}^{111\rightarrow100}+K_{nn'}^{111\rightarrow111}&=\K^{ii}_{n,n'}. \label{eq:budget}
+\end{align}
+
+\subsection{Step 3: completion probability of the metastable intermediate}
+
+The Marian pathway contains a metastable $\half\langle110\rangle$ configuration.
+From that state, let completion and reversal be independent activated events:
+\begin{equation}
+ k_2=\nu_2\e^{-\Delta H_2/\kb T},\qquad
+ k_{\rm rev}=\nu_r\e^{-\Delta H_{\rm rev}/\kb T}.                     \label{eq:compRates}
+\end{equation}
+For two independent exponential waiting times, the probability that completion
+occurs first is
+\begin{align}
+ P_{\rm succ}(T)
+ &=\int_0^\infty\underbrace{k_2\e^{-k_2t}}_{\substack{\text{completion}\\
+ \text{at }t}}\underbrace{\e^{-k_{\rm rev}t}}_{\substack{\text{no reversal}\\
+ \text{before }t}}\dd t                                               \label{eq:hazardInt}\\
+ &=\frac{k_2}{k_2+k_{\rm rev}}                                        \label{eq:hazard}\\
+ &=\left[1+\frac{\nu_r}{\nu_2}
+ \exp\!\left(\frac{\Delta H_2-\Delta H_{\rm rev}}{\kb T}\right)\right]^{-1}. \label{eq:Pgeneral}
+\end{align}
+Assuming equal attempt frequencies, $\nu_2=\nu_r$, gives the implemented gate
+\begin{equation}
+ \boxed{P_{\rm succ}(T)=
+ \left[1+\exp\!\left(\frac{\Delta H_2-\Delta H_{\rm rev}}{\kb T}\right)\right]^{-1}.} \label{eq:Psucc}
+\end{equation}
+Only the barrier difference is identifiable from this scalar gate.  Separate
+barriers would become identifiable only if an absolute residence time or total
+escape rate from the intermediate were also used.
+
+\subsection{Step 4: size compatibility and final junction kernel}
+
+The unresolved geometrical compatibility is represented by a log-size Gaussian:
+\begin{equation}
+ g(n,n')=\exp\!\left[-\frac{\ln^2(n/n')}{2\sigma_s^2}\right].          \label{eq:gsize}
+\end{equation}
+It is symmetric, $g(n,n')=g(n',n)$; it peaks at equal size; and
+$g=\e^{-1/2}$ at $n/n'=\e^{\pm\sigma_s}$.  Combining compatibility,
+completion, and the minimum size gives
+\begin{equation}
+ \boxed{
+ \varphi_{\rm junc}=P_{\rm succ}(T)\,\varphi_{\max}\,g(n,n')
+ \Theta[\min(n,n')-n_{j}^{\min,\rm eff}],}                            \label{eq:phi}
+\end{equation}
+where
+\begin{equation}
+ n_j^{\min,\rm eff}=\max\!\left\{2,
+ \min\!\left[n_j^{\min},\left\lceil f_j i_{\rm mobile}\right\rceil\right]\right\}. \label{eq:njeff}
+\end{equation}
+Equation~\eqref{eq:njeff} is a numerical admissibility rule: it prevents a
+calibrated junction channel from becoming identically inaccessible when
+$i_{\rm mobile}<n_j^{\min}$.  It is not derived from Marian atomistics and should
+be reported as a model regularization.  Combining Eqs.~\eqref{eq:Kii},
+\eqref{eq:Kjunc}, and \eqref{eq:phi} gives the requested second kernel.
+
+\subsection{Step 5: mass-action equations and factors of two}
+
+For a symmetric kernel, the product gain at size $p$ is
+\begin{equation}
+ \left.\dot c_p^{100}\right|_{\rm junc}
+ =\frac12\sum_{n=1}^{p-1}K_{n,p-n}^{111\rightarrow100}
+ c_n^{111}c_{p-n}^{111},                                               \label{eq:jgain}
+\end{equation}
+where $1/2$ prevents double counting $(n,p-n)$ and $(p-n,n)$.  The reactant loss is
+\begin{equation}
+ \left.\dot c_n^{111}\right|_{\rm junc}
+ =-c_n^{111}\sum_{n'}K_{nn'}^{111\rightarrow100}c_{n'}^{111}.         \label{eq:jloss}
+\end{equation}
+Then, after relabeling the double sums,
+\begin{equation}
+ \left.\frac{\dd}{\dd t}
+ \left(\sum_n nc_n^{111}+\sum_p pc_p^{100}\right)\right|_{\rm junc}=0. \label{eq:jcons}
+\end{equation}
+Loop number is not conserved: every junction converts two loops into one.
+
+\section{Kernel 3: $100_m+111_n\rightarrow100_{m+n}$ absorption}
+\label{sec:absorption}
+
+\subsection{Step 1: relative diffusivity and encounter kernel}
+
+The general cross-character Smoluchowski kernel in atomic-fraction units is
+\begin{equation}
+ \K_{mn}^{100,111}=\frac{8\pi}{\Omega^{2/3}}
+ (\xi_m+\xi_n)(D_m^{100}+D_n^{111}).                                  \label{eq:Kcross}
+\end{equation}
+Because the host $100$ loop is declared sessile,
+\begin{equation}
+ D_m^{100}=0\quad\Longrightarrow\quad
+ \K_{mn}^{100,111}=\frac{8\pi}{\Omega^{2/3}}
+ (\xi_m+\xi_n)D_n^{111}.                                             \label{eq:KcrossSessile}
+\end{equation}
+The asymmetry therefore arises from mobility and product identity, not from
+discarding the host size: $m$ remains in the capture radius.
+
+\subsection{Step 2: a distinct templated-completion gate}
+
+The captured $111$ cluster must be incorporated into the character of the much
+larger $100$ host.  The same competing-hazard argument as
+Eqs.~\eqref{eq:hazardInt}--\eqref{eq:Pgeneral}, but with an absorption-specific
+forward barrier and prefactor, gives the closure
+\begin{equation}
+ \boxed{
+ P_{\rm succ}^{\rm abs}(T)=A_{\rm abs}
+ \frac{\e^{-\Delta H_2^{\rm abs}/\kb T}}
+ {\e^{-\Delta H_2^{\rm abs}/\kb T}+\e^{-\Delta H_{\rm rev}/\kb T}}
+ =\frac{A_{\rm abs}}
+ {1+\e^{(\Delta H_2^{\rm abs}-\Delta H_{\rm rev})/\kb T}}.}          \label{eq:Pabs}
+\end{equation}
+This is not a literal probability unless parameters ensure
+$0\le P_{\rm succ}^{\rm abs}\le1$.  With $\Delta H_2^{\rm abs}>Delta H_{\rm rev}$,
+the high-temperature limit is $A_{\rm abs}/2$, so $A_{\rm abs}\le2$ preserves
+the probability interpretation.  More generally, Eq.~\eqref{eq:Pabs} should be
+called an \emph{effective success multiplier} or clipped at unity.
+
+The physical reason for allowing $\Delta H_2^{\rm abs}\ne\Delta H_2$ is that
+junction formation creates a new $100$ nucleus from two comparable $111$ loops,
+whereas absorption is templated by an existing $100$ loop.  This distinction is
+a \rc{} hypothesis motivated by the Marian mechanism, not a barrier directly
+reported for this exact coarse-grained reaction.
+
+\subsection{Step 3: final absorption kernel and admissibility}
+
+Multiplying Eqs.~\eqref{eq:KcrossSessile} and \eqref{eq:Pabs} gives
+\begin{equation}
+ \boxed{
+ K_{mn}^{\rm abs}=P_{\rm succ}^{\rm abs}(T)
+ \frac{8\pi}{\Omega^{2/3}}(\xi_m+\xi_n)D_n^{111},}                    \label{eq:Kabs}
+\end{equation}
+subject to
+\begin{equation}
+ m\ge n_{\rm loop}^{\min},\qquad n\le i_{\rm mobile},\qquad m+n\le I. \label{eq:absAdmiss}
+\end{equation}
+If the implementation contains a separate multiplier
+\code{absorb\_boost\_100}, it multiplies the right-hand side of
+Eq.~\eqref{eq:Kabs} and should be listed independently from
+$P_{\rm succ}^{\rm abs}$.
+
+\subsection{Step 4: master-equation terms and conservation}
+
+The mobile-partner loss is
+\begin{equation}
+ \left.\dot c_n^{111}\right|_{\rm abs}
+ =-c_n^{111}\sum_mK_{mn}^{\rm abs}c_m^{100}.                          \label{eq:abs111loss}
+\end{equation}
+For the $100$ ladder, absorption moves a loop from $m$ to $m+n$:
+\begin{equation}
+ \left.\dot c_p^{100}\right|_{\rm abs}
+ =\sum_{n=1}^{p-n_{\rm loop}^{\min}}
+ K_{p-n,n}^{\rm abs}c_{p-n}^{100}c_n^{111}
+ -c_p^{100}\sum_nK_{pn}^{\rm abs}c_n^{111}.                          \label{eq:abs100}
+\end{equation}
+Multiplying Eqs.~\eqref{eq:abs111loss} and \eqref{eq:abs100} by cluster size and
+summing shows
+\begin{equation}
+ \left.\frac{\dd}{\dd t}
+ \left(\sum_nnc_n^{111}+\sum_mmc_m^{100}\right)\right|_{\rm abs}=0. \label{eq:absCons}
+\end{equation}
+The bottom-boundary rule---a $100$ loop shrinking below
+$n_{\rm loop}^{\min}$ returns to the $111$ population---is required to retain
+this conservation when other growth, shrinkage, and emission edges operate.
+
+\section{Numerical evaluation of the two success gates}
+\label{sec:numerics}
+
+With $\Delta H_2=0.44$~eV, $\Delta H_{\rm rev}=0.30$~eV,
+$\Delta H_2^{\rm abs}=0.36$~eV, $A_{\rm abs}=2$, and
+$\kb=8.617333262\times10^{-5}$~eV~K$^{-1}$,
+Eqs.~\eqref{eq:Psucc} and \eqref{eq:Pabs} give Table~\ref{tab:gates}.
+
+\begin{table}[ht]
+\centering
+\caption{Recalculated completion factors for the supplied calibrated barriers.}
+\label{tab:gates}
+\begin{tabular}{rrrr}
+\toprule
+$T$ ($^\circ$C) & $T$ (K) & $P_{\rm succ}$ & $P_{\rm succ}^{\rm abs}$ \\
+\midrule
+300 & 573.15 & 0.0555 & 0.4577 \\
+330 & 603.15 & 0.0634 & 0.4794 \\
+400 & 673.15 & 0.0822 & 0.5245 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The absorption multiplier is 8.25, 7.57, and 6.38 times the junction completion
+probability at 300, 330, and 400~$^\circ$C.  The ratio decreases with temperature,
+although both gates increase.  The actual junction yield is smaller still by
+$\varphi_{\max}g(n,n')$.
+
+\section{Complete parameter provenance and consistency table}
+\label{sec:data}
+
+\begin{table}[p]
+\centering\small
+\caption{Inputs to Eqs.~\eqref{eq:Gamma}, \eqref{eq:Kjunc}, and
+\eqref{eq:Kabs}.  ``Model/calibration'' means that the numerical value is not
+directly supplied by the cited atomistic or elastic theory.}
+\label{tab:params}
+\begin{tabular}{p{3.6cm}p{2.5cm}p{2.0cm}p{6.4cm}}
+\toprule
+Quantity & Symbol & Value & Basis/provenance \\
+\midrule
+Attempt frequency & $\nu_0$ & $10^{13}$ s$^{-1}$ & phonon-scale prefactor; model input \\
+Unary barrier intercept & $E_{a0}$ & 2.10 eV & supplied calibration; differs from repository default 1.8 eV \\
+Barrier per line segment & $\gamma_a$ & 0.020 eV & supplied calibration; differs from repository default 0.03 eV \\
+Loop onset & $n_{\rm loop}^{\min}$ & 4 & population-definition/model input \\
+Peak junction efficiency & $\varphi_{\max}$ & 0.10 & unresolved orientation/geometry; calibration \\
+Log-size width & $\sigma_s$ & 0.35 & size-compatibility closure; calibration \\
+Nominal junction floor & $n_j^{\min}$ & 30 & model/calibration \\
+Mobility fraction & $f_j$ & 0.60 & numerical admissibility regularization \\
+Junction completion barrier & $\Delta H_2$ & 0.44 eV & calibrated effective barrier inspired by the Marian intermediate \\
+Reverse barrier & $\Delta H_{\rm rev}$ & 0.30 eV & calibrated/effective Marian-pathway barrier \\
+Absorption completion barrier & $\Delta H_2^{\rm abs}$ & 0.36 eV & distinct templated-absorption closure \\
+Absorption prefactor & $A_{\rm abs}$ & 2.0 & calibration; maximum preserving probability interpretation \\
+Lattice parameter & $a$ & 2.867 \AA & $\alpha$-Fe material data \\
+Atomic volume & $\Omega$ & 11.80 \AA$^3$ & $\alpha$-Fe material data; consistent with $a^3/2$ \\
+Core cutoff & $\delta$ & 4.0 \AA & dislocation-core model; \citet{DudarevBullough2008} \\
+Softening temperature & $T_c$ & 1185 K & bcc--fcc transition/elastic softening; \citet{DudarevBullough2008} \\
+$111$ prelog factor & $\widehat F_{111}$ & 0.28 eV/\AA & digitized/selected from anisotropic-elastic data \\
+$100$ zero-$T$ factor & $\widehat F_{100}^{0}$ & 0.5182 eV/\AA & derived from Eq.~\eqref{eq:F100cal}, not independent \\
+$111$ core terms & $F_\delta^{111},F_c^{111}$ & 0.345, 0.46 eV/\AA & \citet{DudarevBullough2008} \\
+$100$ core terms & $F_\delta^{100},F_c^{100}$ & 0.387, 0.33 eV/\AA & \citet{DudarevBullough2008} \\
+Crossover temperature & $T^*$ & 450 $^\circ$C & calibration condition in Eq.~\eqref{eq:F100cal} \\
+Reference size & $n_{\rm ref}$ & 30 & calibration condition; supplied analysis value \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Compact final forms and interpretation}
+\label{sec:summary}
+
+The three derived kernels are
+\begin{align}
+ \Gamma_{\rm uni}(n,T)
+ &=\nu_0\e^{-[E_{a0}+\gamma_aP_{111}(n)/b_{111}]/\kb T}
+ \pos{1-\e^{-\Delta F(n,T)/\kb T}}
+ \Theta(n-n_{\rm loop}^{\min}),                                      \label{eq:final1}\\
+ K_{nn'}^{\rm junc}
+ &=P_{\rm succ}(T)\varphi_{\max}
+ \e^{-\ln^2(n/n')/(2\sigma_s^2)}
+ \Theta[\min(n,n')-n_j^{\min,\rm eff}]
+ \frac{8\pi}{\Omega^{2/3}}(\xi_n+\xi_{n'})(D_n^{111}+D_{n'}^{111}),  \label{eq:final2}\\
+ K_{mn}^{\rm abs}
+ &=P_{\rm succ}^{\rm abs}(T)
+ \frac{8\pi}{\Omega^{2/3}}(\xi_m+\xi_n)D_n^{111}.                   \label{eq:final3}
+\end{align}
+
+Their physical roles are distinct:
+\begin{itemize}
+\item Equation~\eqref{eq:final1} transfers an existing loop between character
+states.  Dudarev theory supplies $\Delta F$; the barrier law and one-way net-rate
+interpretation are mesoscale closures.
+\item Equation~\eqref{eq:final2} creates a new $100$ loop through an encounter
+between two mobile $111$ loops.  Marian atomistics motivates the reaction path;
+the log-Gaussian compatibility function and effective barriers coarse-grain
+unresolved collision variables.
+\item Equation~\eqref{eq:final3} grows an existing sessile $100$ loop by capture
+of a mobile $111$ loop.  Its separate completion gate represents templating by
+the host and should not be conflated with junction nucleation.
+\end{itemize}
+All three conserve SIA content by stoichiometry.  The unary channel conserves
+loop number; the two binary channels reduce loop number by one per event.  The
+clear separation of thermodynamic input, encounter kinetics, and calibrated
+branching factors is essential for mechanism-ablation studies and uncertainty
+quantification.
+
+\begin{thebibliography}{99}
+
+\bibitem[Dudarev et~al.(2008)Dudarev, Bullough, and Derlet]{DudarevBullough2008}
+S.~L. Dudarev, R. Bullough, and P.~M. Derlet,
+``Effect of the $\alpha$--$\gamma$ Phase Transition on the Stability of
+Dislocation Loops in bcc Iron,'' \emph{Physical Review Letters} \textbf{100},
+135503 (2008).
+\href{https://doi.org/10.1103/PhysRevLett.100.135503}{doi:10.1103/PhysRevLett.100.135503}.
+
+\bibitem[Marian et~al.(2002)Marian, Wirth, and Perlado]{MarianWirth2002}
+J. Marian, B.~D. Wirth, and J.~M. Perlado,
+``Mechanism of Formation and Growth of $\langle100\rangle$ Interstitial Loops
+in Ferritic Materials,'' \emph{Physical Review Letters} \textbf{88}, 255507
+(2002).
+\href{https://doi.org/10.1103/PhysRevLett.88.255507}{doi:10.1103/PhysRevLett.88.255507}.
+
+\bibitem[Huang and Marian(2019)]{HuangMarian2019}
+S. Huang and J. Marian,
+``Rates of diffusion controlled reactions for one-dimensionally-moving species
+in 3D space,'' \emph{Philosophical Magazine} \textbf{99}, 2562--2583 (2019).
+\href{https://doi.org/10.1080/14786435.2019.1635721}{doi:10.1080/14786435.2019.1635721}.
+
+\bibitem[Kohnert and Wirth(2015)]{KohnertWirth2015}
+A.~A. Kohnert and B.~D. Wirth,
+``Cluster dynamics models of irradiation damage accumulation in ferritic iron.
+II. Effects of reaction dimensionality,'' \emph{Journal of Applied Physics}
+\textbf{117}, 154306 (2015).
+\href{https://doi.org/10.1063/1.4918316}{doi:10.1063/1.4918316}.
+
+\bibitem[Gao et~al.(2022)Gao, Gaganidze, and Aktaa]{Gao2022}
+J. Gao, E. Gaganidze, and J. Aktaa,
+``Relative population of $\half\langle111\rangle$ and $\langle100\rangle$
+interstitial loops in $\alpha$-Fe under irradiation: Effects of C15 cluster
+stability and loop one-dimensional movement,'' \emph{Acta Materialia}
+\textbf{233}, 117983 (2022).
+\href{https://doi.org/10.1016/j.actamat.2022.117983}{doi:10.1016/j.actamat.2022.117983}.
+
+\bibitem[Smoluchowski(1917)]{Smoluchowski1917}
+M. von Smoluchowski,
+``Versuch einer mathematischen Theorie der Koagulationskinetik kolloider
+Lösungen,'' \emph{Zeitschrift für Physikalische Chemie} \textbf{92}, 129--168
+(1917).
+
+\bibitem[Ghoniem-Org(2026)]{RadClusterRepo}
+Ghoniem-Org, \emph{RadCluster}, source files
+\code{reaction\_rates.py} and \code{eurofer97/declaration.py}, accessed
+15 September 2026.
+\href{https://github.com/Ghoniem-Org/RadCluster}{github.com/Ghoniem-Org/RadCluster}.
+
+\end{thebibliography}
+
+\end{document}

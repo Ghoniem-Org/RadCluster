@@ -2,9 +2,16 @@
 
 ## Source Document
 
-All equations cite:
-> Ghoniem, N.M. (2026), *"A Cluster Dynamics Model for Radiation Damage Evolution
-> in Ferritic-Martensitic Steels"* (`docs/Formulation/rate_equations.tex`)
+All equations cite the formulation manuscript, which lives under
+[`docs/Formulation/cluster_dynamics_framework/`](../docs/Formulation/cluster_dynamics_framework/):
+> Ghoniem, N.M. (2026), *"A Generalized Graph-Based Cluster Dynamics Framework for
+> Irradiated Materials"* — `Generalized_Cluster_Dynamics.pdf`, with the paper sections
+> as `.tex` sources alongside it.
+
+The symbolic equation labels used below (`ME_SIA`, `P1`–`P8`, Tables 2–30) are that
+document's labels. The former single-file path `docs/Formulation/rate_equations.tex`
+no longer exists: `docs/Formulation/` is now organized by topic — see
+[`docs/Formulation/README.md`](../docs/Formulation/README.md) for the folder map.
 
 ---
 
@@ -18,8 +25,8 @@ reductions, and conservation machinery — no abstract-core or integrator change
 
 | # | Objective | Why | Plan document |
 |---|---|---|---|
-| **(a)** | **Dislocation-evolution edge — saturate loop density.** Add a loop → network-dislocation loss channel and a dynamic network density `ρ_net`, so SIA loop number density saturates with dose (currently it grows unbounded — there is no loop↔network coupling). | `RadCluster_2_0` treats `rho_d` as a *static* sink; large/sessile loops accumulate without bound. | [`docs/Formulation/loop_network_loss.tex`](../docs/Formulation/loop_network_loss.tex) |
-| **(b)** | **Radiation-Induced Segregation (RIS) + solute precipitation.** Make selected solutes (Cr, Mn, Si, Ni) *dynamic*: bulk + sink-local reservoirs, RIS transfer edges, and solute-rich precipitate populations (Cr-rich α′, Mn–Ni–Si). | Solutes currently enter only as *fixed* concentrations in the trapping factor; the model cannot predict RIS, α′/MNS nanofeatures, or their hardening. | [`docs/Formulation/radcluster_2_1_RIS_plan.tex`](../docs/Formulation/radcluster_2_1_RIS_plan.tex) |
+| **(a)** | **Dislocation-evolution edge — saturate loop density.** Add a loop → network-dislocation loss channel and a dynamic network density `ρ_net`, so SIA loop number density saturates with dose (currently it grows unbounded — there is no loop↔network coupling). | `RadCluster_2_0` treats `rho_d` as a *static* sink; large/sessile loops accumulate without bound. | [`docs/Formulation/dislocation_loops/loop_network_loss.tex`](../docs/Formulation/dislocation_loops/loop_network_loss.tex) |
+| **(b)** | **Radiation-Induced Segregation (RIS) + solute precipitation.** Make selected solutes (Cr, Mn, Si, Ni) *dynamic*: bulk + sink-local reservoirs, RIS transfer edges, and solute-rich precipitate populations (Cr-rich α′, Mn–Ni–Si). | Solutes currently enter only as *fixed* concentrations in the trapping factor; the model cannot predict RIS, α′/MNS nanofeatures, or their hardening. | [`docs/Formulation/segregation_and_precipitation/radcluster_2_1_RIS_plan.tex`](../docs/Formulation/segregation_and_precipitation/radcluster_2_1_RIS_plan.tex) |
 
 ### (a) Dislocation evolution — key design commitments (see plan)
 - **Network-only loss** `Λ_n^net = v_net·ρ_net·w_c·P_ℓd(n)` — a sweep frequency
@@ -547,7 +554,10 @@ converges efficiently; Woodbury's 58-RHS setup cost is
 counterproductive at that scale.
 
 Parameters: `prec_type` (0/1), `prec_bw` (auto), `prec_rank` (auto).
-See `Docs/Formulation/Jacobian_Preconditioner.tex` for derivation.
+The Jacobian structure and the preconditioner derivation are documented in
+[`docs/Formulation/reaction_admissibility_graph/supplement_S1/`](../docs/Formulation/reaction_admissibility_graph/supplement_S1/)
+(`supp_rag_implementation.tex`, `S1_jacobian_tikz.tex`). The old
+`Docs/Formulation/Jacobian_Preconditioner.tex` path is gone.
 
 ---
 

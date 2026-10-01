@@ -6,7 +6,7 @@ generalized graph-based cluster-dynamics framework of
 
     Ghoniem, N.M. (2026), "A Generalized Graph-Based Cluster Dynamics
     Framework for Irradiated Materials"
-    (docs/Formulation/Generalized_Cluster_Dynamics.pdf).
+    (docs/Formulation/cluster_dynamics_framework/Generalized_Cluster_Dynamics.pdf).
 
 It defines the two algorithmic primitives that make a generic CD
 formulation possible:

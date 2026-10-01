@@ -9,7 +9,7 @@ a missing rung is a fact about the campaign, not a gap to hide.
 import json, re, sys
 from pathlib import Path
 HERE = Path(__file__).resolve().parent
-SYNC = HERE.parent.parent / "RadCluster_2_1/digital_twin/verification/.sync/claims"
+SYNC = HERE.parents[2] / "RadCluster_2_1/digital_twin/verification/.sync/claims"
 D = {"N111": 12.568, "N100": 1.065, "d100": 5.741, "Nv": 2.948, "dcav": 2.544}
 
 def pct(v, k):

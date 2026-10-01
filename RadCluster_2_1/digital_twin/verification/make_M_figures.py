@@ -44,7 +44,7 @@ for p in (str(REPO), str(DT), str(HERE)):
 import runs as manifest_mod                      # noqa: E402
 
 SYNC = HERE / ".sync" / "claims"
-OUT = REPO / "docs" / "Formulation" / "figs"
+OUT = REPO / "docs" / "Formulation" / "verification_campaign" / "figs"
 SCORE_DOSE = "20"
 
 LABEL_PT, TICK_PT, LEGEND_PT = 22, 20, 15

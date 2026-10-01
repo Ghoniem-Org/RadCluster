@@ -1,7 +1,7 @@
 """
 runs.py — the run manifest for the paper-revision verification study.
 
-The ~25 runs of `docs/Formulation/paper_revision_verification_plan.md` as DATA,
+The ~25 runs of `docs/Formulation/verification_campaign/paper_revision_verification_plan.md` as DATA,
 not as two dozen hand-copied command lines.  One entry per table cell; the
 runner (`campaign.py`) turns an entry into a `RadClusterSimulation` and a
 timestamped output directory.
@@ -121,7 +121,7 @@ M2R_BINS = (2, 3, 4, 6, 8, 12, 16, 24, 32)
 
 # The 2-D sweep.  M2R varied I_bin at fixed i_discrete = 50 and found d_111
 # stuck at -5 to -7% however fine the bins got; the 2026-09-09 investigation
-# (docs/Formulation/d111_investigation.md) showed why -- that error converges in
+# (docs/Formulation/verification_campaign/d111_investigation.md) showed why -- that error converges in
 # i_discrete, not in I_bin, so the ladder was turning the one knob that does not
 # control it.  Table 4 had the opposite flaw: its rungs moved BOTH together, so
 # a deviation could not be attributed to either.

@@ -83,7 +83,12 @@ class LoopEnergetics:
 
     # ── default calibration target ───────────────────────────────────────────
     T_star_C: float = 450.0    # crossover temperature [°C] at n_ref
-    n_ref: float = 50.0        # reference loop size [SIAs]
+    # 30, not the original 50: the calibrated value in force since S5 row 8700
+    # became the workbook default (18ba4d6, 2026-09-02) and the value the
+    # reference run uses.  Built standalone with these defaults the class
+    # gives Fhat_100_0 = 0.5183 eV/A; through ReactionRates, with the
+    # workbook's a = 2.867 A and Omega = 11.8 A^3, it gives 0.5182.
+    n_ref: float = 30.0        # reference loop size [SIAs]
 
     def __post_init__(self) -> None:
         self.b_111 = (np.sqrt(3.0) / 2.0) * self.a

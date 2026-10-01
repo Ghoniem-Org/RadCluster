@@ -400,7 +400,7 @@ E_b^fit(n) = A_111 · n^{+B_111}      ⟹      E_b^i(2) = A_111 · 2^{+B_111}
 >
 > **Resolved 2026-08-16.** The sign was corrected at source in
 > `RadCluster_2_1/CLAUDE.md` §10, `RadCluster_2_0/CLAUDE.md` §10 and
-> `docs/Formulation/simulation_methodology.tex` (the `⟨100⟩` branch carried the
+> `docs/Formulation/cluster_dynamics_framework/simulation_methodology.tex` (the `⟨100⟩` branch carried the
 > same typo). This erratum is retained as the record of the discrepancy, not as
 > a live warning.
 

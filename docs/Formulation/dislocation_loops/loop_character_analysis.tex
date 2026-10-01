@@ -1,0 +1,179 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=1.9cm]{geometry}
+\usepackage{amsmath,amssymb,booktabs,enumitem}
+\usepackage[expansion=false]{microtype}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xcolor}
+\linespread{0.98}
+\newcommand{\code}[1]{\texttt{\small #1}}
+\newcommand{\flag}[1]{\textcolor{red!70!black}{#1}}
+\begin{document}
+\begin{center}
+{\large\bfseries ½$\langle$111$\rangle\rightarrow\langle$100$\rangle$ loop conversion:
+RadCluster versus Gao, Gaganidze \& Aktaa (2022)}\\[2pt]
+{\footnotesize \code{RadCluster\_2\_1} checked against JNM \textbf{559} (2022) 153409 and
+Acta Mater.\ \textbf{233} (2022) 117983 --- \today}
+\end{center}
+\vspace{2pt}
+
+\section{Energetics: same functional family, different parameterisation}
+
+\code{py\_utils/loop\_energetics.py} implements the Dudarev (PRL \textbf{100}, 135503)
+prismatic-loop free energy
+\[
+E^X_l(n,T)=P_X(n)\Bigl[\hat F_X(T)\ln\!\frac{4R^*_X(n)}{e\delta}+F^X_\delta+F^X_c\Bigr],
+\qquad
+\hat F_{100}(T)=\hat F^{\,0}_{100}\Bigl(1-\frac{T}{T_c}\Bigr)^{1/4},\ T_c=1185\,\mathrm{K},
+\]
+with $\hat F_{111}$ held \emph{temperature-independent} and the single free constant
+$\hat F^{\,0}_{100}$ fixed by one calibration target, $\Delta F(n_{\rm ref},T^*)=0$.
+Gao \emph{et al.} instead compute $\hat F$ and $F_\delta$ from full anisotropic
+elasticity with Varshni-fitted $C_{11},C',C_{44}$ to 1100\,K, and condense the result to
+\[
+E_{\rm tot}(N,T)=\epsilon_0(T)\sqrt N\ln N+\epsilon_1(T)\sqrt N,\qquad
+\epsilon_i(T)=b_0+b_1T+b_2T^2+b_3T^3 .
+\]
+Since $P_X\propto\sqrt N$ and $\ln R^*=\tfrac12\ln N+\text{const}$, \textbf{these are the same
+functional form}: their Table~3 is a drop-in replacement for your digitised constants.
+Two structural differences matter:
+
+\begin{enumerate}[leftmargin=*,itemsep=1pt,topsep=2pt]
+\item \flag{½$\langle$111$\rangle$ is held $T$-independent in RadCluster.} Gao's fitted
+$\epsilon_0,\epsilon_1$ for ½[111] carry significant linear and cubic $T$ terms. Holding
+$\hat F_{111}$ fixed attributes the \emph{entire} crossover to $\langle100\rangle$ softening.
+\item RadCluster carries one ½$\langle$111$\rangle$ variant. Gao resolve
+$\langle11\bar2\rangle$ and $\langle1\bar10\rangle$ side orientations, whose crossover
+temperatures differ by $\sim\!80^\circ$C at 100 SIAs --- comparable to the effect being modelled.
+\end{enumerate}
+
+\paragraph{Numerical comparison.} Both treatments agree in \emph{direction}: small loops
+favour $\langle100\rangle$, and the crossover temperature rises with size. The shipped
+calibration, however, sits high:
+
+\begin{center}\footnotesize\setlength{\tabcolsep}{6pt}
+\begin{tabular}{lcccc}
+\toprule
+& $n=20$ & $n=50$ & $n=100$ & $\Delta F>0$ at 450$^\circ$C \\
+\midrule
+RadCluster, shipped ($T^*\!=\!450^\circ$C @ $n_{\rm ref}\!=\!50$) & $-13^\circ$C & $450^\circ$C & \flag{$556^\circ$C} & $n\le49$ \\
+Recalibrated $T^*\!=\!455^\circ$C @ $n_{\rm ref}\!=\!100$ & --- & $319^\circ$C & $455^\circ$C & $n\le96$ \\
+Recalibrated $T^*\!=\!375^\circ$C @ $n_{\rm ref}\!=\!100$ & --- & $215^\circ$C & $375^\circ$C & $n\le183$ \\
+\midrule
+Gao Fig.~3(b), 100 SIAs & --- & --- & $375$--$455^\circ$C & --- \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent $\hat F^{\,0}_{100}=0.4799$\,eV/\AA\ as shipped. Moving the calibration target
+from $(450^\circ\mathrm{C},\,n\!=\!50)$ to $(455^\circ\mathrm{C},\,n\!=\!100)$ costs one
+line and brings the size-dependence onto Gao's curve; the $\langle100\rangle$-favoured
+window at 450$^\circ$C roughly doubles, $n\le49\rightarrow n\le96$. The module docstring
+already flags the constants as ``approximate (digitised from Dudarev Figs.~2--3)'' and the
+size-dependence as a calibration decision --- this is the calibration.
+
+\section{The kinetic channels: your two, their two}
+
+RadCluster carries \emph{three} conversion channels (\code{py\_utils/reaction\_rates.py}):
+\begin{enumerate}[leftmargin=*,itemsep=1pt,topsep=2pt]
+\item $\Gamma_{\rm uni}(n)=\nu_0e^{-E_a(n)/k_BT}\bigl[1-e^{-\Delta F/k_BT}\bigr]$ --- a
+\emph{direct single-loop rotation}, $E_{a0}=1.8$\,eV;
+\item the Marian junction $\varphi_{\rm junc}(n,n')=\varphi_{\max}
+e^{-\ln^2(n/n')/2\sigma_s^2}\,\Theta(\min(n,n')\ge n_j^{\min})$ with two-step success
+$P_{\rm succ}=e^{-\Delta H_2/k_BT}/(e^{-\Delta H_2/k_BT}+e^{-\Delta H_{\rm rev}/k_BT})$,
+$\Delta H_2=1.0$, $\Delta H_{\rm rev}=0.30$\,eV;
+\item a \emph{size-asymmetric} absorption gate $P^{\rm abs}_{\rm succ}$ with its own lower
+forward barrier ($\Delta H_2^{\rm abs}=0.36$\,eV in the workbook), justified in the code as
+the case where an absorbed cluster ``inherits --- is templated by --- the host's existing
+$\langle100\rangle$ character.''
+\end{enumerate}
+
+Gao \emph{et al.} test both loop--loop routes and reach an asymmetric verdict:
+
+\begin{itemize}[leftmargin=*,itemsep=1pt,topsep=2pt]
+\item \flag{The symmetric Marian junction is negligible.} ``[S]imulation results show that
+this contribution to the nucleation of $\langle100\rangle$ loops is negligible\ldots due to
+the low possibility of two ½$\langle$111$\rangle$ loops with an identical size and suitable
+orientations to encounter each other.'' Their introduction is blunter: the mechanism
+``requires the collision between two migrating ½$\langle$111$\rangle$ loops with similar
+sizes and overlapping glide cylinders, making it unlikely in reality.''
+\item \textbf{The asymmetric reaction dominates.} Their conclusion (5) identifies
+``½$\langle$111$\rangle+\langle100\rangle$'' as ``the origin causing the SIA transfer
+between loops of different types,'' with the resultant character following the
+\emph{larger} loop (after Arakawa's in-situ TEM).
+\end{itemize}
+
+Your channels (2) and (3) map exactly onto their negligible and dominant routes. So your
+reading that both are needed is consistent with their physics --- \textbf{but the weighting
+is suspect}: $\varphi_{\rm junc}$ is Gaussian in $\ln(n/n')$, \emph{peaked at $n=n'$}, and
+additionally gated by $\min(n,n')\ge n_j^{\min}$. It maximises precisely the encounter Gao
+find improbable. \textbf{One-line test:} set \code{phi\_max\_junc}$\,=0$ and check whether the
+$\langle100\rangle$ fraction survives on the absorption channel alone. If it does, the
+junction is a tuning knob, not a mechanism; if it collapses, you have a defensible
+disagreement with Gao worth stating explicitly.
+
+\section{The unary channel is the one experiment does not support}
+
+Gao are explicit: ``The population re-arrangement proceeds \emph{not} because a single
+½$\langle$111$\rangle$ loop directly transfers its orientation into the $\langle100\rangle$
+configuration. Instead, loop mutual-interactions provoke the population modification.''
+Yao's heavy-ion experiments saw no direct transformation --- only the abrupt disappearance
+of ½$\langle$111$\rangle$ above $465^\circ$C.
+
+$\Gamma_{\rm uni}$ is a direct single-loop rotation. Your own code comment concedes it is
+calibrated rather than derived (``calibrated to place the $f_{111}(T)$ crossover at
+$\sim\!350^\circ$C at reactor dose rates''). That is defensible as a coarse-grained
+effective channel standing in for unresolved processes --- but it should be labelled as
+such, because a referee holding these two papers will read it as the mechanism that
+experiment rules out.
+
+\section{What Gao have that RadCluster does not}
+
+\begin{itemize}[leftmargin=*,itemsep=1pt,topsep=2pt]
+\item \flag{C15 Laves clusters --- the single largest gap.} In Gao's model
+$\langle100\rangle$ loops ``nucleate mainly via the collapse of C15 clusters''; C15 also
+acts as an SIA buffer that ``significantly reduces the density of $\langle100\rangle$
+loops'' and modifies loop reaction rates. RadCluster has no C15 population at all, so every
+$\langle100\rangle$ must come from conversion. That is a genuinely different nucleation
+hypothesis, not a missing detail.
+\item \textbf{Cascade overlap with pre-existing clusters} (their $F_{\rm ol}$ terms,
+Eq.~9) as a transformation channel among ½$\langle$111$\rangle$, $\langle100\rangle$ and C15.
+\item \textbf{Annular reaction cross-sections.} They state the spherical reaction volume
+``became invalid for the 2-dimensional loops with sizes over a few nanometers'' and adopt
+annular cross-sections to capture coaxial-loop strain repulsion. RadCluster uses
+$A_{\rm sph}m^{1/3}$ and $A_{\rm loop}n^{1/2}$ capture-radius kernels throughout.
+\item \textbf{Trap-mediated loop diffusion} (Kohnert \& Wirth), $D^{\rm dt}_l=\nu^{\rm dt}_l\lambda_l^2/2N$
+with $\nu^{\rm dt}\propto$ dose rate --- an irradiation-driven random walk. RadCluster uses a
+thermal $D^{\rm 1D}_n\propto n^{-s}e^{-E_m/k_BT}$ with a rotational-correlation factor.
+\item \textbf{Cascade cluster spectrum:} exponential, $f^{\rm SIA}(n)=0.89e^{-0.67n}$
+($\sim$54\% clustered), against your power law $C_in^{-s_i}$, $f^{\rm cl}_i=0.58$. Similar
+clustered fraction, very different large-cluster tail.
+\end{itemize}
+
+Conversely, Gao exclude vacancy-type loops and report that voids barely form; RadCluster's
+coupled cavity--loop system covers a regime their model does not.
+
+\section{The strongest point of agreement}
+
+Your experimental database encodes a \emph{dose}-driven transition
+(\code{loop\_burgers\_fraction.py}: ``a/2$\langle$111$\rangle$ dom.\ ($<$4 dpa);
+a$\langle$100$\rangle$ dom.\ ($>$4 dpa)''), and Gao's Fig.~14 shows the same --- the
+½$\langle$111$\rangle$ SIA fraction falling steeply with dose at fixed temperature,
+reaching $\sim\!0$ by 0.5 dpa at 500$^\circ$C. Both therefore say the transition is not
+purely thermodynamic. Gao's conclusion (7) puts it as temperature acting \emph{through
+diffusivity}: ``most ½$\langle$111$\rangle$ loops are merged with $\langle100\rangle$ loops
+during their long-range movements when the temperature is over (equal) 500$^\circ$C.''
+That is an argument for weighting your absorption channel over both the unary and junction
+channels --- and the dose dependence is the observable that discriminates them, since a
+thermodynamic crossover alone predicts none.
+
+\paragraph{Recommended actions.}
+(i) Recalibrate \code{LoopEnergetics} to $(455^\circ\mathrm{C},n_{\rm ref}=100)$ or import
+Gao's Table~3 directly, and give ½$\langle$111$\rangle$ its $T$-dependence.
+(ii) Run the $\varphi_{\max}\!=\!0$ sensitivity to establish whether the junction is
+load-bearing.
+(iii) Relabel $\Gamma_{\rm uni}$ as an effective channel, or drop it and test whether
+absorption alone reproduces $f_{111}(T)$.
+(iv) Decide explicitly whether the absence of C15 is a modelling choice you defend or a gap
+you acknowledge --- it is the first thing these authors will look for.
+
+\end{document}

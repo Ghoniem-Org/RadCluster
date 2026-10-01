@@ -64,7 +64,7 @@ if [ -d "$REPO/.git" ]; then
     echo "   (pull skipped -- resolve by hand if it diverged)"
 else
   echo "== cloning repo -> $REPO"
-  git clone https://github.com/Ghoniem-Org/RadCluster.git "$REPO"
+  git clone https://github.com/Ghoniem/RadCluster.git "$REPO"
 fi
 
 # ── 3. solver ───────────────────────────────────────────────────────────────

@@ -17,7 +17,6 @@ EuroferMicro_venv/
 
 # C++ build artifacts
 */build/
-archive/*/build/
 *.exe
 *.dll
 *.so
@@ -28,7 +27,6 @@ archive/*/build/
 # NOTE the trailing /* rather than /: excluding the DIRECTORY makes git refuse
 # to descend, and no negation below could then re-include anything inside it.
 */output/*
-archive/*/output/
 
 # EXEMPT: the designated reference run is tracked, because output/ is otherwise
 # gitignored and the reference figures + provenance would exist on one machine
@@ -77,3 +75,25 @@ docs/Formulation/**/*.out
 docs/Formulation/**/*.toc
 docs/Formulation/**/*.fls
 docs/Formulation/**/*.fdb_latexmk
+
+# Claude Code local working state — never shared.
+# "Claude outputs/" is a scratch drop for generated drafts (the GCD rebuttal
+# lived here); .claude/ holds per-machine session state: settings.json, the
+# worktrees/ registry, and memory/.  The committed .claude/memory/ copy had
+# already drifted out of step with the live harness memory it was supposed to
+# mirror, so it was syncing a stale snapshot, not sharing anything.
+Claude outputs/
+.claude/
+
+# Archived modules — kept on disk for reproducibility, not pushed.  276 MB of
+# superseded code (RadCluster_1_0 alone is 140 MB) that nothing outside
+# archive/ imports or reads; the only references anywhere were the two build/
+# and output/ rules above, now redundant and removed.
+#
+# Untracking does NOT discard them.  Every file stays in the history: the last
+# commit that carried the directory is e9f92c3, so
+#     git checkout e9f92c3 -- archive/
+# restores the whole tree, and tags v2.0.0 (RadCluster_2_0) and
+# eurofer_cd-final (Eurofer_CD) pin the states CLAUDE.md cites.  What changes
+# is that a FRESH CLONE no longer materialises archive/ in the working tree.
+archive/

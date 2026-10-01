@@ -7,7 +7,7 @@ Physics-based simulation suite for **EUROFER97 / ferritic-martensitic steel** be
 ```
 RadCluster/
 ├── radcluster_code/     # Active development — adds dislocation evolution + RIS (clone of 2_0)
-├── archive/            # Archived modules (read-only, kept for reproducibility)
+├── archive/            # Archived modules — LOCAL ONLY, gitignored (see Archived modules)
 │   ├── RadCluster_2_0/     # Archived 2026-10-01 — released as v2.0.0; baseline for RadCluster_2_1
 │   ├── Eurofer/            # Archived earlier microstructure work
 │   ├── Eurofer_CD/         # Archived 2026-05-02 — superseded by RadCluster_1_0
@@ -19,7 +19,8 @@ RadCluster/
 │   ├── Formulation/        # Derivations, paper sections, studies — by topic (see Formulation/README.md)
 │   ├── Literature/         # Peer-reviewed papers (PDF)
 │   └── design_notes/       # Working design notes
-├── scripts/            # Repository utilities (link-memory.sh)
+├── scripts/            # Repository utilities (h2jupynb — Hoffman2 Jupyter launcher;
+│                    #   link-memory.sh — retired, see Environment)
 ├── README.md           # Public-facing introduction: methodology, install, usage, citation
 ├── requirements.txt
 └── LICENSE             # MIT
@@ -28,6 +29,24 @@ RadCluster/
 `README.md` is the user-facing entry point; this file (`CLAUDE.md`) is the internal
 working reference. When the input workbook, the output artifacts, the solver options or
 the module layout change, both need updating — they describe the same contract.
+
+### Archived modules are no longer pushed
+
+`archive/` is gitignored. It holds 276 MB of superseded code that nothing
+outside it imports, and it was being carried in every clone for no working
+purpose. The files remain on this machine and in the history — they were
+untracked with `git rm --cached`, not deleted:
+
+```bash
+git checkout e9f92c3 -- archive/     # restore the whole tree from the last commit that had it
+```
+
+`e9f92c3` is the last commit carrying them under `archive/`. Note that the tags
+`v2.0.0` and `eurofer_cd-final` predate the archiving moves, so at those refs
+the modules are at the repository root (`RadCluster_2_0/`, `Eurofer_CD/`) —
+checking out from a tag restores to the root path, not into `archive/`. What changed is that a fresh clone no longer materialises
+`archive/` in the working tree; on a new machine, restore it from history or
+copy it across only if a reproducibility question actually needs it.
 
 ## Module Status
 
@@ -152,19 +171,22 @@ pip install -r requirements.txt
 
 # Register Jupyter kernel (optional)
 python -m ipykernel install --user --name radcluster --display-name "RadCluster"
-
-# Link Claude Code's project memory to the copy in this repo (once per machine)
-./scripts/link-memory.sh
 ```
 
 ### Project memory
 
-Claude Code's memory for this project is committed at `.claude/memory/` and
-symlinked into `~/.claude/projects/<slug>/memory/`, because the harness path is
-keyed to the absolute checkout path and would otherwise exist on one machine
-only. Run `scripts/link-memory.sh` after cloning; without it a session on this
-machine starts with no project memory and writes new memories somewhere git
-never sees. `.claude/memory/MEMORY.md` is the index.
+Claude Code's memory is **not** versioned. `.claude/` and `Claude outputs/` are
+gitignored: they are per-machine session state and a scratch drop for generated
+drafts, neither of which belongs in the history of a public repository.
+
+Memory was briefly committed at `.claude/memory/` and symlinked into
+`~/.claude/projects/<slug>/memory/` by `scripts/link-memory.sh`, so that it
+would survive a clone onto a second machine. That scheme is retired. It failed
+quietly: the link was never established on the Windows checkout, so the
+committed copy and the live harness memory drifted into two different sets of
+files, and what reached the remote was a stale snapshot that no session read.
+`scripts/link-memory.sh` is kept only because the earlier commits reference it.
+Each machine now keeps its own memory under the harness path.
 
 ## Shared Resources
 

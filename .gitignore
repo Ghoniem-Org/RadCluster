@@ -77,3 +77,12 @@ docs/Formulation/**/*.out
 docs/Formulation/**/*.toc
 docs/Formulation/**/*.fls
 docs/Formulation/**/*.fdb_latexmk
+
+# Claude Code local working state — never shared.
+# "Claude outputs/" is a scratch drop for generated drafts (the GCD rebuttal
+# lived here); .claude/ holds per-machine session state: settings.json, the
+# worktrees/ registry, and memory/.  The committed .claude/memory/ copy had
+# already drifted out of step with the live harness memory it was supposed to
+# mirror, so it was syncing a stale snapshot, not sharing anything.
+Claude outputs/
+.claude/

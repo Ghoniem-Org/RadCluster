@@ -19,7 +19,7 @@ RadCluster/
 │   ├── Formulation/        # Derivations, paper sections, studies — by topic (see Formulation/README.md)
 │   ├── Literature/         # Peer-reviewed papers (PDF)
 │   └── design_notes/       # Working design notes
-├── scripts/            # Repository utilities (link-memory.sh)
+├── scripts/            # Repository utilities (link-memory.sh — retired, see Environment)
 ├── README.md           # Public-facing introduction: methodology, install, usage, citation
 ├── requirements.txt
 └── LICENSE             # MIT
@@ -152,19 +152,22 @@ pip install -r requirements.txt
 
 # Register Jupyter kernel (optional)
 python -m ipykernel install --user --name radcluster --display-name "RadCluster"
-
-# Link Claude Code's project memory to the copy in this repo (once per machine)
-./scripts/link-memory.sh
 ```
 
 ### Project memory
 
-Claude Code's memory for this project is committed at `.claude/memory/` and
-symlinked into `~/.claude/projects/<slug>/memory/`, because the harness path is
-keyed to the absolute checkout path and would otherwise exist on one machine
-only. Run `scripts/link-memory.sh` after cloning; without it a session on this
-machine starts with no project memory and writes new memories somewhere git
-never sees. `.claude/memory/MEMORY.md` is the index.
+Claude Code's memory is **not** versioned. `.claude/` and `Claude outputs/` are
+gitignored: they are per-machine session state and a scratch drop for generated
+drafts, neither of which belongs in the history of a public repository.
+
+Memory was briefly committed at `.claude/memory/` and symlinked into
+`~/.claude/projects/<slug>/memory/` by `scripts/link-memory.sh`, so that it
+would survive a clone onto a second machine. That scheme is retired. It failed
+quietly: the link was never established on the Windows checkout, so the
+committed copy and the live harness memory drifted into two different sets of
+files, and what reached the remote was a stale snapshot that no session read.
+`scripts/link-memory.sh` is kept only because the earlier commits reference it.
+Each machine now keeps its own memory under the harness path.
 
 ## Shared Resources
 

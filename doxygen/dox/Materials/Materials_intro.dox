@@ -1,0 +1,19 @@
+/*! \page Materials_intro Material models (Layer 2)
+
+\section Materials_intro_introduction Introduction
+
+A material model is the host-specific half of RadCluster. It declares the populations of a host material, its admissible vertex and edge sets, and its rate kernels. It does not implement an integrator: the graph walker, the C++ solver, the preconditioner and the reductions of the \ref Core_intro are inherited unchanged.
+
+| Layer | Location | Content |
+|---|---|---|
+| 1, abstract core | py_utils/core and cpp_utils/core | cluster identifier, edge classes, graph container, graph walker, state layout, reductions, CVODE driver |
+| 2, material model | py_utils/materials and cpp_utils/materials | populations, admissible vertices and edges, rate kernels of one host |
+
+\section Materials_intro_pages Pages
+
+- \subpage Materials_eurofer97
+- \subpage Materials_newHost
+
+\sa \ref Core_intro
+
+*/

@@ -1,0 +1,34 @@
+/*! \page Core_edgeClasses Edge classes
+
+Every edge of a \ref Core_rag belongs to exactly one of ten abstract classes. The classes are the members of the enumeration \ref py_utils::core::edge_classes::EdgeClass "EdgeClass" in edge_classes.py.
+
+| # | Edge class | Action |
+|---|---|---|
+| 1 | GROWTH | same-polarity monomer absorption, \f$n \to n+1\f$ |
+| 2 | SHRINKAGE | opposite-polarity monomer impingement, \f$n \to n-1\f$ |
+| 3 | DISSOCIATION | thermal monomer emission, \f$n \to n-1\f$ |
+| 4 | RECOMBINATION | cross-polarity monomer annihilation |
+| 5 | ANNIHILATION | cross-polarity binary (cluster-cluster) hyperedge |
+| 6 | INTER_POPULATION | \f$p \to p'\f$ at fixed size and composition, for example loop-character conversion |
+| 7 | SOLUTE_TRAPPING | trapping and detrapping, \f$c \to c \pm e_s\f$ |
+| 8 | COALESCENCE | same-polarity binary growth |
+| 9 | SOURCE | cascade injection, with no precursor vertex |
+| 10 | SINK | absorption at a fixed sink |
+
+\section Core_edgeClasses_contract Stoichiometric contract
+
+Each class carries a fixed stoichiometric contract, which is stored as an \ref py_utils::core::edge_classes::EdgeClassSpec "EdgeClassSpec" in the table EDGE_CLASS_SPEC. The contract states:
+- the number of precursor cluster vertices
+- the kinetic order of the reaction flux
+- whether the reaction consumes a same-polarity monomer from its pool
+- whether the edge crosses the two polarity layers
+- how the edge shifts the size, the population and the composition
+- whether the edge creates a vertex (SOURCE) or removes content to a fixed sink (SINK)
+
+The function \ref py_utils::core::edge_classes::spec_of "spec_of()" returns the contract of a class.
+
+Because the sign pattern of \f$S_{ar}\f$ is structural, conservation of the signed defect content \f$q = \chi n\f$ holds by construction for every intra-host reaction. It is not derived again for each material.
+
+\sa \ref Core_rag, \ref Core_graphWalker
+
+*/

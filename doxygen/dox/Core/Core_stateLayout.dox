@@ -1,0 +1,45 @@
+/*! \page Core_stateLayout State layout
+
+The \ref Core_rag defines which clusters exist. Integration needs them packed into one contiguous state vector \f$y \in \mathbb{R}^{N_{eq}}\f$. The \ref py_utils::core::state_layout::StateLayout "StateLayout" in state_layout.py is the map
+
+\verbatim
+(block, local index)  <->  global ODE index
+\endverbatim
+
+A StateLayout is an ordered list of named Block objects. Blocks are added with add_discrete(), add_bin_moment(), add_scalar() and add_aux(), and the layout is closed with freeze(). After that, offset(), slice() and index() return the position of a block or of one of its entries, N_eq is the total number of equations, and describe() prints the layout.
+
+\section Core_stateLayout_vectors State vectors of the C++ solver
+
+The C++ solver uses the layouts below. \f$I\f$ and \f$V\f$ are the largest tracked SIA and vacancy cluster sizes.
+
+Discrete equations, fission cascade (helium Case 2):
+\verbatim
+y[0..I-1]       SIA clusters c_n, n = 1..I
+y[I..I+V-1]     vacancy clusters and bubbles c_m, m = 1..V
+y[I+V]          total helium in cavities
+y[I+V+1]        free helium c_h
+\endverbatim
+The number of equations is \f$I + V + 2\f$.
+
+Discrete equations, fusion cascade (helium Case 1):
+\verbatim
+y[0..I-1]       SIA clusters c_n
+y[I..I+V-1]     vacancy clusters and bubbles c_m
+y[I+V..I+2V-1]  helium content Q_m of each cavity class
+y[I+2V]         free helium c_h
+\endverbatim
+The number of equations is \f$I + 2V + 1\f$.
+
+The free-helium entry is omitted when helium is treated in the quasi-steady state, which removes one equation in both cases.
+
+With the bin-moment equations the sizes up to \f$i_{discrete}\f$ and \f$v_{discrete}\f$ keep one ODE per size, and the larger sizes are grouped into logarithmic bins that carry \f$P\f$ moments each. The number of equations is
+
+\f[
+N_{eq} = i_{discrete} + P\,I_{bin} + v_{discrete} + P\,V_{bin} + n_{He} .
+\f]
+
+The header comment of radcluster_code/cpp_utils/core/parameters.h lists these layouts in full.
+
+\sa \ref Core_reductions, \ref Solver_paramFile
+
+*/

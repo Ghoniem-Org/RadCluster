@@ -1,0 +1,43 @@
+/*! \page Core_reductions State-space reductions
+
+Two independent reductions keep the system tractable at engineering doses. Both are stated on the abstract graph, so that any host material inherits them unchanged. They are in the folder radcluster_code/py_utils/core/reductions.
+
+\section Core_reductions_he Helium-vacancy loading
+
+The unreduced vacancy-helium state space is a two-dimensional grid \f$c_{m,\ell}\f$ in the number of vacancies \f$m\f$ and of helium atoms \f$\ell\f$. The enumeration \ref py_utils::core::reductions::he_reduction::HeReductionMode "HeReductionMode" in he_reduction.py selects one of two reductions.
+
+- <b>Case 1, fusion.</b> The helium content of a cavity class equilibrates quickly, and it is replaced by its mean field \f$\bar{\ell}(m)\f$. The system has \f$I + 2V + 1\f$ equations.
+- <b>Case 2, fission.</b> The loading decouples into a scalar inventory. The system has \f$I + V + 2\f$ equations.
+
+The cascade option selects the case: HeReductionMode.from_cascade() maps the fusion spectrum to Case 1 and the fission spectrum to Case 2.
+
+\section Core_reductions_bin Logarithmic bin moments
+
+Sizes up to \f$i_{discrete}\f$ (and \f$v_{discrete}\f$ for vacancies) are tracked with one ODE per size. Larger sizes are grouped into logarithmic bins \f$\mathcal{B}_k\f$ that carry \f$P\f$ moments each:
+
+\f[
+\mu_k^{(0)} = \sum_{n \in \mathcal{B}_k} c_n , \qquad
+\mu_k^{(1)} = \sum_{n \in \mathcal{B}_k} n\,c_n , \qquad
+\mu_k^{(2)} = \sum_{n \in \mathcal{B}_k} n^2 c_n .
+\f]
+
+The parameter shape_function selects the intra-bin closure:
+
+| shape_function | \f$P\f$ | Closure | Truncation error |
+|---|---|---|---|
+| constant | 1 | piecewise constant | \f$O((r-1)^2)\f$ |
+| linear | 2 | hat function (dual basis) | \f$O((r-1)^3)\f$ |
+| lognormal | 3 | log-normal shape | \f$O((r-1)^4)\f$ |
+
+Here \f$r\f$ is the bin ratio. The discrete formulation is recovered exactly when the number of bins is zero.
+
+The class \ref py_utils::core::reductions::bin_moment::BinMomentReduction "BinMomentReduction" in bin_moment.py implements the reduction of one size axis as a three-step procedure, which is executed at every evaluation of the right-hand side:
+1. \b reconstruct a per-size distribution from the tracked moments, under the chosen closure
+2. \b walk the graph on the reconstructed distribution (see \ref Core_graphWalker)
+3. \b project the per-size rates back onto the bin moments
+
+The bin construction and the reconstruction helpers that the orchestrator uses are in radcluster_code/py_utils/bin_moment_rates.py.
+
+\sa \ref Core_stateLayout, \ref Verification_intro
+
+*/

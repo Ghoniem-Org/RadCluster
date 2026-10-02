@@ -1,0 +1,40 @@
+/*! \page Core_intro Abstract core (Layer 1)
+
+\section Core_intro_introduction Introduction
+
+The abstract core is the host-independent half of RadCluster. It carries no bcc-Fe or EUROFER-97 assumption. It defines what a cluster is, which elementary reactions exist, how a material declares the reactions it admits, and how the master equation is assembled from that declaration.
+
+For every tracked cluster species \f$a\f$ the code integrates
+
+\f[
+\frac{dc_a}{dt} = G_a + \sum_r S_{ar}\,J_r(c) - D_a\,c_a ,
+\f]
+
+where \f$G_a\f$ is the cascade source, \f$J_r\f$ is the flux of elementary reaction \f$r\f$, \f$S_{ar}\f$ is its stoichiometric coefficient for species \f$a\f$, and \f$D_a\f$ is the loss rate at fixed sinks. Concentrations are atomic fractions, sizes are atom counts, energies are in eV and the temperature is in K.
+
+The Python core is in the folder radcluster_code/py_utils/core, and the C++ core is in the folder radcluster_code/cpp_utils/core.
+
+\section Core_intro_pages Pages
+
+- \subpage Core_rag
+- \subpage Core_edgeClasses
+- \subpage Core_graphWalker
+- \subpage Core_stateLayout
+- \subpage Core_reductions
+
+\section Core_intro_files Source files
+
+| File | Content |
+|---|---|
+| cluster_identifier.py | the polarity index, the \ref py_utils::core::cluster_identifier::Population "Population" and the \ref py_utils::core::cluster_identifier::ClusterIdentifier "ClusterIdentifier" |
+| edge_classes.py | the ten edge classes and their stoichiometric contracts |
+| rag.py | the Edge family and the \ref py_utils::core::rag::ReactionAdmissibilityGraph "ReactionAdmissibilityGraph" container |
+| graph_walker.py | the \ref py_utils::core::graph_walker::GraphWalker "GraphWalker", which assembles the right-hand side |
+| state_layout.py | the \ref py_utils::core::state_layout::StateLayout "StateLayout", which maps vertices to ODE indices |
+| to_networkx.py | export of a declared graph for structural diagnostics |
+| reductions/bin_moment.py | the logarithmic bin-moment reduction |
+| reductions/he_reduction.py | the two helium-occupancy reductions |
+
+\sa \ref Materials_intro, \ref Solver_intro
+
+*/

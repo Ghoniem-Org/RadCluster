@@ -1,0 +1,21 @@
+/*! \page Core_graphWalker Graph walker
+
+The \ref py_utils::core::graph_walker::GraphWalker "GraphWalker" in graph_walker.py assembles the right-hand side of the master equation by walking a \ref Core_rag edge by edge. For every admissible edge it evaluates the reaction flux \f$J_r\f$ from the rate kernel of the edge, and it deposits the signed stoichiometric contribution \f$S_{ar} J_r\f$ into the affected entries of the flat ODE state vector that the \ref Core_stateLayout defines.
+
+The walker carries no host parameters. It dispatches only on the class of each edge (see \ref Core_edgeClasses), with one contribution routine per class.
+
+\section Core_graphWalker_role Role in the code
+
+The Python graph walker is a reference discrete accumulator, with one ODE per size. It has two roles:
+- it is the executable specification that the production C++ kernel must agree with
+- it is the substrate of the bin-moment "reconstruct, walk, project" reduction (see \ref Core_reductions)
+
+Production runs do not integrate with the Python walker. They use the C++ solver (see \ref Solver_intro), whose EUROFER-97 kernels are in radcluster_code/cpp_utils/materials/eurofer97/rate_kernels.cpp.
+
+New physics is developed in the graph walker first. It is mirrored in C++ after it passes the conservation gate (see \ref Verification_intro).
+
+\b Note that the two-dimensional coalescence and annihilation kernels are of size \f$O(I^2)\f$. They are registered as lazy builders, so that they are materialized only when the Python walker evaluates the edge, and never on a C++ run.
+
+\sa \ref Core_rag, \ref Core_stateLayout
+
+*/

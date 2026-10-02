@@ -1,4 +1,4 @@
-/**
+/** @file
  * rate_kernels.cpp — EUROFER97 rate-equation kernels (P1-P8 arithmetic).
  *
  * This is the MATERIAL-SPECIFIC half of the former rate_equations.cpp.  It

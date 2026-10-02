@@ -1,0 +1,45 @@
+/*! \page IO_output Output directory
+
+Each run writes a self-describing directory under radcluster_code/output:
+
+\verbatim
+output/YYYYMMDD_HHMMSS_<git-hash>/
+    provenance.md
+    results_t.npy
+    results_y.npy
+    summary.csv
+    diagnostics.txt
+    plots/
+\endverbatim
+
+where
+- provenance.md contains all input tables with the overrides applied, the user selections, the solver configuration, the run time, the machine and the CVODE statistics
+- results_t.npy contains the time points
+- results_y.npy contains the full ODE solution. See \ref Core_stateLayout for the meaning of its columns
+- summary.csv contains a one-line summary of the end of the run
+- diagnostics.txt contains the conservation residuals and the end-state diagnostics
+- plots contains the figures in PNG format, and the file plot_data.pkl from which the figures can be drawn again without a new run
+
+\section IO_output_summary The summary file
+
+The file summary.csv holds one row with the columns:
+
+\verbatim
+solver physics_option T_K G_dpa_s t_end_s dose_dpa C_SIA_tot_m3 C_VAC_tot_m3 C_He_tot_m3 mean_n_i mean_n_v swelling delta_FP delta_He
+\endverbatim
+
+Because every run writes one row, the summaries of a campaign concatenate directly into one table. The row is built by the function \ref py_utils::post_process::summary_csv_row "summary_csv_row()" in post_process.py.
+
+\section IO_output_provenance Provenance
+
+The git hash and the complete resolved parameter set are written with every run, so that a figure can be traced back to the code and the inputs that produced it. Runs never overwrite one another.
+
+\b Note that the folders build and output are not tracked by git, with one exception: the designated reference run is tracked, because the verification campaign reads it by name.
+
+\section IO_output_distributions Size distributions
+
+Size distributions are drawn as per-bin densities \f$dc/dn\f$ or \f$dc/dD\f$, as stair segments whose integral is the population in the displayed range. This is the quantity that compares with distributions measured by transmission electron microscopy.
+
+\sa \ref IO_input, \ref Verification_intro
+
+*/

@@ -1,0 +1,48 @@
+/*! \page IO_intro Input, output and orchestration
+
+\section IO_intro_introduction Introduction
+
+A run is driven from Python by the class \ref py_utils::simulation::RadClusterSimulation "RadClusterSimulation" in radcluster_code/py_utils/simulation.py. The class loads the inputs, builds the rate constants and the material graph, starts the C++ solver, and writes a timestamped output directory.
+
+\verbatim
+from radcluster_code.py_utils.simulation import RadClusterSimulation
+
+sim = RadClusterSimulation(
+    I=1000, V=1000,
+    solver_mode='full_system',
+    equations='bin_moment',
+    cascade='fusion',
+    he_kinetics='quasi_steady_state',
+    i_mobile=5, v_mobile=2,
+)
+
+results = sim.run(solver_config={
+    't_span': (1e-6, 1e8),
+    'n_points': 300,
+    'log_time': True,
+    'rtol': 1e-6, 'atol': 1e-20,
+    'solver_method': {'linsol': 'gmres', 'preconditioner': 'Woodbury'},
+})
+\endverbatim
+
+The driver notebook radcluster_code/codes/Notebooks/RadCluster_2_1.ipynb documents every control variable, builds the solver if needed, runs the case, and prints the end-of-run summary.
+
+\section IO_intro_pages Pages
+
+- \subpage IO_input
+- \subpage IO_output
+
+\section IO_intro_files Source files
+
+| File | Content |
+|---|---|
+| simulation.py | the orchestrator RadClusterSimulation |
+| input_data.py | the class \ref py_utils::input_data::InputData "InputData", which reads the workbook |
+| cpp_bridge.py | the bridge to the C++ solver |
+| post_process.py | derived quantities and conservation diagnostics |
+| visualization.py | the standard figures |
+| size_distributions.py | figures of measured size distributions |
+
+\sa \ref Solver_intro, \ref Solver_modes
+
+*/

@@ -1,4 +1,4 @@
-/**
+/** @file
  * sparse_jacobian.h — Colored finite-difference sparse Jacobian for KLU.
  *
  * Builds a conservative CSC sparsity pattern for the RadCluster_2_1 RHS,

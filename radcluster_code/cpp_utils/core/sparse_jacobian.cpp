@@ -1,4 +1,4 @@
-/**
+/** @file
  * sparse_jacobian.cpp — Colored finite-difference sparse Jacobian for KLU.
  *
  * See sparse_jacobian.h for interface notes.

@@ -1,4 +1,4 @@
-/**
+/** @file
  * rate_equations.h — ODE RHS declarations for RadCluster_2_1.
  *
  * Two RHS callbacks are provided:

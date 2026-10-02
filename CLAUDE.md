@@ -19,6 +19,7 @@ RadCluster/
 │   ├── Formulation/        # Derivations, paper sections, studies — by topic (see Formulation/README.md)
 │   ├── Literature/         # Peer-reviewed papers (PDF)
 │   └── design_notes/       # Working design notes
+├── doxygen/            # Doxyfile + dox/ pages — API docs, built and published to GitHub Pages by .github/workflows/doxygen.yml
 ├── scripts/            # Repository utilities (h2jupynb — Hoffman2 Jupyter launcher)
 ├── README.md           # Public-facing introduction: methodology, install, usage, citation
 ├── requirements.txt

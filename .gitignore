@@ -46,6 +46,9 @@ EuroferMicro_venv/
 # is 92% of the directory and the worst possible archival format.
 radcluster_code/output/*/plots/plot_data.pkl
 
+# Doxygen output (built and published by .github/workflows/doxygen.yml)
+doxygen/HTML/
+
 # Temporary / OS
 .DS_Store
 Thumbs.db

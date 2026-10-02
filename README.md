@@ -310,6 +310,7 @@ RadCluster/
 │   ├── Database/               # experimental microstructure databases (xlsx)
 │   ├── Literature/             # ~60 reference papers (PDF)
 │   └── design_notes/
+├── doxygen/                # Doxyfile and pages of the API documentation (see §10)
 ├── scripts/                # h2jupynb — Hoffman2 Jupyter launcher (see §4.2)
 ├── requirements.txt
 └── LICENSE
@@ -657,6 +658,16 @@ optional extras.
 ---
 
 ## 10. Documentation
+
+- **API reference (Doxygen):** <https://ghoniem.github.io/RadCluster/>, built from `doxygen/` on each
+  push to `main` by `.github/workflows/doxygen.yml`. It covers the Python package, the C++ solver and
+  the campaign scripts, with pages on the abstract core, the EUROFER-97 model, the solver and the
+  input and output formats. To build it locally, run `doxygen Doxyfile` inside `doxygen/` (Doxygen
+  and Graphviz required); the pages are written to `doxygen/HTML/`, which is gitignored.
+- **Wiki:** <https://github.com/Ghoniem/RadCluster/wiki> — installation, quick start, inputs and
+  outputs, methodology, verification and developer notes.
+
+The formulation documents and the working reference are in the repository:
 
 | Location | Contents |
 |---|---|

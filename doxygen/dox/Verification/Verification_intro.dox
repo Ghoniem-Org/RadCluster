@@ -1,0 +1,51 @@
+/*! \page Verification_intro Verification and diagnostics
+
+\section Verification_intro_introduction Introduction
+
+Every run reports two conservation residuals. They are computed by the function \ref py_utils::post_process::calculate_derived_quantities "calculate_derived_quantities()" in radcluster_code/py_utils/post_process.py.
+
+\section Verification_intro_fp Frenkel-pair residual
+
+Let \f$S_I(t) = \sum_n n\,c_n\f$ be the SIA inventory and \f$S(t) = \sum_m m\,c_m\f$ the swelling. The swelling is reported through the identity
+
+\f[
+S(t) = S_I(t) + \Delta J^d(t) ,
+\f]
+
+where \f$\Delta J^d\f$ is the cumulative net bias flux to dislocations. The identity yields the dimensionless Frenkel-pair residual
+
+\f[
+\delta_{FP}(t) = \frac{\left| S(t) - S_I(t) - \Delta J^d(t) \right|}{S(t) + S_I(t) + \Delta J^d(t)} .
+\f]
+
+\section Verification_intro_he Helium residual
+
+The helium balance yields the residual \f$\delta_{He}(t)\f$, which compares the helium in solution and in cavities with the helium that was produced and lost at sinks.
+
+\section Verification_intro_levels Levels
+
+Both residuals should stay below about \f$10^{-6}\f$. A value above \f$10^{-3}\f$ indicates a coding error.
+
+\b Note that in long loop-coarsening runs the loop distribution can outgrow the size axis. Products beyond the largest tracked size then carry content out of the domain, and \f$\delta_{FP}\f$ grows. It falls as the largest tracked size grows.
+
+\section Verification_intro_scripts Check scripts
+
+The folder radcluster_code/codes/Python_Testing holds standalone scripts that gate the physics:
+- helium and Frenkel-pair conservation
+- bin-moment against discrete equivalence
+- convergence in the size of the discrete prefix
+- loop-conversion kernels and conservation
+- consistency of the graph declaration
+- comparisons of linear solvers and of window modes
+- benchmarks of the Woodbury preconditioner
+- parameter sweeps
+
+A change that touches reaction kernels or stoichiometry should come with the relevant conservation check, and with a note of the resulting \f$\delta_{FP}\f$ and \f$\delta_{He}\f$.
+
+\section Verification_intro_pages Pages
+
+- \subpage Verification_digitalTwin
+
+\sa \ref IO_output, \ref Core_graphWalker
+
+*/

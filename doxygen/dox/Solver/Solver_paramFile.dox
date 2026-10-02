@@ -1,0 +1,56 @@
+/*! \page Solver_paramFile Solver parameter file
+
+The solver reads all its input from one text file. The Python bridge writes the file with \ref py_utils::cpp_bridge::write_param_file "write_param_file()" and starts the solver as:
+
+\verbatim
+solver --param_file=<path>
+\endverbatim
+
+The executable is named solver.exe on Windows. The function build_parameters() in radcluster_code/cpp_utils/core/parameters.h reads the file into the struct Parameters. After that, the right-hand side performs only arithmetic.
+
+\section Solver_paramFile_format Format
+
+The file has one entry per line, of the form:
+
+\verbatim
+key=value
+\endverbatim
+
+An array is written as indexed entries:
+
+\verbatim
+KVV_0=<value>
+KVV_1=<value>
+...
+\endverbatim
+
+\section Solver_paramFile_keys Groups of keys
+
+| Group | Examples |
+|---|---|
+| cluster size limits | I, V |
+| solver mode and physics option | window_mode, physics_option_int, he_mode |
+| geometric prefactors | A_sph, A_loop, B_rot, L_hat |
+| mobility cut-offs | i_mobile, v_mobile |
+| vacancy rate arrays | KVV_k, KVI_k, GVV_k, KHeV_k, Pr_VAC_k |
+| SIA rate arrays | KII_k, KIV_k, GII_k, k2_SIA_k, Pr_SIA_k, K_1D_pref_k |
+| loop conversion | loop_conversion, n_loop_min, Gamma_uni_k, K_100_grow_k |
+| bin moments | I_bin, V_bin, i_discrete, v_discrete, r_ratio, shape_function |
+| initial condition | y0_k |
+| integration | t_begin, t_end, n_points, log_time, rtol, atol, hmin, hmax, max_order |
+| linear solver | linsol, mu, ml, prec_type, prec_bw, prec_rank |
+| sliding window | window_width, window_pad, window_pad_v, window_check_every |
+
+In window_mode the value 0 is full_system and the value 4 is active_window. In physics_option_int the values 0 to 3 are full_CD_fission, full_CD_fusion, bin_moment_CD_fission and bin_moment_CD_fusion.
+
+The key sia_emission_monomer selects whether the monomer of an SIA thermal emission is returned to the monomer pool (1) or dropped (0). The value 0 reproduces results obtained before version 2.1.2.
+
+\section Solver_paramFile_output Output
+
+The solver writes n_points rows of (1 + N_eq) values as raw float64 numbers to a companion file with the extension .bin. Each row holds the time and the state vector (see \ref Core_stateLayout). The file is flushed after every row, so that a partial output survives an interrupt.
+
+\b Note that the parameter file is an internal interface between the Python layer and the solver. Physics parameters belong in the input workbook. See \ref IO_input.
+
+\sa \ref IO_output
+
+*/

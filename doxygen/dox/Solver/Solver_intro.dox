@@ -1,0 +1,31 @@
+/*! \page Solver_intro C++ solver
+
+\section Solver_intro_introduction Introduction
+
+The production engine of RadCluster is a C++17 program built on SUNDIALS/CVODE. Time integration uses the variable-order BDF method, which suits the stiffness of coupled defect kinetics: the rates span many decades, and the physical times range from microseconds to \f$10^8\f$ s.
+
+The Python layer precomputes all rate constants, writes them to a parameter file, starts the solver as a subprocess, and reads the solution back. The bridge is radcluster_code/py_utils/cpp_bridge.py.
+
+\section Solver_intro_pages Pages
+
+- \subpage Solver_build
+- \subpage Solver_modes
+- \subpage Solver_paramFile
+- \subpage Solver_preconditioner
+
+\section Solver_intro_files Source files
+
+| File | Content |
+|---|---|
+| core/solver.cpp | CVODE driver and main() |
+| core/parameters.h | the struct Parameters and the parser of the parameter file |
+| core/rate_equations.h | declarations of the right-hand-side callbacks and of UserData |
+| core/rhs_dispatch.cpp | preconditioner entry points, Jacobi and Woodbury preconditioners |
+| core/sparse_jacobian.cpp | colored finite-difference sparse Jacobian for KLU |
+| materials/eurofer97/rate_kernels.cpp | EUROFER-97 kernel arithmetic: rhs_full_CD() and rhs_bin_moment() |
+
+All paths are relative to radcluster_code/cpp_utils.
+
+\sa \ref Core_intro, \ref Materials_eurofer97
+
+*/

@@ -1,0 +1,23 @@
+/*! \page container Container image
+
+A published container image carries the compiled solver, the Python layer and the input workbook, so that nothing has to be built locally:
+
+\verbatim
+docker pull ghcr.io/ghoniem/radcluster:v2.2.0
+docker run --rm -it ghcr.io/ghoniem/radcluster:v2.2.0
+\endverbatim
+
+Inside the container the solver is on the PATH, and the folder /work holds py_utils, input and codes, with PYTHONPATH already set.
+
+The output is written inside the container, and it is lost when the container exits. Mount a host directory to keep it:
+
+\verbatim
+docker run --rm -v "$PWD/output:/work/output" ghcr.io/ghoniem/radcluster:v2.2.0 \
+       python3 codes/Python_Testing/check_eurofer_rag.py
+\endverbatim
+
+\b Note that the solver in the image is compiled for the x86-64-v2 architecture level and not for the architecture of the machine that builds it. It therefore runs on any x86-64 processor from about 2009 onwards, at a small cost in speed. For sustained production runs, build the solver from source. See \ref Solver_build.
+
+The image is built and published by the workflow .github/workflows/release.yml of the repository when a version tag is pushed.
+
+*/

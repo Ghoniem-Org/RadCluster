@@ -1,0 +1,79 @@
+/*! \page Materials_eurofer97 EUROFER-97
+
+EUROFER-97 is the reduced-activation ferritic-martensitic steel that RadCluster uses as its reference host material. Its declaration is in two places:
+- radcluster_code/py_utils/materials/eurofer97/declaration.py declares the graph
+- radcluster_code/cpp_utils/materials/eurofer97/rate_kernels.cpp holds the kernel arithmetic of the production solver
+
+\section Materials_eurofer97_declaration The declaration
+
+The function \ref py_utils::materials::eurofer97::declaration::build_eurofer_rag "build_eurofer_rag()" takes the loaded parameters (\ref py_utils::input_data::InputData "InputData") and the precomputed rate constants (\ref py_utils::reaction_rates::ReactionRates "ReactionRates"), and returns the graph and the state layout:
+
+\verbatim
+rag, layout = build_eurofer_rag(input_data, reaction_rates,
+                                equations="bin_moment", cascade="fusion")
+\endverbatim
+
+- equations is "discrete" or "bin_moment"
+- cascade is "fission" or "fusion". It selects the cascade production spectrum and the helium reduction (see \ref Core_reductions)
+
+Every simulation object carries the result as sim.material_rag and sim.state_layout, so that a run can be inspected for the reactions it admits.
+
+\section Materials_eurofer97_populations Populations
+
+| \ref py_utils::core::cluster_identifier::Population "Population" | \ref py_utils::core::cluster_identifier::Polarity "Polarity" | Content |
+|---|---|---|
+| bulk-111 | SIA | glissile 1/2<111> loops and small 3D-mobile clusters. It holds the SIA monomer pool and receives all cascade SIA production |
+| bulk-100 | SIA | sessile <100> loops. They do not glide and have no cascade source |
+| bulk | vacancy | vacancy clusters and helium-vacancy cavities. It holds the vacancy monomer pool |
+
+Helium is the single resolved gas species.
+
+\section Materials_eurofer97_processes Processes and edges
+
+The kernel library covers the processes P1 to P8. Each one is declared as one or more Edge families.
+
+| Process | Physics | Edge classes |
+|---|---|---|
+| P1 | vacancy-SIA recombination | RECOMBINATION |
+| P2 | point-defect absorption by cavities | GROWTH, SHRINKAGE |
+| P3 | point-defect absorption by dislocation loops, with bias factors | GROWTH, SHRINKAGE |
+| P4 | loss at fixed sinks: network dislocations, grain boundaries, precipitates | SINK |
+| P5 | thermal emission of monomers | DISSOCIATION |
+| P6 | interaction of SIA clusters with cavities, with mixed 1D/3D transport of glissile SIA clusters | ANNIHILATION |
+| P7 | helium trap mutation | GROWTH |
+| P8 | radiation re-solution of helium | SOLUTE_TRAPPING |
+
+Same-polarity cluster-cluster reactions are declared as COALESCENCE edges, and the cascade source is declared with two SOURCE edges, one per polarity.
+
+\section Materials_eurofer97_conversion Loop-character conversion
+
+The two SIA populations are coupled by the conversion of 1/2<111> loops into <100> loops. Three edges carry it:
+- a unary INTER_POPULATION transformation, which is the thermodynamic channel
+- a binary junction COALESCENCE of two 1/2<111> loops, whose product is a <100> loop
+- a COALESCENCE in which a <100> loop absorbs a 1/2<111> loop
+
+The collision kernel of two 1/2<111> loops is split between self-coalescence and junction formation, so that the total collision rate is conserved.
+
+\section Materials_eurofer97_transport Transport and solute trapping
+
+Point-defect diffusivities follow \f$D_\alpha = a^2 \nu_\alpha \exp(-E_m^\alpha / k_B T)\f$. Dissolved solutes retard migration through an effective jump frequency
+
+\f[
+\omega_\alpha^{eff} = \frac{\nu_\alpha \exp(-E_m^\alpha / k_B T)}{1 + \sum_s z_s c_s \exp(E_b^{\alpha s} / k_B T)} ,
+\f]
+
+which is applied to SIAs, vacancies and helium. Glissile SIA clusters migrate in one dimension, with a mean-free-path correction for rotation and trapping. The mobility cut-offs i_mobile and v_mobile set which cluster sizes take part in coalescence and in one-dimensional reactions.
+
+\section Materials_eurofer97_files Python modules of the material
+
+| File | Content |
+|---|---|
+| input_data.py | reads the input workbook and computes derived quantities (see \ref IO_input) |
+| defect_production.py | cascade production fractions for the fission and fusion spectra |
+| binding_energies.py | void capillarity, helium equation of state, loop binding, trap mutation |
+| loop_energetics.py | free energies of 1/2<111> and <100> loops |
+| reaction_rates.py | precomputed rate-constant arrays for all processes |
+
+\sa \ref Materials_newHost, \ref Core_rag
+
+*/

@@ -1,0 +1,29 @@
+/*! \page Verification_digitalTwin Digital twin and verification campaign
+
+The folder radcluster_code/digital_twin drives the calibration and the verification of the model against measured microstructures. A campaign is a designed set of runs that is distributed over several machines.
+
+\section Verification_digitalTwin_parts Parts
+
+| File | Content |
+|---|---|
+| design.py | generates the one canonical design of a campaign |
+| run_ensemble.py | the worker that runs the rows assigned to one machine |
+| merge_and_sobol.py | merges the results and estimates the sensitivity indices |
+| check_machine.py | compares a fixed probe run on this machine with the reference |
+| verify.py and the folder verification | the verification pass and the generators of reports, figures and tables |
+
+\section Verification_digitalTwin_machines Running on several machines
+
+Git carries the design, the workbook and the code, but not the solver: each machine compiles its own. Before a machine joins a campaign, the script check_machine.py runs a fixed probe and compares its results with the reference values.
+
+\b Note that a machine that fails this check must not be started, because its rows cannot be pooled with the others.
+
+Each machine writes its own results file, and the rows are appended as they complete. A restart skips the rows that are already present, so that a campaign can be stopped, submitted again and tallied at any time. The campaign runs on the UCLA Hoffman2 cluster as an array job. See \ref hoffman2.
+
+\section Verification_digitalTwin_data Experimental database
+
+The folder radcluster_code/Eurofer_micro_database contains a spreadsheet of loop and cavity number densities and mean sizes for neutron-irradiated and ion-irradiated ferritic-martensitic steels, together with a notebook that fits and plots them.
+
+\sa \ref Verification_intro
+
+*/

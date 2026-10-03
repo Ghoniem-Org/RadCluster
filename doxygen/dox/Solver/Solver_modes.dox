@@ -1,0 +1,47 @@
+/*! \page Solver_modes Solver modes and physics options
+
+\section Solver_modes_modes Solver modes
+
+| Mode | Description |
+|---|---|
+| full_system | CVODE on the full state vector, with a dense, banded, GMRES or KLU sparse-direct linear solver |
+| active_window | two independent sliding windows, one over SIA size and one over vacancy size, with an OpenMP-parallel right-hand side |
+
+In the active_window mode the number of threads is selected from the sweep length of the right-hand side, and it can be set with the environment variable OMP_NUM_THREADS. The same code path runs on one thread when OpenMP is not available.
+
+\section Solver_modes_physics Physics options
+
+The physics is selected by two independent choices.
+
+| Choice | Values | Meaning |
+|---|---|---|
+| equations | discrete or bin_moment | one ODE per size, or the logarithmic bin-moment grouping |
+| cascade | fission or fusion | the cascade spectrum and the helium reduction |
+
+The four combinations map to the strings that are used on disk:
+
+| equations | cascade | physics_option |
+|---|---|---|
+| discrete | fission | full_CD_fission |
+| discrete | fusion | full_CD_fusion |
+| bin_moment | fission | bin_moment_CD_fission |
+| bin_moment | fusion | bin_moment_CD_fusion |
+
+The constructor of \ref py_utils::simulation::RadClusterSimulation "RadClusterSimulation" accepts either form. The functions make_physics_option() and split_physics_option() convert between them.
+
+\section Solver_modes_linsol Linear solvers
+
+| linsol | Linear solver |
+|---|---|
+| dense | dense direct |
+| band | banded direct |
+| gmres | GMRES, with the Jacobi or the Woodbury preconditioner |
+| klu | KLU sparse direct, with a colored finite-difference Jacobian. Discrete equations only |
+
+\section Solver_modes_domain Adaptive size domain
+
+The method run_adaptive() of RadClusterSimulation expands the tracked cluster-size domain when the distribution reaches the top of the grid. The method run() integrates on a fixed domain.
+
+\sa \ref Solver_preconditioner, \ref Core_reductions
+
+*/

@@ -9,9 +9,7 @@ Docs/
 ├── Database/       # Experimental radiation microstructure databases
 ├── Formulation/    # Derivations, paper sections, studies — organized by topic
 │                   # (canonical — supersedes legacy docs/Rate Equations/)
-├── Literature/     # Peer-reviewed papers cited across modules
-├── doxygen/        # Doxygen code reference: Doxyfile, mainpage.md, README.md
-└── wiki/           # Sources of the GitHub wiki pages
+└── Literature/     # Peer-reviewed papers cited across modules
 ```
 
 ## Database/

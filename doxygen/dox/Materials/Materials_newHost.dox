@@ -1,0 +1,30 @@
+/*! \page Materials_newHost Adding a host material
+
+Adding a host material is a declaration, not a change of the solver. The \ref Core_intro never derives a rate: a host registers its size-resolved rate kernels as precomputed arrays.
+
+A new material needs a folder materials/\<name\> on both sides of the code:
+
+\verbatim
+radcluster_code/py_utils/materials/<name>/
+radcluster_code/cpp_utils/materials/<name>/
+\endverbatim
+
+On the Python side the material:
+1. declares its populations (see \ref Core_rag)
+2. adds its Edge families, each of one of the ten \ref Core_edgeClasses
+3. registers a rate kernel for every edge
+4. builds the \ref Core_stateLayout that packs the populations into the ODE state vector
+
+On the C++ side the material supplies the right-hand-side callbacks. The solver driver reaches them only through the function pointer UserData::rhs_fn, so that the files in cpp_utils/core have no compile-time dependency on the kernel arithmetic of a host.
+
+\section Materials_newHost_order Order of work
+
+New physics follows the same order for every material:
+1. develop it in the Python graph walker (see \ref Core_graphWalker)
+2. pass the conservation gate (see \ref Verification_intro)
+3. mirror it in the C++ kernels
+4. calibrate
+
+The EUROFER-97 declaration is the worked example. See \ref Materials_eurofer97.
+
+*/

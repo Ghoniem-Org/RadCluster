@@ -1,0 +1,31 @@
+/*! \page hoffman2 Running on the Hoffman2 cluster
+
+Hoffman2 is the shared computing cluster of UCLA. Its scheduler is the Univa Grid Engine (qsub, qrsh, qstat).
+
+\b Note that the login nodes are for editing and for submitting jobs only. All computations run on compute nodes that are requested from the scheduler, either interactively with qrsh or as a batch job with qsub.
+
+\section hoffman2_jupyter Notebooks
+
+The script scripts/h2jupynb starts a Jupyter session on a compute node of the cluster and displays it in a local browser. Run it on the local machine:
+
+\verbatim
+python3 h2jupynb -u <Hoffman2 user name>
+python3 h2jupynb --help
+\endverbatim
+
+\section hoffman2_campaign Campaign array job
+
+The digital-twin campaign runs as an array job (see \ref Verification_digitalTwin):
+
+\verbatim
+cd radcluster_code/digital_twin
+qsub hoffman2_array.sh
+\endverbatim
+
+One array task runs one share of the rows, and writes its own results file. The rows are appended as they complete, and a restart skips the rows that are already present. Submitting the same script again is therefore always safe.
+
+The scripts hoffman2_setup.sh and hoffman2_probe.sh in the same folder prepare the environment and run the machine check.
+
+The working guide for the cluster is the file docs/Hoffman2_Guide.md of the repository.
+
+*/

@@ -1,4 +1,4 @@
-/**
+/** @file
  * rhs_dispatch.cpp — RHS-dispatch scaffolding and GMRES preconditioners.
  *
  * This is the host-INDEPENDENT half of the former rate_equations.cpp.  It holds

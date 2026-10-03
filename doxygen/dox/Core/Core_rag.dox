@@ -1,0 +1,41 @@
+/*! \page Core_rag Reaction Admissibility Graph
+
+A cluster is identified by the four-tuple \f$\sigma = (\chi, n, p, c)\f$:
+- \f$\chi \in \{-1, +1\}\f$ is the polarity (vacancy type or interstitial type)
+- \f$n\f$ is the size
+- \f$p\f$ is the population, for example glissile 1/2<111> loops, sessile <100> loops, or bulk cavities
+- \f$c\f$ is the composition vector of trapped solutes or gases
+
+The model is the labelled multidigraph
+
+\f[
+\mathcal{G} = (V, E, \nu, k),
+\f]
+
+where \f$V\f$ is the set of admissible cluster vertices, \f$E\f$ is the set of admissible elementary reactions, \f$\nu\f$ is the stoichiometric action of each edge, and \f$k\f$ is the rate-kernel library. The graph is host-specific in \f$(V, E)\f$ and calibration-specific in \f$k\f$. A reaction that is physically forbidden is excluded when the graph is constructed, and never reaches the solver.
+
+\section Core_rag_classes Classes
+
+The vertex primitives are in cluster_identifier.py:
+- \ref py_utils::core::cluster_identifier::Polarity "Polarity" is the sign of the net Frenkel-pair content of a cluster
+- \ref py_utils::core::cluster_identifier::Population "Population" is a defect population within one polarity layer. It carries the smallest admissible size and the largest mobile size
+- \ref py_utils::core::cluster_identifier::ClusterIdentifier "ClusterIdentifier" is the four-tuple \f$\sigma\f$
+
+The graph container is in rag.py:
+- Edge is one admissible reaction-edge family. An Edge is parameterized over the size axis, so that one Edge stands for a whole ladder of reactions
+- \ref py_utils::core::rag::ReactionAdmissibilityGraph "ReactionAdmissibilityGraph" holds the populations, the edges and the kernel library
+
+A host material fills a ReactionAdmissibilityGraph in three steps:
+1. it declares its populations with add_population(), and names the monomer pool of each polarity with set_monomer_population()
+2. it adds one Edge per reaction family with add_edge()
+3. it binds each rate kernel to a name with register_kernel(). A kernel is a precomputed array or scalar, or a zero-argument builder that is evaluated only when the edge is walked
+
+The method validate() checks that every edge has a registered kernel, and summary() returns a one-line count of populations and of edges per class.
+
+\section Core_rag_diagnostics Structural diagnostics
+
+The production path keeps the graph implicit: the graph walker never instantiates a vertex. The module to_networkx.py materializes a declared graph up to a chosen size cut-off as a networkx.MultiDiGraph, writes it to GraphML, and prints a structural report (connectivity, reachability from the monomer pools, orphaned vertices). It is a diagnostic path only.
+
+\sa \ref Core_edgeClasses, \ref Core_graphWalker, \ref Materials_eurofer97
+
+*/

@@ -1,0 +1,30 @@
+/*! \page Solver_preconditioner Woodbury preconditioner
+
+For the GMRES linear solver the Jacobian has the structure
+
+\f[
+J = T + U V^T ,
+\f]
+
+where \f$T\f$ is banded, with half-bandwidth \f$\max(2\,i_{mobile}, 2\,v_{mobile}) + 1\f$, and \f$U V^T\f$ is a correction of rank \f$r = i_{mobile} + v_{mobile}\f$ that comes from the coupling of the mobile species.
+
+The Woodbury preconditioner exploits this structure exactly. It uses the LAPACK banded factorization (dgbtrf and dgbtrs) for \f$T\f$, and a dense factorization (dgetrf and dgetrs) of the \f$r \times r\f$ Schur complement.
+
+\section Solver_preconditioner_options Options
+
+| prec_type | Name | Description |
+|---|---|---|
+| 0 | Jacobi | diagonal scaling |
+| 1 | Woodbury | bordered-banded Sherman-Morrison-Woodbury preconditioner |
+
+The Woodbury preconditioner is the default for the full_system mode with GMRES. For the active_window mode the active system is small, and Jacobi with GMRES converges faster than the set-up cost of the Woodbury preconditioner can be recovered.
+
+The parameters prec_bw and prec_rank set the bandwidth and the rank. They are selected automatically by default.
+
+The preconditioner is implemented in radcluster_code/cpp_utils/core/rhs_dispatch.cpp. It probes the right-hand side through the function pointer UserData::rhs_fn, and it is therefore independent of the material model. Its derivation is in the folder docs/Formulation/reaction_admissibility_graph/supplement_S1 of the repository.
+
+\b Note that the preconditioner needs LAPACK. Without LAPACK it is compiled out, and the solver uses the Jacobi preconditioner.
+
+\sa \ref Solver_modes, \ref Solver_build
+
+*/

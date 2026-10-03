@@ -1,4 +1,4 @@
-/**
+/** @file
  * parameters.h — RadCluster_2_1 solver parameter struct.
  *
  * All quantities that the ODE right-hand side needs are pre-computed on the

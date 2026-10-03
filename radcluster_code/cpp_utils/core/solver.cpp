@@ -1,4 +1,4 @@
-/**
+/** @file
  * solver.cpp — RadCluster_2_1 main C++ ODE solver.
  *
  * Drives the RadCluster_2_1 cluster dynamics system for bcc Fe / EUROFER97.

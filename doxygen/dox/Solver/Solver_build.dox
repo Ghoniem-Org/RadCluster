@@ -1,0 +1,33 @@
+/*! \page Solver_build Building the solver
+
+The solver needs a C++17 compiler, CMake 3.15 or newer, and the \ref sundials library.
+
+\verbatim
+cd radcluster_code
+cmake -S cpp_utils -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --config Release
+\endverbatim
+
+The binary is written to build, or to build/Release with multi-configuration generators. The bridge cpp_bridge.py looks for it in both places. The driver notebook builds the solver on first use, and builds it again when the platform changes.
+
+\section Solver_build_optional Optional dependencies
+
+Each optional dependency is detected at configure time.
+
+| Dependency | Enables | If missing |
+|---|---|---|
+| LAPACK/BLAS | the \ref Solver_preconditioner | it is compiled out, and the solver falls back to the Jacobi preconditioner at run time |
+| OpenMP | the parallel right-hand side of the active-window mode | that mode runs on one thread |
+| SuiteSparse/KLU, with SUNDIALS built with -DENABLE_KLU=ON | the sparse-direct linear solver | that option stops at run time with a diagnostic |
+
+\section Solver_build_flags Compiler flags
+
+The optimization flags are -O3 -march=native, or /arch:AVX2 /GL /fp:precise with Microsoft Visual C++.
+
+\b Note that fast-math is deliberately not enabled. It alters IEEE-754 semantics, and it can make the error estimator of CVODE diverge on these stiff systems.
+
+On Windows the build copies the required run-time libraries next to the executable.
+
+\sa \ref container, \ref hoffman2
+
+*/

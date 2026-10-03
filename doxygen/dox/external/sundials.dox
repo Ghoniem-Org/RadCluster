@@ -1,0 +1,36 @@
+/*! \page sundials SUNDIALS
+
+The C++ solver of RadCluster integrates the rate equations with CVODE, which is part of the <a href="https://computing.llnl.gov/projects/sundials">SUNDIALS</a> library. RadCluster is written against SUNDIALS version 7.1.1.
+
+\section sundials_location Location
+
+The build looks for SUNDIALS in a folder Libraries that is a sibling of the repository root:
+
+\verbatim
+Libraries/sundials-7.1.1/mac_install     (macOS)
+Libraries/sundials-7.1.1/win_install     (Windows)
+\endverbatim
+
+If the library is not there, the build uses whatever find_package(SUNDIALS) resolves, for example a system install.
+
+\b Note that version 7 is required. The solver creates its context with SUNContext_Create(SUN_COMM_NULL, ...), and SUN_COMM_NULL does not exist in version 6.
+
+\section sundials_build Building SUNDIALS
+
+The following commands build SUNDIALS with LAPACK and KLU, as the container image does:
+
+\verbatim
+cmake -S sundials-7.1.1 -B sundials-build \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=<install folder> \
+      -DENABLE_LAPACK=ON \
+      -DENABLE_KLU=ON
+cmake --build sundials-build
+cmake --install sundials-build
+\endverbatim
+
+A Fortran compiler is needed when LAPACK is enabled, because SUNDIALS probes the Fortran name-mangling scheme at configure time.
+
+\sa \ref Solver_build, \ref container
+
+*/

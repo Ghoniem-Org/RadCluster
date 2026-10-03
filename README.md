@@ -309,9 +309,8 @@ RadCluster/
 │   ├── Formulation/            # derivations, paper sections, study reports (by topic)
 │   ├── Database/               # experimental microstructure databases (xlsx)
 │   ├── Literature/             # ~60 reference papers (PDF)
-│   ├── design_notes/
-│   ├── doxygen/                # Doxygen code reference: Doxyfile, main page (see §10)
-│   └── wiki/                   # the sources of the wiki pages
+│   └── design_notes/
+├── doxygen/                # Doxyfile and pages of the API documentation (see §10)
 ├── scripts/                # h2jupynb — Hoffman2 Jupyter launcher (see §4.2)
 ├── requirements.txt
 └── LICENSE
@@ -660,10 +659,18 @@ optional extras.
 
 ## 10. Documentation
 
+- **API reference (Doxygen):** <https://ghoniem.github.io/RadCluster/>, built from `doxygen/` on each
+  push to `main` by `.github/workflows/doxygen.yml`. It covers the Python package, the C++ solver and
+  the campaign scripts, with pages on the abstract core, the EUROFER-97 model, the solver and the
+  input and output formats. To build it locally, run `doxygen Doxyfile` inside `doxygen/` (Doxygen
+  and Graphviz required); the pages are written to `doxygen/HTML/`, which is gitignored.
+- **Wiki:** <https://github.com/Ghoniem/RadCluster/wiki> — installation, quick start, inputs and
+  outputs, methodology, verification and developer notes.
+
+The formulation documents and the working reference are in the repository:
+
 | Location | Contents |
 |---|---|
-| [Wiki](https://github.com/Ghoniem/RadCluster/wiki) | how to install, run and extend the code: inputs, outputs, solver options, the EUROFER-97 reaction graph, the campaign, the tests. Its pages are kept in `docs/wiki/` |
-| `docs/doxygen/` | the Doxygen code reference of the Python package, the C++ solver, the scripts and the campaign. Build it with `doxygen docs/doxygen/Doxyfile`, then open `docs/doxygen/build/html/index.html`; see `docs/doxygen/README.md` |
 | `docs/Formulation/cluster_dynamics_framework/` | the main framework manuscript and paper sections, the Ghoniem–Cho lineage note, simulation methodology, novelty analyses |
 | `docs/Formulation/reaction_admissibility_graph/` | RAG implementation and architecture supplement, EUROFER-97 graph figures, GraphML exports, structural reports |
 | `docs/Formulation/reaction_kernels/` | one-dimensional migration reaction frequencies; detailed balance for effective kernels |

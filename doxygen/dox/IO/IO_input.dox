@@ -1,0 +1,36 @@
+/*! \page IO_input Input workbook
+
+All physics parameters are in one workbook, radcluster_code/input/input_parameters.xlsx. The class \ref py_utils::input_data::InputData "InputData" reads it and computes the derived quantities.
+
+The workbook has five sheets:
+
+| Sheet | Content |
+|---|---|
+| Production | survival efficiency, displacement and helium generation rates, clustered fractions, cascade power-law slopes and cut-offs. One column per spectrum (fission and fusion) |
+| Energetics | lattice and elastic constants, atomic volume, formation energies, surface energy, loop Burgers vectors |
+| Diffusion | pre-exponentials and migration energies for vacancies, SIAs and helium, 1D-glide parameters, solute concentrations and trap binding energies, mobility cut-offs |
+| Dissociation | binding-energy models: void capillarity, helium virial equation of state, loop binding fits, trap-mutation barriers |
+| Reactions | geometric prefactors, dislocation bias factors, sink densities, cluster-size limits, the discrete/bin split, solver settings |
+
+Each row of a sheet contains:
+- a parameter name
+- a Symbol key
+- a value
+- the units
+- a note that cites the equation or the table the value comes from
+
+\section IO_input_overrides Overrides
+
+The Symbol key is what a run-time override uses:
+
+\verbatim
+PARAM_OVERRIDES = {'T': 673.0, 'rho_d': 5e14, 'eta': 0.28}
+\endverbatim
+
+An override replaces the workbook value for that run only, and it is recorded in the provenance file of the run (see \ref IO_output). Permanent changes belong in the workbook.
+
+\b Note that physics lives in the workbook and not in the code. The code reads the parameters. It does not hard-code them.
+
+\sa \ref IO_output, \ref Materials_eurofer97
+
+*/

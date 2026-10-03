@@ -1,0 +1,74 @@
+/*! \mainpage The RadCluster code
+
+\section introduction Introduction
+
+RadCluster is a physics-based simulation suite for the evolution of radiation-induced defect populations in crystalline solids under neutron or ion irradiation: self-interstitial atom (SIA) dislocation loops, vacancy and helium-vacancy cavities, and free interstitial helium. The reference host material is the reduced-activation ferritic-martensitic steel EUROFER-97.
+
+The cluster-dynamics master equation is not hand-written per material. A material is declared as a Reaction Admissibility Graph (RAG) whose edges are elementary reactions drawn from a fixed catalogue of ten abstract classes, and the right-hand side of the ODE system is assembled by walking that graph.
+
+RadCluster contains the following modules:
+- \ref Core_intro
+- \ref Materials_intro
+- \ref Solver_intro
+- \ref IO_intro
+- \ref Verification_intro
+
+The source code, the releases and the issue tracker are on <a href="https://github.com/Ghoniem/RadCluster">GitHub</a>. User-oriented notes are kept on the <a href="https://github.com/Ghoniem/RadCluster/wiki">wiki</a>.
+
+\section installation Installation
+
+RadCluster has two layers: a Python package (model definition, orchestration, post-processing) and a C++17 solver built on SUNDIALS/CVODE. The Python layer alone is sufficient to build a material graph, inspect the model and run the reference graph walker. Production runs use the C++ solver.
+
+\verbatim
+git clone https://github.com/Ghoniem/RadCluster.git
+cd RadCluster
+python -m pip install -r requirements.txt
+
+cd radcluster_code
+cmake -S cpp_utils -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --config Release
+\endverbatim
+
+The C++ solver needs a C++17 compiler and CMake 3.15 or newer. The following compilers should do the job:
+- GNU g++
+- Clang (Apple Clang on macOS)
+- Microsoft Visual C++
+
+A published container image carries the compiled solver and the Python layer, so that nothing has to be built locally. See the dedicated \ref container page.
+
+Are you running RadCluster on the UCLA Hoffman2 cluster? Then make sure you read the dedicated \ref hoffman2 page.
+
+\subsection libraries External libraries
+
+The C++ solver requires the following external library:
+- the \ref sundials library (CVODE), version 7.1.1
+
+Three further libraries are optional. Each is detected at configure time, and the solver degrades gracefully when one is absent:
+- LAPACK/BLAS, used by the \ref Solver_preconditioner
+- OpenMP, used by the parallel right-hand side of the active-window mode (see \ref Solver_modes)
+- SuiteSparse/KLU, used by the sparse-direct linear solver
+
+The Python layer requires numpy, scipy, pandas, matplotlib, openpyxl, jupyter and ipykernel. The package networkx is optional, and is used only by the graph-diagnostics export.
+
+\subsection packages Other useful packages
+
+This documentation is generated with <a href="https://www.doxygen.nl">Doxygen</a> and <a href="https://graphviz.org">Graphviz</a>:
+
+\verbatim
+cd doxygen
+doxygen Doxyfile
+\endverbatim
+
+The pages are written to the folder doxygen/HTML, which is not tracked by git.
+
+\section citing How to cite
+
+N. M. Ghoniem, <i>A Generalized Graph-Based Cluster Dynamics Framework for Irradiated Materials</i>, Journal of Nuclear Materials (submitted, 2026).
+
+Section and equation numbers in the code comments refer to that document. Its source is in the folder docs/Formulation/cluster_dynamics_framework of the repository.
+
+\section license License
+
+RadCluster is released under the MIT License.
+
+*/

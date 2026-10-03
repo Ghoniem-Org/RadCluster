@@ -84,6 +84,11 @@ docs/Formulation/**/*.toc
 docs/Formulation/**/*.fls
 docs/Formulation/**/*.fdb_latexmk
 
+# Doxygen code reference (docs/doxygen/Doxyfile): the HTML regenerates in a few
+# seconds and is built by .github/workflows/documentation.yml.  The */build/
+# rule above only reaches one directory level, so this one is listed by name.
+docs/doxygen/build/
+
 # Claude Code local working state — never shared.
 # "Claude outputs/" is a scratch drop for generated drafts (the GCD rebuttal
 # lived here); .claude/ holds per-machine session state: settings.json, the

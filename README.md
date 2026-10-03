@@ -309,7 +309,9 @@ RadCluster/
 │   ├── Formulation/            # derivations, paper sections, study reports (by topic)
 │   ├── Database/               # experimental microstructure databases (xlsx)
 │   ├── Literature/             # ~60 reference papers (PDF)
-│   └── design_notes/
+│   ├── design_notes/
+│   ├── doxygen/                # Doxygen code reference: Doxyfile, main page (see §10)
+│   └── wiki/                   # the sources of the wiki pages
 ├── scripts/                # h2jupynb — Hoffman2 Jupyter launcher (see §4.2)
 ├── requirements.txt
 └── LICENSE
@@ -660,6 +662,8 @@ optional extras.
 
 | Location | Contents |
 |---|---|
+| [Wiki](https://github.com/Ghoniem/RadCluster/wiki) | how to install, run and extend the code: inputs, outputs, solver options, the EUROFER-97 reaction graph, the campaign, the tests. Its pages are kept in `docs/wiki/` |
+| `docs/doxygen/` | the Doxygen code reference of the Python package, the C++ solver, the scripts and the campaign. Build it with `doxygen docs/doxygen/Doxyfile`, then open `docs/doxygen/build/html/index.html`; see `docs/doxygen/README.md` |
 | `docs/Formulation/cluster_dynamics_framework/` | the main framework manuscript and paper sections, the Ghoniem–Cho lineage note, simulation methodology, novelty analyses |
 | `docs/Formulation/reaction_admissibility_graph/` | RAG implementation and architecture supplement, EUROFER-97 graph figures, GraphML exports, structural reports |
 | `docs/Formulation/reaction_kernels/` | one-dimensional migration reaction frequencies; detailed balance for effective kernels |

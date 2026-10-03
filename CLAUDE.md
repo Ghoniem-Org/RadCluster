@@ -18,9 +18,8 @@ RadCluster/
 │   ├── Database/           # Experimental microstructure databases (xlsx)
 │   ├── Formulation/        # Derivations, paper sections, studies — by topic (see Formulation/README.md)
 │   ├── Literature/         # Peer-reviewed papers (PDF)
-│   ├── design_notes/       # Working design notes
-│   ├── doxygen/            # Doxygen code reference: Doxyfile, mainpage.md (see doxygen/README.md)
-│   └── wiki/               # Sources of the GitHub wiki pages (one .md per page)
+│   └── design_notes/       # Working design notes
+├── doxygen/            # Doxyfile + dox/ pages — API docs, built and published to GitHub Pages by .github/workflows/doxygen.yml
 ├── scripts/            # Repository utilities (h2jupynb — Hoffman2 Jupyter launcher)
 ├── README.md           # Public-facing introduction: methodology, install, usage, citation
 ├── requirements.txt
@@ -193,15 +192,18 @@ harness path; the script remains in the history if it is ever wanted back.
 
 ## Documentation
 
-- **Code reference** — `doxygen docs/doxygen/Doxyfile` from the repository root writes
-  `docs/doxygen/build/html/` (gitignored). The code carries no Doxygen commands:
-  Python docstrings and C++ `/** */` header comments are shown as written, so keep
-  writing them. `.github/workflows/documentation.yml` builds it on every push to `main`.
-- **Wiki** — the pages are versioned in `docs/wiki/` and copied to the GitHub wiki
-  (`RadCluster.wiki.git`). When the inputs, the output artifacts, the solver options or
-  the module layout change, the matching wiki page changes with `README.md` and this file.
-- When the version changes, update `PROJECT_NUMBER` in `docs/doxygen/Doxyfile` and the
-  version line of `docs/wiki/Home.md`.
+- **API reference** — `doxygen Doxyfile` inside `doxygen/` writes `doxygen/HTML/`
+  (gitignored). The layout follows MoDELib: `doxygen/Doxyfile`, the main page
+  `doxygen/dox/mainPage.dox`, and one folder of `.dox` pages per module (`Core/`,
+  `Materials/`, `Solver/`, `IO/`, `Verification/`, `external/`). Python docstrings and
+  C++ `/** */` comments are shown as written, so keep writing them; the header comment
+  of each C++ file starts with `/** @file` so that Doxygen attaches it to the file.
+  `.github/workflows/doxygen.yml` builds the pages on every push to `main` and publishes
+  them to GitHub Pages (<https://ghoniem.github.io/RadCluster/>).
+- **Wiki** — the pages live only in the GitHub wiki (`RadCluster.wiki.git`); there is no
+  copy in this repository. When the inputs, the output artifacts, the solver options or
+  the module layout change, the matching wiki page and `.dox` page change with
+  `README.md` and this file.
 
 ## Shared Resources
 

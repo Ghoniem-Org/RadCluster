@@ -18,8 +18,9 @@ RadCluster/
 │   ├── Database/           # Experimental microstructure databases (xlsx)
 │   ├── Formulation/        # Derivations, paper sections, studies — by topic (see Formulation/README.md)
 │   ├── Literature/         # Peer-reviewed papers (PDF)
-│   └── design_notes/       # Working design notes
-├── doxygen/            # Doxyfile + dox/ pages — API docs, built and published to GitHub Pages by .github/workflows/doxygen.yml
+│   ├── design_notes/       # Working design notes
+│   ├── doxygen/            # Doxygen code reference: Doxyfile, mainpage.md (see doxygen/README.md)
+│   └── wiki/               # Sources of the GitHub wiki pages (one .md per page)
 ├── scripts/            # Repository utilities (h2jupynb — Hoffman2 Jupyter launcher)
 ├── README.md           # Public-facing introduction: methodology, install, usage, citation
 ├── requirements.txt
@@ -189,6 +190,18 @@ Windows checkout, so the committed copy and the live harness memory drifted
 into two different sets of files, and what reached the remote was a stale
 snapshot that no session read. Each machine now keeps its own memory under the
 harness path; the script remains in the history if it is ever wanted back.
+
+## Documentation
+
+- **Code reference** — `doxygen docs/doxygen/Doxyfile` from the repository root writes
+  `docs/doxygen/build/html/` (gitignored). The code carries no Doxygen commands:
+  Python docstrings and C++ `/** */` header comments are shown as written, so keep
+  writing them. `.github/workflows/documentation.yml` builds it on every push to `main`.
+- **Wiki** — the pages are versioned in `docs/wiki/` and copied to the GitHub wiki
+  (`RadCluster.wiki.git`). When the inputs, the output artifacts, the solver options or
+  the module layout change, the matching wiki page changes with `README.md` and this file.
+- When the version changes, update `PROJECT_NUMBER` in `docs/doxygen/Doxyfile` and the
+  version line of `docs/wiki/Home.md`.
 
 ## Shared Resources
 

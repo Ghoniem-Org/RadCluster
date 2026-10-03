@@ -1,0 +1,50 @@
+name: documentation
+
+# Builds the Doxygen code reference (docs/doxygen/Doxyfile) on every push to main and keeps it as a workflow
+# artifact. Publishing to GitHub Pages is a separate, manual step: run this workflow from the Actions tab
+# ("Run workflow"). That needs Pages enabled once in the repository settings, with "GitHub Actions" as its source.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "radcluster_code/py_utils/**"
+      - "radcluster_code/cpp_utils/**"
+      - "radcluster_code/codes/**"
+      - "radcluster_code/digital_twin/**.py"
+      - "radcluster_code/CLAUDE.md"
+      - "docs/doxygen/**"
+      - ".github/workflows/documentation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Doxygen
+        run: sudo apt-get update && sudo apt-get install -y doxygen
+      - name: Build the code reference
+        run: doxygen docs/doxygen/Doxyfile
+      - name: Show the warnings
+        run: cat docs/doxygen/build/warnings.log || true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/doxygen/build/html
+
+  publish:
+    if: github.event_name == 'workflow_dispatch'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

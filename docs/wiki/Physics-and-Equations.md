@@ -51,7 +51,7 @@ Every edge of the graph belongs to exactly one class.
 
 ## Cascade source
 
-The production rate after in-cascade recombination is $G = \eta\,G_{\rm NRT}$. Clusters are produced directly in cascades with a power law in size:
+The production rate after in-cascade recombination is $G = \eta G_{\rm NRT}$. Clusters are produced directly in cascades with a power law in size:
 
 ```math
 \epsilon_m = C\,m^{-s}, \qquad C = \frac{f^{\rm cl}}{\sum_{m=2}^{m_1} m^{1-s}}, \qquad P_m = \epsilon_m\,G \quad (m \ge 2)
@@ -67,7 +67,7 @@ There is one set of parameters for SIAs and one for vacancies, and one column of
 
 ## Transport
 
-Point-defect diffusivities are $D_\alpha = a^2\,\nu_\alpha \exp(-E_m^\alpha/k_BT)$.
+Point-defect diffusivities are $D_\alpha = a^2 \nu_\alpha \exp(-E_m^\alpha/k_BT)$.
 
 **Solute trapping.** In the alloy, dissolved solutes (Cr, W, Mn, C, N) slow the migration of SIAs and vacancies:
 
@@ -95,16 +95,16 @@ The geometric prefactors $A_{\rm sph} = (48\pi^2)^{1/3}$ and $A_{\rm loop} = 8\s
 
 | Process | Kernel |
 |---|---|
-| P1: vacancy–SIA recombination | $K_{iv} = 4\sqrt{3}\,\pi\,(D_i^{\rm eff} + D_v^{\rm eff})/\Omega^{2/3}$ |
-| P2: point-defect absorption by a spherical cavity of size m | $A_{\rm sph}\,m^{1/3}\,D_\alpha^{\rm eff}/\Omega^{2/3}$ |
-| P3: SIA absorption by a loop of size n | $A_{\rm loop}\,n^{1/2}\,Z_i^{\rm loop}\,D_i^{\rm eff}/\Omega^{2/3}$ |
-| P4: fixed sinks | dislocations $Z_\alpha\,\rho_d\,D_\alpha$; grain or lath boundaries $Z^{gb}_\alpha\,\pi^2 D_\alpha/d_g^2$; precipitates $4\pi\,Z^p_\alpha\,\rho_p\,r_p\,D_\alpha$ |
-| P5: thermal emission of a vacancy from a cavity | $A_{\rm sph}\,(m-1)^{1/3}\,D_v^{\rm eff}\,e^{-E_b^v/k_BT}/\Omega^{2/3}$ |
-| P5: thermal emission of an SIA from a ½⟨111⟩ cluster | $A_{\rm sph}\,(n-1)^{1/3}\,D_i^{\rm eff}\,e^{-E_b^i/k_BT}/\Omega^{2/3}$ |
-| P5: thermal emission of an SIA from a ⟨100⟩ loop | $A_{\rm loop}\,(n-1)^{1/2}\,D_i^{\rm eff}\,e^{-E_b^{100}/k_BT}/\Omega^{2/3}$ |
-| P6: glissile SIA cluster with a cavity | $A_{\rm sph}\,m^{1/3}\,D_n^{\rm 1D} / [\Omega^{2/3}\,(1 + B_{\rm rot}\,\hat L^2\,m^{-1/3})]$ |
+| P1: vacancy–SIA recombination | $K_{iv} = 4\sqrt{3} \pi (D_i^{\rm eff} + D_v^{\rm eff})/\Omega^{2/3}$ |
+| P2: point-defect absorption by a spherical cavity of size m | $A_{\rm sph} m^{1/3} D_\alpha^{\rm eff}/\Omega^{2/3}$ |
+| P3: SIA absorption by a loop of size n | $A_{\rm loop} n^{1/2} Z_i^{\rm loop} D_i^{\rm eff}/\Omega^{2/3}$ |
+| P4: fixed sinks | dislocations $Z_\alpha \rho_d D_\alpha$; grain or lath boundaries $Z_\alpha^{gb} \pi^2 D_\alpha/d_g^2$; precipitates $4\pi Z_\alpha^{p} \rho_p r_p D_\alpha$ |
+| P5: thermal emission of a vacancy from a cavity | $A_{\rm sph} (m-1)^{1/3} D_v^{\rm eff} e^{-E_b^v/k_BT}/\Omega^{2/3}$ |
+| P5: thermal emission of an SIA from a ½⟨111⟩ cluster | $A_{\rm sph} (n-1)^{1/3} D_i^{\rm eff} e^{-E_b^i/k_BT}/\Omega^{2/3}$ |
+| P5: thermal emission of an SIA from a ⟨100⟩ loop | $A_{\rm loop} (n-1)^{1/2} D_i^{\rm eff} e^{-E_b^{100}/k_BT}/\Omega^{2/3}$ |
+| P6: glissile SIA cluster with a cavity | $A_{\rm sph} m^{1/3} D_n^{\rm 1D} / [\Omega^{2/3} (1 + B_{\rm rot} \hat L^2 m^{-1/3})]$ |
 | P7: trap mutation | $\nu_0 \exp(-E_{\rm TM}(m,\ell)/k_BT)$ |
-| P8: radiation re-solution | $b_0\,\ell\,\dot\phi$ |
+| P8: radiation re-solution | $b_0 \ell \dot\phi$ |
 
 Clusters of sizes 1 to 3 diffuse three-dimensionally; larger mobile clusters glide, and react with cavities through P6; larger clusters still are sessile.
 
@@ -124,10 +124,10 @@ Helium–helium clustering in the lattice is not included: the binding of two in
 
 | Quantity | Model |
 |---|---|
-| vacancy binding to a void | capillarity, $E_b^v(m) = E_f^v - A_{\rm void}\,[m^{2/3} - (m-1)^{2/3}]$ with $A_{\rm void} = 4\pi\gamma_s r_0^2$, plus an atomistic correction that decays with size |
+| vacancy binding to a void | capillarity, $E_b^v(m) = E_f^v - A_{\rm void} [m^{2/3} - (m-1)^{2/3}]$ with $A_{\rm void} = 4\pi\gamma_s r_0^2$, plus an atomistic correction that decays with size |
 | vacancy binding to a bubble | the helium in a cavity raises the binding of its vacancies, so helium stabilizes bubbles against emission. The C++ kernels apply this as a correction to the emission rate that depends on the helium-to-vacancy ratio |
 | helium pressure | a third-order virial equation of state |
-| SIA binding to a loop | $E_b^{\rm loop}(n) = A\,n^{B}$ at small sizes, with a positive exponent, blended to the continuum limit; separate fits for ½⟨111⟩ and ⟨100⟩ loops |
+| SIA binding to a loop | $E_b^{\rm loop}(n) = A n^{B}$ at small sizes, with a positive exponent, blended to the continuum limit; separate fits for ½⟨111⟩ and ⟨100⟩ loops |
 
 ## State-space reductions
 
@@ -140,7 +140,7 @@ The unreduced state of a cavity is two-dimensional: m vacancies and ℓ helium a
 | `cascade` | Reduction | What is tracked | Equations |
 |---|---|---|---|
 | `fusion` | Case 1, mean field: helium equilibrates fast, so each cavity size has a mean loading | the cavity concentration and the helium content of each size | I + 2V + 1 |
-| `fission` | Case 2, decoupled: helium is a weak perturbation | the cavity concentrations and one scalar inventory. For the pressure correction the kernels give a cavity of size m the loading $\ell(m) = \bar\ell\,m^{2/3}$, with $\bar\ell$ the inventory divided by the number of cavities | I + V + 2 |
+| `fission` | Case 2, decoupled: helium is a weak perturbation | the cavity concentrations and one scalar inventory. For the pressure correction the kernels give a cavity of size m the loading $\ell(m) = \bar\ell m^{2/3}$, with $\bar\ell$ the inventory divided by the number of cavities | I + V + 2 |
 
 With `he_kinetics='quasi_steady_state'` the free helium concentration is computed from $dc_h/dt = 0$ instead of being integrated, which removes one unknown. Helium migrates with a very small energy, so it equilibrates quickly.
 
@@ -162,7 +162,7 @@ The reduction is defined as three steps at every evaluation of the right-hand si
 
 1. **Reconstruct** the per-size distribution from the moments with the closure.
 2. **Evaluate** the per-size rates.
-3. **Project** the per-size rates onto the moments: $d\mu_k^{(p)}/dt = \sum_{n\in\mathcal{B}_k} n^p\,dc_n/dt$.
+3. **Project** the per-size rates onto the moments: $d\mu_k^{(p)}/dt = \sum_{n\in\mathcal{B}_k} n^p dc_n/dt$.
 
 The C++ right-hand side `rhs_bin_moment` follows this scheme for the point-defect ladders. It evaluates two channels on the moments themselves: the coarsening of loops beyond `i_mobile`, where each bin is taken at its mean size, and the products of mobile-cluster coalescence that land in the bins.
 
@@ -176,7 +176,7 @@ plus the cumulative fluxes used by the diagnostics, and a second SIA block for t
 
 ## Conservation diagnostics
 
-Let $S_I = \sum_n n\,c_n$ be the SIA content and $S = \sum_m m\,c_m$ the vacancy content, which is the swelling. The solver integrates the cumulative losses of SIAs and of vacancies at the fixed sinks, $J_I$ and $J_V$. Mutual annihilation removes equal numbers of both, so
+Let $S_I = \sum_n n c_n$ be the SIA content and $S = \sum_m m c_m$ the vacancy content, which is the swelling. The solver integrates the cumulative losses of SIAs and of vacancies at the fixed sinks, $J_I$ and $J_V$. Mutual annihilation removes equal numbers of both, so
 
 ```math
 S(t) - S_I(t) = J_I(t) - J_V(t)

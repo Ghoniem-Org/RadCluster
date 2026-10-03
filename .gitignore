@@ -46,9 +46,6 @@ EuroferMicro_venv/
 # is 92% of the directory and the worst possible archival format.
 radcluster_code/output/*/plots/plot_data.pkl
 
-# Doxygen output (built and published by .github/workflows/doxygen.yml)
-doxygen/HTML/
-
 # Temporary / OS
 .DS_Store
 Thumbs.db
@@ -86,6 +83,11 @@ docs/Formulation/**/*.out
 docs/Formulation/**/*.toc
 docs/Formulation/**/*.fls
 docs/Formulation/**/*.fdb_latexmk
+
+# Doxygen code reference (docs/doxygen/Doxyfile): the HTML regenerates in a few
+# seconds and is built by .github/workflows/documentation.yml.  The */build/
+# rule above only reaches one directory level, so this one is listed by name.
+docs/doxygen/build/
 
 # Claude Code local working state — never shared.
 # "Claude outputs/" is a scratch drop for generated drafts (the GCD rebuttal
